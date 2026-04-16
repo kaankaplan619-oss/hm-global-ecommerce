@@ -1,0 +1,158 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Package,
+  Users,
+  FileText,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  TrendingUp,
+  Settings,
+} from "lucide-react";
+import { useAuthStore } from "@/store/auth";
+
+const ADMIN_SECTIONS = [
+  {
+    href: "/admin/commandes",
+    icon: Package,
+    title: "Commandes",
+    description: "Valider, gérer et suivre toutes les commandes",
+    count: "—",
+    countLabel: "à traiter",
+    accent: "badge-warning",
+  },
+  {
+    href: "/admin/clients",
+    icon: Users,
+    title: "Clients",
+    description: "Liste et gestion des comptes clients",
+    count: "—",
+    countLabel: "total",
+    accent: "badge-info",
+  },
+  {
+    href: "/admin/factures",
+    icon: FileText,
+    title: "Factures",
+    description: "Générer et suivre les factures Pennylane",
+    count: "—",
+    countLabel: "en attente",
+    accent: "badge-warning",
+  },
+  {
+    href: "/admin/produits",
+    icon: Settings,
+    title: "Produits",
+    description: "Gérer le catalogue, stocks et références",
+    count: "7",
+    countLabel: "produits",
+    accent: "badge-neutral",
+  },
+];
+
+const QUICK_STATS = [
+  { icon: AlertTriangle, label: "Commandes à valider", value: "—", color: "#facc15" },
+  { icon: FileText, label: "Fichiers à vérifier", value: "—", color: "#c9a96e" },
+  { icon: Clock, label: "En attente client", value: "—", color: "#60a5fa" },
+  { icon: TrendingUp, label: "CA ce mois (TTC)", value: "—", color: "#4ade80" },
+];
+
+export default function AdminPage() {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated || user?.role !== "admin") {
+      router.push("/connexion");
+    }
+  }, [isAuthenticated, user, router]);
+
+  if (!isAuthenticated || user?.role !== "admin") return null;
+
+  return (
+    <div className="pt-24 pb-20">
+      <div className="container max-w-5xl">
+        {/* Header */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="badge badge-gold">Admin</span>
+          </div>
+          <h1 className="text-2xl font-black text-[#f5f5f5]">Back-Office HM Global</h1>
+          <p className="text-sm text-[#555555] mt-1">
+            Bienvenue, {user.firstName}. Gérez vos commandes, clients et factures.
+          </p>
+        </div>
+
+        {/* Quick stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          {QUICK_STATS.map(({ icon: Icon, label, value, color }) => (
+            <div
+              key={label}
+              className="p-4 bg-[#111111] border border-[#1e1e1e] rounded-xl"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Icon size={14} style={{ color }} />
+                <span className="text-[10px] text-[#555555] uppercase tracking-wider font-semibold">
+                  {label}
+                </span>
+              </div>
+              <div className="text-2xl font-black" style={{ color }}>
+                {value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Admin sections */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {ADMIN_SECTIONS.map(({ href, icon: Icon, title, description, count, countLabel, accent }) => (
+            <Link
+              key={href}
+              href={href}
+              className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl hover:border-[#2a2a2a] transition-colors group"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center group-hover:bg-[#c9a96e11] transition-colors">
+                  <Icon size={18} className="text-[#555555] group-hover:text-[#c9a96e] transition-colors" />
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-black text-[#f5f5f5]">{count}</span>
+                  <p className="text-[10px] text-[#555555]">{countLabel}</p>
+                </div>
+              </div>
+              <h2 className="text-sm font-bold text-[#f5f5f5] mb-1">{title}</h2>
+              <p className="text-xs text-[#555555]">{description}</p>
+            </Link>
+          ))}
+        </div>
+
+        {/* Status legend */}
+        <div className="mt-10 p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
+          <h3 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-4">
+            Statuts des commandes
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: "Paiement reçu", badge: "badge-info" },
+              { label: "Fichier à vérifier", badge: "badge-warning" },
+              { label: "En attente client", badge: "badge-warning" },
+              { label: "Validée", badge: "badge-success" },
+              { label: "En traitement", badge: "badge-info" },
+              { label: "Expédiée", badge: "badge-success" },
+              { label: "Terminée", badge: "badge-neutral" },
+              { label: "Annulée", badge: "badge-error" },
+            ].map(({ label, badge }) => (
+              <div key={label} className="flex items-center gap-2">
+                <span className={`badge ${badge} text-[9px]`}>{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
