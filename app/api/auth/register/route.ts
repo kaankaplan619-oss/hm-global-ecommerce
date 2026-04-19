@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { email, password, firstName, lastName, phone, type, company, siret, tvaIntracom } = body;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || req.nextUrl.origin;
 
     // ── Validation ────────────────────────────────────────────────────────────
     if (!email || !password || !firstName || !lastName || !phone) {
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
       email,
       password,
       options: {
+        emailRedirectTo: `${siteUrl}/auth/callback?next=/mon-compte`,
         data: {
           first_name:   firstName,
           last_name:    lastName,
@@ -72,6 +74,10 @@ export async function POST(req: NextRequest) {
 
     if (!authData.user) {
       return NextResponse.json({ message: "Erreur lors de la création du compte" }, { status: 500 });
+    }
+
+    if (authData.session) {
+      await supabase.auth.signOut();
     }
 
     // ── Fetch the profile created by the trigger ──────────────────────────────
@@ -107,7 +113,14 @@ export async function POST(req: NextRequest) {
       updatedAt: new Date().toISOString(),
     };
 
-    return NextResponse.json({ user }, { status: 201 });
+    return NextResponse.json(
+      {
+        user,
+        requiresEmailConfirmation: true,
+        message: "Votre compte a été créé. Vérifiez votre boîte mail pour confirmer votre adresse email avant de vous connecter.",
+      },
+      { status: 201 }
+    );
   } catch (err) {
     console.error("[Auth Register]", err);
     return NextResponse.json({ message: "Une erreur est survenue" }, { status: 500 });

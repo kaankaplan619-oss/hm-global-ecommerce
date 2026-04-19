@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Phone, Mail } from "lucide-react";
+import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 function IconInstagram() {
   return (
@@ -12,12 +12,10 @@ function IconInstagram() {
   );
 }
 
-function IconLinkedin() {
+function IconFacebook() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-      <rect x="2" y="9" width="4" height="12"/>
-      <circle cx="4" cy="4" r="2"/>
+      <path d="M15 3h-3a4 4 0 0 0-4 4v3H5v4h3v7h4v-7h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
     </svg>
   );
 }
@@ -30,9 +28,9 @@ const LINKS_CATALOGUE = [
 ];
 
 const LINKS_TECHNIQUES = [
-  { label: "Impression DTF", href: "/#techniques" },
-  { label: "Flex / Vinyle", href: "/#techniques" },
-  { label: "Broderie premium", href: "/#techniques" },
+  { label: "Impression DTF", href: "/techniques" },
+  { label: "Flex / Vinyle", href: "/techniques" },
+  { label: "Broderie premium", href: "/techniques" },
 ];
 
 const LINKS_COMPTE = [
@@ -43,9 +41,10 @@ const LINKS_COMPTE = [
 ];
 
 const LINKS_INFO = [
-  { label: "Mentions légales", href: "/mentions-legales" },
-  { label: "CGV", href: "/cgv" },
-  { label: "Politique de confidentialité", href: "/confidentialite" },
+  { label: "À propos", href: "/a-propos" },
+  { label: "Techniques", href: "/techniques" },
+  { label: "Entreprises", href: "/entreprises" },
+  { label: "Réalisations", href: "/realisations" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -69,49 +68,57 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-xs">
-              Spécialiste du textile personnalisé depuis 2018. Basé en Alsace, nous habillons les entreprises qui veulent marquer les esprits.
+              HM Global Agence est une agence créative avec atelier de production, spécialisée en textile personnalisé, communication visuelle et préparation de fichiers pour l'impression.
             </p>
 
             <div className="mt-6 flex flex-col gap-3">
               <a
-                href="https://maps.google.com/?q=Souffelweyersheim"
+                href="https://maps.google.com/?q=20+Rue+des+Tuileries,+67460+Souffelweyersheim"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
               >
                 <MapPin size={13} className="text-[var(--hm-rose)] shrink-0" />
-                Souffelweyersheim, Alsace (67)
+                20 Rue des Tuileries, 67460 Souffelweyersheim
               </a>
               <a
-                href="tel:+33XXXXXXXXX"
+                href="tel:+33676161188"
                 className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
               >
                 <Phone size={13} className="text-[var(--hm-rose)] shrink-0" />
-                +33 X XX XX XX XX
+                06 76 16 11 88
               </a>
               <a
-                href="mailto:contact@hmglobalagence.fr"
+                href="mailto:contact@hmga.fr"
                 className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
               >
                 <Mail size={13} className="text-[var(--hm-rose)] shrink-0" />
-                contact@hmglobalagence.fr
+                contact@hmga.fr
               </a>
+              <div className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)]">
+                <Clock size={13} className="text-[var(--hm-rose)] shrink-0" />
+                Du lundi au vendredi, de 9h à 18h
+              </div>
             </div>
 
             <div className="mt-6 flex items-center gap-3">
               <a
-                href="#"
+                href="https://www.instagram.com/hmglobalagence/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-8 h-8 rounded border border-[var(--hm-line)] flex items-center justify-center text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] hover:border-[var(--hm-rose)] transition-colors"
                 aria-label="Instagram"
               >
                 <IconInstagram />
               </a>
               <a
-                href="#"
+                href="https://www.facebook.com/HmGlobalAgence"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-8 h-8 rounded border border-[var(--hm-line)] flex items-center justify-center text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] hover:border-[var(--hm-rose)] transition-colors"
-                aria-label="LinkedIn"
+                aria-label="Facebook"
               >
-                <IconLinkedin />
+                <IconFacebook />
               </a>
             </div>
           </div>
@@ -152,6 +159,26 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Découvrir */}
+          <div>
+            <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
+              Découvrir
+            </h4>
+            <ul className="flex flex-col gap-3">
+              {LINKS_INFO.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
             <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5 mt-8">
               Mon compte
             </h4>
@@ -169,7 +196,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Autres savoir-faire */}
+          {/* Savoir-faire */}
           <div>
             <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
               Nos savoir-faire
@@ -177,11 +204,12 @@ export default function Footer() {
             <ul className="flex flex-col gap-3">
               {[
                 "Textile personnalisé",
-                "Création graphique & PAO",
-                "Logos & identité visuelle",
-                "Enseignes",
-                "Bâches publicitaires",
-                "Marquage véhicule",
+                "DTF, flex et broderie",
+                "Design, logo et PAO",
+                "Lettrage",
+                "Habillage véhicule",
+                "Totems et signalétique / print",
+                "Communication visuelle",
               ].map((service) => (
                 <li key={service}>
                   <span className="text-sm text-[var(--hm-text-soft)]">{service}</span>
@@ -200,15 +228,14 @@ export default function Footer() {
             © {new Date().getFullYear()} HM Global Agence — Tous droits réservés
           </p>
           <div className="flex items-center gap-6">
-            {LINKS_INFO.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+            <a
+              href="https://www.hm-global.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+            >
+              hm-global.fr
+            </a>
           </div>
         </div>
       </div>

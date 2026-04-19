@@ -4,11 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
-import { useAuthStore } from "@/store/auth";
 
 export default function InscriptionPage() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
 
   const [type, setType] = useState<"particulier" | "entreprise">("particulier");
   const [form, setForm] = useState({
@@ -23,6 +21,7 @@ export default function InscriptionPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const update = (field: string, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
@@ -30,6 +29,7 @@ export default function InscriptionPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
     setLoading(true);
 
     try {
@@ -45,9 +45,11 @@ export default function InscriptionPage() {
         return;
       }
 
-      const { user } = await res.json();
-      setUser(user);
-      router.push("/mon-compte");
+      const data = await res.json();
+      setSuccessMessage(
+        data.message ??
+          "Votre compte a été créé. Vérifiez votre boîte mail pour confirmer votre adresse email avant de vous connecter."
+      );
     } catch {
       setError("Une erreur est survenue. Réessayez.");
     } finally {
@@ -68,152 +70,182 @@ export default function InscriptionPage() {
           <p className="text-sm text-[#555555]">Créez votre espace client pour commander en ligne</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl flex flex-col gap-4"
-        >
-          {error && (
-            <div className="p-3 bg-[#f8717111] border border-[#f8717133] rounded-lg text-sm text-[#f87171]">
-              {error}
+        {successMessage ? (
+          <div className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl flex flex-col gap-4">
+            <div className="p-3 bg-[#4ade8011] border border-[#4ade8033] rounded-lg text-sm text-[#86efac]">
+              {successMessage}
             </div>
-          )}
-
-          {/* Type selector */}
-          <div>
-            <label className="label">Type de compte</label>
-            <div className="grid grid-cols-2 gap-2">
-              {(["particulier", "entreprise"] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setType(t)}
-                  className={`p-3 rounded-lg border text-sm font-semibold transition-all capitalize
-                    ${type === t
-                      ? "border-[#c9a96e] bg-[#c9a96e0a] text-[#f5f5f5]"
-                      : "border-[#2a2a2a] text-[#555555] hover:border-[#3a3a3a]"
-                    }`}
-                >
-                  {t === "particulier" ? "👤 Particulier" : "🏢 Entreprise"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Entreprise fields */}
-          {type === "entreprise" && (
-            <>
-              <div>
-                <label className="label">Société *</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Ma Société SARL"
-                  value={form.company}
-                  onChange={(e) => update("company", e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="label">SIRET *</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="000 000 000 00000"
-                  value={form.siret}
-                  onChange={(e) => update("siret", e.target.value)}
-                  required
-                />
-              </div>
-            </>
-          )}
-
-          {/* Personal info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">Prénom *</label>
-              <input
-                type="text"
-                className="input"
-                placeholder="Jean"
-                value={form.firstName}
-                onChange={(e) => update("firstName", e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="label">Nom *</label>
-              <input
-                type="text"
-                className="input"
-                placeholder="Dupont"
-                value={form.lastName}
-                onChange={(e) => update("lastName", e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="label">Email *</label>
-            <input
-              type="email"
-              className="input"
-              placeholder="vous@exemple.fr"
-              value={form.email}
-              onChange={(e) => update("email", e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-
-          <div>
-            <label className="label">Téléphone *</label>
-            <input
-              type="tel"
-              className="input"
-              placeholder="+33 6 12 34 56 78"
-              value={form.phone}
-              onChange={(e) => update("phone", e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="label">Mot de passe *</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="input pr-10"
-                placeholder="••••••••"
-                value={form.password}
-                onChange={(e) => update("password", e.target.value)}
-                required
-                minLength={8}
-              />
+            <p className="text-sm text-[#555555] leading-relaxed">
+              Une fois votre adresse email confirmée, vous pourrez vous connecter et accéder à votre espace client.
+            </p>
+            <div className="flex flex-col gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555555] hover:text-[#8a8a8a]"
+                onClick={() => router.push("/connexion")}
+                className="btn-primary w-full"
               >
-                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                Aller à la connexion
+              </button>
+              <button
+                type="button"
+                onClick={() => setSuccessMessage("")}
+                className="btn-outline w-full"
+              >
+                Modifier mon inscription
               </button>
             </div>
-            <p className="text-[10px] text-[#555555] mt-1">Minimum 8 caractères</p>
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full gap-2 mt-2"
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl flex flex-col gap-4"
           >
-            {loading ? "Création en cours..." : (
+            {error && (
+              <div className="p-3 bg-[#f8717111] border border-[#f8717133] rounded-lg text-sm text-[#f87171]">
+                {error}
+              </div>
+            )}
+
+            {/* Type selector */}
+            <div>
+              <label className="label">Type de compte</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["particulier", "entreprise"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setType(t)}
+                    className={`p-3 rounded-lg border text-sm font-semibold transition-all capitalize
+                      ${type === t
+                        ? "border-[#c9a96e] bg-[#c9a96e0a] text-[#f5f5f5]"
+                        : "border-[#2a2a2a] text-[#555555] hover:border-[#3a3a3a]"
+                      }`}
+                  >
+                    {t === "particulier" ? "👤 Particulier" : "🏢 Entreprise"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Entreprise fields */}
+            {type === "entreprise" && (
               <>
-                <UserPlus size={14} />
-                Créer mon compte
+                <div>
+                  <label className="label">Société *</label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Ma Société SARL"
+                    value={form.company}
+                    onChange={(e) => update("company", e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label">SIRET *</label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="000 000 000 00000"
+                    value={form.siret}
+                    onChange={(e) => update("siret", e.target.value)}
+                    required
+                  />
+                </div>
               </>
             )}
-          </button>
-        </form>
+
+            {/* Personal info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label">Prénom *</label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Jean"
+                  value={form.firstName}
+                  onChange={(e) => update("firstName", e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label">Nom *</label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Dupont"
+                  value={form.lastName}
+                  onChange={(e) => update("lastName", e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Email *</label>
+              <input
+                type="email"
+                className="input"
+                placeholder="vous@exemple.fr"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            <div>
+              <label className="label">Téléphone *</label>
+              <input
+                type="tel"
+                className="input"
+                placeholder="+33 6 12 34 56 78"
+                value={form.phone}
+                onChange={(e) => update("phone", e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Mot de passe *</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="input pr-10"
+                  placeholder="••••••••"
+                  value={form.password}
+                  onChange={(e) => update("password", e.target.value)}
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555555] hover:text-[#8a8a8a]"
+                >
+                  {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+              <p className="text-[10px] text-[#555555] mt-1">Minimum 8 caractères</p>
+              <p className="text-[10px] text-[#555555] mt-1">
+                Après inscription, vous devrez confirmer votre adresse email avant de vous connecter.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full gap-2 mt-2"
+            >
+              {loading ? "Création en cours..." : (
+                <>
+                  <UserPlus size={14} />
+                  Créer mon compte
+                </>
+              )}
+            </button>
+          </form>
+        )}
 
         <p className="text-center text-sm text-[#555555] mt-6">
           Déjà un compte ?{" "}

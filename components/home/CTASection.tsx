@@ -1,56 +1,122 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FolderKanban, ShoppingBag } from "lucide-react";
+
+const PATHS = [
+  {
+    icon: ShoppingBag,
+    eyebrow: "Commande simple",
+    title: "Commander du textile personnalisé",
+    description:
+      "Si votre besoin est déjà cadré, vous pouvez passer par le catalogue pour choisir le produit, le marquage et transmettre votre logo.",
+    points: [
+      "Parcours adapté aux besoins textiles standards",
+      "Choix du support, du marquage et de l'emplacement",
+      "Commande en ligne avec suivi ensuite",
+    ],
+    href: "/catalogue",
+    cta: "Accéder au catalogue",
+    variant: "primary" as const,
+  },
+  {
+    icon: FolderKanban,
+    eyebrow: "Projet sur mesure",
+    title: "Demander un devis et un accompagnement",
+    description:
+      "Si le besoin est spécifique, multi-supports ou encore à cadrer, HM Global reprend le projet avec vous avant de lancer la bonne solution.",
+    points: [
+      "Utile pour signalétique, marquage véhicule, print ou besoin mixte",
+      "Échange plus pertinent pour les demandes techniques ou urgentes",
+      "Devis construit selon votre contexte réel",
+    ],
+    href: "/contact",
+    cta: "Demander un devis",
+    variant: "outline" as const,
+  },
+] as const;
 
 export default function CTASection() {
   return (
-    <section className="section">
-      <div className="container">
-        <div className="relative overflow-hidden rounded-2xl border border-[#c9a96e22] bg-[#0f0f0f] p-12 md:p-16 text-center">
-          {/* Background glow */}
-          <div
-            className="absolute inset-0 opacity-30"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,169,110,0.08) 0%, transparent 70%)",
-            }}
-          />
+    <section className="bg-white py-20 sm:py-24">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 sm:px-6 lg:px-8">
+        <div className="space-y-4 text-center">
+          <span className="inline-flex items-center rounded-full border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
+            Passer à l'action
+          </span>
+          <h2 className="mx-auto max-w-3xl text-3xl font-semibold tracking-tight text-[var(--hm-ink)] sm:text-4xl">
+            Deux chemins simples pour avancer selon votre besoin.
+          </h2>
+          <p className="mx-auto max-w-2xl text-base leading-7 text-[var(--hm-muted)] sm:text-lg">
+            Si le besoin est clair, le catalogue vous permet de commander rapidement.
+            Si le projet demande plus d'accompagnement, la demande de devis est le bon point d'entrée.
+          </p>
+        </div>
 
-          {/* Grid */}
-          <div
-            className="absolute inset-0 opacity-[0.02]"
-            style={{
-              backgroundImage: `linear-gradient(#c9a96e 1px, transparent 1px), linear-gradient(90deg, #c9a96e 1px, transparent 1px)`,
-              backgroundSize: "40px 40px",
-            }}
-          />
+        <div className="grid gap-5 lg:grid-cols-2">
+          {PATHS.map((path) => {
+            const Icon = path.icon;
+            const isPrimary = path.variant === "primary";
 
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <p className="section-tag justify-center mb-6">Prêt à commander ?</p>
+            return (
+              <article
+                key={path.title}
+                className={`flex h-full flex-col rounded-[2rem] border p-7 shadow-[var(--hm-shadow-soft)] sm:p-8 ${
+                  isPrimary
+                    ? "border-[var(--hm-primary)]/20 bg-[linear-gradient(180deg,rgba(100,189,228,0.10)_0%,rgba(255,255,255,1)_40%)]"
+                    : "border-[var(--hm-border)] bg-[var(--hm-surface)]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
+                      {path.eyebrow}
+                    </p>
+                    <h3 className="mt-3 text-2xl font-semibold text-[var(--hm-ink)]">
+                      {path.title}
+                    </h3>
+                  </div>
+                  <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[var(--hm-primary)] shadow-sm">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                </div>
 
-            <h2 className="text-3xl md:text-5xl font-black text-[#f5f5f5] mb-4">
-              Habillons votre<br />
-              <span className="text-gradient-gold">entreprise aujourd&rsquo;hui</span>
-            </h2>
+                <p className="mt-5 text-sm leading-7 text-[var(--hm-muted)] sm:text-base">
+                  {path.description}
+                </p>
 
-            <p className="text-sm text-[#8a8a8a] mb-10 max-w-md mx-auto leading-relaxed">
-              Créez votre compte, choisissez vos produits, uploadez votre logo. Votre textile personnalisé est à quelques clics.
-            </p>
+                <div className="mt-6 grid gap-3">
+                  {path.points.map((point) => (
+                    <div
+                      key={point}
+                      className="rounded-2xl border border-[var(--hm-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hm-ink)]"
+                    >
+                      {point}
+                    </div>
+                  ))}
+                </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/catalogue" className="btn-primary gap-3 text-sm px-8 py-4">
-                Commencer ma commande
-                <ArrowRight size={16} />
-              </Link>
-              <Link href="/contact" className="btn-outline text-sm px-8 py-4">
-                Nous contacter
-              </Link>
-            </div>
+                <div className="mt-8">
+                  <Link
+                    href={path.href}
+                    className={
+                      isPrimary
+                        ? "btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm"
+                        : "btn-outline inline-flex items-center gap-2 px-6 py-3 text-sm"
+                    }
+                  >
+                    {path.cta}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
 
-            {/* Micro-trust */}
-            <p className="mt-8 text-xs text-[#3a3a3a]">
-              Paiement sécurisé · Livraison offerte dès 10 pièces · Suivi commande inclus
-            </p>
-          </div>
+        <div className="rounded-[1.75rem] border border-[var(--hm-border)] bg-[var(--hm-surface)] px-6 py-5 text-center shadow-[var(--hm-shadow-soft)] sm:px-8">
+          <p className="text-sm leading-7 text-[var(--hm-muted)] sm:text-base">
+            Catalogue pour les besoins textiles simples. Demande de devis pour les projets
+            spécifiques, les volumes particuliers ou les supports de communication visuelle.
+          </p>
         </div>
       </div>
     </section>

@@ -27,6 +27,21 @@ export async function POST(req: NextRequest) {
     });
 
     if (authError || !authData.user) {
+      const authMessage = authError?.message?.toLowerCase() ?? "";
+
+      if (
+        authMessage.includes("email not confirmed") ||
+        authMessage.includes("email_not_confirmed")
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "Votre adresse email n’a pas encore été confirmée. Vérifiez votre boîte mail avant de vous connecter.",
+          },
+          { status: 403 }
+        );
+      }
+
       return NextResponse.json(
         { message: "Email ou mot de passe incorrect" },
         { status: 401 }

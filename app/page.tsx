@@ -1,4 +1,5 @@
 import Hero from "@/components/home/Hero";
+import BestSellers from "@/components/home/BestSellers";
 import CategorySection from "@/components/home/CategorySection";
 import TechniqueComparison from "@/components/home/TechniqueComparison";
 import ProcessSection from "@/components/home/ProcessSection";
@@ -11,6 +12,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <BestSellers />
       <CategorySection />
       <TechniqueComparison />
       <ProcessSection />

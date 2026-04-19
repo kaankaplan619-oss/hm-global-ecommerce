@@ -1,141 +1,222 @@
-import { Check, X } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Zap, Scissors, Award } from "lucide-react";
+
+// ─── Données ──────────────────────────────────────────────────────────────────
 
 const TECHNIQUES = [
   {
     id: "dtf",
+    icon: Zap,
     label: "DTF",
-    badge: "Populaire",
-    badgeColor: "#c9a96e",
-    priceLabel: "Dès 19,90 €",
+    tagline: "Impression haute définition, couleurs illimitées",
+    badge: "Le plus demandé",
+    badgeBg: "bg-[var(--hm-accent-soft-rose)]",
+    badgeText: "text-[var(--hm-rose)]",
+    accent: "border-t-[var(--hm-rose)]",
+    dotColor: "bg-[var(--hm-rose)]",
+    iconColor: "text-[var(--hm-rose)]",
+    iconBg: "bg-[var(--hm-accent-soft-rose)]",
     description:
-      "Direct To Film. Impression haute définition, couleurs illimitées et dégradés. Rendu vif et durable, lavage à 40°C.",
-    features: [
-      { label: "Couleurs illimitées", ok: true },
-      { label: "Dégradés & visuels complexes", ok: true },
-      { label: "Rendu premium", ok: true },
-      { label: "Coeur, dos, coeur+dos", ok: true },
-      { label: "Feeling souple sur tissu", ok: true },
-      { label: "Résistance lavage", ok: true },
+      "Direct To Film : un film imprimé est thermocollé sur le textile. Résultat photographique, toucher souple, couleurs fidèles même après 50 lavages.",
+    useCases: [
+      "Logos multicolores ou dégradés",
+      "Équipes, clubs, événements",
+      "Visuels complexes (photo, illustration)",
     ],
-    highlight: true,
+    limit: "Moins économique sur petits volumes monocolores",
+    cost: 2, // sur 3
   },
   {
     id: "flex",
+    icon: Scissors,
     label: "Flex / Vinyle",
+    tagline: "Trait net et précis, idéal pour les logos simples",
     badge: "Économique",
-    badgeColor: "#60a5fa",
-    priceLabel: "Dès 19,90 €",
+    badgeBg: "bg-[var(--hm-accent-soft-blue)]",
+    badgeText: "text-[var(--hm-blue)]",
+    accent: "border-t-[var(--hm-blue)]",
+    dotColor: "bg-[var(--hm-blue)]",
+    iconColor: "text-[var(--hm-blue)]",
+    iconBg: "bg-[var(--hm-accent-soft-blue)]",
     description:
-      "Découpe vinyle thermocollant. Trait net et précis, idéal pour les logos simples, textes et typographies.",
-    features: [
-      { label: "Couleurs illimitées", ok: false },
-      { label: "Dégradés & visuels complexes", ok: false },
-      { label: "Rendu premium", ok: true },
-      { label: "Coeur, dos, coeur+dos", ok: true },
-      { label: "Feeling souple sur tissu", ok: true },
-      { label: "Résistance lavage", ok: true },
+      "Découpe vinyle thermocollant. Parfait pour les typographies, logos nets et formes géométriques. Rendu propre et durable sur coton ou polyester.",
+    useCases: [
+      "Textes, initiales, logos 1-2 couleurs",
+      "Petites séries ou prototypes rapides",
+      "Uniformes, tenues de travail",
     ],
-    highlight: false,
+    limit: "Pas adapté aux dégradés ni aux visuels photo",
+    cost: 1, // sur 3
   },
   {
     id: "broderie",
+    icon: Award,
     label: "Broderie",
-    badge: "Premium",
-    badgeColor: "#a78bfa",
-    priceLabel: "Dès 25,90 €",
+    tagline: "Rendu 3D premium, toucher noble",
+    badge: "Prestige",
+    badgeBg: "bg-[var(--hm-accent-soft-purple)]",
+    badgeText: "text-[var(--hm-purple)]",
+    accent: "border-t-[var(--hm-purple)]",
+    dotColor: "bg-[var(--hm-purple)]",
+    iconColor: "text-[var(--hm-purple)]",
+    iconBg: "bg-[var(--hm-accent-soft-purple)]",
     description:
-      "Broderie machine haute définition. Rendu 3D premium, toucher noble. Idéal pour softshells, polaires et polos.",
-    features: [
-      { label: "Couleurs illimitées", ok: false },
-      { label: "Dégradés & visuels complexes", ok: false },
-      { label: "Rendu premium", ok: true },
-      { label: "Coeur, dos, coeur+dos", ok: true },
-      { label: "Feeling souple sur tissu", ok: false },
-      { label: "Résistance lavage", ok: true },
+      "Broderie machine haute définition point par point. Donne du relief et du caractère à votre logo. Inusable, indémodable — la finition haut de gamme.",
+    useCases: [
+      "Softshells, polaires, vestes corporate",
+      "Polos et tenues haut de gamme",
+      "Logo sobre avec fort impact visuel",
     ],
-    highlight: false,
+    limit: "Nombre de couleurs limité, moins adapté aux formes fines",
+    cost: 3, // sur 3
   },
-];
+] as const;
+
+// ─── Composant ────────────────────────────────────────────────────────────────
 
 export default function TechniqueComparison() {
   return (
-    <section className="section bg-[#080808]" id="techniques">
+    <section className="section bg-white" id="techniques">
       <div className="container">
-        {/* Header */}
-        <div className="text-center mb-14">
+
+        {/* ── En-tête ─────────────────────────────────────────────────── */}
+        <div className="mb-12 text-center">
           <p className="section-tag justify-center">Nos techniques</p>
-          <h2 className="text-3xl md:text-4xl font-black text-[#f5f5f5] mb-4">
-            DTF, Flex ou Broderie —<br />
-            <span className="text-gradient-gold">Quelle technique choisir ?</span>
+          <h2 className="mb-3 text-3xl font-black leading-tight tracking-tight
+            text-[var(--hm-text)] md:text-4xl">
+            DTF, Flex ou Broderie —
+            <br />
+            <span className="text-gradient-gold">comment choisir ?</span>
           </h2>
-          <p className="text-[#555555] text-sm max-w-xl mx-auto">
-            Chaque technique a ses avantages. Nous vous guidons pour choisir la meilleure option selon votre projet et votre budget.
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
+            Chaque projet est différent. Voici les critères qui font la différence
+            pour choisir la technique adaptée à votre rendu, votre budget et vos supports.
           </p>
         </div>
 
-        {/* Technique cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {TECHNIQUES.map((tech) => (
-            <div
-              key={tech.id}
-              className={`relative rounded-xl p-6 border transition-all
-                ${tech.highlight
-                  ? "bg-[#111111] border-[#c9a96e33]"
-                  : "bg-[#0f0f0f] border-[#1e1e1e]"
-                }`}
-            >
-              {/* Badge */}
-              <span
-                className="absolute -top-3 left-6 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                style={{
-                  background: `${tech.badgeColor}22`,
-                  color: tech.badgeColor,
-                  border: `1px solid ${tech.badgeColor}44`,
-                }}
+        {/* ── Cartes techniques ───────────────────────────────────────── */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10">
+          {TECHNIQUES.map((tech) => {
+            const Icon = tech.icon;
+            return (
+              <div
+                key={tech.id}
+                className={`relative flex flex-col rounded-2xl border border-t-4
+                  border-[var(--hm-line)] bg-white
+                  shadow-[0_4px_20px_rgba(63,45,88,0.06)]
+                  transition-all duration-300
+                  hover:shadow-[0_12px_36px_rgba(63,45,88,0.10)]
+                  hover:-translate-y-0.5
+                  ${tech.accent}`}
               >
-                {tech.badge}
-              </span>
-
-              {/* Title + Price */}
-              <div className="flex items-start justify-between mb-4 mt-2">
-                <h3 className="text-xl font-black text-[#f5f5f5]">{tech.label}</h3>
-                <span className="text-xs font-semibold text-[#c9a96e]">{tech.priceLabel}</span>
-              </div>
-
-              {/* Description */}
-              <p className="text-sm text-[#555555] leading-relaxed mb-6">
-                {tech.description}
-              </p>
-
-              {/* Features */}
-              <ul className="flex flex-col gap-3">
-                {tech.features.map((feat) => (
-                  <li key={feat.label} className="flex items-center gap-3">
-                    {feat.ok ? (
-                      <Check size={14} className="text-[#4ade80] shrink-0" />
-                    ) : (
-                      <X size={14} className="text-[#2a2a2a] shrink-0" />
-                    )}
-                    <span className={`text-xs ${feat.ok ? "text-[#8a8a8a]" : "text-[#2a2a2a]"}`}>
-                      {feat.label}
+                {/* ── Header carte ── */}
+                <div className="p-5 pb-4">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    {/* Icône */}
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center
+                      rounded-xl ${tech.iconBg}`}>
+                      <Icon size={16} className={tech.iconColor} />
+                    </div>
+                    {/* Badge */}
+                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold
+                      uppercase tracking-wider ${tech.badgeBg} ${tech.badgeText}`}>
+                      {tech.badge}
                     </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+                  </div>
+
+                  {/* Nom + tagline */}
+                  <h3 className="mb-0.5 text-[18px] font-black text-[var(--hm-text)]">
+                    {tech.label}
+                  </h3>
+                  <p className="text-[11px] font-semibold text-[var(--hm-text-soft)]">
+                    {tech.tagline}
+                  </p>
+                </div>
+
+                {/* ── Description ── */}
+                <div className="border-t border-[var(--hm-line)] px-5 py-4">
+                  <p className="text-[12px] leading-relaxed text-[var(--hm-text-soft)]">
+                    {tech.description}
+                  </p>
+                </div>
+
+                {/* ── Cas d'usage ── */}
+                <div className="flex-1 px-5 py-4">
+                  <p className="mb-2.5 text-[10px] font-bold uppercase tracking-wider
+                    text-[var(--hm-text-muted)]">
+                    Idéal pour
+                  </p>
+                  <ul className="flex flex-col gap-2">
+                    {tech.useCases.map((uc) => (
+                      <li key={uc} className="flex items-start gap-2">
+                        <span className={`mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full
+                          ${tech.dotColor}`} />
+                        <span className="text-[12px] leading-snug text-[var(--hm-text)]">
+                          {uc}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* ── Limite + coût ── */}
+                <div className="rounded-b-2xl border-t border-[var(--hm-line)]
+                  bg-[var(--hm-surface)] px-5 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Limite */}
+                    <p className="text-[10px] italic leading-snug text-[var(--hm-text-muted)]">
+                      {tech.limit}
+                    </p>
+                    {/* Indicateur coût relatif */}
+                    <div className="flex shrink-0 items-center gap-0.5" title="Coût relatif">
+                      {[1, 2, 3].map((n) => (
+                        <span
+                          key={n}
+                          className={`h-2 w-2 rounded-full
+                            ${n <= tech.cost
+                              ? tech.dotColor
+                              : "bg-[var(--hm-line)]"
+                            }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Bottom note */}
-        <div className="text-center">
-          <p className="text-xs text-[#555555]">
-            Vous ne savez pas quelle technique choisir ?{" "}
-            <a href="/contact" className="text-[#c9a96e] hover:underline">
-              Contactez-nous
-            </a>
-            , on vous conseille gratuitement.
-          </p>
+        {/* ── Bande de décision ───────────────────────────────────────── */}
+        <div className="rounded-2xl border border-[var(--hm-line)]
+          bg-[var(--hm-surface)] px-6 py-5
+          md:flex md:items-center md:justify-between md:gap-8">
+          <div className="mb-4 md:mb-0">
+            <p className="mb-0.5 text-[15px] font-bold text-[var(--hm-text)]">
+              Vous hésitez encore sur la technique ?
+            </p>
+            <p className="text-[12px] text-[var(--hm-text-soft)]">
+              Envoyez-nous votre logo ou décrivez votre projet — on vous conseille
+              gratuitement en moins de 24h.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-3">
+            <Link
+              href="/contact"
+              className="btn-primary gap-2 text-[0.78rem] px-5 py-2.5"
+            >
+              Demander un conseil
+              <ArrowRight size={13} />
+            </Link>
+            <Link
+              href="/catalogue"
+              className="btn-outline gap-2 text-[0.78rem] px-5 py-2.5"
+            >
+              Voir le catalogue
+            </Link>
+          </div>
         </div>
+
       </div>
     </section>
   );

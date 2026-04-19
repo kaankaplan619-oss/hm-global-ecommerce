@@ -1,44 +1,58 @@
-import { Star } from "lucide-react";
+import { MessageSquareQuote, Star } from "lucide-react";
 
-// Avis de démonstration — en prod, chargés depuis la DB avec modération admin
 const DEMO_REVIEWS = [
   {
-    id: "1",
+    id: "review-1",
     name: "Thomas M.",
-    company: "Entreprise BTP — Strasbourg",
+    activity: "Entreprise du BTP",
+    city: "Strasbourg",
     rating: 5,
     comment:
-      "Commande de 50 t-shirts pour notre équipe. Qualité irréprochable, DTF parfaitement rendu. Livraison rapide et suivi professionnel. Je recommande sans hésitation.",
-    date: "Mars 2025",
+      "Commande fluide, fichier vérifié avant lancement et rendu propre sur les t-shirts d'équipe. Le suivi a été clair jusqu'à la livraison.",
+    period: "Mars 2025",
+    topic: "T-shirts personnalisés",
   },
   {
-    id: "2",
-    name: "Sophie L.",
-    company: "Restaurant — Colmar",
+    id: "review-2",
+    name: "Sarah L.",
+    activity: "Restaurant",
+    city: "Colmar",
     rating: 5,
     comment:
-      "Hoodies brodés pour notre personnel. Le rendu est vraiment premium, nos clients nous en parlent ! Processus simple et équipe très réactive.",
-    date: "Février 2025",
+      "Nous avions besoin d'un textile cohérent pour le personnel. Les échanges ont été simples, le marquage bien conseillé et le résultat sérieux.",
+    period: "Février 2025",
+    topic: "Sweats et hoodies brodés",
   },
   {
-    id: "3",
+    id: "review-3",
     name: "Marc D.",
-    company: "Association sportive — Mulhouse",
+    activity: "Association sportive",
+    city: "Mulhouse",
     rating: 5,
     comment:
-      "20 softshells pour notre association. La broderie est magnifique, les couleurs fidèles à notre charte. Service impeccable du début à la fin.",
-    date: "Janvier 2025",
+      "Le projet a été cadré rapidement, avec une vraie relecture du visuel avant production. Les softshells sont arrivées conformes à notre demande.",
+    period: "Janvier 2025",
+    topic: "Softshells personnalisées",
   },
-];
+] as const;
+
+const REVIEW_SIGNALS = [
+  "Section prête à accueillir de vrais avis Google",
+  "Structure réutilisable pour témoignages clients validés",
+  "Ton court, crédible et non surjoué",
+] as const;
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
+    <div className="flex items-center gap-1" aria-label={`${rating} sur 5`}>
+      {Array.from({ length: 5 }).map((_, index) => (
         <Star
-          key={i}
-          size={12}
-          className={i < rating ? "text-[#c9a96e] fill-[#c9a96e]" : "text-[#2a2a2a]"}
+          key={index}
+          className={
+            index < rating
+              ? "h-4 w-4 fill-[var(--hm-accent)] text-[var(--hm-accent)]"
+              : "h-4 w-4 text-[var(--hm-border-strong)]"
+          }
         />
       ))}
     </div>
@@ -46,54 +60,95 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function ReviewsSection() {
-  const avgRating = DEMO_REVIEWS.reduce((acc, r) => acc + r.rating, 0) / DEMO_REVIEWS.length;
+  const averageRating =
+    DEMO_REVIEWS.reduce((total, review) => total + review.rating, 0) / DEMO_REVIEWS.length;
 
   return (
-    <section className="section">
-      <div className="container">
-        {/* Header */}
-        <div className="text-center mb-14">
-          <p className="section-tag justify-center">Avis clients</p>
-          <h2 className="text-3xl md:text-4xl font-black text-[#f5f5f5] mb-4">
-            Ce que disent<br />
-            <span className="text-gradient-gold">nos clients</span>
-          </h2>
-          {/* Global rating */}
-          <div className="flex items-center justify-center gap-3 mt-4">
-            <StarRating rating={Math.round(avgRating)} />
-            <span className="text-sm font-bold text-[#f5f5f5]">{avgRating.toFixed(1)}/5</span>
-            <span className="text-xs text-[#555555]">({DEMO_REVIEWS.length} avis vérifiés)</span>
+    <section className="bg-white py-20 sm:py-24">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+          <div className="space-y-4">
+            <span className="inline-flex items-center rounded-full border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
+              Avis clients
+            </span>
+            <h2 className="max-w-xl text-3xl font-semibold tracking-tight text-[var(--hm-ink)] sm:text-4xl">
+              Une preuve sociale sobre, lisible et pensée pour accueillir de vrais retours.
+            </h2>
+            <p className="max-w-2xl text-base leading-7 text-[var(--hm-muted)] sm:text-lg">
+              Cette section pose une base crédible pour les retours clients : des avis courts,
+              situés, liés à un vrai usage produit, avec une structure qui pourra ensuite être
+              branchée sur des avis Google ou des témoignages validés.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-[auto_1fr]">
+            <div className="rounded-[1.75rem] border border-[var(--hm-border)] bg-[var(--hm-surface)] px-6 py-5 shadow-[var(--hm-shadow-soft)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
+                Note affichée
+              </p>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="text-3xl font-semibold text-[var(--hm-ink)]">
+                  {averageRating.toFixed(1)}
+                </span>
+                <StarRating rating={Math.round(averageRating)} />
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[var(--hm-muted)]">
+                Base de démonstration propre, en attendant les premiers avis clients publiables.
+              </p>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-[var(--hm-border)] bg-white px-6 py-5 shadow-[var(--hm-shadow-soft)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
+                Prévu pour la suite
+              </p>
+              <div className="mt-4 grid gap-3">
+                {REVIEW_SIGNALS.map((signal) => (
+                  <div
+                    key={signal}
+                    className="rounded-2xl border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-3 text-sm leading-6 text-[var(--hm-ink)]"
+                  >
+                    {signal}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Reviews grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid gap-5 lg:grid-cols-3">
           {DEMO_REVIEWS.map((review) => (
-            <div
+            <article
               key={review.id}
-              className="p-6 bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl"
+              className="flex h-full flex-col rounded-[1.75rem] border border-[var(--hm-border)] bg-[var(--hm-surface)] p-6 shadow-[var(--hm-shadow-soft)]"
             >
-              {/* Stars */}
-              <StarRating rating={review.rating} />
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
+                    {review.topic}
+                  </p>
+                  <div className="mt-3">
+                    <StarRating rating={review.rating} />
+                  </div>
+                </div>
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[var(--hm-primary)] shadow-sm">
+                  <MessageSquareQuote className="h-4 w-4" />
+                </span>
+              </div>
 
-              {/* Comment */}
-              <p className="text-sm text-[#8a8a8a] leading-relaxed mt-4 mb-6">
+              <p className="mt-5 text-[15px] leading-7 text-[var(--hm-ink)]">
                 &ldquo;{review.comment}&rdquo;
               </p>
 
-              {/* Author */}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center">
-                  <span className="text-xs font-bold text-[#c9a96e]">
-                    {review.name[0]}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-[#f5f5f5]">{review.name}</p>
-                  <p className="text-[10px] text-[#555555]">{review.company} · {review.date}</p>
-                </div>
+              <div className="mt-6 border-t border-[var(--hm-border)] pt-4">
+                <p className="text-sm font-semibold text-[var(--hm-ink)]">{review.name}</p>
+                <p className="mt-1 text-sm text-[var(--hm-muted)]">
+                  {review.activity} · {review.city}
+                </p>
+                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--hm-primary)]">
+                  {review.period}
+                </p>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       </div>

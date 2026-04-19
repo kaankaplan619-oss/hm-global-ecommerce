@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/layout/CartDrawer";
+import QuoteAssistant from "@/components/assistant/QuoteAssistant";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -66,6 +67,7 @@ export default function RootLayout({
         <CartDrawer />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <QuoteAssistant />
       </body>
     </html>
   );

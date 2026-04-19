@@ -10,6 +10,8 @@ function ConnexionForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/mon-compte";
+  const resetSuccess = searchParams.get("reset") === "success";
+  const callbackError = searchParams.get("error") === "auth_callback";
   const { setUser } = useAuthStore();
 
   const [email, setEmail] = useState("");
@@ -62,6 +64,18 @@ function ConnexionForm() {
           onSubmit={handleSubmit}
           className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl flex flex-col gap-4"
         >
+          {resetSuccess && (
+            <div className="p-3 bg-[#4ade8011] border border-[#4ade8033] rounded-lg text-sm text-[#86efac]">
+              Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.
+            </div>
+          )}
+
+          {callbackError && (
+            <div className="p-3 bg-[#f8717111] border border-[#f8717133] rounded-lg text-sm text-[#f87171]">
+              Le lien de confirmation ou de réinitialisation est invalide ou expiré.
+            </div>
+          )}
+
           {error && (
             <div className="p-3 bg-[#f8717111] border border-[#f8717133] rounded-lg text-sm text-[#f87171]">
               {error}

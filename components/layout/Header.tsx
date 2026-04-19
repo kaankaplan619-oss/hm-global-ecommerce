@@ -18,8 +18,10 @@ const NAV_ITEMS = [
       { label: "Softshells & Vestes", href: "/catalogue/softshells" },
     ],
   },
-  { label: "Techniques", href: "/#techniques" },
-  { label: "À propos", href: "/#a-propos" },
+  { label: "Techniques", href: "/techniques" },
+  { label: "Entreprises", href: "/entreprises" },
+  { label: "Réalisations", href: "/realisations" },
+  { label: "À propos", href: "/a-propos" },
   { label: "Contact", href: "/contact" },
 ];
 
