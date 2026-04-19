@@ -19,33 +19,33 @@ export default function CataloguePage() {
   const order = SEASONAL_ORDER[CURRENT_SEASON];
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="bg-white pb-20 pt-24">
       <div className="container">
         {/* Header */}
         <div className="mb-12">
           <p className="section-tag">Catalogue complet</p>
-          <h1 className="text-3xl md:text-5xl font-black text-[#f5f5f5] mb-4">
+          <h1 className="mb-4 text-3xl font-black text-[var(--hm-text)] md:text-5xl">
             Textile personnalisé<br />
             <span className="text-gradient-gold">professionnel</span>
           </h1>
-          <p className="text-[#555555] text-sm max-w-lg">
+          <p className="max-w-lg text-sm text-[var(--hm-text-soft)]">
             Sélectionnez votre produit, configurez votre marquage et commandez directement en ligne. Livraison offerte dès 10 pièces.
           </p>
         </div>
 
         {/* Filter links */}
         <div className="flex flex-wrap gap-3 mb-10">
-          <Link
-            href="/catalogue"
-            className="px-4 py-2 text-xs font-semibold border border-[#c9a96e] text-[#c9a96e] rounded-full"
-          >
-            Tous les produits
-          </Link>
+            <Link
+              href="/catalogue"
+              className="rounded-full border border-[var(--hm-primary)] px-4 py-2 text-xs font-semibold text-[var(--hm-primary)]"
+            >
+              Tous les produits
+            </Link>
           {Object.entries(CATEGORY_LABELS).map(([id, label]) => (
             <Link
               key={id}
               href={`/catalogue/${id}`}
-              className="px-4 py-2 text-xs font-semibold border border-[#2a2a2a] text-[#555555] hover:border-[#c9a96e] hover:text-[#c9a96e] rounded-full transition-colors"
+              className="rounded-full border border-[var(--hm-line)] px-4 py-2 text-xs font-semibold text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
             >
               {label}
             </Link>
@@ -60,13 +60,13 @@ export default function CataloguePage() {
           return (
             <div key={catId} className="mb-16">
               <div className="flex items-center gap-4 mb-6">
-                <h2 className="text-lg font-bold text-[#f5f5f5]">
+                <h2 className="text-lg font-bold text-[var(--hm-text)]">
                   {CATEGORY_LABELS[catId]}
                 </h2>
-                <div className="h-[1px] flex-1 bg-[#1e1e1e]" />
+                <div className="h-[1px] flex-1 bg-[var(--hm-line)]" />
                 <Link
                   href={`/catalogue/${catId}`}
-                  className="text-xs text-[#c9a96e] hover:underline"
+                  className="text-xs text-[var(--hm-primary)] hover:underline"
                 >
                   Voir tout →
                 </Link>
