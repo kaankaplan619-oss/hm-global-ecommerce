@@ -2,12 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   sendCommandeExpediee,
-  sendFactureDisponible,
   sendCommandeValidee,
   sendDemandeAvis,
 } from "@/lib/email";
 import { mapDbOrderToOrder } from "@/lib/mappers";
-import { syncPennylaneInvoice } from "@/lib/pennylane";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -70,8 +68,6 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Mise à jour échouée" }, { status: 500 });
     }
 
-    let invoiceError: string | null = null;
-
     // ── Send emails on status transition ──────────────────────────────────────
     if (status && status !== previousStatus) {
       try {
@@ -82,49 +78,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         .single();
 
         if (fullOrder) {
-          let mappedOrder = mapDbOrderToOrder(fullOrder);
-
-          if (status === "validee" && !fullOrder.invoice_id) {
-            try {
-              const pennylaneInvoice = await syncPennylaneInvoice(mappedOrder);
-              const { error: invoiceUpdateError } = await supabase
-                .from("orders")
-                .update({
-                  invoice_id:                   pennylaneInvoice.invoiceId,
-                  invoice_url:                  pennylaneInvoice.invoiceUrl,
-                  invoice_generated_at:         pennylaneInvoice.invoiceGeneratedAt,
-                  pennylane_customer_id:        pennylaneInvoice.customerId,
-                  pennylane_invoice_number:     pennylaneInvoice.invoiceNumber,
-                  pennylane_invoice_status:     pennylaneInvoice.invoiceStatus,
-                  pennylane_invoice_synced_at:  pennylaneInvoice.invoiceSyncedAt,
-                })
-                .eq("id", id);
-
-              if (invoiceUpdateError) {
-                throw invoiceUpdateError;
-              }
-
-              mappedOrder = {
-                ...mappedOrder,
-                invoiceId: pennylaneInvoice.invoiceId,
-                invoiceUrl: pennylaneInvoice.invoiceUrl ?? undefined,
-                pennylaneCustomerId: pennylaneInvoice.customerId,
-                invoiceNumber: pennylaneInvoice.invoiceNumber,
-                invoiceStatus: pennylaneInvoice.invoiceStatus,
-                invoiceGeneratedAt: pennylaneInvoice.invoiceGeneratedAt,
-                invoiceSyncedAt: pennylaneInvoice.invoiceSyncedAt,
-              };
-            } catch (pennylaneErr) {
-              console.error("[AdminUpdate] Pennylane error:", pennylaneErr);
-              invoiceError = "Facture Pennylane non générée";
-            }
-          }
+          const mappedOrder = mapDbOrderToOrder(fullOrder);
 
           if (status === "validee") {
             await sendCommandeValidee(mappedOrder);
-            if (mappedOrder.invoiceId) {
-              await sendFactureDisponible(mappedOrder);
-            }
           }
           if (status === "expediee") {
             await sendCommandeExpediee(mappedOrder);
@@ -139,7 +96,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }
     }
 
-    return NextResponse.json({ success: true, invoiceError });
+    return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[AdminUpdate]", err);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

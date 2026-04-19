@@ -30,6 +30,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmglobalagence.fr"
   ),
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/logo/hm-global-symbol.png",
+  },
   openGraph: {
     type: "website",
     locale: "fr_FR",
@@ -37,6 +42,14 @@ export const metadata: Metadata = {
     title: "HM Global Agence — Textile personnalisé professionnel",
     description:
       "Commandez votre textile personnalisé en quelques clics avec HM Global Agence.",
+    images: [
+      {
+        url: "/logo/hm-global-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "HM Global Agence",
+      },
+    ],
   },
   robots: { index: true, follow: true },
 };
@@ -48,7 +61,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={inter.className}>
-      <body className="bg-[#0a0a0a] text-[#f5f5f5] antialiased">
+      <body className="bg-white text-[var(--hm-text)] antialiased">
         <Header />
         <CartDrawer />
         <main className="min-h-screen">{children}</main>

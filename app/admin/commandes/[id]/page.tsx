@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ExternalLink, CheckCircle, XCircle, FileText, AlertTriangle, Truck, Package } from "lucide-react";
+import { ExternalLink, CheckCircle, XCircle, AlertTriangle, Truck, Package } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import type { Order, OrderStatus } from "@/types";
 
@@ -31,7 +31,6 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const [supplierMode, setSupplierMode] = useState<"fournisseur" | "secours_interne">("fournisseur");
   const [supplierNote, setSupplierNote] = useState("");
   const [saving, setSaving] = useState(false);
-  const [invoiceLoading, setInvoiceLoading] = useState(false);
   const [refundLoading, setRefundLoading] = useState(false);
   const [fileRejectionReason, setFileRejectionReason] = useState("");
 
@@ -77,20 +76,6 @@ export default function AdminCommandeDetailPage({ params }: Props) {
       console.error(err);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleGenerateInvoice = async () => {
-    if (!order) return;
-    setInvoiceLoading(true);
-    try {
-      const res = await fetch(`/api/orders/${order.id}/generate-invoice`, { method: "POST" });
-      const data = await res.json();
-      setOrder({ ...order, invoiceUrl: data.invoiceUrl });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setInvoiceLoading(false);
     }
   };
 
@@ -156,12 +141,6 @@ export default function AdminCommandeDetailPage({ params }: Props) {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-black text-[#f5f5f5]">Commande #{order.orderNumber}</h1>
           <div className="flex gap-2">
-            {!order.invoiceUrl && order.status === "validee" && (
-              <button onClick={handleGenerateInvoice} disabled={invoiceLoading} className="btn-outline text-xs gap-2">
-                <FileText size={12} />
-                {invoiceLoading ? "Génération..." : "Générer facture"}
-              </button>
-            )}
             {order.invoiceUrl && (
               <a href={order.invoiceUrl} target="_blank" rel="noopener noreferrer" className="btn-outline text-xs gap-2">
                 <ExternalLink size={12} />
@@ -202,6 +181,31 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                     <p className="text-sm text-[#f5f5f5]">{order.user.company}</p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-2">Facturation</h2>
+                  {order.invoiceUrl ? (
+                    <p className="text-sm text-[#4ade80]">
+                      Facture enregistrée sur la commande.
+                    </p>
+                  ) : (
+                    <p className="text-sm text-[#f5f5f5]">
+                      Facture à créer manuellement dans Pennylane.
+                    </p>
+                  )}
+                  {!order.invoiceUrl && (
+                    <p className="text-xs text-[#8a8a8a] mt-1">
+                      L&apos;automatisation API Pennylane est suspendue pour la V1.
+                    </p>
+                  )}
+                </div>
+                <span className={`badge ${order.invoiceUrl ? "badge-success" : "badge-warning"} text-[9px]`}>
+                  {order.invoiceUrl ? "Facture liée" : "Facture manuelle requise"}
+                </span>
               </div>
             </div>
 
@@ -373,11 +377,10 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                 Actions rapides
               </h2>
               <div className="flex flex-col gap-2">
-                {!order.invoiceUrl && (
-                  <button onClick={handleGenerateInvoice} disabled={invoiceLoading} className="btn-outline text-xs gap-2 w-full">
-                    <FileText size={12} />
-                    Générer la facture Pennylane
-                  </button>
+                {!order.invoiceUrl && order.status === "validee" && (
+                  <div className="rounded-lg border border-[#c9a96e33] bg-[#c9a96e0f] px-3 py-2 text-xs text-[#c9a96e]">
+                    Facture à créer manuellement dans Pennylane avant envoi au client.
+                  </div>
                 )}
                 <button
                   onClick={() => {

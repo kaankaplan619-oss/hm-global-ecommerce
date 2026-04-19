@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
@@ -41,25 +42,23 @@ export default function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "bg-[#0a0a0a]/95 backdrop-blur-md border-b border-[#1e1e1e]"
-          : "bg-transparent"
+          ? "bg-white/95 backdrop-blur-md border-b border-[var(--hm-line)] shadow-[0_6px_24px_rgba(63,45,88,0.08)]"
+          : "bg-white/88 backdrop-blur-sm border-b border-transparent"
       )}
     >
       <div className="container">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex flex-col leading-none">
-              <span className="text-[#f5f5f5] font-black text-base tracking-wider uppercase">
-                HM GLOBAL
-              </span>
-              <span className="text-[#c9a96e] font-light text-[10px] tracking-[0.25em] uppercase">
-                Agence
-              </span>
-            </div>
+          <Link href="/" className="shrink-0">
+            <Image
+              src="/logo/hm-global-logo.png"
+              alt="HM Global Agence"
+              width={240}
+              height={64}
+              priority
+              className="h-10 md:h-11 w-auto"
+            />
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-1">
             {NAV_ITEMS.map((item) => (
               <div
@@ -70,10 +69,7 @@ export default function Header() {
               >
                 <Link
                   href={item.href}
-                  className={cn(
-                    "flex items-center gap-1 px-4 py-2 text-sm font-medium transition-colors",
-                    "text-[#8a8a8a] hover:text-[#f5f5f5]"
-                  )}
+                  className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
                 >
                   {item.label}
                   {item.children && (
@@ -90,12 +86,12 @@ export default function Header() {
                 {/* Dropdown */}
                 {item.children && openDropdown === item.label && (
                   <div className="absolute top-full left-0 pt-2 w-52">
-                    <div className="bg-[#111111] border border-[#2a2a2a] rounded-lg overflow-hidden shadow-2xl">
+                    <div className="bg-white border border-[var(--hm-line)] rounded-xl overflow-hidden shadow-[0_18px_40px_rgba(63,45,88,0.12)]">
                       {item.children.map((child) => (
                         <Link
                           key={child.label}
                           href={child.href}
-                          className="flex items-center px-4 py-3 text-sm text-[#8a8a8a] hover:text-[#f5f5f5] hover:bg-[#1a1a1a] transition-colors"
+                          className="flex items-center px-4 py-3 text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-purple)] hover:bg-[var(--hm-accent-soft-purple)] transition-colors"
                         >
                           {child.label}
                         </Link>
@@ -107,9 +103,7 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Right actions */}
           <div className="flex items-center gap-2">
-            {/* Account */}
             <Link
               href={isAuthenticated ? "/mon-compte" : "/connexion"}
               className="btn-ghost hidden md:flex"
@@ -120,7 +114,6 @@ export default function Header() {
               </span>
             </Link>
 
-            {/* Cart */}
             <button
               onClick={toggleCart}
               className="btn-ghost relative"
@@ -128,13 +121,12 @@ export default function Header() {
             >
               <ShoppingBag size={18} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#c9a96e] text-[#0a0a0a] text-[9px] font-black rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--hm-rose)] text-white text-[9px] font-black rounded-full flex items-center justify-center">
                   {totalItems > 9 ? "9+" : totalItems}
                 </span>
               )}
             </button>
 
-            {/* CTA desktop */}
             <Link
               href="/catalogue"
               className="btn-primary hidden lg:inline-flex text-xs px-4 py-2.5"
@@ -142,7 +134,6 @@ export default function Header() {
               Commander
             </Link>
 
-            {/* Mobile menu toggle */}
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
               className="btn-ghost lg:hidden"
@@ -154,27 +145,26 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isMobileOpen && (
-        <div className="lg:hidden bg-[#0a0a0a] border-t border-[#1e1e1e]">
+        <div className="lg:hidden bg-white border-t border-[var(--hm-line)]">
           <nav className="container py-4 flex flex-col gap-1">
             {NAV_ITEMS.map((item) => (
               <div key={item.label}>
                 <Link
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
-                  className="block px-4 py-3 text-sm text-[#8a8a8a] hover:text-[#f5f5f5] transition-colors"
+                  className="block px-4 py-3 text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
                 >
                   {item.label}
                 </Link>
                 {item.children && (
-                  <div className="ml-4 border-l border-[#1e1e1e] pl-4">
+                  <div className="ml-4 border-l border-[var(--hm-line)] pl-4">
                     {item.children.map((child) => (
                       <Link
                         key={child.label}
                         href={child.href}
                         onClick={() => setIsMobileOpen(false)}
-                        className="block px-2 py-2 text-xs text-[#555555] hover:text-[#f5f5f5] transition-colors"
+                        className="block px-2 py-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-purple)] transition-colors"
                       >
                         {child.label}
                       </Link>
@@ -183,7 +173,7 @@ export default function Header() {
                 )}
               </div>
             ))}
-            <div className="pt-4 border-t border-[#1e1e1e] flex flex-col gap-2">
+            <div className="pt-4 border-t border-[var(--hm-line)] flex flex-col gap-2">
               <Link
                 href={isAuthenticated ? "/mon-compte" : "/connexion"}
                 onClick={() => setIsMobileOpen(false)}
