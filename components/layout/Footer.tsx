@@ -27,19 +27,6 @@ const LINKS_CATALOGUE = [
   { label: "Voir tout le catalogue", href: "/catalogue" },
 ];
 
-const LINKS_TECHNIQUES = [
-  { label: "Impression DTF", href: "/techniques" },
-  { label: "Flex / Vinyle", href: "/techniques" },
-  { label: "Broderie premium", href: "/techniques" },
-];
-
-const LINKS_COMPTE = [
-  { label: "Mon compte", href: "/mon-compte" },
-  { label: "Mes commandes", href: "/mon-compte/commandes" },
-  { label: "Mes factures", href: "/mon-compte/factures" },
-  { label: "Connexion / Inscription", href: "/connexion" },
-];
-
 const LINKS_INFO = [
   { label: "À propos", href: "/a-propos" },
   { label: "Techniques", href: "/techniques" },
@@ -55,9 +42,9 @@ export default function Footer() {
       <div className="absolute bottom-6 -right-4 h-40 w-40 rounded-full border-[18px] border-[color:var(--hm-rose)]/18" />
       <div className="absolute bottom-12 right-16 h-28 w-28 rounded-full border-[14px] border-[color:var(--hm-purple)]/18" />
 
-      <div className="container py-16 relative">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-          <div className="lg:col-span-2">
+      <div className="container py-14 relative">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_0.8fr]">
+          <div>
             <Link href="/" className="inline-flex mb-6">
               <Image
                 src="/logo/hm-global-logo.png"
@@ -123,8 +110,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Catalogue */}
-            <div>
+          <div>
             <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
               Catalogue
             </h4>
@@ -142,29 +128,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Techniques */}
           <div>
             <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
-              Techniques
-            </h4>
-            <ul className="flex flex-col gap-3">
-              {LINKS_TECHNIQUES.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Découvrir */}
-          <div>
-            <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
-              Découvrir
+              Informations
             </h4>
             <ul className="flex flex-col gap-3">
               {LINKS_INFO.map((link) => (
@@ -178,43 +144,37 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-
-            <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5 mt-8">
-              Mon compte
-            </h4>
-            <ul className="flex flex-col gap-3">
-              {LINKS_COMPTE.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
           </div>
 
-          {/* Savoir-faire */}
           <div>
             <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
-              Nos savoir-faire
+              Espace client
             </h4>
             <ul className="flex flex-col gap-3">
-              {[
-                "Textile personnalisé",
-                "DTF, flex et broderie",
-                "Design, logo et PAO",
-                "Lettrage",
-                "Habillage véhicule",
-                "Totems et signalétique / print",
-                "Communication visuelle",
-              ].map((service) => (
-                <li key={service}>
-                  <span className="text-sm text-[var(--hm-text-soft)]">{service}</span>
-                </li>
-              ))}
+              <li>
+                <Link
+                  href="/connexion"
+                  className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+                >
+                  Connexion
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/mon-compte"
+                  className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+                >
+                  Mon compte
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/mon-compte/commandes"
+                  className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+                >
+                  Mes commandes
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

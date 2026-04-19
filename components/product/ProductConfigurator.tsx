@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Upload, X, CheckCircle, AlertCircle, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cart";
-import { useAuthStore } from "@/store/auth";
 import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
@@ -21,9 +19,7 @@ export default function ProductConfigurator({
   selectedColor,
   onColorChange,
 }: Props) {
-  const router = useRouter();
   const { addItem } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
 
   // Config state
   const [technique, setTechnique] = useState<Technique>(product.techniques[0]);
@@ -81,10 +77,6 @@ export default function ProductConfigurator({
 
   // Add to cart
   const handleAddToCart = () => {
-    if (!isAuthenticated) {
-      router.push("/connexion?redirect=/produits/" + product.slug);
-      return;
-    }
     if (!size) return;
     if (!color) return;
 
@@ -429,23 +421,16 @@ export default function ProductConfigurator({
         ) : (
           <>
             <ShoppingBag size={16} />
-            {!isAuthenticated
-              ? "Se connecter pour commander"
-              : !size
+            {!size
               ? "Sélectionnez une taille"
               : "Ajouter au panier"}
           </>
         )}
       </button>
 
-      {!isAuthenticated && (
-        <p className="text-center text-[10px] text-[#555555]">
-          Un compte est requis pour commander.{" "}
-          <a href="/inscription" className="text-[#c9a96e] hover:underline">
-            Créer un compte gratuit
-          </a>
-        </p>
-      )}
+      <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
+        Vous pouvez configurer et ajouter au panier librement. La connexion sera demandée au moment du checkout.
+      </p>
     </div>
   );
 }
