@@ -49,7 +49,7 @@ export default function Header() {
       )}
     >
       <div className="container">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex h-16 items-center justify-between gap-3 md:h-20 md:gap-4 lg:gap-5">
           <Link href="/" className="shrink-0">
             <Image
               src="/logo/hm-global-logo.png"
@@ -61,7 +61,8 @@ export default function Header() {
             />
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex flex-1 items-center justify-center px-2">
+            <div className="flex max-w-[760px] items-center rounded-full border border-[var(--hm-line)] bg-white/80 px-1.5 py-1 shadow-[0_10px_26px_rgba(63,45,88,0.05)] backdrop-blur-sm">
             {NAV_ITEMS.map((item) => (
               <div
                 key={item.label}
@@ -71,7 +72,7 @@ export default function Header() {
               >
                 <Link
                   href={item.href}
-                  className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+                  className="flex items-center gap-1 rounded-full px-2.5 py-2 text-[12px] font-medium text-[var(--hm-text-soft)] hover:bg-[var(--hm-surface)] hover:text-[var(--hm-rose)] transition-colors xl:px-3"
                 >
                   {item.label}
                   {item.children && (
@@ -103,12 +104,13 @@ export default function Header() {
                 )}
               </div>
             ))}
+            </div>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 md:gap-2">
             <Link
               href={isAuthenticated ? "/mon-compte" : "/connexion"}
-              className="btn-ghost hidden md:flex"
+              className="btn-ghost hidden px-3 md:flex"
             >
               <User size={18} />
               <span className="text-xs hidden lg:block">
@@ -131,7 +133,7 @@ export default function Header() {
 
             <Link
               href="/catalogue"
-              className="btn-primary hidden lg:inline-flex text-xs px-4 py-2.5"
+              className="btn-primary hidden px-4 py-2.5 text-[11px] lg:inline-flex"
             >
               Commander
             </Link>

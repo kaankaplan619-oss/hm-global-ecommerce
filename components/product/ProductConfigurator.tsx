@@ -12,9 +12,15 @@ import type { Product, Technique, Placement, ProductColor } from "@/types";
 
 interface Props {
   product: Product;
+  selectedColor?: ProductColor | null;
+  onColorChange?: (color: ProductColor | null) => void;
 }
 
-export default function ProductConfigurator({ product }: Props) {
+export default function ProductConfigurator({
+  product,
+  selectedColor,
+  onColorChange,
+}: Props) {
   const router = useRouter();
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -23,11 +29,25 @@ export default function ProductConfigurator({ product }: Props) {
   const [technique, setTechnique] = useState<Technique>(product.techniques[0]);
   const [placement, setPlacement] = useState<Placement>(product.placements[0]);
   const [size, setSize] = useState<string>("");
-  const [color, setColor] = useState<ProductColor | null>(product.colors.find((c) => c.available) ?? null);
+  const [internalColor, setInternalColor] = useState<ProductColor | null>(
+    product.colors.find((c) => c.available) ?? null
+  );
   const [quantity, setQuantity] = useState(1);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string>("");
   const [addedToCart, setAddedToCart] = useState(false);
+  const color = selectedColor ?? internalColor;
+
+  const handleColorChange = useCallback(
+    (nextColor: ProductColor | null) => {
+      if (onColorChange) {
+        onColorChange(nextColor);
+        return;
+      }
+      setInternalColor(nextColor);
+    },
+    [onColorChange]
+  );
 
   // Price computation
   const basePrice = product.pricing[technique] as number;
@@ -85,9 +105,75 @@ export default function ProductConfigurator({ product }: Props) {
   };
 
   const canAdd = !!size && !!color && color.available;
+  const shippingPiecesLeft = Math.max(0, PRICING_CONFIG.freeShippingThreshold - quantity);
 
   return (
     <div className="flex flex-col gap-6">
+      {/* ── Couleur ───────────────────────────────────────────── */}
+      <div>
+        <label className="label">
+          Couleur
+          {color && (
+            <span className="ml-2 font-medium normal-case text-[var(--hm-text)]">{color.label}</span>
+          )}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {product.colors.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => c.available && handleColorChange(c)}
+              disabled={!c.available}
+              title={c.label}
+              className={`relative h-9 min-w-9 rounded-full border-2 transition-all
+                ${!c.available ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:scale-105"}
+                ${color?.id === c.id
+                  ? "scale-105 border-[var(--hm-primary)] shadow-[0_8px_20px_rgba(177,63,116,0.18)]"
+                  : "border-white shadow-[inset_0_0_0_1px_var(--hm-line)]"
+                }`}
+              style={{ backgroundColor: c.hex }}
+            >
+              <span className="sr-only">{c.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Taille ────────────────────────────────────────────── */}
+      <div>
+        <label className="label">Taille</label>
+        <div className="flex flex-wrap gap-2">
+          {product.sizes.map((s) => {
+            const active = size === s.label;
+            return (
+              <button
+                key={s.label}
+                onClick={() => s.available && !s.soldOut && setSize(s.label)}
+                disabled={!s.available || s.soldOut}
+                className={`relative h-10 min-w-[44px] rounded-lg border px-3 text-sm font-semibold transition-all
+                  ${active
+                    ? "border-[var(--hm-primary)] bg-[var(--hm-primary)] text-white shadow-[0_8px_20px_rgba(177,63,116,0.16)]"
+                    : s.soldOut || !s.available
+                    ? "cursor-not-allowed border-[var(--hm-line)] bg-[var(--hm-surface)] text-[var(--hm-text-muted)]"
+                    : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:text-[var(--hm-text)]"
+                  }`}
+              >
+                {s.label}
+                {s.soldOut && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-x-0 top-1/2 h-[1px] rotate-12 bg-[#2a2a2a]" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {!size && (
+          <p className="mt-2 text-[11px] text-[var(--hm-text-muted)]">
+            Sélectionnez une taille pour continuer
+          </p>
+        )}
+      </div>
+
       {/* ── Technique ─────────────────────────────────────────── */}
       <div>
         <label className="label">Technique de personnalisation</label>
@@ -104,22 +190,24 @@ export default function ProductConfigurator({ product }: Props) {
               <button
                 key={tech.id}
                 onClick={() => setTechnique(tech.id)}
-                className={`w-full text-left p-3 rounded-lg border transition-all
+                className={`w-full rounded-[1rem] border p-3 text-left transition-all
                   ${active
-                    ? "border-[#c9a96e] bg-[#c9a96e0a]"
-                    : "border-[#2a2a2a] bg-[#1a1a1a] hover:border-[#3a3a3a]"
+                    ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] shadow-[0_10px_24px_rgba(177,63,116,0.08)]"
+                    : "border-[var(--hm-line)] bg-white hover:border-[var(--hm-primary)]/30"
                   }`}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
-                        ${active ? "border-[#c9a96e]" : "border-[#2a2a2a]"}`}
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2
+                        ${active ? "border-[var(--hm-primary)]" : "border-[var(--hm-line)]"}`}
                     >
-                      {active && <div className="w-2 h-2 rounded-full bg-[#c9a96e]" />}
+                      {active && <div className="h-2 w-2 rounded-full bg-[var(--hm-primary)]" />}
                     </div>
                     <div>
-                      <span className={`text-sm font-semibold ${active ? "text-[#f5f5f5]" : "text-[#8a8a8a]"}`}>
+                      <span
+                        className={`text-sm font-semibold ${active ? "text-[var(--hm-text)]" : "text-[var(--hm-text-soft)]"}`}
+                      >
                         {tech.label}
                       </span>
                       {tech.id === "broderie" && (
@@ -130,12 +218,14 @@ export default function ProductConfigurator({ product }: Props) {
                       )}
                     </div>
                   </div>
-                  <span className={`text-sm font-bold ${active ? "text-[#c9a96e]" : "text-[#555555]"}`}>
+                  <span
+                    className={`text-sm font-bold ${active ? "text-[var(--hm-primary)]" : "text-[var(--hm-text-muted)]"}`}
+                  >
                     {formatPrice(techPrice)}
                   </span>
                 </div>
                 {active && (
-                  <p className="text-xs text-[#555555] mt-2 ml-7">{tech.description}</p>
+                  <p className="mt-2 ml-7 text-xs text-[var(--hm-text-soft)]">{tech.description}</p>
                 )}
               </button>
             );
@@ -145,9 +235,9 @@ export default function ProductConfigurator({ product }: Props) {
 
       {/* ── Avertissement softshell DTF/Flex ─────────────────── */}
       {product.category === "softshells" && (technique === "dtf" || technique === "flex") && (
-        <div className="flex items-start gap-2 p-3 bg-[#facc1511] border border-[#facc1533] rounded-lg -mt-2">
-          <AlertCircle size={14} className="text-[#facc15] mt-0.5 shrink-0" />
-          <p className="text-xs text-[#facc15]">
+        <div className="-mt-2 flex items-start gap-2 rounded-lg border border-[#facc1533] bg-[#facc1511] p-3">
+          <AlertCircle size={14} className="mt-0.5 shrink-0 text-[#b45309]" />
+          <p className="text-xs text-[#b45309]">
             La broderie est recommandée pour les softshells — le tissu technique supporte moins bien l&rsquo;impression DTF/Flex sur le long terme.
           </p>
         </div>
@@ -156,7 +246,7 @@ export default function ProductConfigurator({ product }: Props) {
       {/* ── Emplacement ───────────────────────────────────────── */}
       <div>
         <label className="label">Emplacement du marquage</label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {availablePlacements.map((plc) => {
             const placementSurcharge =
               technique === "broderie"
@@ -168,108 +258,68 @@ export default function ProductConfigurator({ product }: Props) {
               <button
                 key={plc.id}
                 onClick={() => setPlacement(plc.id)}
-                className={`p-3 rounded-lg border text-center transition-all
+                className={`rounded-[1rem] border p-3 text-center transition-all
                   ${active
-                    ? "border-[#c9a96e] bg-[#c9a96e0a]"
-                    : "border-[#2a2a2a] bg-[#1a1a1a] hover:border-[#3a3a3a]"
+                    ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] shadow-[0_10px_24px_rgba(177,63,116,0.08)]"
+                    : "border-[var(--hm-line)] bg-white hover:border-[var(--hm-primary)]/30"
                   }`}
               >
-                <span className={`text-xs font-semibold block ${active ? "text-[#f5f5f5]" : "text-[#8a8a8a]"}`}>
+                <span
+                  className={`block text-xs font-semibold ${active ? "text-[var(--hm-text)]" : "text-[var(--hm-text-soft)]"}`}
+                >
                   {plc.label}
                 </span>
                 {placementSurcharge > 0 && (
-                  <span className="text-[10px] text-[#c9a96e]">+{formatPrice(placementSurcharge)}</span>
+                  <span className="text-[10px] text-[var(--hm-primary)]">+{formatPrice(placementSurcharge)}</span>
                 )}
                 {placementSurcharge === 0 && (
-                  <span className="text-[10px] text-[#555555]">Inclus</span>
+                  <span className="text-[10px] text-[var(--hm-text-muted)]">Inclus</span>
                 )}
               </button>
             );
           })}
         </div>
-      </div>
-
-      {/* ── Couleur ───────────────────────────────────────────── */}
-      <div>
-        <label className="label">
-          Couleur
-          {color && <span className="normal-case text-[#f5f5f5] ml-2 font-normal">{color.label}</span>}
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {product.colors.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => c.available && setColor(c)}
-              disabled={!c.available}
-              title={c.label}
-              className={`w-8 h-8 rounded-full border-2 transition-all
-                ${!c.available ? "opacity-30 cursor-not-allowed" : "cursor-pointer hover:scale-110"}
-                ${color?.id === c.id ? "border-[#c9a96e] scale-110 shadow-lg" : "border-transparent"}`}
-              style={{ backgroundColor: c.hex }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* ── Taille ────────────────────────────────────────────── */}
-      <div>
-        <label className="label">Taille</label>
-        <div className="flex flex-wrap gap-2">
-          {product.sizes.map((s) => {
-            const active = size === s.label;
-            return (
-              <button
-                key={s.label}
-                onClick={() => s.available && !s.soldOut && setSize(s.label)}
-                disabled={!s.available || s.soldOut}
-                className={`relative min-w-[44px] h-10 px-3 rounded-lg border text-sm font-semibold transition-all
-                  ${active
-                    ? "border-[#c9a96e] bg-[#c9a96e] text-[#0a0a0a]"
-                    : s.soldOut || !s.available
-                    ? "border-[#1a1a1a] text-[#2a2a2a] cursor-not-allowed bg-[#111111]"
-                    : "border-[#2a2a2a] text-[#8a8a8a] hover:border-[#c9a96e] hover:text-[#f5f5f5] bg-[#1a1a1a]"
-                  }`}
-              >
-                {s.label}
-                {s.soldOut && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="absolute inset-x-0 top-1/2 h-[1px] bg-[#2a2a2a] rotate-12" />
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        {!size && (
-          <p className="text-[11px] text-[#555555] mt-2">Sélectionnez une taille pour continuer</p>
-        )}
       </div>
 
       {/* ── Quantité ──────────────────────────────────────────── */}
       <div>
         <label className="label">Quantité</label>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="w-10 h-10 rounded-lg border border-[#2a2a2a] flex items-center justify-center text-[#8a8a8a] hover:text-[#f5f5f5] hover:border-[#3a3a3a] transition-colors"
-          >
-            <Minus size={14} />
-          </button>
-          <span className="text-lg font-bold text-[#f5f5f5] w-12 text-center">{quantity}</span>
-          <button
-            onClick={() => setQuantity((q) => q + 1)}
-            className="w-10 h-10 rounded-lg border border-[#2a2a2a] flex items-center justify-center text-[#8a8a8a] hover:text-[#f5f5f5] hover:border-[#3a3a3a] transition-colors"
-          >
-            <Plus size={14} />
-          </button>
-          {freeShipping && (
-            <span className="badge badge-success text-[10px]">Livraison offerte</span>
-          )}
-          {!freeShipping && (
-            <span className="text-[10px] text-[#555555]">
-              +{PRICING_CONFIG.freeShippingThreshold - quantity} pcs pour livraison offerte
-            </span>
-          )}
+        <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/30 hover:text-[var(--hm-text)]"
+              >
+                <Minus size={14} />
+              </button>
+              <span className="w-12 text-center text-2xl font-semibold text-[var(--hm-text)]">
+                {quantity}
+              </span>
+              <button
+                onClick={() => setQuantity((q) => q + 1)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/30 hover:text-[var(--hm-text)]"
+              >
+                <Plus size={14} />
+              </button>
+            </div>
+            <div className="flex flex-col items-start gap-2 sm:items-end">
+              {freeShipping ? (
+                <span className="inline-flex rounded-full bg-[#dcfce7] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#166534]">
+                  Livraison offerte
+                </span>
+              ) : (
+                <span className="inline-flex rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)] ring-1 ring-[var(--hm-line)]">
+                  Livraison dès {PRICING_CONFIG.freeShippingThreshold} pièces
+                </span>
+              )}
+              <p className="text-[11px] text-[var(--hm-text-soft)]">
+                {freeShipping
+                  ? "Seuil atteint pour cette commande."
+                  : `Encore ${shippingPiecesLeft} pièce${shippingPiecesLeft > 1 ? "s" : ""} pour l'obtenir.`}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -280,18 +330,19 @@ export default function ProductConfigurator({ product }: Props) {
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
-            className="relative border-2 border-dashed border-[#2a2a2a] rounded-lg p-6 text-center cursor-pointer hover:border-[#c9a96e33] transition-colors"
+            className="relative cursor-pointer rounded-[1.25rem] border-2 border-dashed border-[var(--hm-line)] bg-[var(--hm-surface)] p-6 text-center transition-colors hover:border-[var(--hm-primary)]/35"
             onClick={() => document.getElementById("logo-input")?.click()}
           >
-            <Upload size={20} className="text-[#555555] mx-auto mb-2" />
-            <p className="text-xs font-semibold text-[#8a8a8a]">
+            <Upload size={20} className="mx-auto mb-3 text-[var(--hm-primary)]" />
+            <p className="text-sm font-semibold text-[var(--hm-text)]">
               Glissez votre fichier ici ou cliquez pour parcourir
             </p>
-            <p className="text-[10px] text-[#555555] mt-1">
+            <p className="mt-2 text-[11px] text-[var(--hm-text-soft)]">
               Formats : {ALLOWED_FILE_EXTENSIONS.join(", ")} — Max 50 Mo
             </p>
-            <p className="text-[10px] text-[#3a3a3a] mt-1">
-              Préférez un fichier vectoriel (AI, PDF, SVG) pour un meilleur rendu.
+            <p className="mt-2 text-[11px] text-[var(--hm-text-muted)]">
+              Vous pouvez envoyer un logo, un visuel à imprimer ou un fichier déjà préparé.
+              Les formats vectoriels comme SVG, PDF ou AI restent les plus confortables pour la production.
             </p>
             <input
               id="logo-input"
@@ -302,15 +353,15 @@ export default function ProductConfigurator({ product }: Props) {
             />
           </div>
         ) : (
-          <div className="flex items-center gap-3 p-3 bg-[#1a1a1a] border border-[#4ade8033] rounded-lg">
-            <CheckCircle size={16} className="text-[#4ade80] shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-[#f5f5f5] truncate">{logoFile.name}</p>
-              <p className="text-[10px] text-[#555555]">{formatFileSize(logoFile.size)}</p>
+          <div className="flex items-center gap-3 rounded-[1.25rem] border border-[#86efac] bg-[#ecfdf5] p-4">
+            <CheckCircle size={16} className="shrink-0 text-[#166534]" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-[var(--hm-text)]">{logoFile.name}</p>
+              <p className="text-[11px] text-[var(--hm-text-soft)]">{formatFileSize(logoFile.size)}</p>
             </div>
             <button
               onClick={() => setLogoFile(null)}
-              className="text-[#555555] hover:text-[#f87171] transition-colors"
+              className="text-[var(--hm-text-muted)] transition-colors hover:text-[#b91c1c]"
             >
               <X size={14} />
             </button>
@@ -318,36 +369,48 @@ export default function ProductConfigurator({ product }: Props) {
         )}
 
         {fileError && (
-          <div className="flex items-center gap-2 mt-2 text-xs text-[#f87171]">
+          <div className="mt-2 flex items-center gap-2 text-xs text-[#b91c1c]">
             <AlertCircle size={12} />
             {fileError}
           </div>
         )}
 
-        <p className="text-[10px] text-[#3a3a3a] mt-2">
-          Vous pourrez aussi déposer votre fichier depuis votre espace client après commande.
+        <p className="mt-2 text-[11px] text-[var(--hm-text-muted)]">
+          Si votre fichier n&apos;est pas finalisé, nous le vérifierons avec vous avant production.
         </p>
       </div>
 
       {/* ── Prix récapitulatif ────────────────────────────────── */}
-      <div className="p-4 bg-[#111111] border border-[#1e1e1e] rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-[#555555]">Prix unitaire TTC</span>
-          <span className="text-sm font-bold text-[#f5f5f5]">{formatPrice(unitPrice)}</span>
+      <div className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 shadow-[0_14px_34px_rgba(63,45,88,0.05)]">
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-xs font-medium text-[var(--hm-text-soft)]">Prix unitaire TTC</span>
+          <span className="text-base font-semibold text-[var(--hm-text)]">{formatPrice(unitPrice)}</span>
         </div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-[#555555]">Quantité</span>
-          <span className="text-sm text-[#8a8a8a]">× {quantity}</span>
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs font-medium text-[var(--hm-text-soft)]">Quantité</span>
+          <span className="text-sm font-medium text-[var(--hm-text)]">× {quantity}</span>
         </div>
         <div className="divider-gold my-3" />
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-[#f5f5f5]">Total TTC</span>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <span className="text-base font-semibold text-[var(--hm-text)]">Total TTC</span>
+            <p className="mt-1 text-[11px] text-[var(--hm-text-soft)]">
+              {size ? `Taille ${size} · ${technique.toUpperCase()}` : "Configurez votre produit pour commander"}
+            </p>
+          </div>
           <div className="text-right">
-            <span className="text-xl font-black text-[#c9a96e]">{formatPrice(totalPrice)}</span>
-            <p className="text-[10px] text-[#555555]">
+            <span className="text-2xl font-black text-[var(--hm-primary)]">{formatPrice(totalPrice)}</span>
+            <p className="text-[11px] text-[var(--hm-text-soft)]">
               soit {formatPrice(totalPrice / 1.2)} HT
             </p>
           </div>
+        </div>
+        <div className="mt-4 rounded-[1rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-3">
+          <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
+            {freeShipping
+              ? "La livraison est offerte pour cette configuration."
+              : `Livraison offerte dès ${PRICING_CONFIG.freeShippingThreshold} pièces. Il vous manque ${shippingPiecesLeft} pièce${shippingPiecesLeft > 1 ? "s" : ""}.`}
+          </p>
         </div>
       </div>
 
@@ -356,7 +419,7 @@ export default function ProductConfigurator({ product }: Props) {
         onClick={handleAddToCart}
         disabled={!canAdd}
         className={`btn-primary w-full gap-3 py-4 text-sm
-          ${!canAdd ? "opacity-50 cursor-not-allowed" : ""}`}
+          ${!canAdd ? "cursor-not-allowed opacity-50" : ""}`}
       >
         {addedToCart ? (
           <>

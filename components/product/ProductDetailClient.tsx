@@ -1,0 +1,133 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Info } from "lucide-react";
+import ProductConfigurator from "@/components/product/ProductConfigurator";
+import ProductGallery from "@/components/product/ProductGallery";
+import { formatPrice } from "@/data/pricing";
+import type { Product, ProductColor } from "@/types";
+
+type Props = {
+  product: Product;
+};
+
+export default function ProductDetailClient({ product }: Props) {
+  const defaultColor = useMemo(
+    () => product.colors.find((c) => c.available) ?? null,
+    [product]
+  );
+  const [selectedColor, setSelectedColor] = useState<ProductColor | null>(defaultColor);
+
+  const minPrice = useMemo(
+    () => Math.min(product.pricing.dtf, product.pricing.flex),
+    [product]
+  );
+
+  useEffect(() => {
+    setSelectedColor(defaultColor);
+  }, [product.id, defaultColor]);
+
+  const handleColorChange = useCallback(
+    (nextColor: ProductColor | null) => {
+      if (!nextColor) {
+        setSelectedColor(defaultColor);
+        return;
+      }
+
+      const canonicalColor = product.colors.find(
+        (color) => color.id === nextColor.id && color.available
+      );
+
+      setSelectedColor(canonicalColor ?? defaultColor);
+    },
+    [defaultColor, product.colors]
+  );
+
+  return (
+    <div className="mb-16 grid grid-cols-1 gap-12 lg:grid-cols-2">
+      <div className="flex flex-col gap-4">
+        <ProductGallery
+          name={product.name}
+          images={product.images}
+          colors={product.colors}
+          selectedColor={selectedColor}
+          badge={product.badge}
+        />
+
+        <div className="rounded-[28px] border border-[var(--hm-line)] bg-white p-6 shadow-[0_18px_48px_rgba(63,45,88,0.06)]">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                Référence
+              </p>
+              <p className="font-mono text-sm text-[var(--hm-text)]">{product.reference}</p>
+            </div>
+            <div>
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                Composition
+              </p>
+              <p className="text-sm text-[var(--hm-text-soft)]">{product.composition}</p>
+            </div>
+            <div>
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                Grammage
+              </p>
+              <p className="text-sm text-[var(--hm-text-soft)]">{product.weight}</p>
+            </div>
+            <div>
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                Prix dès
+              </p>
+              <p className="text-sm font-semibold text-[var(--hm-primary)]">
+                {formatPrice(minPrice)} TTC
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 border-t border-[var(--hm-line)] pt-4">
+            <p className="text-xs leading-relaxed text-[var(--hm-text-soft)]">
+              {product.description}
+            </p>
+          </div>
+        </div>
+
+        {product.category === "softshells" && (
+          <div className="flex items-start gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-accent-soft-purple)] p-4">
+            <Info size={14} className="mt-0.5 shrink-0 text-[var(--hm-purple)]" />
+            <p className="text-xs text-[var(--hm-purple)]">
+              La broderie est recommandée pour ce type de vêtement premium. DTF et flex sont
+              disponibles mais à utiliser avec prudence selon le visuel.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <div className="mb-6">
+          <p className="mb-1 font-mono text-[10px] text-[var(--hm-text-soft)]">{product.reference}</p>
+          <h1 className="mb-2 text-2xl font-black text-[var(--hm-text)] md:text-3xl">
+            {product.name}
+          </h1>
+          <p className="mb-1 text-sm text-[var(--hm-text-soft)]">
+            {product.composition} · {product.weight}
+          </p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-[var(--hm-primary)]">
+              {formatPrice(minPrice)}
+            </span>
+            <span className="text-sm text-[var(--hm-text-soft)]">TTC</span>
+            <span className="text-xs text-[var(--hm-text-soft)]">
+              ({formatPrice(minPrice / 1.2)} HT)
+            </span>
+          </div>
+        </div>
+
+        <ProductConfigurator
+          product={product}
+          selectedColor={selectedColor}
+          onColorChange={handleColorChange}
+        />
+      </div>
+    </div>
+  );
+}

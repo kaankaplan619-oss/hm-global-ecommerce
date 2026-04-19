@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Info } from "lucide-react";
-import ProductConfigurator from "@/components/product/ProductConfigurator";
+import { CheckCircle2 } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
-import ProductGallery from "@/components/product/ProductGallery";
+import ProductDetailClient from "@/components/product/ProductDetailClient";
 import { getProductBySlug, ALL_PRODUCTS } from "@/data/products";
-import { formatPrice } from "@/data/pricing";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -36,7 +34,6 @@ export default async function ProductPage({ params }: Props) {
     (p) => p.category === product.category && p.id !== product.id
   ).slice(0, 4);
 
-  const minPrice = Math.min(product.pricing.dtf, product.pricing.flex);
   const useCases =
     product.category === "tshirts"
       ? ["Équipes événementielles", "Staff commerce & restauration", "Associations et opérations terrain"]
@@ -59,7 +56,7 @@ export default async function ProductPage({ params }: Props) {
       : "Sur t-shirt, le DTF est souvent le meilleur compromis entre précision, souplesse visuelle et rendu des couleurs.";
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="pt-24 pb-20 md:pt-28">
       <div className="container">
         <nav className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] mb-8">
           <Link href="/" className="hover:text-[var(--hm-rose)]">Accueil</Link>
@@ -73,70 +70,11 @@ export default async function ProductPage({ params }: Props) {
           <span className="text-[var(--hm-text)]">{product.shortName}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-          <div className="flex flex-col gap-4">
-            <ProductGallery
-              name={product.name}
-              images={product.images}
-              badge={product.badge}
-            />
+        <ProductDetailClient product={product} />
 
-            <div className="p-6 bg-white border border-[var(--hm-line)] rounded-[28px] shadow-[0_18px_48px_rgba(63,45,88,0.06)]">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] text-[var(--hm-text-soft)] uppercase tracking-wider font-semibold mb-1">Référence</p>
-                  <p className="text-sm font-mono text-[var(--hm-text)]">{product.reference}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-[var(--hm-text-soft)] uppercase tracking-wider font-semibold mb-1">Composition</p>
-                  <p className="text-sm text-[var(--hm-text-soft)]">{product.composition}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-[var(--hm-text-soft)] uppercase tracking-wider font-semibold mb-1">Grammage</p>
-                  <p className="text-sm text-[var(--hm-text-soft)]">{product.weight}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-[var(--hm-text-soft)] uppercase tracking-wider font-semibold mb-1">Prix dès</p>
-                  <p className="text-sm font-bold text-[var(--hm-rose)]">{formatPrice(minPrice)} TTC</p>
-                </div>
-              </div>
+        <div className="mb-16 border-t border-[var(--hm-line)] pt-8 md:pt-10" />
 
-              <div className="mt-4 pt-4 border-t border-[var(--hm-line)]">
-                <p className="text-xs text-[var(--hm-text-soft)] leading-relaxed">{product.description}</p>
-              </div>
-            </div>
-
-            {product.category === "softshells" && (
-              <div className="flex items-start gap-3 p-4 bg-[var(--hm-accent-soft-purple)] border border-[var(--hm-line)] rounded-2xl">
-                <Info size={14} className="text-[var(--hm-purple)] shrink-0 mt-0.5" />
-                <p className="text-xs text-[var(--hm-purple)]">
-                  La broderie est recommandée pour ce type de vêtement premium. DTF et flex sont disponibles mais à utiliser avec prudence selon le visuel.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <div className="mb-6">
-              <p className="text-[10px] font-mono text-[var(--hm-text-soft)] mb-1">{product.reference}</p>
-              <h1 className="text-2xl md:text-3xl font-black text-[var(--hm-text)] mb-2">
-                {product.name}
-              </h1>
-              <p className="text-sm text-[var(--hm-text-soft)] mb-1">{product.composition} · {product.weight}</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black text-[var(--hm-rose)]">
-                  {formatPrice(minPrice)}
-                </span>
-                <span className="text-sm text-[var(--hm-text-soft)]">TTC</span>
-                <span className="text-xs text-[var(--hm-text-soft)]">({formatPrice(minPrice / 1.2)} HT)</span>
-              </div>
-            </div>
-
-            <ProductConfigurator product={product} />
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid gap-6 mb-16 lg:grid-cols-3">
           <section className="card p-6">
             <h2 className="text-lg font-black text-[var(--hm-text)] mb-4">
               Idéal pour
@@ -176,7 +114,7 @@ export default async function ProductPage({ params }: Props) {
         </div>
 
         {related.length > 0 && (
-          <div>
+          <div className="border-t border-[var(--hm-line)] pt-8 md:pt-10">
             <div className="flex items-center gap-4 mb-6">
               <h2 className="text-lg font-bold text-[var(--hm-text)]">Produits similaires</h2>
               <div className="h-[1px] flex-1 bg-[var(--hm-line)]" />

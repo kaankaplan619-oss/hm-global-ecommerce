@@ -24,8 +24,8 @@ export default function Hero() {
         }}
       />
 
-      <div className="container relative z-10 pt-28 pb-16 md:pt-36 md:pb-24">
-        <div className="grid items-center gap-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16">
+      <div className="container relative z-10 pt-40 pb-16 md:pt-48 md:pb-24 lg:pt-44">
+        <div className="grid items-center gap-12 lg:min-h-[calc(100vh-6.5rem)] lg:grid-cols-[1.02fr_0.98fr] lg:gap-16">
 
           {/* ── Colonne gauche : copy ─────────────────────────────────────── */}
           <div className="max-w-xl">

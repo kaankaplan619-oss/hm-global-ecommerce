@@ -10,6 +10,12 @@ function buildProductImages(productId: string, images: string[]) {
   return images.map((image) => `/images/products/${productId}/${image}`);
 }
 
+// Convention visuelle actuelle :
+// - front-{couleur} / back-{couleur} = vue liée a une variante précise
+// - detail-{theme} = vue neutre réutilisable comme fallback
+// Tant que nous restons sur `images: string[]`, seules les images réellement
+// présentes dans `public/images/products/...` doivent être listées ici.
+
 // ─── T-SHIRTS ─────────────────────────────────────────────────────────────────
 
 const TSHIRT_COLORS_CLASSIC = [
@@ -33,6 +39,39 @@ const TSHIRT_SIZES = [
   { label: "3XL", available: true },
 ];
 
+// Visuels disponibles :
+// - fronts : blanc, noir
+// - back : blanc
+// - detail : neutre
+const TU01T_IMAGES = buildProductImages("tu01t", [
+  "front-blanc.jpg",
+  "front-noir.jpg",
+  "back-blanc.jpg",
+  "detail-col.jpg",
+]);
+
+// Visuels disponibles :
+// - fronts : blanc, noir
+// - back : blanc
+// - detail : neutre
+const TW02T_IMAGES = buildProductImages("tw02t", [
+  "front-blanc.jpg",
+  "front-noir.jpg",
+  "back-blanc.jpg",
+  "detail-coupe.jpg",
+]);
+
+// Visuels disponibles :
+// - fronts : blanc, noir
+// - back : noir
+// - detail : neutre
+const TU03T_IMAGES = buildProductImages("tu03t", [
+  "front-blanc.jpg",
+  "front-noir.jpg",
+  "back-noir.jpg",
+  "detail-tissu.jpg",
+]);
+
 export const PRODUCT_TU01T: Product = {
   id: "tu01t",
   slug: "tshirt-bc-exact-190-homme",
@@ -46,12 +85,7 @@ export const PRODUCT_TU01T: Product = {
     "Le T-shirt d'appel de HM Global Agence. Coupe moderne, col rond, jersey simple épaule à épaule. Excellent rapport qualité/prix pour les commandes d'entreprise. Idéal pour débuter votre communication textile.",
   composition: "100% coton semi-peigné",
   weight: "190 g/m²",
-  images: buildProductImages("tu01t", [
-    "front-blanc.jpg",
-    "front-noir.jpg",
-    "back-blanc.jpg",
-    "detail-col.jpg",
-  ]),
+  images: TU01T_IMAGES,
   colors: TSHIRT_COLORS_CLASSIC,
   sizes: TSHIRT_SIZES,
   techniques: ["dtf", "flex", "broderie"],
@@ -91,12 +125,7 @@ export const PRODUCT_TW02T: Product = {
     "Version femme du T-shirt d'appel. Coupe ajustée, encolure arrondie. Même qualité que le modèle homme, pensé pour une silhouette féminine moderne.",
   composition: "100% coton semi-peigné",
   weight: "190 g/m²",
-  images: buildProductImages("tw02t", [
-    "front-blanc.jpg",
-    "front-noir.jpg",
-    "back-blanc.jpg",
-    "detail-coupe.jpg",
-  ]),
+  images: TW02T_IMAGES,
   colors: TSHIRT_COLORS_CLASSIC,
   sizes: [
     { label: "XS", available: true },
@@ -142,12 +171,7 @@ export const PRODUCT_TU03T: Product = {
     "Le meilleur rapport qualité/prix de notre gamme. Tissu plus dense, col côtelé renforcé, finitions premium. Idéal pour les marques exigeantes qui veulent un résultat professionnel impeccable.",
   composition: "100% coton ring-spun peigné",
   weight: "190 g/m²",
-  images: buildProductImages("tu03t", [
-    "front-blanc.jpg",
-    "front-noir.jpg",
-    "back-noir.jpg",
-    "detail-tissu.jpg",
-  ]),
+  images: TU03T_IMAGES,
   colors: [
     ...TSHIRT_COLORS_CLASSIC,
     { id: "khaki", label: "Kaki", hex: "#65721F", available: true },
@@ -198,6 +222,28 @@ const HOODIE_SIZES = [
   { label: "3XL", available: true },
 ];
 
+// Visuels disponibles :
+// - fronts : noir, gris-melange (fichier asset: front-gris)
+// - back : noir
+// - detail : neutre
+const WG004_IMAGES = buildProductImages("wg004", [
+  "front-noir.jpg",
+  "front-gris.jpg",
+  "back-noir.jpg",
+  "detail-molleton.jpg",
+]);
+
+// Visuels disponibles :
+// - fronts : noir, gris-melange (fichier asset: front-gris)
+// - back : noir
+// - detail : neutre
+const WU620_IMAGES = buildProductImages("wu620", [
+  "front-noir.jpg",
+  "front-gris.jpg",
+  "back-noir.jpg",
+  "detail-capuche.jpg",
+]);
+
 export const PRODUCT_WG004: Product = {
   id: "wg004",
   slug: "sweat-col-rond-bc-set-in-sweat",
@@ -211,12 +257,7 @@ export const PRODUCT_WG004: Product = {
     "Sweat col rond classique, coupe droite confortable. Intérieur molletonné doux, idéal pour la communication d'entreprise. Résistant au lavage fréquent.",
   composition: "80% coton, 20% polyester",
   weight: "280 g/m²",
-  images: buildProductImages("wg004", [
-    "front-noir.jpg",
-    "front-gris.jpg",
-    "back-noir.jpg",
-    "detail-molleton.jpg",
-  ]),
+  images: WG004_IMAGES,
   colors: HOODIE_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],
@@ -255,12 +296,7 @@ export const PRODUCT_WU620: Product = {
     "Hoodie à capuche double épaisseur, cordon de serrage assorti, poche kangourou. Le classique premium de toute garde-robe corporate. Idéal pour créer une image de marque cohérente.",
   composition: "80% coton ring-spun, 20% polyester",
   weight: "300 g/m²",
-  images: buildProductImages("wu620", [
-    "front-noir.jpg",
-    "front-gris.jpg",
-    "back-noir.jpg",
-    "detail-capuche.jpg",
-  ]),
+  images: WU620_IMAGES,
   colors: HOODIE_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],
@@ -305,6 +341,28 @@ const SOFTSHELL_SIZES = [
   { label: "3XL", available: true },
 ];
 
+// Visuels disponibles :
+// - fronts : noir, marine
+// - back : noir
+// - detail : neutre
+const JUI62_IMAGES = buildProductImages("jui62", [
+  "front-noir.jpg",
+  "front-marine.jpg",
+  "back-noir.jpg",
+  "detail-softshell.jpg",
+]);
+
+// Visuels disponibles :
+// - fronts : noir, marine
+// - back : noir
+// - detail : neutre
+const JWI63_IMAGES = buildProductImages("jwi63", [
+  "front-noir.jpg",
+  "front-marine.jpg",
+  "back-noir.jpg",
+  "detail-softshell.jpg",
+]);
+
 export const PRODUCT_JUI62: Product = {
   id: "jui62",
   slug: "softshell-bc-homme",
@@ -318,12 +376,7 @@ export const PRODUCT_JUI62: Product = {
     "Veste softshell 3 couches homme. Imperméable, coupe-vent, respirant. Idéal pour les équipes terrain, les commerciaux, les événements outdoor. Finition premium avec broderie recommandée.",
   composition: "96% polyester, 4% élasthanne (3 couches)",
   weight: "300 g/m²",
-  images: buildProductImages("jui62", [
-    "front-noir.jpg",
-    "front-marine.jpg",
-    "back-noir.jpg",
-    "detail-softshell.jpg",
-  ]),
+  images: JUI62_IMAGES,
   colors: SOFTSHELL_COLORS,
   sizes: SOFTSHELL_SIZES,
   techniques: ["broderie", "dtf", "flex"],
@@ -363,12 +416,7 @@ export const PRODUCT_JWI63: Product = {
     "Veste softshell 3 couches femme. Coupe ajustée, imperméable et respirante. Silhouette moderne pour une image de marque professionnelle et premium.",
   composition: "96% polyester, 4% élasthanne (3 couches)",
   weight: "300 g/m²",
-  images: buildProductImages("jwi63", [
-    "front-noir.jpg",
-    "front-marine.jpg",
-    "back-noir.jpg",
-    "detail-softshell.jpg",
-  ]),
+  images: JWI63_IMAGES,
   colors: SOFTSHELL_COLORS,
   sizes: [
     { label: "XS", available: true },
