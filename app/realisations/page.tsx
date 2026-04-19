@@ -26,7 +26,7 @@ const FEATURED_CASES = [
     title: "Tenues d'équipe pour activité terrain",
     summary:
       "Exemple représentatif d'un besoin fréquent : équiper une équipe avec une base textile claire, cohérente et facile à réassortir.",
-    image: "/images/products/jui62/front-marine.jpg",
+    image: "/images/products/jui62/PS_CGJUI62_NAVY-NEONGREEN.avif",
     imageAlt: "Softshell personnalisée HM Global",
     tags: ["Softshell", "Broderie", "Équipe terrain"],
   },
@@ -36,7 +36,7 @@ const FEATURED_CASES = [
     title: "Hoodies et sweats pour staff ou association",
     summary:
       "Base de réalisation adaptée aux événements, associations et équipes qui veulent un textile identifiable, confortable et lisible.",
-    image: "/images/products/wu620/front-noir.jpg",
+    image: "/images/products/wu620/PS_CGWU620_BLACK.avif",
     imageAlt: "Hoodie personnalisé HM Global",
     tags: ["Hoodie", "DTF", "Staff / Association"],
   },

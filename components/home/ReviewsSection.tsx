@@ -1,156 +1,192 @@
-import { MessageSquareQuote, Star } from "lucide-react";
+import Link from "next/link";
+import {
+  Briefcase,
+  HardHat,
+  UtensilsCrossed,
+  Trophy,
+  CalendarDays,
+  Store,
+  ArrowRight,
+  MessageSquare,
+} from "lucide-react";
 
-const DEMO_REVIEWS = [
+// ─── Secteurs d'activité ──────────────────────────────────────────────────────
+
+const SECTORS = [
   {
-    id: "review-1",
-    name: "Thomas M.",
-    activity: "Entreprise du BTP",
-    city: "Strasbourg",
-    rating: 5,
-    comment:
-      "Commande fluide, fichier vérifié avant lancement et rendu propre sur les t-shirts d'équipe. Le suivi a été clair jusqu'à la livraison.",
-    period: "Mars 2025",
-    topic: "T-shirts personnalisés",
+    icon: Briefcase,
+    label: "Entreprises & Corporate",
+    example: "Uniformes, tenues d'équipe, cadeaux clients",
+    bg: "bg-[var(--hm-accent-soft-blue)]",
+    color: "text-[var(--hm-blue)]",
   },
   {
-    id: "review-2",
-    name: "Sarah L.",
-    activity: "Restaurant",
-    city: "Colmar",
-    rating: 5,
-    comment:
-      "Nous avions besoin d'un textile cohérent pour le personnel. Les échanges ont été simples, le marquage bien conseillé et le résultat sérieux.",
-    period: "Février 2025",
-    topic: "Sweats et hoodies brodés",
+    icon: HardHat,
+    label: "BTP & Industrie",
+    example: "Vêtements de travail identifiés, sécurité renforcée",
+    bg: "bg-[var(--hm-accent-soft-purple)]",
+    color: "text-[var(--hm-purple)]",
   },
   {
-    id: "review-3",
-    name: "Marc D.",
-    activity: "Association sportive",
-    city: "Mulhouse",
-    rating: 5,
-    comment:
-      "Le projet a été cadré rapidement, avec une vraie relecture du visuel avant production. Les softshells sont arrivées conformes à notre demande.",
-    period: "Janvier 2025",
-    topic: "Softshells personnalisées",
+    icon: UtensilsCrossed,
+    label: "Restauration & Hôtellerie",
+    example: "Tenues de salle, tabliers, polos brodés",
+    bg: "bg-[var(--hm-accent-soft-rose)]",
+    color: "text-[var(--hm-rose)]",
+  },
+  {
+    icon: Trophy,
+    label: "Associations & Clubs",
+    example: "Maillots, sweats de club, kits complets",
+    bg: "bg-[var(--hm-accent-soft-blue)]",
+    color: "text-[var(--hm-blue)]",
+  },
+  {
+    icon: CalendarDays,
+    label: "Événementiel",
+    example: "T-shirts d'événement, lots promotionnels, goodies",
+    bg: "bg-[var(--hm-accent-soft-purple)]",
+    color: "text-[var(--hm-purple)]",
+  },
+  {
+    icon: Store,
+    label: "Commerce & Retail",
+    example: "Merchandising, vêtements à l'effigie de votre enseigne",
+    bg: "bg-[var(--hm-accent-soft-rose)]",
+    color: "text-[var(--hm-rose)]",
   },
 ] as const;
 
-const REVIEW_SIGNALS = [
-  "Section prête à accueillir de vrais avis Google",
-  "Structure réutilisable pour témoignages clients validés",
-  "Ton court, crédible et non surjoué",
+// ─── Engagements différenciateurs ─────────────────────────────────────────────
+
+const COMMITMENTS = [
+  {
+    value: "0",
+    unit: "surprise",
+    label: "Validation avant production",
+    detail: "Aucun lancement sans votre accord sur le rendu final.",
+  },
+  {
+    value: "7–10",
+    unit: "jours",
+    label: "Délai de production annoncé",
+    detail: "Une fois le fichier validé, vous savez exactement quand livrer.",
+  },
+  {
+    value: "10",
+    unit: "pièces",
+    label: "Livraison offerte dès",
+    detail: "Pas de minimum de commande prohibitif pour démarrer.",
+  },
 ] as const;
 
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-1" aria-label={`${rating} sur 5`}>
-      {Array.from({ length: 5 }).map((_, index) => (
-        <Star
-          key={index}
-          className={
-            index < rating
-              ? "h-4 w-4 fill-[var(--hm-accent)] text-[var(--hm-accent)]"
-              : "h-4 w-4 text-[var(--hm-border-strong)]"
-          }
-        />
-      ))}
-    </div>
-  );
-}
+// ─── Composant ────────────────────────────────────────────────────────────────
 
 export default function ReviewsSection() {
-  const averageRating =
-    DEMO_REVIEWS.reduce((total, review) => total + review.rating, 0) / DEMO_REVIEWS.length;
-
   return (
-    <section className="bg-white py-20 sm:py-24">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-          <div className="space-y-4">
-            <span className="inline-flex items-center rounded-full border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
-              Avis clients
-            </span>
-            <h2 className="max-w-xl text-3xl font-semibold tracking-tight text-[var(--hm-ink)] sm:text-4xl">
-              Une preuve sociale sobre, lisible et pensée pour accueillir de vrais retours.
+    <section className="section bg-[var(--hm-surface)]">
+      <div className="container">
+
+        {/* ── En-tête ────────────────────────────────────────────────────── */}
+        <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="section-tag">Nos clients</p>
+            <h2 className="mb-3 text-3xl font-black leading-tight tracking-tight
+              text-[var(--hm-text)] md:text-4xl">
+              Des professionnels
+              <br />
+              <span className="text-gradient-gold">de tous les secteurs</span>
             </h2>
-            <p className="max-w-2xl text-base leading-7 text-[var(--hm-muted)] sm:text-lg">
-              Cette section pose une base crédible pour les retours clients : des avis courts,
-              situés, liés à un vrai usage produit, avec une structure qui pourra ensuite être
-              branchée sur des avis Google ou des témoignages validés.
+            <p className="max-w-xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
+              T-shirts, hoodies et vestes personnalisés pour les entreprises, associations
+              et commerces d'Alsace et partout en France. Chaque commande est traitée avec
+              le même niveau d'exigence, que ce soit 10 ou 500 pièces.
             </p>
           </div>
+          <Link
+            href="/contact"
+            className="btn-outline gap-2 self-start shrink-0 lg:self-auto"
+          >
+            <MessageSquare size={14} />
+            Parler de votre projet
+          </Link>
+        </div>
 
-          <div className="grid gap-4 sm:grid-cols-[auto_1fr]">
-            <div className="rounded-[1.75rem] border border-[var(--hm-border)] bg-[var(--hm-surface)] px-6 py-5 shadow-[var(--hm-shadow-soft)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
-                Note affichée
-              </p>
-              <div className="mt-3 flex items-center gap-3">
-                <span className="text-3xl font-semibold text-[var(--hm-ink)]">
-                  {averageRating.toFixed(1)}
-                </span>
-                <StarRating rating={Math.round(averageRating)} />
+        {/* ── Grille secteurs ───────────────────────────────────────────── */}
+        <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {SECTORS.map((sector) => {
+            const Icon = sector.icon;
+            return (
+              <div
+                key={sector.label}
+                className="flex items-start gap-3.5 rounded-2xl border
+                  border-[var(--hm-line)] bg-white p-4
+                  transition-shadow duration-200
+                  hover:shadow-[0_6px_20px_rgba(63,45,88,0.07)]"
+              >
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center
+                  rounded-xl ${sector.bg}`}>
+                  <Icon size={16} className={sector.color} />
+                </div>
+                <div>
+                  <p className="mb-0.5 text-[13px] font-bold text-[var(--hm-text)]">
+                    {sector.label}
+                  </p>
+                  <p className="text-[11px] leading-snug text-[var(--hm-text-soft)]">
+                    {sector.example}
+                  </p>
+                </div>
               </div>
-              <p className="mt-3 text-sm leading-6 text-[var(--hm-muted)]">
-                Base de démonstration propre, en attendant les premiers avis clients publiables.
-              </p>
-            </div>
+            );
+          })}
+        </div>
 
-            <div className="rounded-[1.75rem] border border-[var(--hm-border)] bg-white px-6 py-5 shadow-[var(--hm-shadow-soft)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
-                Prévu pour la suite
-              </p>
-              <div className="mt-4 grid gap-3">
-                {REVIEW_SIGNALS.map((signal) => (
-                  <div
-                    key={signal}
-                    className="rounded-2xl border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-3 text-sm leading-6 text-[var(--hm-ink)]"
-                  >
-                    {signal}
-                  </div>
-                ))}
+        {/* ── Bande engagements ─────────────────────────────────────────── */}
+        <div className="rounded-2xl border border-[var(--hm-line)] bg-white
+          overflow-hidden">
+          <div className="grid divide-y divide-[var(--hm-line)]
+            sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            {COMMITMENTS.map((item) => (
+              <div key={item.label} className="px-6 py-5">
+                <div className="mb-1 flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-[var(--hm-rose)]">
+                    {item.value}
+                  </span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider
+                    text-[var(--hm-text-muted)]">
+                    {item.unit}
+                  </span>
+                </div>
+                <p className="mb-0.5 text-[13px] font-bold text-[var(--hm-text)]">
+                  {item.label}
+                </p>
+                <p className="text-[11px] leading-snug text-[var(--hm-text-soft)]">
+                  {item.detail}
+                </p>
               </div>
-            </div>
+            ))}
+          </div>
+
+          {/* Bandeau bas */}
+          <div className="border-t border-[var(--hm-line)] bg-[var(--hm-surface)]
+            px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[12px] text-[var(--hm-text-soft)]">
+              Votre secteur d'activité n'est pas listé ?
+              <span className="ml-1 font-semibold text-[var(--hm-text)]">
+                On travaille sur mesure pour tous les professionnels.
+              </span>
+            </p>
+            <Link
+              href="/contact"
+              className="flex shrink-0 items-center gap-1.5 text-[12px] font-bold
+                text-[var(--hm-rose)] transition-all duration-200 hover:gap-2.5"
+            >
+              Nous contacter
+              <ArrowRight size={12} />
+            </Link>
           </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-3">
-          {DEMO_REVIEWS.map((review) => (
-            <article
-              key={review.id}
-              className="flex h-full flex-col rounded-[1.75rem] border border-[var(--hm-border)] bg-[var(--hm-surface)] p-6 shadow-[var(--hm-shadow-soft)]"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
-                    {review.topic}
-                  </p>
-                  <div className="mt-3">
-                    <StarRating rating={review.rating} />
-                  </div>
-                </div>
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[var(--hm-primary)] shadow-sm">
-                  <MessageSquareQuote className="h-4 w-4" />
-                </span>
-              </div>
-
-              <p className="mt-5 text-[15px] leading-7 text-[var(--hm-ink)]">
-                &ldquo;{review.comment}&rdquo;
-              </p>
-
-              <div className="mt-6 border-t border-[var(--hm-border)] pt-4">
-                <p className="text-sm font-semibold text-[var(--hm-ink)]">{review.name}</p>
-                <p className="mt-1 text-sm text-[var(--hm-muted)]">
-                  {review.activity} · {review.city}
-                </p>
-                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--hm-primary)]">
-                  {review.period}
-                </p>
-              </div>
-            </article>
-          ))}
-        </div>
       </div>
     </section>
   );

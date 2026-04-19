@@ -39,15 +39,17 @@ const TSHIRT_SIZES = [
   { label: "3XL", available: true },
 ];
 
-// Visuels disponibles :
-// - fronts : blanc, noir
-// - back : blanc
-// - detail : neutre
+// Visuels officiels B&C (Top Tex) — fronts multicolores + dos + côté
 const TU01T_IMAGES = buildProductImages("tu01t", [
-  "front-blanc.jpg",
-  "front-noir.jpg",
-  "back-blanc.jpg",
-  "detail-col.jpg",
+  "PS_CGTU01T_WHITE.avif",
+  "PS_CGTU01T_BLACK.avif",
+  "PS_CGTU01T_NAVY.avif",
+  "PS_CGTU01T_ROYALBLUE.avif",
+  "PS_CGTU01T_RED.avif",
+  "PS_CGTU01T_SPORTGREY.avif",
+  "PS_CGTU01T_BURGUNDY.avif",
+  "PS_CGTU01T-B_WHITE.avif",
+  "PS_CGTU01T-S_WHITE.png",
 ]);
 
 // Visuels disponibles :
@@ -233,15 +235,14 @@ const WG004_IMAGES = buildProductImages("wg004", [
   "detail-molleton.jpg",
 ]);
 
-// Visuels disponibles :
-// - fronts : noir, gris-melange (fichier asset: front-gris)
-// - back : noir
-// - detail : neutre
+// Visuels officiels B&C (Top Tex) — 6 coloris disponibles
 const WU620_IMAGES = buildProductImages("wu620", [
-  "front-noir.jpg",
-  "front-gris.jpg",
-  "back-noir.jpg",
-  "detail-capuche.jpg",
+  "PS_CGWU620_BLACK.avif",
+  "PS_CGWU620_NAVY.avif",
+  "PS_CGWU620_HEATHERGREY.avif",
+  "PS_CGWU620_ROYALBLUE.avif",
+  "PS_CGWU620_RED.avif",
+  "PS_CGWU620_STEELGREY.avif",
 ]);
 
 export const PRODUCT_WG004: Product = {
@@ -341,15 +342,14 @@ const SOFTSHELL_SIZES = [
   { label: "3XL", available: true },
 ];
 
-// Visuels disponibles :
-// - fronts : noir, marine
-// - back : noir
-// - detail : neutre
+// Visuels officiels B&C (Top Tex) — 6 combinaisons coloris
 const JUI62_IMAGES = buildProductImages("jui62", [
-  "front-noir.jpg",
-  "front-marine.jpg",
-  "back-noir.jpg",
-  "detail-softshell.jpg",
+  "PS_CGJUI62_BLACK-BLACK.avif",
+  "PS_CGJUI62_NAVY-NEONGREEN.avif",
+  "PS_CGJUI62_DARKGREY-NEONORANGE.avif",
+  "PS_CGJUI62_RED-WARMGREY.avif",
+  "PS_CGJUI62_WHITE-WHITE.avif",
+  "PS_CGJUI62_ATOLL-GHOSTGREY.avif",
 ]);
 
 // Visuels disponibles :

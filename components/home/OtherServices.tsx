@@ -1,14 +1,16 @@
 import Link from "next/link";
 import {
-  BadgeCheck,
+  ArrowRight,
   BrushCleaning,
   FileStack,
   Landmark,
-  MoveRight,
   Palette,
   Sticker,
   Truck,
+  BadgeCheck,
 } from "lucide-react";
+
+// ─── Données ──────────────────────────────────────────────────────────────────
 
 const SERVICES = [
   {
@@ -17,6 +19,8 @@ const SERVICES = [
     description:
       "Vitrines, bureaux, ateliers ou véhicules : HM Global prépare et pose un marquage lisible, durable et cohérent avec votre image.",
     useCase: "Idéal pour signaler un point de vente ou habiller une flotte.",
+    iconBg: "bg-[var(--hm-accent-soft-rose)]",
+    iconColor: "text-[var(--hm-rose)]",
   },
   {
     icon: Truck,
@@ -24,13 +28,17 @@ const SERVICES = [
     description:
       "Du lettrage simple au covering partiel, le projet est cadré selon le support, les contraintes de pose et l'objectif de visibilité.",
     useCase: "Pour artisans, entreprises terrain, équipes commerciales ou utilitaires.",
+    iconBg: "bg-[var(--hm-accent-soft-blue)]",
+    iconColor: "text-[var(--hm-blue)]",
   },
   {
     icon: Landmark,
-    title: "Totems et supports extérieurs",
+    title: "Totems & supports extérieurs",
     description:
       "HM Global accompagne les besoins de présence physique avec des supports pensés pour être vus, compris et intégrés à votre environnement.",
-    useCase: "Utile pour zones d'accueil, sites d'activité et accès clients.",
+    useCase: "Zones d'accueil, sites d'activité, accès clients.",
+    iconBg: "bg-[var(--hm-accent-soft-purple)]",
+    iconColor: "text-[var(--hm-purple)]",
   },
   {
     icon: BadgeCheck,
@@ -38,132 +46,141 @@ const SERVICES = [
     description:
       "Panneaux, plaques, repérage intérieur ou extérieur : la signalétique est traitée comme un outil pratique, pas comme un simple décor.",
     useCase: "Pour orienter, rassurer et professionnaliser vos espaces.",
+    iconBg: "bg-[var(--hm-accent-soft-rose)]",
+    iconColor: "text-[var(--hm-rose)]",
   },
   {
     icon: FileStack,
     title: "Print",
     description:
-      "Cartes, flyers, supports commerciaux et impressions utiles sont préparés avec une logique d'usage, de lisibilité et de cohérence graphique.",
+      "Cartes, flyers, supports commerciaux et impressions utiles, préparés avec une logique d'usage, de lisibilité et de cohérence graphique.",
     useCase: "Pour vos besoins terrain, salons, rendez-vous et diffusion locale.",
+    iconBg: "bg-[var(--hm-accent-soft-blue)]",
+    iconColor: "text-[var(--hm-blue)]",
   },
   {
     icon: Palette,
-    title: "Design, PAO et logo",
+    title: "Design, PAO & logo",
     description:
       "Création ou reprise de visuels, préparation de fichiers, déclinaisons et cadrage graphique avant impression ou production.",
     useCase: "Quand il faut remettre au propre ou faire avancer un projet rapidement.",
+    iconBg: "bg-[var(--hm-accent-soft-purple)]",
+    iconColor: "text-[var(--hm-purple)]",
   },
 ] as const;
 
-const PROJECT_RULES = [
-  "Projet étudié selon le support, le lieu, l'usage et la pose",
-  "Orientation vers un devis sur mesure plutôt qu'un achat standardisé",
-  "Accompagnement possible du fichier jusqu'à la fabrication",
-] as const;
+// ─── Composant ────────────────────────────────────────────────────────────────
 
 export default function OtherServices() {
   return (
-    <section className="bg-[var(--hm-surface)] py-20 sm:py-24" id="savoir-faire">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
-          <div className="space-y-4">
-            <span className="inline-flex items-center rounded-full border border-[var(--hm-border)] bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)] shadow-[var(--hm-shadow-soft)]">
-              Autres services HM Global
-            </span>
-            <h2 className="max-w-xl text-3xl font-semibold tracking-tight text-[var(--hm-ink)] sm:text-4xl">
-              Le textile n'est qu'une partie du savoir-faire HM Global.
+    <section className="section bg-white" id="savoir-faire">
+      <div className="container">
+
+        {/* ── En-tête ────────────────────────────────────────────────────── */}
+        <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="section-tag">Autres services</p>
+            <h2 className="mb-3 text-3xl font-black leading-tight tracking-tight
+              text-[var(--hm-text)] md:text-4xl">
+              Le textile n'est qu'une partie
+              <br />
+              <span className="text-gradient-gold">du savoir-faire HM Global</span>
             </h2>
-            <p className="max-w-2xl text-base leading-7 text-[var(--hm-muted)] sm:text-lg">
-              HM Global accompagne aussi les besoins de communication visuelle, de
-              signalétique et de production sur mesure. L'objectif n'est pas de vendre
-              un catalogue générique, mais de reprendre un besoin concret et de l'orienter
-              vers une demande de devis claire.
+            <p className="max-w-xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
+              Signalétique, habillage véhicule, print, design — HM Global accompagne
+              aussi les besoins de communication visuelle. Ces prestations se cadrent
+              avec vous avant de partir en production : un échange rapide permet
+              d'orienter vers le bon devis.
             </p>
           </div>
 
-          <div className="rounded-[2rem] border border-[var(--hm-border)] bg-white p-6 shadow-[var(--hm-shadow-soft)] sm:p-8">
-            <div className="flex items-start gap-4">
-              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--hm-primary-soft)] text-[var(--hm-primary)]">
-                <BrushCleaning className="h-5 w-5" />
-              </span>
-              <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
-                  Approche projet
-                </p>
-                <h3 className="text-2xl font-semibold text-[var(--hm-ink)]">
-                  Des prestations à cadrer avec vous, pas à commander en un clic.
-                </h3>
-                <p className="text-sm leading-6 text-[var(--hm-muted)] sm:text-base">
-                  Pour ces services, HM Global privilégie un échange rapide afin de définir
-                  le support, les contraintes techniques, les dimensions, la pose éventuelle
-                  et le bon niveau de fabrication.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-3">
-              {PROJECT_RULES.map((rule) => (
-                <div
-                  key={rule}
-                  className="rounded-2xl border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-3 text-sm leading-6 text-[var(--hm-ink)]"
-                >
-                  {rule}
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link href="/contact" className="btn-primary px-6 py-3 text-sm">
-                Demander un devis
-              </Link>
-              <Link href="/a-propos" className="btn-outline px-6 py-3 text-sm">
-                Découvrir l'agence
-              </Link>
-            </div>
+          {/* Pill "approche projet" — contexte en un coup d'œil */}
+          <div className="flex shrink-0 items-start gap-3 rounded-2xl border
+            border-[var(--hm-line)] bg-[var(--hm-surface)]
+            px-4 py-3 self-start lg:self-auto lg:max-w-[260px]">
+            <BrushCleaning size={15} className="mt-0.5 shrink-0 text-[var(--hm-rose)]" />
+            <p className="text-[11px] leading-relaxed text-[var(--hm-text-soft)]">
+              Ces prestations ne se commandent pas en un clic.
+              HM Global les cadre avec vous selon le support,
+              les contraintes et l'objectif.
+            </p>
           </div>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {/* ── Grille services ───────────────────────────────────────────── */}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {SERVICES.map((service) => {
             const Icon = service.icon;
-
             return (
               <article
                 key={service.title}
-                className="flex h-full flex-col rounded-[1.75rem] border border-[var(--hm-border)] bg-white p-6 shadow-[var(--hm-shadow-soft)] transition-transform duration-300 hover:-translate-y-1"
+                className="group flex flex-col rounded-2xl border border-[var(--hm-line)]
+                  bg-[var(--hm-surface)] p-5 transition-all duration-300
+                  hover:border-[rgba(177,63,116,0.22)]
+                  hover:shadow-[0_10px_28px_rgba(63,45,88,0.08)]
+                  hover:-translate-y-0.5"
               >
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--hm-primary-soft)] text-[var(--hm-primary)]">
-                  <Icon className="h-5 w-5" />
+                {/* Icône */}
+                <div className={`mb-4 inline-flex h-10 w-10 items-center justify-center
+                  rounded-xl ${service.iconBg}`}>
+                  <Icon size={17} className={service.iconColor} />
                 </div>
-                <h3 className="mt-5 text-xl font-semibold text-[var(--hm-ink)]">
+
+                {/* Titre */}
+                <h3 className="mb-2 text-[15px] font-black text-[var(--hm-text)]
+                  transition-colors group-hover:text-[var(--hm-rose)]">
                   {service.title}
                 </h3>
-                <p className="mt-3 text-sm leading-6 text-[var(--hm-muted)] sm:text-[15px]">
+
+                {/* Description */}
+                <p className="mb-3 flex-1 text-[12px] leading-relaxed
+                  text-[var(--hm-text-soft)]">
                   {service.description}
                 </p>
-                <p className="mt-4 rounded-2xl border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-3 text-sm leading-6 text-[var(--hm-ink)]">
+
+                {/* Cas d'usage */}
+                <p className="mb-4 rounded-xl border border-[var(--hm-line)]
+                  bg-white px-3 py-2 text-[11px] leading-snug
+                  text-[var(--hm-text-muted)]">
                   {service.useCase}
                 </p>
+
+                {/* CTA carte */}
+                <Link
+                  href="/contact"
+                  className="flex items-center gap-1.5 text-[11px] font-bold
+                    text-[var(--hm-text-soft)] transition-all duration-200
+                    group-hover:text-[var(--hm-rose)]"
+                >
+                  Demander un devis
+                  <ArrowRight
+                    size={10}
+                    className="transition-transform duration-200
+                      group-hover:translate-x-0.5"
+                  />
+                </Link>
               </article>
             );
           })}
         </div>
 
-        <div className="flex flex-col gap-4 rounded-[1.75rem] border border-[var(--hm-border)] bg-white px-6 py-6 shadow-[var(--hm-shadow-soft)] sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
-              Besoin spécifique
-            </p>
-            <p className="max-w-2xl text-sm leading-6 text-[var(--hm-muted)] sm:text-base">
-              Si votre besoin mélange textile, signalétique, marquage ou création graphique,
-              le plus efficace reste une demande de devis unique pour cadrer l'ensemble.
-            </p>
-          </div>
-          <Link href="/contact" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--hm-primary)] transition-opacity hover:opacity-80">
-            Ouvrir la demande de devis
-            <MoveRight className="h-4 w-4" />
+        {/* ── CTA bas de section ─────────────────────────────────────────── */}
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href="/contact"
+            className="btn-primary gap-2 px-6 py-3 text-[0.8rem]"
+          >
+            Demander un devis global
+            <ArrowRight size={14} />
+          </Link>
+          <Link
+            href="/a-propos"
+            className="btn-outline px-6 py-3 text-[0.8rem]"
+          >
+            Découvrir l'agence
           </Link>
         </div>
+
       </div>
     </section>
   );

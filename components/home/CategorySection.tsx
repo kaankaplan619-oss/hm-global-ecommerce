@@ -8,11 +8,11 @@ import ProductImage from "@/components/product/ProductImage";
 const CATEGORY_DATA = {
   tshirts: {
     label: "T-shirts",
-    tagline: "L'essentiel du quotidien, habillé à votre image",
+    tagline: "Le support le plus simple à lancer",
     description:
-      "Coton bio ou respirant, coupe régulière ou slim. Le support le plus polyvalent pour vos équipes, événements et promotions.",
+      "Pour équiper rapidement une équipe, un événement ou une opération terrain.",
     href: "/catalogue/tshirts",
-    image: "/images/products/tu01t/front-blanc.jpg",
+    image: "/images/products/tu01t/PS_CGTU01T_WHITE.avif",
     imageAlt: "T-shirt personnalisé B&C",
     count: 3,
     from: "8,50",
@@ -25,11 +25,11 @@ const CATEGORY_DATA = {
   },
   hoodies: {
     label: "Hoodies & Sweats",
-    tagline: "Confort professionnel, identité forte",
+    tagline: "Le bon niveau de confort et d'image",
     description:
-      "Molleton épais, capuche réglable ou col rond. Les incontournables pour les équipes sportives, associations et entreprises.",
+      "Pour un rendu plus premium, plus visible et plus durable dans le temps.",
     href: "/catalogue/hoodies",
-    image: "/images/products/wu620/front-noir.jpg",
+    image: "/images/products/wu620/PS_CGWU620_BLACK.avif",
     imageAlt: "Hoodie personnalisé B&C",
     count: 2,
     from: "18,50",
@@ -42,11 +42,11 @@ const CATEGORY_DATA = {
   },
   softshells: {
     label: "Softshells & Vestes",
-    tagline: "La finition premium pour les projets corporate",
+    tagline: "La version premium pour les équipes terrain",
     description:
-      "Imperméable, respirant, coupe ajustée. La veste de référence pour les tenues pro, les équipes terrain et les cadeaux clients.",
+      "Pour les projets corporate, les commerciaux et les équipes en extérieur.",
     href: "/catalogue/softshells",
-    image: "/images/products/jui62/front-marine.jpg",
+    image: "/images/products/jui62/PS_CGJUI62_NAVY-NEONGREEN.avif",
     imageAlt: "Softshell personnalisé B&C",
     count: 2,
     from: "65,00",
@@ -73,12 +73,11 @@ export default function CategorySection() {
           <div className="max-w-2xl">
             <p className="section-tag">Notre catalogue</p>
             <h2 className="mb-4 text-3xl font-semibold leading-tight tracking-tight text-[var(--hm-ink)] md:text-4xl">
-              Trois familles de produits, un parcours simple pour bien choisir.
+              Choisissez votre famille de produit, puis configurez simplement.
             </h2>
             <p className="max-w-xl text-sm leading-7 text-[var(--hm-muted)] sm:text-base">
-              T-shirts, hoodies et softshells couvrent l'essentiel des besoins textiles
-              professionnels. Chaque famille a été sélectionnée pour rester claire à lire,
-              simple à comparer et adaptée à la personnalisation.
+              Le site doit aider à décider vite. Chaque famille répond à un besoin clair,
+              avec un niveau d'information volontairement limité pour garder une lecture simple.
             </p>
           </div>
           <Link
@@ -122,7 +121,6 @@ export default function CategorySection() {
                     label="Visuel à venir"
                   />
 
-                  {/* Badge "X modèles" */}
                   <div className="absolute right-3 top-3">
                     <span className={`rounded-full border border-[var(--hm-border)] bg-white/95 px-3 py-1 text-[10px] font-semibold tracking-[0.14em]
                       shadow-sm backdrop-blur-sm ${cat.badgeText}`}>
@@ -149,10 +147,15 @@ export default function CategorySection() {
                   </p>
 
                   {/* Techniques */}
-                  <div className="mb-5 rounded-2xl border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-3">
-                    <p className="text-[11px] font-medium leading-6 text-[var(--hm-ink)]">
-                      {cat.techniques.join(" · ")}
-                    </p>
+                  <div className="mb-5 flex flex-wrap gap-1.5">
+                    {cat.techniques.map((technique) => (
+                      <span
+                        key={technique}
+                        className="rounded-full border border-[var(--hm-border)] bg-[var(--hm-surface)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--hm-text-soft)]"
+                      >
+                        {technique}
+                      </span>
+                    ))}
                   </div>
 
                   {/* Prix + CTA */}
@@ -211,11 +214,11 @@ export default function CategorySection() {
               </p>
 
               {/* Points clés */}
-              <ul className="flex flex-col gap-2.5 mb-6">
+              <ul className="mb-6 flex flex-col gap-2.5">
                 {[
-                  "Grand volume ou commande récurrente",
-                  "Logo à adapter ou à créer",
-                  "Mix de produits dans une commande",
+                  "Grand volume ou besoin récurrent",
+                  "Logo à adapter, créer ou remettre au propre",
+                  "Commande mixte ou projet plus large que le textile",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full
@@ -229,7 +232,7 @@ export default function CategorySection() {
 
               <div className="rounded-2xl border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-3">
                 <p className="text-[11px] leading-6 text-[var(--hm-muted)]">
-                  Pour les demandes mixtes, les volumes particuliers ou les besoins encore à cadrer.
+                  Idéal si votre besoin inclut aussi la PAO, le design, le print ou la communication visuelle.
                 </p>
               </div>
             </div>
