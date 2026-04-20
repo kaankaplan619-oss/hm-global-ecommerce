@@ -20,30 +20,51 @@ function IconFacebook() {
   );
 }
 
+// ─── Mise à jour : toutes les catégories du catalogue ─────────────────────────
 const LINKS_CATALOGUE = [
-  { label: "T-shirts personnalisés", href: "/catalogue/tshirts" },
-  { label: "Hoodies & Sweats", href: "/catalogue/hoodies" },
-  { label: "Softshells & Vestes", href: "/catalogue/softshells" },
-  { label: "Voir tout le catalogue", href: "/catalogue" },
+  { label: "T-shirts personnalisés",   href: "/catalogue/tshirts" },
+  { label: "Polos",                    href: "/catalogue/polos" },
+  { label: "Hoodies & Sweats",         href: "/catalogue/hoodies" },
+  { label: "Softshells & Vestes",      href: "/catalogue/softshells" },
+  { label: "Polaires & Doudounes",     href: "/catalogue/polaires" },
+  { label: "Casquettes & Bonnets",     href: "/catalogue/casquettes" },
+  { label: "Sacs & Goodies",           href: "/catalogue/sacs" },
+  { label: "Voir tout le catalogue →", href: "/catalogue" },
 ];
 
 const LINKS_INFO = [
-  { label: "À propos", href: "/a-propos" },
-  { label: "Techniques", href: "/techniques" },
-  { label: "Entreprises", href: "/entreprises" },
-  { label: "Réalisations", href: "/realisations" },
-  { label: "Contact", href: "/contact" },
+  { label: "À propos",       href: "/a-propos" },
+  { label: "Techniques",     href: "/techniques" },
+  { label: "Entreprises",    href: "/entreprises" },
+  { label: "Réalisations",   href: "/realisations" },
+  { label: "Contact",        href: "/contact" },
 ];
+
+// Badges de paiement — texte uniquement pour éviter les contraintes de licences
+const PAYMENT_METHODS = ["CB", "VISA", "Mastercard", "Stripe"];
 
 export default function Footer() {
   return (
-    <footer className="bg-[var(--hm-surface)] border-t border-[var(--hm-line)] relative overflow-hidden">
-      <div className="absolute -bottom-16 -right-12 h-56 w-56 rounded-full border-[22px] border-[color:var(--hm-blue-light)]/20" />
-      <div className="absolute bottom-6 -right-4 h-40 w-40 rounded-full border-[18px] border-[color:var(--hm-rose)]/18" />
-      <div className="absolute bottom-12 right-16 h-28 w-28 rounded-full border-[14px] border-[color:var(--hm-purple)]/18" />
+    <footer className="bg-[var(--hm-surface)] border-t-2 border-[var(--hm-line)] relative overflow-hidden">
 
-      <div className="container relative py-16 pt-18 sm:py-16 sm:pt-20">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_0.8fr_0.8fr]">
+      {/* ── Cercles décoratifs isolés ─────────────────────────────────────────
+          Wrapper aria-hidden + pointer-events-none + z-0 garantit qu'ils
+          ne passent jamais au-dessus du contenu texte/liens.              */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 overflow-hidden z-0"
+      >
+        <div className="absolute -bottom-16 -right-12 h-56 w-56 rounded-full border-[22px] border-[color:var(--hm-blue-light)]/20" />
+        <div className="absolute bottom-6 -right-4 h-40 w-40 rounded-full border-[18px] border-[color:var(--hm-rose)]/18" />
+        <div className="absolute bottom-12 right-16 h-28 w-28 rounded-full border-[14px] border-[color:var(--hm-purple)]/18" />
+      </div>
+
+      {/* ── Contenu — z-10 pour passer au-dessus des cercles ─────────────── */}
+      <div className="container relative z-10 py-16 sm:py-20">
+        {/* Grille 4 colonnes équilibrées */}
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+
+          {/* Col 1 — Logo + infos contact + réseaux */}
           <div>
             <Link href="/" className="mb-7 inline-flex items-center">
               <Image
@@ -55,7 +76,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-xs">
-              HM Global Agence est une agence créative avec atelier de production, spécialisée en textile personnalisé, communication visuelle et préparation de fichiers pour l'impression.
+              HM Global Agence est une agence créative avec atelier de production, spécialisée en textile personnalisé, communication visuelle et préparation de fichiers pour l&apos;impression.
             </p>
 
             <div className="mt-6 flex flex-col gap-3">
@@ -110,6 +131,7 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Col 2 — Catalogue */}
           <div>
             <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
               Catalogue
@@ -128,6 +150,7 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Col 3 — Informations */}
           <div>
             <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
               Informations
@@ -146,6 +169,7 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Col 4 — Espace client */}
           <div>
             <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
               Espace client
@@ -177,28 +201,43 @@ export default function Footer() {
               </li>
             </ul>
           </div>
+
         </div>
       </div>
 
-      <div className="divider-brand" />
+      {/* ── Divider brand ────────────────────────────────────────────────── */}
+      <div className="divider-brand relative z-10" />
 
-      <div className="container py-5">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* ── Barre du bas — copyright + paiements ─────────────────────────── */}
+      <div className="container relative z-10 py-5">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-[var(--hm-text-soft)]">
             © {new Date().getFullYear()} HM Global Agence — Tous droits réservés
           </p>
-          <div className="flex items-center gap-6">
-            <a
-              href="https://www.hm-global.fr"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-            >
-              hm-global.fr
-            </a>
+
+          {/* Badges de paiement */}
+          <div className="flex items-center gap-2">
+            {PAYMENT_METHODS.map((m) => (
+              <span
+                key={m}
+                className="inline-flex items-center rounded border border-[var(--hm-line)] bg-white px-2 py-0.5 text-[9px] font-bold tracking-wider text-[var(--hm-text-soft)]"
+              >
+                {m}
+              </span>
+            ))}
           </div>
+
+          <a
+            href="https://www.hm-global.fr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+          >
+            hm-global.fr
+          </a>
         </div>
       </div>
+
     </footer>
   );
 }
