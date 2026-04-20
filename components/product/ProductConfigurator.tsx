@@ -6,6 +6,7 @@ import { useCartStore } from "@/store/cart";
 import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
+import { colorHasImages } from "@/components/product/ProductGallery";
 import type { Product, Technique, Placement, ProductColor } from "@/types";
 
 interface Props {
@@ -119,24 +120,51 @@ export default function ProductConfigurator({
           )}
         </label>
         <div className="flex flex-wrap gap-2">
-          {product.colors.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => c.available && handleColorChange(c)}
-              disabled={!c.available}
-              title={c.label}
-              className={`relative h-9 min-w-9 rounded-full border-2 transition-all
-                ${!c.available ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:scale-105"}
-                ${color?.id === c.id
-                  ? "scale-105 border-[var(--hm-primary)] shadow-[0_8px_20px_rgba(177,63,116,0.18)]"
-                  : "border-white shadow-[inset_0_0_0_1px_var(--hm-line)]"
-                }`}
-              style={{ backgroundColor: c.hex }}
-            >
-              <span className="sr-only">{c.label}</span>
-            </button>
-          ))}
+          {product.colors.map((c) => {
+            const hasPhoto = colorHasImages(product.images, c);
+            const unavailable = !c.available;
+            return (
+              <button
+                key={c.id}
+                onClick={() => !unavailable && handleColorChange(c)}
+                disabled={unavailable}
+                title={
+                  unavailable
+                    ? `${c.label} — rupture de stock`
+                    : !hasPhoto
+                    ? `${c.label} — photo non disponible`
+                    : c.label
+                }
+                className={`relative h-9 min-w-9 rounded-full border-2 transition-all
+                  ${unavailable ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:scale-105"}
+                  ${color?.id === c.id
+                    ? "scale-105 border-[var(--hm-primary)] shadow-[0_8px_20px_rgba(177,63,116,0.18)]"
+                    : "border-white shadow-[inset_0_0_0_1px_var(--hm-line)]"
+                  }
+                  ${!unavailable && !hasPhoto ? "opacity-50" : ""}
+                `}
+                style={{ backgroundColor: c.hex }}
+              >
+                {/* Croix indiquant l'absence de photo */}
+                {!unavailable && !hasPhoto && (
+                  <span
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                    aria-hidden="true"
+                  >
+                    <span className="h-[1px] w-4 rotate-45 bg-white/70 absolute" />
+                    <span className="h-[1px] w-4 -rotate-45 bg-white/70 absolute" />
+                  </span>
+                )}
+                <span className="sr-only">{c.label}</span>
+              </button>
+            );
+          })}
         </div>
+        {color && !colorHasImages(product.images, color) && (
+          <p className="mt-1.5 text-[11px] text-[var(--hm-text-muted)]">
+            Photo non disponible pour cette couleur — vous pouvez tout de même la commander.
+          </p>
+        )}
       </div>
 
       {/* ── Taille ────────────────────────────────────────────── */}

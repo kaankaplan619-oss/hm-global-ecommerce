@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CreditCard, Lock, ChevronDown, ChevronUp } from "lucide-react";
+import { CreditCard, Lock, ChevronDown, ChevronUp, UserCheck } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
 import { formatPrice } from "@/data/pricing";
 import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
-
-type Step = "addresses" | "payment";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -17,26 +15,21 @@ export default function CheckoutPage() {
   const { isAuthenticated, user } = useAuthStore();
   const totals = getTotals();
 
-  const [step, setStep] = useState<Step>("addresses");
   const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [billingAddress, setBillingAddress] = useState({
-    firstName: user?.firstName ?? "",
-    lastName: user?.lastName ?? "",
-    company: user?.company ?? "",
-    street: "",
-    city: "",
+    email:      user?.email ?? "",
+    firstName:  user?.firstName ?? "",
+    lastName:   user?.lastName ?? "",
+    company:    user?.company ?? "",
+    street:     "",
+    city:       "",
     postalCode: "",
-    country: "FR",
-    phone: user?.phone ?? "",
+    country:    "FR",
+    phone:      user?.phone ?? "",
   });
   const [sameShipping, setSameShipping] = useState(true);
-
-  if (!isAuthenticated) {
-    router.push("/connexion?redirect=/checkout");
-    return null;
-  }
 
   if (items.length === 0) {
     router.push("/panier");
@@ -46,12 +39,10 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     setLoading(true);
     try {
-      // Create payment intent
       const res = await fetch("/api/stripe/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // userId comes from the server session — do not send it from the client
           items: items.map((i) => ({
             productId:  i.productId,
             quantity:   i.quantity,
@@ -64,6 +55,7 @@ export default function CheckoutPage() {
           })),
           billingAddress,
           shippingAddress: sameShipping ? billingAddress : undefined,
+          guestEmail: !isAuthenticated ? billingAddress.email : undefined,
         }),
       });
 
@@ -71,7 +63,6 @@ export default function CheckoutPage() {
 
       const { clientSecret, orderId } = await res.json();
 
-      // Pass total so the payment page can display the amount without re-fetching
       router.push(
         `/checkout/paiement?clientSecret=${encodeURIComponent(clientSecret)}&orderId=${encodeURIComponent(orderId)}&total=${totals.totalTTC}`
       );
@@ -81,22 +72,69 @@ export default function CheckoutPage() {
     }
   };
 
-  return (
-    <div className="pt-24 pb-20">
-      <div className="container max-w-5xl">
-        <h1 className="text-2xl font-black text-[#f5f5f5] mb-8">Finaliser ma commande</h1>
+  const canSubmit =
+    billingAddress.email.includes("@") &&
+    billingAddress.firstName.trim().length > 0 &&
+    billingAddress.street.trim().length > 0 &&
+    billingAddress.city.trim().length > 0;
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left — Form */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            {/* Address section */}
-            <div className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-              <h2 className="text-sm font-bold text-[#f5f5f5] mb-5 flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-[#c9a96e] text-[#0a0a0a] text-[10px] font-black flex items-center justify-center">1</span>
+  return (
+    <div className="pb-20 pt-24">
+      <div className="container max-w-5xl">
+        <h1 className="mb-8 text-2xl font-black text-[var(--hm-text)]">
+          Finaliser ma commande
+        </h1>
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          {/* ── Formulaire ───────────────────────────────────── */}
+          <div className="flex flex-col gap-6 lg:col-span-2">
+
+            {/* Bandeau invité si non connecté */}
+            {!isAuthenticated && (
+              <div className="flex items-start gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+                <UserCheck size={16} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[var(--hm-text)]">
+                    Commande sans compte
+                  </p>
+                  <p className="mt-0.5 text-xs text-[var(--hm-text-soft)]">
+                    Votre email sera utilisé pour le suivi de commande. Vous pourrez créer un compte après le paiement.
+                  </p>
+                </div>
+                <Link
+                  href="/connexion?redirect=/checkout"
+                  className="shrink-0 rounded-full border border-[var(--hm-line)] px-3 py-1.5 text-[11px] font-semibold text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+                >
+                  Se connecter
+                </Link>
+              </div>
+            )}
+
+            {/* Section adresse */}
+            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-6">
+              <h2 className="mb-5 flex items-center gap-2 text-sm font-bold text-[var(--hm-text)]">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--hm-primary)] text-[10px] font-black text-white">
+                  1
+                </span>
                 Adresse de facturation
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Email — toujours visible (pré-rempli si connecté) */}
+                <div className="sm:col-span-2">
+                  <label className="label">Email *</label>
+                  <input
+                    type="email"
+                    className="input"
+                    value={billingAddress.email}
+                    onChange={(e) => setBillingAddress({ ...billingAddress, email: e.target.value })}
+                    placeholder="vous@exemple.fr"
+                    autoComplete="email"
+                    required
+                    readOnly={isAuthenticated}
+                  />
+                </div>
+
                 <div>
                   <label className="label">Prénom *</label>
                   <input
@@ -105,6 +143,7 @@ export default function CheckoutPage() {
                     value={billingAddress.firstName}
                     onChange={(e) => setBillingAddress({ ...billingAddress, firstName: e.target.value })}
                     placeholder="Jean"
+                    autoComplete="given-name"
                   />
                 </div>
                 <div>
@@ -115,9 +154,11 @@ export default function CheckoutPage() {
                     value={billingAddress.lastName}
                     onChange={(e) => setBillingAddress({ ...billingAddress, lastName: e.target.value })}
                     placeholder="Dupont"
+                    autoComplete="family-name"
                   />
                 </div>
-                {user?.type === "entreprise" && (
+
+                {(isAuthenticated && user?.type === "entreprise") && (
                   <>
                     <div className="sm:col-span-2">
                       <label className="label">Société</label>
@@ -132,14 +173,15 @@ export default function CheckoutPage() {
                     {user.siret && (
                       <div className="sm:col-span-2">
                         <label className="label">SIRET</label>
-                        <div className="input flex items-center justify-between text-[#8a8a8a] cursor-default select-all">
+                        <div className="input flex cursor-default select-all items-center justify-between text-[var(--hm-text-soft)]">
                           <span className="font-mono tracking-wider">{user.siret}</span>
-                          <span className="text-[10px] text-[#555555] ml-2 shrink-0">Enregistré</span>
+                          <span className="ml-2 shrink-0 text-[10px] text-[var(--hm-text-muted)]">Enregistré</span>
                         </div>
                       </div>
                     )}
                   </>
                 )}
+
                 <div className="sm:col-span-2">
                   <label className="label">Adresse *</label>
                   <input
@@ -148,6 +190,7 @@ export default function CheckoutPage() {
                     value={billingAddress.street}
                     onChange={(e) => setBillingAddress({ ...billingAddress, street: e.target.value })}
                     placeholder="12 rue de la Paix"
+                    autoComplete="street-address"
                   />
                 </div>
                 <div>
@@ -158,6 +201,7 @@ export default function CheckoutPage() {
                     value={billingAddress.postalCode}
                     onChange={(e) => setBillingAddress({ ...billingAddress, postalCode: e.target.value })}
                     placeholder="67000"
+                    autoComplete="postal-code"
                   />
                 </div>
                 <div>
@@ -168,121 +212,135 @@ export default function CheckoutPage() {
                     value={billingAddress.city}
                     onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })}
                     placeholder="Strasbourg"
+                    autoComplete="address-level2"
                   />
                 </div>
                 <div>
-                  <label className="label">Téléphone *</label>
+                  <label className="label">Téléphone</label>
                   <input
                     type="tel"
                     className="input"
                     value={billingAddress.phone}
                     onChange={(e) => setBillingAddress({ ...billingAddress, phone: e.target.value })}
                     placeholder="+33 6 12 34 56 78"
+                    autoComplete="tel"
                   />
                 </div>
               </div>
 
-              {/* Same shipping address */}
               <div className="mt-5 flex items-center gap-3">
                 <input
                   type="checkbox"
                   id="same-shipping"
                   checked={sameShipping}
                   onChange={(e) => setSameShipping(e.target.checked)}
-                  className="w-4 h-4 accent-[#c9a96e]"
+                  className="h-4 w-4 accent-[var(--hm-primary)]"
                 />
-                <label htmlFor="same-shipping" className="text-sm text-[#8a8a8a] cursor-pointer">
+                <label
+                  htmlFor="same-shipping"
+                  className="cursor-pointer text-sm text-[var(--hm-text-soft)]"
+                >
                   Adresse de livraison identique à la facturation
                 </label>
               </div>
             </div>
 
-            {/* Payment section */}
-            <div className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-              <h2 className="text-sm font-bold text-[#f5f5f5] mb-5 flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-[#c9a96e] text-[#0a0a0a] text-[10px] font-black flex items-center justify-center">2</span>
+            {/* Section paiement */}
+            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-6">
+              <h2 className="mb-5 flex items-center gap-2 text-sm font-bold text-[var(--hm-text)]">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--hm-primary)] text-[10px] font-black text-white">
+                  2
+                </span>
                 Paiement sécurisé
               </h2>
 
-              <div className="flex items-center gap-3 p-4 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg mb-4">
-                <Lock size={14} className="text-[#4ade80]" />
+              <div className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+                <Lock size={14} className="shrink-0 text-[#4ade80]" />
                 <div>
-                  <p className="text-xs font-semibold text-[#f5f5f5]">Paiement 100% sécurisé</p>
-                  <p className="text-[10px] text-[#555555]">
+                  <p className="text-xs font-semibold text-[var(--hm-text)]">
+                    Paiement 100% sécurisé
+                  </p>
+                  <p className="text-[10px] text-[var(--hm-text-muted)]">
                     Carte bancaire, Apple Pay, Google Pay — Propulsé par Stripe
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs text-[#555555] mb-4">
+              <p className="mb-4 text-xs text-[var(--hm-text-muted)]">
                 Vous serez redirigé vers la page de paiement sécurisée Stripe après validation.
               </p>
 
-              <div className="flex gap-3">
-                {["💳", "🍎", "G"].map((icon) => (
-                  <div key={icon} className="w-12 h-8 bg-[#1a1a1a] border border-[#2a2a2a] rounded flex items-center justify-center text-sm">
+              <div className="flex gap-2">
+                {["💳 CB", "🍎 Pay", "G Pay"].map((icon) => (
+                  <div
+                    key={icon}
+                    className="flex h-8 min-w-[60px] items-center justify-center rounded-lg border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 text-[11px] font-semibold text-[var(--hm-text-soft)]"
+                  >
                     {icon}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Terms */}
-            <p className="text-[11px] text-[#555555] leading-relaxed">
+            {/* CGV */}
+            <p className="text-[11px] leading-relaxed text-[var(--hm-text-muted)]">
               En passant commande, vous acceptez nos{" "}
-              <Link href="/cgv" className="text-[#c9a96e] hover:underline">CGV</Link>{" "}
+              <Link href="/cgv" className="text-[var(--hm-primary)] hover:underline">CGV</Link>{" "}
               et notre{" "}
-              <Link href="/confidentialite" className="text-[#c9a96e] hover:underline">
+              <Link href="/confidentialite" className="text-[var(--hm-primary)] hover:underline">
                 politique de confidentialité
               </Link>
               . Vous avez 30 minutes après la commande pour l&rsquo;annuler.
             </p>
           </div>
 
-          {/* Right — Summary */}
+          {/* ── Récapitulatif ─────────────────────────────────── */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
+            <div className="sticky top-24 rounded-2xl border border-[var(--hm-line)] bg-white p-5">
               <button
-                className="w-full flex items-center justify-between mb-4"
+                className="mb-4 flex w-full items-center justify-between"
                 onClick={() => setShowSummary(!showSummary)}
               >
-                <span className="text-sm font-bold text-[#f5f5f5]">
+                <span className="text-sm font-bold text-[var(--hm-text)]">
                   Récapitulatif ({totals.totalItems} article{totals.totalItems > 1 ? "s" : ""})
                 </span>
-                {showSummary ? <ChevronUp size={14} className="text-[#555555]" /> : <ChevronDown size={14} className="text-[#555555]" />}
+                {showSummary
+                  ? <ChevronUp size={14} className="text-[var(--hm-text-muted)]" />
+                  : <ChevronDown size={14} className="text-[var(--hm-text-muted)]" />
+                }
               </button>
 
               {showSummary && (
-                <div className="flex flex-col gap-3 mb-4">
+                <div className="mb-4 flex flex-col gap-3">
                   {items.map((item) => (
                     <div key={item.id} className="flex justify-between gap-2 text-xs">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[#8a8a8a] truncate">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[var(--hm-text-soft)]">
                           {item.product.shortName} × {item.quantity}
                         </p>
-                        <p className="text-[#555555] text-[10px]">
+                        <p className="text-[10px] text-[var(--hm-text-muted)]">
                           {TECHNIQUE_LABELS[item.technique]} · {PLACEMENT_LABELS[item.placement]} · {item.size}
                         </p>
                       </div>
-                      <span className="text-[#f5f5f5] shrink-0 font-semibold">
+                      <span className="shrink-0 font-semibold text-[var(--hm-text)]">
                         {formatPrice(item.totalPrice)}
                       </span>
                     </div>
                   ))}
-                  <div className="divider-gold" />
+                  <div className="divider-brand" />
                 </div>
               )}
 
-              <div className="flex flex-col gap-2 mb-4">
-                <div className="flex justify-between text-xs text-[#8a8a8a]">
+              <div className="mb-4 flex flex-col gap-2">
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
                   <span>Sous-total HT</span>
                   <span>{formatPrice(totals.subtotalHT)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-[#8a8a8a]">
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
                   <span>TVA (20%)</span>
                   <span>{formatPrice(totals.tva)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-[#8a8a8a]">
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
                   <span>Livraison</span>
                   <span className={totals.freeShipping ? "text-[#4ade80]" : ""}>
                     {totals.freeShipping ? "Offerte" : formatPrice(totals.shipping)}
@@ -290,18 +348,18 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="divider-gold mb-4" />
+              <div className="divider-brand mb-4" />
 
-              <div className="flex justify-between items-center mb-5">
-                <span className="font-bold text-[#f5f5f5] text-sm">Total TTC</span>
-                <span className="text-xl font-black text-[#c9a96e]">
+              <div className="mb-5 flex items-center justify-between">
+                <span className="text-sm font-bold text-[var(--hm-text)]">Total TTC</span>
+                <span className="text-xl font-black text-[var(--hm-primary)]">
                   {formatPrice(totals.totalTTC)}
                 </span>
               </div>
 
               <button
                 onClick={handlePlaceOrder}
-                disabled={loading || !billingAddress.street || !billingAddress.city}
+                disabled={loading || !canSubmit}
                 className="btn-primary w-full gap-2"
               >
                 {loading ? (
@@ -314,7 +372,7 @@ export default function CheckoutPage() {
                 )}
               </button>
 
-              <p className="text-center text-[10px] text-[#555555] mt-3">
+              <p className="mt-3 text-center text-[10px] text-[var(--hm-text-muted)]">
                 🔒 Paiement chiffré SSL — Stripe
               </p>
             </div>

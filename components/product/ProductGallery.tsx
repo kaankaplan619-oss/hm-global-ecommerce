@@ -99,6 +99,21 @@ function buildVariantGallery(
   return result.length > 0 ? result : [images[0]];
 }
 
+// ─── Utilitaire exporté — indique si une couleur a une photo dans la galerie ──
+
+export function colorHasImages(images: string[], color: ProductColor): boolean {
+  if (images.length === 0) return false;
+  const targetKeys = COLOR_IMAGE_MAP[color.id] ?? [];
+  const keys =
+    targetKeys.length > 0
+      ? targetKeys
+      : [color.id.toUpperCase(), color.label.toUpperCase()];
+  return images.some((src) => {
+    const imageColor = extractImageColor(src);
+    return keys.some((key) => imageColor === key);
+  });
+}
+
 // ─── Composant ────────────────────────────────────────────────────────────────
 
 type ProductGalleryProps = {

@@ -179,6 +179,25 @@ function ConnexionForm() {
             Créer un compte
           </Link>
         </p>
+
+        {/* Commande sans compte — visible uniquement si on vient du checkout */}
+        {redirect === "/checkout" && (
+          <div className="mt-5 rounded-[1.5rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-5 text-center">
+            <p className="mb-1 text-sm font-semibold text-[var(--hm-text)]">
+              Commander sans compte
+            </p>
+            <p className="mb-4 text-xs leading-6 text-[var(--hm-text-soft)]">
+              Saisissez votre email directement au checkout — votre compte sera créé automatiquement après le paiement.
+            </p>
+            <Link
+              href="/checkout"
+              className="btn-outline w-full py-3 text-center text-xs"
+            >
+              Continuer sans me connecter →
+            </Link>
+          </div>
+        )}
+
         <p className="mt-4 text-center text-xs text-[var(--hm-text-muted)]">
           Le compte client est demandé au moment du checkout, pas dès la configuration produit.
         </p>
