@@ -808,6 +808,7 @@ export const PRODUCT_K256: Product = {
   badge: "Premium",
   supplierName: "toptex",
   supplierRef: "K256",
+  visible: false, // 1 seule photo CDN insuffisante pour le catalogue
 };
 
 export const PRODUCT_K239: Product = {
@@ -1013,7 +1014,7 @@ export const PRODUCT_NS400: Product = {
   description: "Sweat col rond écoresponsable 85% coton biologique / 15% polyester recyclé. 40 coloris uniques, finitions naturelles. Certifié GOTS. Idéal pour les marques engagées.",
   composition: "85% coton biologique, 15% polyester recyclé",
   weight: "300 g/m²",
-  images: PLACEHOLDER_IMAGES("ns400"),
+  images: ["https://cdn.toptex.com/pictures/NS400-8_2025.jpg"],
   colors: [
     { id: "noir", label: "Noir", hex: "#111111", available: true },
     { id: "ecru", label: "Écru naturel", hex: "#F5F0E8", available: true },
@@ -1094,6 +1095,7 @@ export const PRODUCT_NS401: Product = {
   supplierName: "toptex",
   supplierRef: "NS401",
   ideaPour: ["Marques éco-responsables", "Associations engagées"],
+  visible: false, // 1 seule photo CDN insuffisante pour le catalogue
 };
 
 export const PRODUCT_NS408: Product = {
@@ -1110,7 +1112,7 @@ export const PRODUCT_NS408: Product = {
   description: "Hoodie oversize écoresponsable, coupe ample tendance streetwear. 15 coloris naturels. Parfait pour les associations, BDE, clubs de sport et marques streetwear.",
   composition: "85% coton biologique, 15% polyester recyclé",
   weight: "350 g/m²",
-  images: PLACEHOLDER_IMAGES("ns408"),
+  images: ["https://cdn.toptex.com/pictures/NS408-4_2025.jpg"],
   colors: [
     { id: "noir", label: "Noir", hex: "#111111", available: true },
     { id: "ecru", label: "Écru naturel", hex: "#F5F0E8", available: true },
@@ -1296,7 +1298,7 @@ export const PRODUCT_WK904: Product = {
   description: "Veste micropolaire bicolore écoresponsable. 8 combinaisons coloris, matière recyclée certifiée. Coupe moderne avec zip pleine longueur.",
   composition: "100% polyester recyclé antipilling",
   weight: "300 g/m²",
-  images: PLACEHOLDER_IMAGES("wk904"),
+  images: ["https://cdn.toptex.com/pictures/WK904-3_2025.jpg"],
   colors: [
     { id: "noir-gris", label: "Noir / Gris", hex: "#111111", available: true },
     { id: "marine-gris", label: "Marine / Gris", hex: "#1E3A5F", available: true },
@@ -1471,7 +1473,7 @@ export const PRODUCT_KP185: Product = {
   description: "Casquette 6 panneaux avec passepoil contrasté sur la visière. 12 combinaisons coloris bicolores. Rendu dynamique et sportif, parfait pour les clubs et équipes.",
   composition: "100% polyester",
   weight: "—",
-  images: PLACEHOLDER_IMAGES("kp185"),
+  images: ["https://cdn.toptex.com/pictures/KP185_2025.jpg"],
   colors: [
     { id: "noir-rouge", label: "Noir / Rouge", hex: "#111111", available: true },
     { id: "marine-blanc", label: "Marine / Blanc", hex: "#1E3A5F", available: true },
@@ -1656,6 +1658,7 @@ export const PRODUCT_KI0274: Product = {
   supplierName: "toptex",
   supplierRef: "KI0274",
   ideaPour: ["Marchés & Épiceries", "Événementiels éco", "Associations"],
+  visible: false, // photo 2017 mauvaise qualité
 };
 
 // ─── ENFANTS ──────────────────────────────────────────────────────────────────
@@ -1716,7 +1719,7 @@ export const PRODUCT_IB401: Product = {
   description: "Sweat col rond enfant 300 g/m², molletonné. 10 coloris, du 3/4 ans au 12/14 ans. Confort et durabilité pour les petits.",
   composition: "80% coton, 20% polyester",
   weight: "300 g/m²",
-  images: PLACEHOLDER_IMAGES("ib401"),
+  images: ["https://cdn.toptex.com/pictures/IB401_2026.jpg"],
   colors: [
     { id: "noir", label: "Noir", hex: "#111111", available: true },
     { id: "gris-melange", label: "Gris mélangé", hex: "#6B7280", available: true },
@@ -1754,7 +1757,7 @@ export const PRODUCT_IB403: Product = {
   description: "Hoodie enfant à capuche 300 g/m², poche kangourou. 10 coloris, du 3/4 ans au 12/14 ans. Le classique des tenues de groupe pour les petits.",
   composition: "80% coton, 20% polyester",
   weight: "300 g/m²",
-  images: PLACEHOLDER_IMAGES("ib403"),
+  images: ["https://cdn.toptex.com/pictures/IB403_2026.jpg"],
   colors: [
     { id: "noir", label: "Noir", hex: "#111111", available: true },
     { id: "gris-melange", label: "Gris mélangé", hex: "#6B7280", available: true },
