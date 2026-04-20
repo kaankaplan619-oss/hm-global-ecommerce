@@ -1779,52 +1779,71 @@ export const PRODUCT_IB403: Product = {
 };
 
 // ─── All products ─────────────────────────────────────────────────────────────
-export const ALL_PRODUCTS: Product[] = [
-  // T-shirts B&C (existants)
-  PRODUCT_TU01T,
-  PRODUCT_TW02T,
-  PRODUCT_TU03T,
-  // T-shirts iDeal (nouveaux)
+// ─── Catalogue complet (toutes catégories) ────────────────────────────────────
+// Pour masquer un produit du catalogue : ajouter visible: false dans sa définition.
+// Règle : ne mettre visible: true (ou laisser absent) que si la photo principale
+// montre clairement la zone de marquage (cœur / dos) sans ambiguïté.
+const _ALL_PRODUCTS: Product[] = [
+  // ── T-shirts B&C — photos locales complètes ✓
+  PRODUCT_TU01T,   // 81 photos couleurs
+  PRODUCT_TW02T,   // photos locales
+  PRODUCT_TU03T,   // photos locales
+
+  // ── T-shirts iDeal — 2 photos CDN par produit
   PRODUCT_IB320,
   PRODUCT_IB321,
   PRODUCT_IB323,
-  // Hoodies B&C (existants)
+
+  // ── Hoodies B&C — photos locales complètes ✓
   PRODUCT_WG004,
   PRODUCT_WU620,
-  // Hoodies iDeal & Native Spirit (nouveaux)
+
+  // ── Hoodies iDeal & Native Spirit — CDN
   PRODUCT_IB400,
   PRODUCT_IB402,
-  PRODUCT_NS400,
-  PRODUCT_NS401,
-  PRODUCT_NS408,
-  // Softshells B&C (existants)
+  PRODUCT_NS400,   // 1 photo CDN — mettre visible: false si insuffisant
+  PRODUCT_NS401,   // 1 photo CDN
+  PRODUCT_NS408,   // 1 photo CDN
+
+  // ── Softshells B&C — photos locales complètes ✓
   PRODUCT_JUI62,
   PRODUCT_JWI63,
-  // Polos (nouveaux)
+
+  // ── Polos Kariban — CDN
   PRODUCT_K262,
-  PRODUCT_K256,
+  PRODUCT_K256,    // 1 photo CDN
   PRODUCT_K239,
   PRODUCT_K240,
-  // Polaires & doudounes (nouveaux)
+
+  // ── Polaires & doudounes iDeal / WK — CDN
   PRODUCT_IB900,
   PRODUCT_IB6175,
   PRODUCT_IB6176,
-  PRODUCT_WK904,
-  // Casquettes (nouveaux)
+  PRODUCT_WK904,   // 1 photo CDN
+
+  // ── Casquettes Kariban — CDN
   PRODUCT_KP157,
   PRODUCT_KP162,
   PRODUCT_KP165,
-  PRODUCT_KP185,
-  // Sacs & tote bags (nouveaux)
+  PRODUCT_KP185,   // 1 photo CDN
+
+  // ── Sacs & tote bags Kimood — CDN
   PRODUCT_KI0262,
   PRODUCT_KI0252,
   PRODUCT_KI0275,
-  PRODUCT_KI0274,
-  // Enfants (nouveaux)
+  PRODUCT_KI0274,  // 1 photo CDN
+
+  // ── Enfants iDeal — CDN
   PRODUCT_IB322,
-  PRODUCT_IB401,
-  PRODUCT_IB403,
+  PRODUCT_IB401,   // 1 photo CDN
+  PRODUCT_IB403,   // 1 photo CDN
 ];
+
+// Seuls les produits visibles (visible !== false) sont exposés au catalogue.
+// Modifier visible: false dans la définition d'un produit pour le masquer partout.
+export const ALL_PRODUCTS: Product[] = _ALL_PRODUCTS.filter(
+  (p) => p.visible !== false
+);
 
 export const PRODUCTS_BY_CATEGORY = {
   tshirts:    ALL_PRODUCTS.filter((p) => p.category === "tshirts"),

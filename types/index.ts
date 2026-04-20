@@ -93,6 +93,16 @@ export interface Product {
   // Internal
   supplierRef?: string;
   supplierName?: "falk-ross" | "toptex";
+  /**
+   * Contrôle la visibilité dans le catalogue public.
+   * false  → masqué (photos insuffisantes, produit non validé)
+   * true   → visible
+   * absent → visible par défaut (rétrocompatibilité)
+   *
+   * Règle : un produit ne s'affiche que si le client peut voir
+   * clairement la zone de marquage (cœur / dos) sur la photo principale.
+   */
+  visible?: boolean;
 }
 
 // ─── Cart Types ─────────────────────────────────────────────────────────────────
