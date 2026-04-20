@@ -138,21 +138,32 @@ export default function ProductConfigurator({
             const active = size === s.label;
             return (
               <button
+                type="button"
                 key={s.label}
                 onClick={() => s.available && !s.soldOut && setSize(s.label)}
                 disabled={!s.available || s.soldOut}
-                className={`relative h-10 min-w-[44px] rounded-lg border px-3 text-sm font-semibold transition-all
+                aria-pressed={active}
+                className={`relative flex h-10 min-w-[50px] items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all
                   ${active
-                    ? "border-[var(--hm-primary)] bg-[var(--hm-primary)] text-white shadow-[0_8px_20px_rgba(177,63,116,0.16)]"
+                    ? "ring-2 ring-[rgba(76,47,111,0.08)] shadow-[0_10px_24px_rgba(76,47,111,0.18)]"
                     : s.soldOut || !s.available
                     ? "cursor-not-allowed border-[var(--hm-line)] bg-[var(--hm-surface)] text-[var(--hm-text-muted)]"
-                    : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:text-[var(--hm-text)]"
+                    : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-purple)]/35 hover:text-[var(--hm-text)]"
                   }`}
+                style={
+                  active
+                    ? {
+                        backgroundColor: "var(--hm-purple)",
+                        borderColor: "var(--hm-purple)",
+                        color: "#ffffff",
+                      }
+                    : undefined
+                }
               >
-                {s.label}
+                <span className="relative z-10 leading-none">{s.label}</span>
                 {s.soldOut && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="absolute inset-x-0 top-1/2 h-[1px] rotate-12 bg-[#2a2a2a]" />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-x-2 top-1/2 h-[1px] rotate-12 bg-[var(--hm-text-muted)]/70" />
                   </div>
                 )}
               </button>
@@ -373,7 +384,7 @@ export default function ProductConfigurator({
       </div>
 
       {/* ── Prix récapitulatif ────────────────────────────────── */}
-      <div className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 shadow-[0_14px_34px_rgba(63,45,88,0.05)]">
+        <div className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 shadow-[0_14px_34px_rgba(63,45,88,0.05)]">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-xs font-medium text-[var(--hm-text-soft)]">Prix unitaire TTC</span>
           <span className="text-base font-semibold text-[var(--hm-text)]">{formatPrice(unitPrice)}</span>

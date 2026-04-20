@@ -71,6 +71,156 @@ export const SOFTSHELL_PRICES = {
   },
 } as const;
 
+// Polos base prices TTC — flex & broderie only (no DTF on piqué)
+export const POLO_PRICES = {
+  // Kariban K262 — polo jersey entrée de gamme
+  jersey: {
+    dtf:      0,      // non disponible
+    flex:     24.90,
+    broderie: 29.90,
+  },
+  // Kariban K256 — polo manches longues
+  longues: {
+    dtf:      0,
+    flex:     32.90,
+    broderie: 37.90,
+  },
+  // Kariban K239 / K240 — polo piqué classique
+  pique: {
+    dtf:      0,
+    flex:     37.90,
+    broderie: 42.90,
+  },
+} as const;
+
+// Polaires / doudounes base prices TTC — flex & broderie only
+export const POLAIRE_PRICES = {
+  // iDeal IB900 — polaire légère
+  legere: {
+    dtf:      0,
+    flex:     32.90,
+    broderie: 37.90,
+  },
+  // iDeal IB6175 / IB6176 — doudoune
+  doudoune: {
+    dtf:      0,
+    flex:     56.90,
+    broderie: 64.90,
+  },
+  // WK WK904 — micropolaire éco
+  eco: {
+    dtf:      0,
+    flex:     64.90,
+    broderie: 72.90,
+  },
+} as const;
+
+// Sweats iDeal / Native Spirit prices TTC
+export const SWEAT_IDEAL_PRICES = {
+  // iDeal IB400 — sweat col rond
+  colRond: {
+    dtf:      34.90,
+    flex:     32.90,
+    broderie: 42.90,
+  },
+  // iDeal IB402 — hoodie
+  hoodie: {
+    dtf:      39.90,
+    flex:     37.90,
+    broderie: 47.90,
+  },
+  // Native Spirit NS400 — sweat éco
+  ecoSweat: {
+    dtf:      42.90,
+    flex:     39.90,
+    broderie: 52.90,
+  },
+  // Native Spirit NS401 — hoodie éco
+  ecoHoodie: {
+    dtf:      49.90,
+    flex:     46.90,
+    broderie: 59.90,
+  },
+  // Native Spirit NS408 — hoodie oversize
+  oversize: {
+    dtf:      64.90,
+    flex:     62.90,
+    broderie: 0, // non disponible
+  },
+} as const;
+
+// T-shirts iDeal Basic Brand prices TTC
+export const TSHIRT_IDEAL_PRICES = {
+  // IB320/321/322 — 190g
+  base: {
+    dtf:      14.90,
+    flex:     12.90,
+    broderie: 19.90,
+  },
+  // IB323 — manches longues
+  longues: {
+    dtf:      19.90,
+    flex:     17.90,
+    broderie: 24.90,
+  },
+} as const;
+
+// Casquettes base prices TTC — broderie uniquement
+export const CASQUETTE_PRICES = {
+  // KP157 — entrée de gamme
+  entreeGamme: {
+    dtf:      0,
+    flex:     0,
+    broderie: 12.90,
+  },
+  // KP162 — coton épais
+  standard: {
+    dtf:      0,
+    flex:     0,
+    broderie: 14.90,
+  },
+  // KP165 — vintage
+  vintage: {
+    dtf:      0,
+    flex:     0,
+    broderie: 18.90,
+  },
+  // KP185 — sandwich contrasté
+  sandwich: {
+    dtf:      0,
+    flex:     0,
+    broderie: 13.90,
+  },
+} as const;
+
+// Sacs & tote bags base prices TTC — DTF & flex uniquement
+export const SAC_PRICES = {
+  // KI0262 — tote bag coton bio
+  toteBio: {
+    dtf:      9.90,
+    flex:     8.90,
+    broderie: 0, // non disponible
+  },
+  // KI0252 — sac cabas coton bio
+  cabasBio: {
+    dtf:      12.90,
+    flex:     11.90,
+    broderie: 0,
+  },
+  // KI0275 — sac bicolore
+  bicolore: {
+    dtf:      11.90,
+    flex:     10.90,
+    broderie: 0,
+  },
+  // KI0274 — sac jute
+  jute: {
+    dtf:      10.90,
+    flex:     9.90,
+    broderie: 0,
+  },
+} as const;
+
 // ─── Placement surcharges TTC ─────────────────────────────────────────────────
 // Pour DTF / Flex : le cœur+dos est une vraie valeur ajoutée → prix additionnel
 // Pour broderie : pas d'avantage, prix croissants

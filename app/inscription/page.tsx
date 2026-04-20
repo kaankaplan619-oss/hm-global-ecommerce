@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -58,50 +59,91 @@ export default function InscriptionPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center pt-16 px-4 py-12">
-      <div className="w-full max-w-lg">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
-            <div className="text-[#f5f5f5] font-black text-xl tracking-wider uppercase">HM GLOBAL</div>
-            <div className="text-[#c9a96e] font-light text-[10px] tracking-[0.25em] uppercase">Agence</div>
-          </Link>
-          <h1 className="text-2xl font-black text-[#f5f5f5] mb-2">Créer un compte</h1>
-          <p className="text-sm text-[#555555]">Créez votre espace client pour commander en ligne</p>
-        </div>
-
-        {successMessage ? (
-          <div className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl flex flex-col gap-4">
-            <div className="p-3 bg-[#4ade8011] border border-[#4ade8033] rounded-lg text-sm text-[#86efac]">
-              {successMessage}
+    <div className="min-h-screen bg-[linear-gradient(180deg,rgba(247,250,252,0.92)_0%,rgba(255,255,255,1)_100%)] px-4 pt-28 pb-16">
+      <div className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <div className="rounded-[2rem] border border-[var(--hm-line)] bg-white p-8 shadow-[0_20px_48px_rgba(63,45,88,0.06)] md:p-10">
+          <div className="mb-8">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-primary)]" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-primary)]">
+                Espace client HM Global
+              </span>
             </div>
-            <p className="text-sm text-[#555555] leading-relaxed">
-              Une fois votre adresse email confirmée, vous pourrez vous connecter et accéder à votre espace client.
+            <h1 className="mb-3 text-3xl font-black text-[var(--hm-text)] md:text-4xl">
+              Créer un compte
+            </h1>
+            <p className="max-w-md text-sm leading-7 text-[var(--hm-text-soft)]">
+              Créez votre espace client pour retrouver votre panier, suivre vos commandes
+              et valider votre checkout simplement.
             </p>
-            <div className="flex flex-col gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => router.push("/connexion")}
-                className="btn-primary w-full"
-              >
-                Aller à la connexion
-              </button>
-              <button
-                type="button"
-                onClick={() => setSuccessMessage("")}
-                className="btn-outline w-full"
-              >
-                Modifier mon inscription
-              </button>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">Compte clair et simple</p>
+              <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
+                Inscription rapide pour enregistrer vos informations utiles et suivre vos projets.
+              </p>
+            </div>
+            <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">Confirmation email</p>
+              <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
+                Votre adresse email doit être confirmée avant la première connexion.
+              </p>
             </div>
           </div>
-        ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl flex flex-col gap-4"
-          >
+        </div>
+
+        <div className="w-full max-w-md justify-self-center">
+          <div className="mb-8 text-center">
+            <Link href="/" className="inline-block mb-6">
+              <Image
+                src="/logo/hm-global-logo.png"
+                alt="HM Global Agence"
+                width={220}
+                height={60}
+                className="h-11 w-auto"
+                priority
+              />
+            </Link>
+            <h2 className="mb-2 text-2xl font-black text-[var(--hm-text)]">Créer mon compte</h2>
+            <p className="text-sm text-[var(--hm-text-soft)]">
+              Renseignez vos informations pour accéder à votre espace client.
+            </p>
+          </div>
+
+          {successMessage ? (
+            <div className="flex flex-col gap-4 rounded-[1.75rem] border border-[var(--hm-line)] bg-white p-6 shadow-[0_18px_40px_rgba(63,45,88,0.06)]">
+              <div className="rounded-lg border border-[#86efac] bg-[#ecfdf5] p-3 text-sm text-[#166534]">
+                {successMessage}
+              </div>
+              <p className="text-sm leading-relaxed text-[var(--hm-text-soft)]">
+                Une fois votre adresse email confirmée, vous pourrez vous connecter et accéder à votre espace client.
+              </p>
+              <div className="flex flex-col gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => router.push("/connexion")}
+                  className="btn-primary w-full"
+                >
+                  Aller à la connexion
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSuccessMessage("")}
+                  className="btn-outline w-full"
+                >
+                  Modifier mon inscription
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-4 rounded-[1.75rem] border border-[var(--hm-line)] bg-white p-6 shadow-[0_18px_40px_rgba(63,45,88,0.06)]"
+            >
             {error && (
-              <div className="p-3 bg-[#f8717111] border border-[#f8717133] rounded-lg text-sm text-[#f87171]">
+              <div className="rounded-lg border border-[#fecaca] bg-[#fef2f2] p-3 text-sm text-[#b91c1c]">
                 {error}
               </div>
             )}
@@ -115,10 +157,10 @@ export default function InscriptionPage() {
                     key={t}
                     type="button"
                     onClick={() => setType(t)}
-                    className={`p-3 rounded-lg border text-sm font-semibold transition-all capitalize
+                    className={`rounded-lg border p-3 text-sm font-semibold transition-all capitalize
                       ${type === t
-                        ? "border-[#c9a96e] bg-[#c9a96e0a] text-[#f5f5f5]"
-                        : "border-[#2a2a2a] text-[#555555] hover:border-[#3a3a3a]"
+                        ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-text)]"
+                        : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/35"
                       }`}
                   >
                     {t === "particulier" ? "👤 Particulier" : "🏢 Entreprise"}
@@ -221,13 +263,13 @@ export default function InscriptionPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555555] hover:text-[#8a8a8a]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--hm-text-muted)] hover:text-[var(--hm-text-soft)]"
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
-              <p className="text-[10px] text-[#555555] mt-1">Minimum 8 caractères</p>
-              <p className="text-[10px] text-[#555555] mt-1">
+              <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">Minimum 8 caractères</p>
+              <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">
                 Après inscription, vous devrez confirmer votre adresse email avant de vous connecter.
               </p>
             </div>
@@ -244,15 +286,19 @@ export default function InscriptionPage() {
                 </>
               )}
             </button>
-          </form>
-        )}
+            </form>
+          )}
 
-        <p className="text-center text-sm text-[#555555] mt-6">
-          Déjà un compte ?{" "}
-          <Link href="/connexion" className="text-[#c9a96e] hover:underline font-semibold">
-            Se connecter
-          </Link>
-        </p>
+          <p className="mt-6 text-center text-sm text-[var(--hm-text-soft)]">
+            Déjà un compte ?{" "}
+            <Link href="/connexion" className="font-semibold text-[var(--hm-primary)] hover:underline">
+              Se connecter
+            </Link>
+          </p>
+          <p className="mt-4 text-center text-xs text-[var(--hm-text-muted)]">
+            Le compte client vous permet ensuite de suivre vos commandes et vos validations.
+          </p>
+        </div>
       </div>
     </div>
   );

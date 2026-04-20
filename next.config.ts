@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.supabase.co",
       },
+      {
+        // Toptex CDN — visuels produits fournisseur
+        protocol: "https",
+        hostname: "cdn.toptex.com",
+        pathname: "/pictures/**",
+      },
     ],
   },
 

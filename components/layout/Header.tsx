@@ -14,8 +14,14 @@ const NAV_ITEMS = [
     href: "/catalogue",
     children: [
       { label: "T-shirts", href: "/catalogue/tshirts" },
+      { label: "Polos", href: "/catalogue/polos" },
       { label: "Hoodies & Sweats", href: "/catalogue/hoodies" },
       { label: "Softshells & Vestes", href: "/catalogue/softshells" },
+      { label: "Polaires & Doudounes", href: "/catalogue/polaires" },
+      { label: "Casquettes & Bonnets", href: "/catalogue/casquettes" },
+      { label: "Sacs & Goodies", href: "/catalogue/sacs" },
+      { label: "Enfants", href: "/catalogue/enfants" },
+      { label: "Voir tout le catalogue →", href: "/catalogue" },
     ],
   },
   { label: "Techniques", href: "/techniques" },
@@ -44,12 +50,12 @@ export default function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "bg-white/95 backdrop-blur-md border-b border-[var(--hm-line)] shadow-[0_6px_24px_rgba(63,45,88,0.08)]"
-          : "bg-white/88 backdrop-blur-sm border-b border-transparent"
+          ? "border-b border-[var(--hm-line)] bg-white/92 shadow-[0_6px_20px_rgba(63,45,88,0.05)] backdrop-blur-md"
+          : "border-b border-transparent bg-white/80 backdrop-blur-sm"
       )}
     >
       <div className="container">
-        <div className="mx-auto flex h-16 max-w-[1180px] items-center justify-between gap-3 md:h-20 md:gap-4">
+        <div className="mx-auto flex h-[4rem] max-w-[1140px] items-center justify-between gap-3 md:h-[4.4rem] md:gap-4">
           <Link href="/" className="shrink-0">
             <Image
               src="/logo/hm-global-logo.png"
@@ -57,12 +63,12 @@ export default function Header() {
               width={240}
               height={64}
               priority
-              className="h-10 md:h-11 w-auto"
+              className="h-8.5 w-auto md:h-9"
             />
           </Link>
 
-          <nav className="hidden lg:flex flex-1 items-center justify-center px-2">
-            <div className="flex max-w-[700px] items-center rounded-full border border-[var(--hm-line)] bg-white/92 px-1 py-1 shadow-[0_8px_22px_rgba(63,45,88,0.04)] backdrop-blur-sm">
+          <nav className="hidden flex-1 items-center justify-center px-2 xl:flex">
+            <div className="flex max-w-[700px] items-center rounded-full border border-[var(--hm-line)] bg-white/88 px-1 py-0.5 shadow-[0_6px_18px_rgba(63,45,88,0.03)] backdrop-blur-sm">
             {NAV_ITEMS.map((item) => (
               <div
                 key={item.label}
@@ -72,7 +78,7 @@ export default function Header() {
               >
                 <Link
                   href={item.href}
-                  className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[12px] font-medium text-[var(--hm-text-soft)] hover:bg-[var(--hm-surface)] hover:text-[var(--hm-rose)] transition-colors"
+                  className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-medium text-[var(--hm-text-soft)] transition-colors hover:bg-[var(--hm-surface)] hover:text-[var(--hm-rose)]"
                 >
                   {item.label}
                   {item.children && (
@@ -88,13 +94,18 @@ export default function Header() {
 
                 {/* Dropdown */}
                 {item.children && openDropdown === item.label && (
-                  <div className="absolute top-full left-0 pt-2 w-52">
+                  <div className="absolute top-full left-0 pt-2 w-56">
                     <div className="bg-white border border-[var(--hm-line)] rounded-xl overflow-hidden shadow-[0_18px_40px_rgba(63,45,88,0.12)]">
-                      {item.children.map((child) => (
+                      {item.children.map((child, idx, arr) => (
                         <Link
                           key={child.label}
                           href={child.href}
-                          className="flex items-center px-4 py-3 text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-purple)] hover:bg-[var(--hm-accent-soft-purple)] transition-colors"
+                          className={cn(
+                            "flex items-center px-4 py-3 text-sm transition-colors",
+                            idx === arr.length - 1
+                              ? "border-t border-[var(--hm-line)] font-semibold text-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-purple)]"
+                              : "text-[var(--hm-text-soft)] hover:text-[var(--hm-purple)] hover:bg-[var(--hm-accent-soft-purple)]"
+                          )}
                         >
                           {child.label}
                         </Link>
@@ -107,23 +118,23 @@ export default function Header() {
             </div>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-1.5 md:gap-2">
+          <div className="flex shrink-0 items-center gap-1 md:gap-1.5">
             <Link
               href={isAuthenticated ? "/mon-compte" : "/connexion"}
-              className="btn-ghost hidden px-2.5 md:flex"
+              className="btn-ghost hidden rounded-full px-2 lg:flex"
             >
-              <User size={18} />
-              <span className="text-xs hidden lg:block">
+              <User size={16} />
+              <span className="hidden text-xs xl:block">
                 {isAuthenticated ? user?.firstName : "Connexion"}
               </span>
             </Link>
 
             <button
               onClick={toggleCart}
-              className="btn-ghost relative"
+              className="btn-ghost relative px-2.5"
               aria-label="Panier"
             >
-              <ShoppingBag size={18} />
+              <ShoppingBag size={16} />
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--hm-rose)] text-white text-[9px] font-black rounded-full flex items-center justify-center">
                   {totalItems > 9 ? "9+" : totalItems}
@@ -133,24 +144,24 @@ export default function Header() {
 
             <Link
               href="/catalogue"
-              className="btn-primary hidden px-3.5 py-2.5 text-[11px] lg:inline-flex"
+              className="btn-primary hidden px-3 py-2 text-[10px] xl:inline-flex"
             >
               Commander
             </Link>
 
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="btn-ghost lg:hidden"
+              className="btn-ghost px-2.5 xl:hidden"
               aria-label="Menu"
             >
-              {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+              {isMobileOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
       </div>
 
       {isMobileOpen && (
-        <div className="lg:hidden bg-white border-t border-[var(--hm-line)]">
+        <div className="border-t border-[var(--hm-line)] bg-white xl:hidden">
           <nav className="container py-4 flex flex-col gap-1">
             {NAV_ITEMS.map((item) => (
               <div key={item.label}>

@@ -37,18 +37,18 @@ export default function CartDrawer() {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-50 bg-[rgba(63,45,88,0.18)] backdrop-blur-[3px]"
         onClick={closeCart}
         aria-hidden="true"
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-[#0f0f0f] border-l border-[#1e1e1e] flex flex-col shadow-2xl">
+      <div className="fixed right-0 top-0 bottom-0 z-50 flex w-full max-w-md flex-col border-l border-[var(--hm-line)] bg-[linear-gradient(180deg,#fbfcfe_0%,#ffffff_100%)] shadow-[0_24px_80px_rgba(63,45,88,0.14)]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#1e1e1e]">
+        <div className="flex items-center justify-between border-b border-[var(--hm-line)] px-6 py-5">
           <div className="flex items-center gap-3">
-            <ShoppingBag size={18} className="text-[#c9a96e]" />
-            <h2 className="font-semibold text-[#f5f5f5]">Mon panier</h2>
+            <ShoppingBag size={18} className="text-[var(--hm-primary)]" />
+            <h2 className="font-semibold text-[var(--hm-text)]">Mon panier</h2>
             {items.length > 0 && (
               <span className="badge badge-gold">{totals.totalItems} article{totals.totalItems > 1 ? "s" : ""}</span>
             )}
@@ -62,10 +62,10 @@ export default function CartDrawer() {
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-[#1a1a1a] flex items-center justify-center">
-                <Package size={28} className="text-[#2a2a2a]" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--hm-surface)]">
+                <Package size={28} className="text-[var(--hm-text-muted)]" />
               </div>
-              <p className="text-[#555555] text-sm">Votre panier est vide</p>
+              <p className="text-sm text-[var(--hm-text-soft)]">Votre panier est vide</p>
               <Link href="/catalogue" onClick={closeCart} className="btn-primary text-xs">
                 Découvrir le catalogue
               </Link>
@@ -75,10 +75,10 @@ export default function CartDrawer() {
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex gap-4 p-4 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]"
+                  className="flex gap-4 rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4"
                 >
                   {/* Product image placeholder */}
-                  <div className="w-16 h-16 bg-[#222222] rounded-md shrink-0 flex items-center justify-center overflow-hidden">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white">
                     {item.product.images[0] ? (
                       <Image
                         src={item.product.images[0]}
@@ -88,30 +88,30 @@ export default function CartDrawer() {
                         className="object-cover w-full h-full"
                       />
                     ) : (
-                      <Package size={20} className="text-[#2a2a2a]" />
+                      <Package size={20} className="text-[var(--hm-text-muted)]" />
                     )}
                   </div>
 
                   {/* Details */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#f5f5f5] truncate">
+                    <p className="truncate text-sm font-semibold text-[var(--hm-text)]">
                       {item.product.shortName}
                     </p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      <span className="text-[10px] text-[#555555]">
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <span className="text-[10px] text-[var(--hm-text-soft)]">
                         {TECHNIQUE_LABELS[item.technique]}
                       </span>
-                      <span className="text-[10px] text-[#555555]">·</span>
-                      <span className="text-[10px] text-[#555555]">
+                      <span className="text-[10px] text-[var(--hm-text-soft)]">·</span>
+                      <span className="text-[10px] text-[var(--hm-text-soft)]">
                         {PLACEMENT_LABELS[item.placement]}
                       </span>
-                      <span className="text-[10px] text-[#555555]">·</span>
-                      <span className="text-[10px] text-[#555555]">{item.size}</span>
-                      <span className="text-[10px] text-[#555555]">·</span>
-                      <span className="text-[10px] text-[#555555]">{item.color.label}</span>
+                      <span className="text-[10px] text-[var(--hm-text-soft)]">·</span>
+                      <span className="text-[10px] text-[var(--hm-text-soft)]">{item.size}</span>
+                      <span className="text-[10px] text-[var(--hm-text-soft)]">·</span>
+                      <span className="text-[10px] text-[var(--hm-text-soft)]">{item.color.label}</span>
                     </div>
                     {item.logoFile && (
-                      <p className="text-[10px] text-[#c9a96e] mt-1 truncate">
+                      <p className="mt-1 truncate text-[10px] text-[var(--hm-primary)]">
                         📎 {item.logoFile.name}
                       </p>
                     )}
@@ -121,27 +121,27 @@ export default function CartDrawer() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-6 h-6 rounded bg-[#222222] flex items-center justify-center text-[#8a8a8a] hover:text-[#f5f5f5] transition-colors"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/35 hover:text-[var(--hm-text)]"
                         >
                           <Minus size={10} />
                         </button>
-                        <span className="text-sm font-medium text-[#f5f5f5] w-6 text-center">
+                        <span className="w-6 text-center text-sm font-semibold text-[var(--hm-text)]">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-6 h-6 rounded bg-[#222222] flex items-center justify-center text-[#8a8a8a] hover:text-[#f5f5f5] transition-colors"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/35 hover:text-[var(--hm-text)]"
                         >
                           <Plus size={10} />
                         </button>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-[#f5f5f5]">
+                        <span className="text-sm font-bold text-[var(--hm-text)]">
                           {formatPrice(item.totalPrice)}
                         </span>
                         <button
                           onClick={() => removeItem(item.id)}
-                          className="text-[#555555] hover:text-[#f87171] transition-colors"
+                          className="text-[var(--hm-text-muted)] transition-colors hover:text-[#f87171]"
                           aria-label="Supprimer"
                         >
                           <Trash2 size={14} />
@@ -157,51 +157,51 @@ export default function CartDrawer() {
 
         {/* Footer totals */}
         {items.length > 0 && (
-          <div className="border-t border-[#1e1e1e] px-6 py-5">
+          <div className="border-t border-[var(--hm-line)] bg-white px-6 py-5">
             {/* Free shipping banner */}
             {totals.freeShipping ? (
-              <div className="flex items-center gap-2 mb-4 p-3 bg-[#4ade8011] border border-[#4ade8033] rounded-lg">
+              <div className="mb-4 flex items-center gap-2 rounded-[1rem] border border-[#4ade8033] bg-[#4ade8011] p-3">
                 <span className="text-[#4ade80] text-xs font-semibold">✓ Livraison offerte</span>
               </div>
             ) : (
-              <div className="mb-4 p-3 bg-[#1a1a1a] rounded-lg">
-                <p className="text-xs text-[#555555]">
-                  Livraison offerte dès <strong className="text-[#c9a96e]">10 pièces</strong>
+              <div className="mb-4 rounded-[1rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-3">
+                <p className="text-xs text-[var(--hm-text-soft)]">
+                  Livraison offerte dès <strong className="text-[var(--hm-primary)]">10 pièces</strong>
                 </p>
-                <div className="mt-2 h-1 bg-[#2a2a2a] rounded-full overflow-hidden">
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-white">
                   <div
-                    className="h-full bg-[#c9a96e] rounded-full transition-all"
+                    className="h-full rounded-full bg-[var(--hm-primary)] transition-all"
                     style={{
                       width: `${Math.min(100, (totals.totalItems / 10) * 100)}%`,
                     }}
                   />
                 </div>
-                <p className="text-[10px] text-[#555555] mt-1">
+                <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">
                   {totals.totalItems}/10 pièces
                 </p>
               </div>
             )}
 
             {/* Totals */}
-            <div className="flex flex-col gap-2 mb-4">
-              <div className="flex justify-between text-sm text-[#8a8a8a]">
+            <div className="mb-4 flex flex-col gap-2 rounded-[1rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+              <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
                 <span>Sous-total HT</span>
                 <span>{formatPrice(totals.subtotalHT)}</span>
               </div>
-              <div className="flex justify-between text-sm text-[#8a8a8a]">
+              <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
                 <span>TVA (20%)</span>
                 <span>{formatPrice(totals.tva)}</span>
               </div>
-              <div className="flex justify-between text-sm text-[#8a8a8a]">
+              <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
                 <span>Livraison</span>
                 <span className={totals.freeShipping ? "text-[#4ade80]" : ""}>
                   {totals.freeShipping ? "Offerte" : formatPrice(totals.shipping)}
                 </span>
               </div>
               <div className="divider-gold my-2" />
-              <div className="flex justify-between font-bold text-[#f5f5f5]">
+              <div className="flex justify-between font-bold text-[var(--hm-text)]">
                 <span>Total TTC</span>
-                <span className="text-[#c9a96e] text-lg">{formatPrice(totals.totalTTC)}</span>
+                <span className="text-lg text-[var(--hm-primary)]">{formatPrice(totals.totalTTC)}</span>
               </div>
             </div>
 

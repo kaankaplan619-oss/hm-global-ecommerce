@@ -1,12 +1,20 @@
 // ─── Product Types ─────────────────────────────────────────────────────────────
 
-export type ProductCategory = "tshirts" | "hoodies" | "softshells";
+export type ProductCategory =
+  | "tshirts"
+  | "hoodies"
+  | "softshells"
+  | "polos"
+  | "polaires"
+  | "casquettes"
+  | "sacs"
+  | "enfants";
 
 export type Technique = "dtf" | "flex" | "broderie";
 
 export type Placement = "coeur" | "dos" | "coeur-dos";
 
-export type ProductGender = "unisex" | "homme" | "femme";
+export type ProductGender = "unisex" | "homme" | "femme" | "enfant";
 
 export type ProductTier = "appel" | "standard" | "premium";
 
@@ -74,6 +82,14 @@ export interface Product {
   featured: boolean;
   seasonal?: ("printemps" | "ete" | "automne" | "hiver")[];
   badge?: string; // "Bestseller" | "Nouveau" | "Premium"
+  // Technique recommendation (shown as tooltip/conseil on product page)
+  techniqueRecommandee?: Technique;
+  conseil?: string; // conseil HM Global displayed on product page
+  ideaPour?: string[]; // ["Restauration", "BTP", ...]
+  // Toptex supplier data
+  toptexRef?: string;        // e.g. "IB320"
+  toptexUrl?: string;        // fiche Toptex URL
+  prixAchatHT?: number;      // prix d'achat Toptex HT
   // Internal
   supplierRef?: string;
   supplierName?: "falk-ross" | "toptex";

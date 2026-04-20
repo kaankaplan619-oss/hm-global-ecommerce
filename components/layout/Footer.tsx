@@ -42,16 +42,16 @@ export default function Footer() {
       <div className="absolute bottom-6 -right-4 h-40 w-40 rounded-full border-[18px] border-[color:var(--hm-rose)]/18" />
       <div className="absolute bottom-12 right-16 h-28 w-28 rounded-full border-[14px] border-[color:var(--hm-purple)]/18" />
 
-      <div className="container py-14 relative">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_0.8fr]">
+      <div className="container relative py-16 pt-18 sm:py-16 sm:pt-20">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_0.8fr_0.8fr]">
           <div>
-            <Link href="/" className="inline-flex mb-6">
+            <Link href="/" className="mb-7 inline-flex items-center">
               <Image
                 src="/logo/hm-global-logo.png"
                 alt="HM Global Agence"
-                width={220}
-                height={58}
-                className="h-10 w-auto"
+                width={208}
+                height={54}
+                className="h-9 w-auto sm:h-[2.35rem]"
               />
             </Link>
             <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-xs">

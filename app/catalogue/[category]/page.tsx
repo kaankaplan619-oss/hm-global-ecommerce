@@ -8,17 +8,42 @@ const CATEGORY_META: Record<string, { label: string; description: string }> = {
   tshirts: {
     label: "T-shirts personnalisés",
     description:
-      "T-shirts personnalisés en DTF, flex ou broderie. Modèles homme, femme, unisex. Qualité B&C Select, livraison rapide.",
+      "T-shirts personnalisés en DTF, flex ou broderie. Modèles homme, femme, unisex. Qualité B&C Select & iDeal, livraison rapide.",
+  },
+  polos: {
+    label: "Polos personnalisés",
+    description:
+      "Polos personnalisés en flex ou broderie. Jersey entrée de gamme, manches longues, piqué classique. Parfait pour l'hôtellerie, la restauration et le commerce.",
   },
   hoodies: {
     label: "Hoodies & Sweats personnalisés",
     description:
-      "Hoodies et sweatshirts personnalisés. Intérieur molletonné doux, qualité professionnelle. À partir de 42,90 €.",
+      "Hoodies et sweatshirts personnalisés. Intérieur molletonné doux, qualité professionnelle. Gamme B&C, iDeal & Native Spirit. À partir de 34,90 €.",
   },
   softshells: {
     label: "Softshells & Vestes personnalisées",
     description:
       "Vestes softshell imperméables personnalisées. Broderie premium recommandée. Gamme B&C 3 couches.",
+  },
+  polaires: {
+    label: "Polaires & Doudounes personnalisées",
+    description:
+      "Polaires légères, doudounes et micropolaires éco personnalisées en flex ou broderie. Idéal pour les équipes terrain, BTP et outdoor.",
+  },
+  casquettes: {
+    label: "Casquettes personnalisées",
+    description:
+      "Casquettes brodées sur mesure. Coton épais, vintage, sandwich contrasté. Broderie uniquement pour un résultat premium durable.",
+  },
+  sacs: {
+    label: "Sacs & Goodies personnalisés",
+    description:
+      "Tote bags et sacs en coton bio personnalisés en DTF ou flex. Idéal pour les événements, associations et boutiques.",
+  },
+  enfants: {
+    label: "Vêtements enfants personnalisés",
+    description:
+      "T-shirts, sweats et hoodies enfants personnalisés en DTF ou flex. Matières douces certifiées, tailles 3–12 ans.",
   },
 };
 
