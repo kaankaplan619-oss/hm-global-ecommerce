@@ -44,8 +44,8 @@ export default function ProductCard({ product }: ProductCardProps) {
         />
 
         {product.badge && (
-          <div className="absolute top-3 left-3">
-            <span className="badge badge-gold">{product.badge}</span>
+          <div className="absolute top-3 left-3 max-w-[calc(100%-3.5rem)]">
+            <span className="badge badge-gold block truncate" title={product.badge}>{product.badge}</span>
           </div>
         )}
 

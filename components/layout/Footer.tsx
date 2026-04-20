@@ -72,7 +72,7 @@ export default function Footer() {
                 alt="HM Global Agence"
                 width={208}
                 height={54}
-                className="h-9 w-auto sm:h-[2.35rem]"
+                className="h-9 w-auto max-w-full sm:h-[2.35rem]"
               />
             </Link>
             <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-xs">
