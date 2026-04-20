@@ -144,7 +144,7 @@ export default function Header() {
 
             <Link
               href="/catalogue"
-              className="btn-primary hidden px-3 py-2 text-[10px] xl:inline-flex"
+              className="btn-primary btn-primary-pulse hidden px-3 py-2 text-[10px] xl:inline-flex"
             >
               Commander
             </Link>

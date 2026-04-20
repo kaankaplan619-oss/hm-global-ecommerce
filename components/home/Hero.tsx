@@ -182,7 +182,7 @@ export default function Hero() {
             </div>
 
             {/* Badge flottant haut gauche — délai concret */}
-            <div className="absolute -left-2 top-5 hidden rounded-[1.1rem] border border-[var(--hm-border)]
+            <div className="hm-float absolute -left-2 top-5 hidden rounded-[1.1rem] border border-[var(--hm-border)]
               bg-white/94 px-3.5 py-2.5 shadow-[0_12px_28px_rgba(63,45,88,0.06)] backdrop-blur-sm lg:block">
               <div className="flex items-center gap-2.5">
                 <Clock size={14} className="shrink-0 text-[var(--hm-primary)]" />
@@ -198,7 +198,7 @@ export default function Hero() {
             </div>
 
             {/* Badge flottant bas droite — service différenciateur */}
-            <div className="absolute bottom-4 right-1 hidden rounded-[1.1rem] border border-[var(--hm-border)]
+            <div className="hm-float-delayed absolute bottom-4 right-1 hidden rounded-[1.1rem] border border-[var(--hm-border)]
               bg-white/92 px-3.5 py-2.5 shadow-[0_12px_28px_rgba(63,45,88,0.06)] lg:block">
               <div className="flex items-center gap-2.5">
                 <BadgeCheck size={14} className="shrink-0 text-[var(--hm-primary)]" />

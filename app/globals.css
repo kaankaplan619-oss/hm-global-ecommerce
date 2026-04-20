@@ -177,6 +177,32 @@ body {
   );
 }
 
+/* ─── Keyframes ─────────────────────────────────────────────────── */
+
+/* Shimmer sweep sur les CTA primaires */
+@keyframes hm-shimmer {
+  0%   { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(240%)  skewX(-20deg); }
+}
+
+/* Float doux pour les badges flottants du hero */
+@keyframes hm-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-7px); }
+}
+
+/* Entrée en fondu + montée pour les cards produit */
+@keyframes hm-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Glow pulse subtil pour le bouton COMMANDER du header */
+@keyframes hm-glow-pulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(177, 63, 116, 0.15); }
+  50%       { box-shadow: 0 6px 22px rgba(177, 63, 116, 0.38); }
+}
+
 /* ─── Buttons ───────────────────────────────────────────────────── */
 .btn-primary {
   display: inline-flex;
@@ -195,14 +221,61 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+/* Shimmer sweep automatique toutes les 3 s */
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.22),
+    transparent
+  );
+  animation: hm-shimmer 3.2s ease-in-out infinite;
+  animation-delay: 1.8s;
+  pointer-events: none;
 }
 .btn-primary:hover {
   background-color: var(--hm-rose-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 28px rgba(177, 63, 116, 0.22);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(177, 63, 116, 0.28);
 }
 .btn-primary:active { transform: translateY(0); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-primary:disabled::before { display: none; }
+
+/* Variante nav COMMANDER — glow pulse permanent */
+.btn-primary-pulse {
+  animation: hm-glow-pulse 2.6s ease-in-out infinite;
+}
+
+/* ─── Float — badges flottants ──────────────────────────────────── */
+.hm-float         { animation: hm-float 3.2s ease-in-out infinite; }
+.hm-float-delayed { animation: hm-float 3.8s ease-in-out infinite; animation-delay: 0.9s; }
+
+/* ─── Fade-up — entrée staggerée des product cards ─────────────── */
+.hm-card-enter {
+  animation: hm-fade-up 0.48s ease-out both;
+}
+.hm-card-enter:nth-child(1) { animation-delay:   0ms; }
+.hm-card-enter:nth-child(2) { animation-delay:  65ms; }
+.hm-card-enter:nth-child(3) { animation-delay: 130ms; }
+.hm-card-enter:nth-child(4) { animation-delay: 195ms; }
+.hm-card-enter:nth-child(n+5) { animation-delay: 240ms; }
+
+/* Accessibilité : désactive les animations si l'utilisateur le préfère */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary::before,
+  .btn-primary-pulse,
+  .hm-float,
+  .hm-float-delayed { animation: none; }
+  .hm-card-enter    { animation: none; opacity: 1; }
+}
 
 .btn-outline {
   display: inline-flex;

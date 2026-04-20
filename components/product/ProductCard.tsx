@@ -31,7 +31,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       href={`/produits/${product.slug}`}
-      className="group card card-hover block overflow-hidden"
+      className="hm-card-enter group card card-hover block overflow-hidden"
     >
       <div className="relative aspect-square overflow-hidden rounded-t-xl bg-gray-50">
         <ProductImage
