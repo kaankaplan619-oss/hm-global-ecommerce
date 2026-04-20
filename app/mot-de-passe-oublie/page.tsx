@@ -6,7 +6,10 @@ import { ArrowRight, Mail } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 function getSiteUrl() {
-  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || window.location.origin;
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+    (typeof window !== "undefined" ? window.location.origin : "")
+  );
 }
 
 export default function ForgotPasswordPage() {

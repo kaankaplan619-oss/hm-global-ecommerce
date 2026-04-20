@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
+  --site-header-offset: 5.25rem;
+
   --color-background: #ffffff;
   --color-surface: #f8f9fb;
   --color-surface-2: #f2f4f7;
@@ -42,6 +44,16 @@
   --hm-accent-soft-blue: #ebf7fc;
   --hm-accent-soft-purple: #f2eef7;
   --hm-accent-soft-rose: #f9edf3;
+
+  /* ── Ombres & hover sémantiques ──────────────────────────────── */
+  --hm-shadow-xs:   0 2px  8px  rgba(63,45,88,0.05);
+  --hm-shadow-sm:   0 4px  16px rgba(63,45,88,0.07);
+  --hm-shadow-md:   0 10px 28px rgba(63,45,88,0.09);
+  --hm-shadow-lg:   0 16px 40px rgba(63,45,88,0.11);
+  --hm-shadow-rose: 0 12px 32px rgba(177,63,116,0.12);
+
+  --hm-rose-border-hover: rgba(177,63,116,0.22);
+  --hm-rose-border-focus: rgba(177,63,116,0.40);
 }
 
 /* ─── Base ──────────────────────────────────────────────────────── */
@@ -51,8 +63,15 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: var(--site-header-offset);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --site-header-offset: 6rem;
+  }
 }
 
 body {
