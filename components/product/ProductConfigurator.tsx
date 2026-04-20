@@ -1,12 +1,21 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import Image from "next/image";
 import { Upload, X, CheckCircle, AlertCircle, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
 import type { Product, Technique, Placement, ProductColor } from "@/types";
+
+// ── Position indicative du logo selon l'emplacement ──────────────────────────
+// Exprimée en % relatif au conteneur image (aspect-[3/4] avec p-8 padding)
+const LOGO_POSITION: Record<Placement, React.CSSProperties> = {
+  "coeur":     { top: "31%", left: "41%", transform: "translate(-50%, -50%)" },
+  "dos":       { top: "34%", left: "50%", transform: "translate(-50%, -50%)" },
+  "coeur-dos": { top: "31%", left: "41%", transform: "translate(-50%, -50%)" },
+};
 
 interface Props {
   product: Product;
@@ -32,7 +41,16 @@ export default function ProductConfigurator({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string>("");
   const [addedToCart, setAddedToCart] = useState(false);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const color = selectedColor ?? internalColor;
+
+  // Crée / révoque l'URL blob du logo pour l'aperçu
+  useEffect(() => {
+    if (!logoFile) { setLogoPreviewUrl(null); return; }
+    const url = URL.createObjectURL(logoFile);
+    setLogoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [logoFile]);
 
   const handleColorChange = useCallback(
     (nextColor: ProductColor | null) => {
@@ -382,6 +400,42 @@ export default function ProductConfigurator({
           Si votre fichier n&apos;est pas finalisé, nous le vérifierons avec vous avant production.
         </p>
       </div>
+
+      {/* ── Aperçu marquage ───────────────────────────────────── */}
+      {logoPreviewUrl && (
+        <div>
+          <label className="label">Aperçu du marquage</label>
+          <div className="overflow-hidden rounded-2xl border border-[var(--hm-line)] bg-gray-50">
+            <div className="relative aspect-[3/4]">
+              {/* Photo produit */}
+              <Image
+                src={product.images[0]}
+                alt={product.name}
+                fill
+                sizes="(max-width: 1024px) 90vw, 40vw"
+                className="object-contain p-8"
+              />
+              {/* Logo en overlay */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoPreviewUrl}
+                alt="Votre logo"
+                className="absolute max-h-[18%] max-w-[24%] object-contain"
+                style={LOGO_POSITION[placement]}
+              />
+              {/* Étiquette emplacement */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                <span className="rounded-full border border-[var(--hm-line)] bg-white/90 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)] backdrop-blur-sm">
+                  {placement === "coeur" ? "Cœur" : placement === "dos" ? "Dos" : "Cœur + Dos"} · aperçu indicatif
+                </span>
+              </div>
+            </div>
+          </div>
+          <p className="mt-1.5 text-center text-[10px] text-[var(--hm-text-muted)]">
+            Position et taille non contractuelles — le placement final sera validé avec vous avant production.
+          </p>
+        </div>
+      )}
 
       {/* ── Prix récapitulatif ────────────────────────────────── */}
         <div className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 shadow-[0_14px_34px_rgba(63,45,88,0.05)]">
