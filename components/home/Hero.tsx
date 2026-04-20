@@ -94,12 +94,6 @@ export default function Hero() {
                   transition-all duration-300 hover:border-[rgba(177,63,116,0.22)]
                   hover:shadow-[0_22px_50px_rgba(63,45,88,0.10)]"
               >
-                <div className="absolute left-3 top-3 z-10 rounded-full border border-[var(--hm-border)]
-                  bg-white/95 px-3 py-1 text-[10px] font-semibold tracking-[0.14em] text-[var(--hm-primary)]
-                  backdrop-blur-sm">
-                  Textile pro
-                </div>
-
                 {/* Image */}
                 <div className="relative aspect-[3/4] w-full bg-[linear-gradient(180deg,#fbfcfe_0%,var(--hm-surface)_100%)]">
                   <ProductImage
@@ -114,6 +108,12 @@ export default function Hero() {
 
                 {/* Info */}
                 <div className="border-t border-[var(--hm-border)] p-4.5">
+                  {/* Badge inline — évite le chevauchement avec le badge flottant "Délai" */}
+                  <span className="mb-2 inline-flex items-center rounded-full border border-[var(--hm-border)]
+                    bg-[var(--hm-surface)] px-2.5 py-0.5 text-[9px] font-semibold tracking-[0.14em]
+                    text-[var(--hm-primary)]">
+                    Textile pro
+                  </span>
                   <p className="mb-1 text-[15px] font-semibold text-[var(--hm-text)]">
                     T-shirt personnalisé
                   </p>
@@ -203,10 +203,10 @@ export default function Hero() {
               <div className="flex items-center gap-2.5">
                 <BadgeCheck size={14} className="shrink-0 text-[var(--hm-primary)]" />
                 <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-muted)]">
+                  <p className="whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-muted)]">
                     Accompagnement inclus
                   </p>
-                  <p className="text-[12px] font-semibold text-[var(--hm-text)]">
+                  <p className="whitespace-nowrap text-[12px] font-semibold text-[var(--hm-text)]">
                     Relecture du fichier avant lancement
                   </p>
                 </div>
