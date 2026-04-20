@@ -18,10 +18,14 @@ export default function ProductDetailClient({ product }: Props) {
   );
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(defaultColor);
 
-  const minPrice = useMemo(
-    () => Math.min(product.pricing.dtf, product.pricing.flex),
-    [product]
-  );
+  const minPrice = useMemo(() => {
+    const prices = [
+      product.pricing.dtf,
+      product.pricing.flex,
+      product.pricing.broderie,
+    ].filter((p) => p > 0);
+    return prices.length > 0 ? Math.min(...prices) : 0;
+  }, [product]);
 
   useEffect(() => {
     setSelectedColor(defaultColor);

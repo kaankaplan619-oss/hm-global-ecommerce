@@ -34,26 +34,52 @@ export default async function ProductPage({ params }: Props) {
     (p) => p.category === product.category && p.id !== product.id
   ).slice(0, 4);
 
-  const useCases =
-    product.category === "tshirts"
-      ? ["Équipes événementielles", "Staff commerce & restauration", "Associations et opérations terrain"]
-      : product.category === "hoodies"
-      ? ["Tenues staff en mi-saison", "Uniformes casual d'équipe", "Merchandising et image de marque"]
-      : ["Équipes terrain", "Commerciaux & techniciens", "Tenues premium extérieures"];
+  // ── Données par catégorie ─────────────────────────────────────────────────
+  const USE_CASES: Record<string, string[]> = {
+    tshirts:    ["Équipes événementielles", "Staff commerce & restauration", "Associations et opérations terrain"],
+    hoodies:    ["Tenues staff en mi-saison", "Uniformes casual d'équipe", "Merchandising et image de marque"],
+    softshells: ["Équipes terrain & commerciaux", "Personnel technique extérieur", "Image corporate premium"],
+    polos:      ["Hôtellerie & restauration", "Commerce & accueil client", "Uniformes professionnels classiques"],
+    polaires:   ["Équipes BTP & outdoor", "Personnel sécurité & technique", "Vêtements de travail hiver"],
+    casquettes: ["Équipes sportives & clubs", "Événementiel & promotionnel", "Goodies corporate"],
+    sacs:       ["Événements & salons professionnels", "Boutiques, associations & ONG", "Goodies clients & partenaires"],
+    enfants:    ["Événements familiaux & école", "Associations jeunesse & sport", "Tenues d'équipe enfants"],
+  };
 
-  const strengths =
-    product.category === "tshirts"
-      ? ["Coupe polyvalente", "Support idéal pour DTF, flex ou broderie", "Excellent rapport qualité/prix"]
-      : product.category === "hoodies"
-      ? ["Bonne tenue dans le temps", "Look plus premium pour les équipes", "Excellent rendu sur poitrine ou dos"]
-      : ["Aspect premium immédiat", "Très bon support pour broderie", "Parfait pour un usage professionnel extérieur"];
+  const STRENGTHS: Record<string, string[]> = {
+    tshirts:    ["Coupe polyvalente homme, femme et unisexe", "Support idéal pour DTF, flex ou broderie", "Excellent rapport qualité/prix"],
+    hoodies:    ["Bonne tenue dans le temps", "Look plus premium pour les équipes", "Excellent rendu sur poitrine ou dos"],
+    softshells: ["Aspect premium immédiat", "Très bon support pour broderie", "Parfait pour un usage professionnel extérieur"],
+    polos:      ["Tissu respirant et professionnel", "Idéal pour le flex et la broderie", "Look soigné pour l'accueil client"],
+    polaires:   ["Chaleur et légèreté combinées", "Broderie durable sur tissu polaire", "Parfait pour les équipes terrain hiver"],
+    casquettes: ["Broderie haute définition garantie", "Finition premium longue durée", "Support idéal pour petits logos"],
+    sacs:       ["Coton bio certifié", "Grande surface pour DTF et flex", "Impact positif sur l'image de marque"],
+    enfants:    ["Matières douces certifiées Oeko-Tex", "Coupes adaptées de 3 à 12 ans", "Rendu DTF vibrant sur petites tailles"],
+  };
 
-  const recommendation =
-    product.category === "softshells"
-      ? "Pour les softshells, la broderie reste la finition la plus cohérente pour un rendu durable et professionnel."
-      : product.category === "hoodies"
-      ? "Sur hoodie et sweat, la broderie apporte une vraie montée en gamme tandis que le DTF reste très efficace pour les visuels plus complexes."
-      : "Sur t-shirt, le DTF est souvent le meilleur compromis entre précision, souplesse visuelle et rendu des couleurs.";
+  const useCases  = USE_CASES[product.category]  ?? USE_CASES.tshirts;
+  const strengths = STRENGTHS[product.category] ?? STRENGTHS.tshirts;
+
+  // Recommandation dynamique selon les techniques réellement disponibles
+  const techs = product.techniques;
+  const recommendation: string = (() => {
+    if (techs.length === 1 && techs[0] === "broderie") {
+      return "La broderie est la seule technique disponible sur ce produit — et c'est aussi la plus adaptée : finition premium, durée de vie maximale et rendu professionnel garanti.";
+    }
+    if (techs.length === 1 && techs[0] === "dtf") {
+      return "Le DTF est la technique disponible sur ce produit. Rendu vif, couleurs illimitées et excellente durée de vie sur tissu.";
+    }
+    if (!techs.includes("dtf")) {
+      return "Le flex et la broderie sont les techniques disponibles sur ce produit. La broderie apporte la finition la plus premium et durable, le flex convient aux logos simples et aux typographies.";
+    }
+    if (product.category === "softshells") {
+      return "Pour les softshells, la broderie reste la finition la plus cohérente pour un rendu durable et professionnel. DTF et flex sont disponibles mais à utiliser avec précaution sur tissu technique.";
+    }
+    if (product.category === "hoodies" || product.category === "enfants") {
+      return "Sur ce type de textile, la broderie apporte une vraie montée en gamme tandis que le DTF reste très efficace pour les visuels complexes et les dégradés.";
+    }
+    return "Le DTF est souvent le meilleur compromis entre précision, souplesse visuelle et rendu des couleurs. Le flex convient aux logos simples, la broderie aux finitions premium.";
+  })();
 
   return (
     <div className="pt-24 pb-20 md:pt-28">
