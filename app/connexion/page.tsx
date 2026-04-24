@@ -10,7 +10,7 @@ import { useAuthStore } from "@/store/auth";
 function ConnexionForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") ?? "/mon-compte";
+  const redirect = searchParams.get("redirect") ?? "/";
   const resetSuccess = searchParams.get("reset") === "success";
   const callbackError = searchParams.get("error") === "auth_callback";
   const { setUser } = useAuthStore();
