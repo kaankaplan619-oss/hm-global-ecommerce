@@ -19,22 +19,28 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
+    const supabase = getSupabaseBrowserClient();
+    let resolved = false;
 
-    async function checkSession() {
-      const supabase = getSupabaseBrowserClient();
-      const { data } = await supabase.auth.getSession();
+    // Subscribe to auth state changes — catches PASSWORD_RECOVERY event
+    // fired by Supabase JS SDK when it reads the #hash tokens (implicit flow).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+        setHasRecoverySession(true);
+        setCheckingSession(false);
+        resolved = true;
+      }
+    });
 
-      if (!mounted) return;
-
+    // Also check existing session (PKCE flow: cookie already set by callback route)
+    supabase.auth.getSession().then(({ data }) => {
+      if (resolved) return;
       setHasRecoverySession(!!data.session);
       setCheckingSession(false);
-    }
-
-    void checkSession();
+    });
 
     return () => {
-      mounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
