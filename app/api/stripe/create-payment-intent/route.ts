@@ -63,6 +63,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ── Ensure profile exists for authenticated users ─────────────────────────
+    // Edge case: user signed up before migrations were applied → no profile row.
+    // Upsert guarantees the FK constraint on orders.user_id is satisfied.
+    if (user) {
+      await supabase.from("profiles").upsert(
+        {
+          id:         user.id,
+          email:      user.email ?? "",
+          first_name: billingAddress?.firstName ?? "",
+          last_name:  billingAddress?.lastName  ?? "",
+          role:       "client",
+          type:       "particulier",
+        },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+    }
+
     // ── Recompute prices server-side ──────────────────────────────────────────
     const computedItems = items.map((item) => {
       const product = PRODUCTS.find((p) => p.id === item.productId);
