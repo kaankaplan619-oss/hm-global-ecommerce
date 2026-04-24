@@ -29,9 +29,10 @@ export function mapDbOrderToOrder(row: any): Order {
     userId:       row.user_id,
 
     user: {
-      id:          p.id          ?? row.user_id,
-      email:       p.email       ?? "",
-      firstName:   p.first_name  ?? "",
+      id:          p.id          ?? row.user_id ?? "guest",
+      // For guest orders: fall back to billing_address.email or guest_email column
+      email:       p.email       ?? row.billing_address?.email ?? row.guest_email ?? "",
+      firstName:   p.first_name  ?? row.billing_address?.firstName ?? "",
       lastName:    p.last_name   ?? "",
       phone:       p.phone       ?? "",
       role:        p.role        ?? "client",

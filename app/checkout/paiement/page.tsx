@@ -66,9 +66,11 @@ const STRIPE_APPEARANCE = {
 
 function PaymentForm({
   orderId,
+  orderNumber,
   totalTTC,
 }: {
   orderId: string;
+  orderNumber: string;
   totalTTC: number | null;
 }) {
   const stripe       = useStripe();
@@ -116,14 +118,13 @@ function PaymentForm({
         setSucceeded(true);
         clearCart();
 
-        // Small delay so the success state is visible before redirect
+        // Redirect to public confirmation page (works for guests too)
         setTimeout(() => {
-          router.push(
-            orderId
-              ? `/mon-compte/commandes/${orderId}`
-              : "/mon-compte/commandes"
-          );
-        }, 1500);
+          const params = new URLSearchParams();
+          if (orderId)     params.set("orderId",     orderId);
+          if (orderNumber) params.set("orderNumber", orderNumber);
+          router.push(`/commande-confirmee?${params.toString()}`);
+        }, 1200);
       } else {
         setError("Statut de paiement inattendu. Contactez le support.");
         setLoading(false);
@@ -192,6 +193,7 @@ function PaiementContent() {
   const searchParams = useSearchParams();
   const clientSecret  = searchParams.get("clientSecret");
   const orderId       = searchParams.get("orderId") ?? "";
+  const orderNumber   = searchParams.get("orderNumber") ?? "";
   const totalParam    = searchParams.get("total");
   const totalTTC      = totalParam ? parseFloat(totalParam) : null;
 
@@ -243,7 +245,7 @@ function PaiementContent() {
               locale: "fr",
             }}
           >
-            <PaymentForm orderId={orderId} totalTTC={totalTTC} />
+            <PaymentForm orderId={orderId} orderNumber={orderNumber} totalTTC={totalTTC} />
           </Elements>
         </div>
 

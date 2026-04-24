@@ -6,7 +6,7 @@ import { ALL_PRODUCTS, SEASONAL_ORDER, CURRENT_SEASON } from "@/data/products";
 export const metadata: Metadata = {
   title: "Catalogue — Textile personnalisé",
   description:
-    "T-shirts, polos, hoodies, softshells, polaires, casquettes et sacs personnalisés. DTF, flex ou broderie. Commandez en ligne avec HM Global Agence.",
+    "T-shirts, polos, hoodies et softshells personnalisés. DTF, flex ou broderie. Commandez en ligne avec HM Global Agence.",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -14,10 +14,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   polos: "Polos",
   hoodies: "Hoodies & Sweats",
   softshells: "Softshells & Vestes",
-  polaires: "Polaires & Doudounes",
-  casquettes: "Casquettes & Bonnets",
-  sacs: "Sacs & Goodies",
-  enfants: "Enfants",
 };
 
 export default function CataloguePage() {

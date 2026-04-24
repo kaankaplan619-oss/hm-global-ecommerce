@@ -61,10 +61,10 @@ export default function CheckoutPage() {
 
       if (!res.ok) throw new Error("Erreur lors de la création du paiement");
 
-      const { clientSecret, orderId } = await res.json();
+      const { clientSecret, orderId, orderNumber } = await res.json();
 
       router.push(
-        `/checkout/paiement?clientSecret=${encodeURIComponent(clientSecret)}&orderId=${encodeURIComponent(orderId)}&total=${totals.totalTTC}`
+        `/checkout/paiement?clientSecret=${encodeURIComponent(clientSecret)}&orderId=${encodeURIComponent(orderId)}&orderNumber=${encodeURIComponent(orderNumber ?? "")}&total=${totals.totalTTC}`
       );
     } catch (err) {
       console.error(err);

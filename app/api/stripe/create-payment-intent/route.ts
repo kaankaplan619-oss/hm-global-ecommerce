@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { createPaymentIntent } from "@/lib/stripe";
 import { generateOrderNumber } from "@/lib/utils";
 import { computeUnitPrice, computeCartTotals, ttcToHt, PRICING_CONFIG } from "@/data/pricing";
@@ -20,30 +20,47 @@ interface CartItemInput {
 /**
  * POST /api/stripe/create-payment-intent
  *
- * 1. Verifies session
+ * Supports both authenticated and guest checkout.
+ * 1. Gets optional session (guests are allowed)
  * 2. Recomputes prices server-side (never trust client amounts)
- * 3. Creates order + items in DB
+ * 3. Creates order + items in DB via service role (bypasses RLS for guests)
  * 4. Creates Stripe PaymentIntent
- * 5. Returns clientSecret + orderId
+ * 5. Returns clientSecret + orderId + orderNumber
  */
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createSupabaseServerClient();
+    // ── Session (optional — guests have no session) ───────────────────────────
+    const supabaseAuth = await createSupabaseServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    }
+    // Service role client — bypasses RLS for both auth and guest orders
+    const supabase = await createSupabaseServiceClient();
 
     const body = await req.json();
-    const { items, billingAddress, shippingAddress }: {
-      items: CartItemInput[];
-      billingAddress: Record<string, string>;
+    const { items, billingAddress, shippingAddress, guestEmail }: {
+      items:            CartItemInput[];
+      billingAddress:   Record<string, string>;
       shippingAddress?: Record<string, string>;
+      guestEmail?:      string;
     } = body;
 
     if (!items?.length) {
       return NextResponse.json({ error: "Panier vide" }, { status: 400 });
+    }
+
+    // Determine effective email for receipts and notifications
+    const effectiveEmail =
+      user?.email ??
+      guestEmail ??
+      billingAddress?.email ??
+      "";
+
+    // Guest orders require at least an email for follow-up
+    if (!user && !effectiveEmail) {
+      return NextResponse.json(
+        { error: "Un email est requis pour passer commande sans compte." },
+        { status: 400 }
+      );
     }
 
     // ── Recompute prices server-side ──────────────────────────────────────────
@@ -51,20 +68,19 @@ export async function POST(req: NextRequest) {
       const product = PRODUCTS.find((p) => p.id === item.productId);
       if (!product) throw new Error(`Produit inconnu: ${item.productId}`);
 
-      const basePrice = product.pricing[item.technique] as number;
+      const basePrice    = product.pricing[item.technique] as number;
       const unitPriceTTC = computeUnitPrice({ basePrice, technique: item.technique, placement: item.placement });
       const unitPriceHT  = ttcToHt(unitPriceTTC);
       const totalTTC     = Math.round(unitPriceTTC * item.quantity * 100) / 100;
       const totalHT      = Math.round(unitPriceHT  * item.quantity * 100) / 100;
 
-      // Find color info
       const color = product.colors.find((c) => c.id === item.colorId);
 
       return {
         productId:        product.id,
         productReference: product.reference,
         productName:      product.shortName,
-        productSnapshot:  { ...product, images: [] }, // strip large image arrays if any
+        productSnapshot:  { ...product, images: [] },
         quantity:         item.quantity,
         size:             item.size,
         colorId:          item.colorId,
@@ -79,7 +95,6 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    // Compute cart totals from server-computed unit prices
     const totals = computeCartTotals({
       items: computedItems.map((i) => ({ unitPrice: i.unitPriceTTC, quantity: i.quantity })),
     });
@@ -91,20 +106,22 @@ export async function POST(req: NextRequest) {
     const paymentIntent = await createPaymentIntent({
       amountTTC: totals.totalTTC,
       orderNumber,
-      userEmail: user.email ?? "",
+      userEmail: effectiveEmail,
       metadata: {
         orderNumber,
-        userId:    user.id,
+        userId:    user?.id ?? "guest",
         itemCount: String(computedItems.length),
+        guestEmail: effectiveEmail,
       },
     });
 
-    // ── Insert order in DB ────────────────────────────────────────────────────
+    // ── Insert order in DB (service role bypasses RLS) ────────────────────────
     const { data: orderRow, error: orderError } = await supabase
       .from("orders")
       .insert({
         order_number:             orderNumber,
-        user_id:                  user.id,
+        user_id:                  user?.id ?? null,
+        guest_email:              user ? null : effectiveEmail,
         status:                   "paiement_recu",
         subtotal_ht:              totals.subtotalHT,
         tva:                      totals.tva,
@@ -125,7 +142,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Erreur création commande" }, { status: 500 });
     }
 
-    // Insert order items
+    // ── Insert order items ────────────────────────────────────────────────────
     const itemRows = computedItems.map((item) => ({
       order_id:          orderRow.id,
       product_id:        item.productId,
@@ -148,8 +165,6 @@ export async function POST(req: NextRequest) {
     const { error: itemsError } = await supabase.from("order_items").insert(itemRows);
     if (itemsError) {
       console.error("[CreatePaymentIntent] Items insert:", itemsError);
-      // Order exists but items failed — log and allow payment to proceed
-      // Items can be re-derived from Stripe metadata if needed
     }
 
     return NextResponse.json({

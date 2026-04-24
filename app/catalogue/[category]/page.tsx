@@ -55,6 +55,8 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
   },
 };
 
+const PUBLIC_CATEGORY_IDS = ["tshirts", "polos", "hoodies", "softshells"] as const;
+
 type Props = {
   params: Promise<{ category: string }>;
 };
@@ -102,19 +104,22 @@ export default async function CategoryPage({ params }: Props) {
 
         {/* Category nav */}
         <div className="flex flex-wrap gap-3 mb-10">
-          {Object.entries(CATEGORY_META).map(([id, m]) => (
-            <Link
-              key={id}
-              href={`/catalogue/${id}`}
-              className={`px-4 py-2 text-xs font-semibold border rounded-full transition-colors
-                ${id === category
-                  ? "border-[var(--hm-primary)] text-[var(--hm-primary)]"
-                  : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
-                }`}
-            >
-              {m.short}
-            </Link>
-          ))}
+          {PUBLIC_CATEGORY_IDS.map((id) => {
+            const m = CATEGORY_META[id];
+            return (
+              <Link
+                key={id}
+                href={`/catalogue/${id}`}
+                className={`px-4 py-2 text-xs font-semibold border rounded-full transition-colors
+                  ${id === category
+                    ? "border-[var(--hm-primary)] text-[var(--hm-primary)]"
+                    : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+                  }`}
+              >
+                {m.short}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Products */}

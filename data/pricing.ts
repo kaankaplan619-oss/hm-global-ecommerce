@@ -49,14 +49,14 @@ export const TSHIRT_PRICES = {
 export const HOODIE_PRICES = {
   // B&C WG004 — sweat col rond
   sweat: {
-    dtf:      42.90,
-    flex:     42.90,
+    dtf:      44.90,
+    flex:     44.90,
     broderie: 52.90, // +10€
   },
   // B&C WU620 — hoodie
   hoodie: {
-    dtf:      47.90,
-    flex:     47.90,
+    dtf:      49.90,
+    flex:     49.90,
     broderie: 57.90,
   },
 } as const;
@@ -76,7 +76,7 @@ export const POLO_PRICES = {
   // Kariban K262 — polo jersey entrée de gamme
   jersey: {
     dtf:      0,      // non disponible
-    flex:     22.90,
+    flex:     24.90,
     broderie: 27.90,
   },
   // Kariban K256 — polo manches longues
@@ -153,8 +153,8 @@ export const SWEAT_IDEAL_PRICES = {
 export const TSHIRT_IDEAL_PRICES = {
   // IB320/321/322 — 190g
   base: {
-    dtf:      14.90,
-    flex:     12.90,
+    dtf:      19.90,
+    flex:     19.90,
     broderie: 19.90,
   },
   // IB323 — manches longues
