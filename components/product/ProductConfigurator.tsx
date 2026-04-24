@@ -13,12 +13,18 @@ interface Props {
   product: Product;
   selectedColor?: ProductColor | null;
   onColorChange?: (color: ProductColor | null) => void;
+  onLogoChange?: (f: File | null) => void;
+  onPlacementChange?: (p: Placement) => void;
+  hidePreview?: boolean;
 }
 
 export default function ProductConfigurator({
   product,
   selectedColor,
   onColorChange,
+  onLogoChange,
+  onPlacementChange,
+  hidePreview,
 }: Props) {
   const { addItem } = useCartStore();
 
@@ -64,11 +70,18 @@ export default function ProductConfigurator({
   const availableTechniques = TECHNIQUES.filter((t) => product.techniques.includes(t.id));
   const availablePlacements = PLACEMENTS.filter((p) => product.placements.includes(p.id));
 
+  // Placement change — notifies parent when callback provided
+  const handlePlacementChange = useCallback((p: Placement) => {
+    setPlacement(p);
+    onPlacementChange?.(p);
+  }, [onPlacementChange]);
+
   // File handling
   const handleFileChange = useCallback((file: File | null) => {
     setFileError("");
     if (!file) {
       setLogoFile(null);
+      onLogoChange?.(null);
       return;
     }
     const validation = validateLogoFile(file);
@@ -77,7 +90,8 @@ export default function ProductConfigurator({
       return;
     }
     setLogoFile(file);
-  }, []);
+    onLogoChange?.(file);
+  }, [onLogoChange]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -297,7 +311,7 @@ export default function ProductConfigurator({
             return (
               <button
                 key={plc.id}
-                onClick={() => setPlacement(plc.id)}
+                onClick={() => handlePlacementChange(plc.id)}
                 className={`rounded-[1rem] border p-3 text-center transition-all
                   ${active
                     ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] shadow-[0_10px_24px_rgba(177,63,116,0.08)]"
@@ -400,7 +414,7 @@ export default function ProductConfigurator({
               <p className="text-[11px] text-[var(--hm-text-soft)]">{formatFileSize(logoFile.size)}</p>
             </div>
             <button
-              onClick={() => setLogoFile(null)}
+              onClick={() => { setLogoFile(null); onLogoChange?.(null); }}
               className="text-[var(--hm-text-muted)] transition-colors hover:text-[#b91c1c]"
             >
               <X size={14} />
@@ -421,7 +435,7 @@ export default function ProductConfigurator({
       </div>
 
       {/* ── Aperçu marquage par zones ─────────────────────────── */}
-      {logoPreviewUrl && (
+      {!hidePreview && logoPreviewUrl && (
         <div>
           <label className="label">Aperçu du marquage</label>
           <div className="flex flex-col gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">

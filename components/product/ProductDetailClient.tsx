@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Info } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
+import MockupViewer, { hasMockup } from "@/components/product/MockupViewer";
 import { formatPrice } from "@/data/pricing";
-import type { Product, ProductColor } from "@/types";
+import type { Product, ProductColor, Placement } from "@/types";
 
 type Props = {
   product: Product;
@@ -17,6 +18,8 @@ export default function ProductDetailClient({ product }: Props) {
     [product]
   );
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(defaultColor);
+  const [placement, setPlacement] = useState<Placement>(product.placements[0]);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const minPrice = useMemo(() => {
     const prices = [
@@ -50,13 +53,22 @@ export default function ProductDetailClient({ product }: Props) {
   return (
     <div className="mb-16 grid grid-cols-1 gap-12 lg:grid-cols-2">
       <div className="flex flex-col gap-4">
-        <ProductGallery
-          name={product.name}
-          images={product.images}
-          colors={product.colors}
-          selectedColor={selectedColor}
-          badge={product.badge}
-        />
+        {product.category === "tshirts" && hasMockup(selectedColor?.id ?? "") ? (
+          <MockupViewer
+            colorId={selectedColor?.id ?? ""}
+            placement={placement}
+            logoFile={logoFile}
+            badge={product.badge}
+          />
+        ) : (
+          <ProductGallery
+            name={product.name}
+            images={product.images}
+            colors={product.colors}
+            selectedColor={selectedColor}
+            badge={product.badge}
+          />
+        )}
 
         <div className="rounded-[28px] border border-[var(--hm-line)] bg-white p-6 shadow-[0_18px_48px_rgba(63,45,88,0.06)]">
           <div className="grid grid-cols-2 gap-4">
@@ -130,6 +142,9 @@ export default function ProductDetailClient({ product }: Props) {
           product={product}
           selectedColor={selectedColor}
           onColorChange={handleColorChange}
+          onPlacementChange={setPlacement}
+          onLogoChange={setLogoFile}
+          hidePreview={product.category === "tshirts" && hasMockup(selectedColor?.id ?? "")}
         />
       </div>
     </div>
