@@ -193,7 +193,7 @@ export const PRODUCT_TU01T: Product = {
   badge: "Bestseller",
   supplierName: "falk-ross",
   supplierRef: "TU01T",
-  toptexRef: "TU01T",
+  toptexRef: "CGTU01T",
 };
 
 export const PRODUCT_TW02T: Product = {
@@ -240,7 +240,7 @@ export const PRODUCT_TW02T: Product = {
   seasonal: ["printemps", "ete"],
   supplierName: "falk-ross",
   supplierRef: "TW02T",
-  toptexRef: "TW02T",
+  toptexRef: "CGTW02T",
 };
 
 export const PRODUCT_TU03T: Product = {
@@ -285,7 +285,7 @@ export const PRODUCT_TU03T: Product = {
   badge: "Meilleur rapport qualité/prix",
   supplierName: "falk-ross",
   supplierRef: "TU03T",
-  toptexRef: "TU03T",
+  toptexRef: "CGTU03T",
 };
 
 // ─── HOODIES / SWEATS ────────────────────────────────────────────────────────
@@ -372,7 +372,7 @@ export const PRODUCT_WG004: Product = {
   seasonal: ["automne", "hiver"],
   supplierName: "falk-ross",
   supplierRef: "WG004",
-  toptexRef: "WG004",
+  toptexRef: "CGWG004",
 };
 
 export const PRODUCT_WU620: Product = {
@@ -413,7 +413,7 @@ export const PRODUCT_WU620: Product = {
   badge: "Populaire",
   supplierName: "falk-ross",
   supplierRef: "WU620",
-  toptexRef: "WU620",
+  toptexRef: "CGWU620",
 };
 
 // ─── SOFTSHELLS / VESTES ──────────────────────────────────────────────────────
@@ -493,7 +493,7 @@ export const PRODUCT_JUI62: Product = {
   badge: "Premium",
   supplierName: "falk-ross",
   supplierRef: "JUI62",
-  toptexRef: "JUI62",
+  toptexRef: "CGJUI62",
 };
 
 export const PRODUCT_JWI63: Product = {
@@ -541,7 +541,7 @@ export const PRODUCT_JWI63: Product = {
   badge: "Premium",
   supplierName: "falk-ross",
   supplierRef: "JWI63",
-  toptexRef: "JWI63",
+  toptexRef: "CGJWI63",
 };
 
 // ─── T-SHIRTS iDeal Basic Brand ───────────────────────────────────────────────

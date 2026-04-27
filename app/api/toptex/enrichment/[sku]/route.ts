@@ -1,70 +1,123 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTopTexProductBySku, buildColorImageMap } from "@/lib/toptex";
+import { getAuthHeaders } from "@/lib/toptex";
+
+const TOPTEX_BASE = "https://api.toptex.io";
 
 /**
- * GET /api/toptex/enrichment/{sku}?colors=[{"id":"blanc","label":"Blanc"},...]
+ * GET /api/toptex/enrichment/{catalogRef}
  *
- * Endpoint public (pas d'auth requise — données catalogue fournisseur).
- * Retourne un mapping colorId → imageUrls construit depuis les médias TopTex.
+ * Récupère les images packshot TopTex pour un produit donné par son
+ * catalog_reference (ex. CGTU01T, K262, IB320).
  *
- * Cache : 1 heure côté CDN, stale-while-revalidate 2 h.
+ * Retourne : { colorImages: Record<string, string[]> }
+ *   clé = nom couleur TopTex en minuscules (ex. "white", "black", "navy")
+ *   valeur = tableau d'URLs FACE / BACK / SIDE
+ *
+ * Si les packshots sont bloqués par la charte Photo Library TopTex,
+ * la couleur n'est pas incluse dans la réponse (filtre silencieux).
+ *
+ * Cache CDN : revalidate 1h (données catalogue stables).
  */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ sku: string }> }
 ) {
+  const { sku } = await params;
+
+  if (!sku || sku.length < 2) {
+    return NextResponse.json({ error: "Référence invalide" }, { status: 400 });
+  }
+
   try {
-    const { sku } = await params;
+    const headers = await getAuthHeaders();
 
-    if (!sku || sku.length < 2) {
-      return NextResponse.json({ error: "SKU invalide" }, { status: 400 });
-    }
+    const url =
+      `${TOPTEX_BASE}/v3/products` +
+      `?catalog_reference=${encodeURIComponent(sku)}` +
+      `&usage_right=b2b_b2c` +
+      `&lang=fr`;
 
-    // Récupère les couleurs du produit passées en query param (JSON)
-    const colorsParam = req.nextUrl.searchParams.get("colors");
-    let productColors: Array<{ id: string; label: string }> = [];
-    if (colorsParam) {
-      try {
-        productColors = JSON.parse(decodeURIComponent(colorsParam));
-      } catch {
-        // Ignore — on retournera juste les médias sans mapping
-      }
-    }
+    const res = await fetch(url, {
+      headers,
+      next: { revalidate: 3600 },
+    });
 
-    const toptexProduct = await getTopTexProductBySku(sku);
-
-    if (!toptexProduct) {
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(`[TopTex Enrichment] ${res.status} pour ${sku}:`, body);
       return NextResponse.json(
-        { sku, colorImages: {}, medias: [], colors: [] },
-        {
-          headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
-        }
+        { sku, colorImages: {} },
+        { headers: { "Cache-Control": "public, s-maxage=300" } }
       );
     }
 
-    const colorImages = buildColorImageMap(productColors, toptexProduct);
+    const product = await res.json() as Record<string, unknown>;
 
-    // Retourner aussi les couleurs TopTex brutes pour enrichissement futur
-    const rawColors = (toptexProduct.colors ?? []).map((c) => ({
-      colorCode: c.colorCode ?? "",
-      colorName:
-        typeof c.colorName === "object"
-          ? (c.colorName as Record<string, string>)
-          : { fr: c.colorName as string ?? "" },
-    }));
+    // Vérifier que la réponse est bien un produit (pas une erreur applicative)
+    if (product.errorType || product.errorMessage) {
+      console.warn(`[TopTex Enrichment] Erreur API pour ${sku}:`, product.errorMessage);
+      return NextResponse.json(
+        { sku, colorImages: {} },
+        { headers: { "Cache-Control": "public, s-maxage=300" } }
+      );
+    }
+
+    const rawColors = (product.colors ?? []) as Array<Record<string, unknown>>;
+
+    // Construire colorImages : nom couleur → URLs packshot valides
+    const colorImages: Record<string, string[]> = {};
+
+    for (const color of rawColors) {
+      // Nom de la couleur (le champ s'appelle "colors" dans le JSON TopTex réel)
+      const colorNames =
+        (color.colors as Record<string, string> | undefined) ??
+        (color.colorName as Record<string, string> | undefined) ??
+        {};
+
+      const colorKey = (
+        colorNames.fr ??
+        colorNames.en ??
+        Object.values(colorNames).find((v) => typeof v === "string") ??
+        ""
+      ).toLowerCase().trim();
+
+      if (!colorKey) continue;
+
+      const packshots =
+        (color.packshots as Record<string, unknown> | undefined) ?? {};
+
+      // Extraire les URLs valides (FACE → BACK → SIDE), filtrer les erreurs Photo Library
+      const urls: string[] = [];
+      for (const view of ["FACE", "BACK", "SIDE"]) {
+        const p = packshots[view];
+        if (typeof p === "string" && !p.includes("Please connect")) {
+          urls.push(p);
+        }
+        // Si p est { error: "Please connect to Photo library..." } → ignorer silencieusement
+      }
+
+      if (urls.length > 0) {
+        colorImages[colorKey] = urls;
+      }
+    }
+
+    console.log(
+      `[TopTex Enrichment] ${sku}` +
+      ` | ${rawColors.length} couleurs TopTex` +
+      ` | ${Object.keys(colorImages).length} avec photos`
+    );
 
     return NextResponse.json(
-      { sku, colorImages, rawColors, mediaCount: (toptexProduct.medias ?? []).length },
+      { sku, colorImages },
       {
         headers: {
-          // Cache agressif — les médias changent rarement
           "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
         },
       }
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Erreur inconnue";
-    console.error("[API /toptex/enrichment]", message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[TopTex Enrichment] Erreur:", message);
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

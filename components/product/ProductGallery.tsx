@@ -64,6 +64,95 @@ function isSideOrDetail(src: string): boolean {
   return /-S_/.test(src) || /detail-/.test(src);
 }
 
+// ─── Résolution images TopTex (clés EN) → ID couleur site ────────────────────
+//
+// Le hook useTopTexMedias retourne colorImages dont les clés sont les noms
+// TopTex EN en minuscules ("white", "navy"…).
+// Cette table permet de trouver les images depuis l'ID produit ("blanc", "marine"…).
+
+const TOPTEX_NAME_TO_COLOR_ID: Record<string, string> = {
+  "white":                "blanc",
+  "natural":              "blanc-casse",
+  "raw natural":          "blanc-casse",
+  "sand":                 "beige",
+  "beige":                "beige",
+  "ash":                  "gris",
+  "ash heather":          "gris",
+  "pacific grey":         "gris",
+  "black":                "noir",
+  "black pure":           "noir",
+  "used black":           "noir",
+  "navy":                 "marine",
+  "navy blue":            "marine",
+  "light navy":           "marine",
+  "french navy heather":  "marine",
+  "navy heather":         "marine",
+  "sport grey":           "gris",
+  "grey":                 "gris",
+  "oxford grey":          "gris",
+  "grey heather":         "gris-melange",
+  "dark grey":            "gris-anthracite",
+  "anthracite":           "anthracite",
+  "burgundy":             "bordeaux",
+  "wine":                 "bordeaux",
+  "deep red":             "bordeaux",
+  "red":                  "rouge",
+  "fire red":             "rouge",
+  "light royal blue":     "bleu-royal",
+  "royal blue":           "bleu-royal",
+  "cobalt blue":          "bleu-royal",
+  "electric blue":        "bleu-royal",
+  "sky blue":             "bleu-ciel",
+  "azure":                "bleu-ciel",
+  "light blue":           "bleu-ciel",
+  "bottle green":         "vert-bouteille",
+  "forest green":         "vert-bouteille",
+  "kelly green":          "vert-kelly",
+  "orchid green":         "vert-kelly",
+  "pistachio":            "vert-kelly",
+  "orange":               "orange",
+  "apricot":              "rose",
+  "solar yellow":         "jaune",
+  "gold":                 "or",
+  "real turquoise":       "turquoise",
+  "turquoise":            "turquoise",
+  "atoll":                "turquoise",
+  "atoll blue":           "turquoise",
+  "diva blue":            "turquoise",
+  "fuchsia":              "fuchsia",
+  "millennial pink":      "rose",
+  "radiant purple":       "violet",
+  "urban purple":         "violet",
+  "urban khaki":          "kaki",
+  "millennial khaki":     "kaki",
+  "light khaki":          "kaki",
+  "khaki":                "kaki",
+  "sage":                 "sauge",
+  "bear brown":           "kaki",
+  "denim":                "denim",
+};
+
+/**
+ * Cherche dans les images TopTex (clés EN minuscules) celles qui correspondent
+ * à notre ID couleur produit.
+ * Retourne [] si aucune image n'est disponible.
+ */
+function resolveTopTexImages(
+  colorId: string,
+  colorImages: Record<string, string[]>
+): string[] {
+  // 1. Correspondance directe (cas où la clé coïnciderait)
+  if (colorImages[colorId]?.length) return colorImages[colorId];
+
+  // 2. Chercher toutes les clés TopTex qui correspondent à notre colorId
+  for (const [toptexName, mappedId] of Object.entries(TOPTEX_NAME_TO_COLOR_ID)) {
+    if (mappedId === colorId && colorImages[toptexName]?.length) {
+      return colorImages[toptexName];
+    }
+  }
+  return [];
+}
+
 // ─── Construction de la galerie pour la couleur sélectionnée ─────────────────
 
 function buildVariantGallery(
@@ -74,8 +163,9 @@ function buildVariantGallery(
   if (images.length === 0) return [""];
 
   // Priorité 1 : images TopTex per-color si disponibles
-  if (selectedColor && colorImages?.[selectedColor.id]?.length) {
-    return colorImages[selectedColor.id];
+  if (selectedColor && colorImages && Object.keys(colorImages).length > 0) {
+    const topTexUrls = resolveTopTexImages(selectedColor.id, colorImages);
+    if (topTexUrls.length > 0) return topTexUrls;
   }
 
   if (!selectedColor) return images;
@@ -108,8 +198,11 @@ export function colorHasImages(
   colorImages?: Record<string, string[]>
 ): boolean {
   if (images.length === 0) return false;
-  // Si on a des images TopTex pour cette couleur, c'est bon
-  if (colorImages?.[color.id]?.length) return true;
+  // Images TopTex disponibles pour cette couleur (via mapping EN → ID)
+  if (colorImages && Object.keys(colorImages).length > 0) {
+    if (resolveTopTexImages(color.id, colorImages).length > 0) return true;
+  }
+  // Fallback : correspondance par nom de fichier local
   const targetKeys = COLOR_IMAGE_MAP[color.id] ?? [];
   const keys =
     targetKeys.length > 0

@@ -1,14 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { Info } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
-import MockupViewer, { hasMockup } from "@/components/product/MockupViewer";
 import TopTexStockBadge from "@/components/product/TopTexStockBadge";
 import { useTopTexMedias } from "@/hooks/useTopTexMedias";
+import { hasMockup } from "@/lib/mockup-utils";
 import { formatPrice } from "@/data/pricing";
 import type { Product, ProductColor, Placement } from "@/types";
+
+// Chargé uniquement côté client — Fabric.js accède à `window.location`
+// et ne peut pas s'exécuter dans le contexte SSR de Next.js.
+const MockupViewer = dynamic(
+  () => import("@/components/product/MockupViewer"),
+  { ssr: false }
+);
 
 type Props = {
   product: Product;

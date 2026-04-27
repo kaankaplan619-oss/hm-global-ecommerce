@@ -4,19 +4,31 @@
  * Base URL : https://api.toptex.io
  *
  * Auth — deux headers requis simultanément sur tous les appels :
- *   Authorization: Bearer {JWT}          ← token OIDC via POST /v3/authenticate
- *   X-Api-Key: {TOPTEX_API_KEY}         ← clé du portail portal.toptex.io/apis
+ *   X-Toptex-Authorization: {JWT}   ← token OIDC via POST /v3/authenticate
+ *   X-Api-Key: {TOPTEX_API_KEY}     ← clé du portail portal.toptex.io/apis
  *
- * Note : contrairement au reste, POST /v3/authenticate n'utilise PAS
- * Authorization mais doit avoir X-Api-Key + body { username, password }.
+ * Endpoint produit correct (découvert via diagnostic 27/04/2026) :
+ *   GET /v3/products?catalog_reference={CGTU01T}&usage_right=b2b_b2c
+ *   ⚠️  NE PAS utiliser ?sku= → retourne toujours tableau vide
+ *   ⚠️  Les refs B&C ont le préfixe CG : TU01T → CGTU01T
+ *
+ * Structure réelle JSON produit :
+ *   product.colors[].colors.fr         ← nom couleur (EN malgré le champ fr)
+ *   product.colors[].colorsHexa[0]     ← hex couleur
+ *   product.colors[].packshots.FACE    ← URL image face (ou {error:...} si charte non acceptée)
+ *   product.colors[].packshots.BACK    ← URL image dos
+ *   product.colors[].packshots.SIDE    ← URL image côté
+ *   product.colors[].sizes[0].colorCode ← code couleur interne TopTex
+ *
+ * Photo Library :
+ *   Les packshots retournent { error: "Please connect to Photo library to accept user charter..." }
+ *   tant que la charte photos n'est pas acceptée sur portal.toptex.io.
+ *   buildColorImageMap() gère ce cas → retourne {} sans casser l'app.
  *
  * Variables d'environnement nécessaires (serveur uniquement) :
- *   TOPTEX_API_KEY      — clé visible sur portal.toptex.io/apis (commence par VmA3i...)
+ *   TOPTEX_API_KEY      — clé visible sur portal.toptex.io/apis
  *   TOPTEX_USERNAME     — identifiant B2B (ex. tofr_hmglobalagence)
  *   TOPTEX_PASSWORD     — mot de passe du compte TopTex
- *
- * Paramètre usage_right requis sur les endpoints produits :
- *   'b2b_uniquement' | 'b2c_uniquement' | 'b2b_b2c'
  *
  * ⚠️  Ne jamais importer ce fichier dans un Client Component.
  *     Toujours passer par les routes /api/toptex/* côté navigateur.
@@ -33,13 +45,6 @@ type UsageRight = "b2b_uniquement" | "b2c_uniquement" | "b2b_b2c";
 let cachedToken: string | null = null;
 let tokenExpiresAt: number = 0;
 
-/**
- * Obtient un JWT via POST /v3/authenticate.
- * Met le token en cache et le renouvelle 60s avant expiration.
- *
- * Découverte : l'endpoint authenticate requiert X-Api-Key (pas Authorization).
- * La réponse contient { username, token, expiry_time, expiry_time_timezone }.
- */
 async function getJwtToken(): Promise<string> {
   const now = Date.now();
 
@@ -63,7 +68,6 @@ async function getJwtToken(): Promise<string> {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      // Obligatoire sur authenticate — différent des autres endpoints
       "X-Api-Key": apiKey,
     },
     body: JSON.stringify({ username, password }),
@@ -77,7 +81,6 @@ async function getJwtToken(): Promise<string> {
     );
   }
 
-  // Réponse : { "username": "...", "token": "...", "expiry_time": "...", "expiry_time_timezone": "..." }
   const data = await res.json() as { username?: string; token?: string; expiry_time?: string };
   const token = data.token;
 
@@ -85,7 +88,6 @@ async function getJwtToken(): Promise<string> {
     throw new Error("[TopTex] Réponse auth sans champ 'token'");
   }
 
-  // Parse expiry_time (format "2026-04-27T19:30:59.000Z")
   const expiresAt = data.expiry_time ? new Date(data.expiry_time).getTime() : now + 55 * 60_000;
   cachedToken = token;
   tokenExpiresAt = expiresAt;
@@ -95,16 +97,14 @@ async function getJwtToken(): Promise<string> {
 
 // ── Headers complets pour tous les appels (hors authenticate) ─────────────────
 
-async function getAuthHeaders(): Promise<HeadersInit> {
+export async function getAuthHeaders(): Promise<HeadersInit> {
   const apiKey = process.env.TOPTEX_API_KEY;
   if (!apiKey) throw new Error("[TopTex] TOPTEX_API_KEY non défini");
 
   const jwt = await getJwtToken();
 
   return {
-    // JWT OIDC dans X-Toptex-Authorization (découvert empiriquement)
     "X-Toptex-Authorization": jwt,
-    // Clé de souscription portal.toptex.io
     "X-Api-Key": apiKey,
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -131,7 +131,7 @@ async function toptexFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// ── Types — structure réelle découverte le 27/04/2026 ─────────────────────────
 
 export interface TopTexLocalizedString {
   fr?: string;
@@ -144,40 +144,79 @@ export interface TopTexLocalizedString {
   [key: string]: string | undefined;
 }
 
-export interface TopTexColor {
-  colorCode?: string;
-  colorName?: string | TopTexLocalizedString;
-  colorLabel?: string;
+/**
+ * Variant couleur TopTex réel.
+ * ⚠️  Le champ `colors.fr` contient en fait du texte ANGLAIS (ex. "Black", "White").
+ */
+export interface TopTexColorVariant {
+  /** Noms localisés — mais généralement en anglais même pour .fr */
+  colors: {
+    fr?: string;
+    en?: string;
+    de?: string;
+    es?: string;
+    it?: string;
+    nl?: string;
+    pt?: string;
+    [key: string]: string | undefined;
+  };
+  colorsHexa:      string[];
+  colorsCMYK?:     string[];
+  colorsDominant?: Array<{ fr?: string; en?: string }>;
+  colorsPantone?:  string[];
+  colorsRGB?:      string[];
+  createdDate?:    string;
+  lastChange?:     string;
+  saleState?:      string;
+  /**
+   * Images produit par vue.
+   * Peut être une URL string ou { error: "..." } si charte Photo Library non acceptée.
+   */
+  packshots?: {
+    FACE?: string | { error: string };
+    BACK?: string | { error: string };
+    SIDE?: string | { error: string };
+    [key: string]: string | { error: string } | undefined;
+  };
+  /** Variantes taille — contient colorCode à sizes[0].colorCode */
+  sizes?: TopTexSizeVariant[];
   [key: string]: unknown;
 }
 
-export interface TopTexMedia {
-  url?: string;
-  type?: string;
-  colorCode?: string;
-  [key: string]: unknown;
-}
-
-export interface TopTexSize {
-  size?: string;
-  label?: string;
-  code?: string;
+export interface TopTexSizeVariant {
+  barCode?:          string;
+  colorCode?:        string;
+  sku?:              string;
+  size?:             string;
+  sizeCode?:         string;
+  saleState?:        string;
+  ean?:              string;
+  publicUnitPrice?:  string;
+  isDiscontinued?:   number;
+  isNew?:            number;
+  productReference?: string;
   [key: string]: unknown;
 }
 
 export interface TopTexProduct {
   catalogReference?: string;
-  sku?: string;
-  brand?: string;
-  designation?: TopTexLocalizedString | string;
-  description?: TopTexLocalizedString | string;
-  composition?: TopTexLocalizedString | string;
-  averageWeight?: string;
-  colors?: TopTexColor[];
-  medias?: TopTexMedia[];
-  sizes?: (string | TopTexSize)[];
-  createdDate?: string;
-  updatedDate?: string;
+  /** SKU au sens TopTex — différent du catalog_reference */
+  sku?:              string;
+  brand?:            string;
+  designation?:      TopTexLocalizedString | string;
+  description?:      TopTexLocalizedString | string;
+  composition?:      TopTexLocalizedString | string;
+  averageWeight?:    string;
+  /** Tableau de variantes couleur avec packshots par vue */
+  colors?:           TopTexColorVariant[];
+  /** Image produit générique — souvent bloquée par la charte Photo Library */
+  images?:           unknown;
+  saleState?:        string;
+  supplierReference?: string;
+  family?:           string;
+  sub_family?:       string;
+  gender?:           string;
+  fit?:              string;
   [key: string]: unknown;
 }
 
@@ -198,7 +237,7 @@ export interface TopTexPaginatedResponse<T> {
   page_size: string | number;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ── Helpers génériques ────────────────────────────────────────────────────────
 
 /** Retourne le nom FR d'un champ localisé */
 export function getLabel(
@@ -210,10 +249,185 @@ export function getLabel(
   return field[lang] ?? field.en ?? Object.values(field).find(Boolean) ?? "";
 }
 
-/** Retourne la première image d'un produit */
+/** Retourne la première image d'un produit (toutes vues confondues) */
 export function getMainImage(product: TopTexProduct): string {
-  const medias = product.medias ?? [];
-  return (medias.find((m) => m.url)?.url ?? "") as string;
+  for (const color of product.colors ?? []) {
+    for (const view of ["FACE", "BACK", "SIDE"] as const) {
+      const p = color.packshots?.[view];
+      if (typeof p === "string" && p.startsWith("http")) return p;
+    }
+  }
+  return "";
+}
+
+// ── Normalization couleurs TopTex EN → ID couleur site ────────────────────────
+//
+// TopTex stocke les noms de couleurs EN ANGLAIS même dans le champ `colors.fr`.
+// Certaines marques ajoutent un préfixe : "Ideal Black", "NS Navy".
+// Cette fonction nettoie le préfixe puis mappe vers l'ID couleur de notre catalogue.
+//
+// Règles : priorité du plus spécifique au moins spécifique.
+
+/**
+ * Préfixes marque à retirer avant la normalisation.
+ * Ex. "Ideal Black" → "Black", "NS Navy" → "Navy"
+ */
+const BRAND_PREFIXES = [
+  /^ideal\s+/i,
+  /^ns\s+/i,
+  /^kariban\s+/i,
+  /^b&?c\s+/i,
+];
+
+const COLOR_NORMALIZE_MAP: Array<[RegExp, string]> = [
+  // ── Blanc / Naturel ───────────────────────────────────────────────────────────
+  [/^white$/i,                     "blanc"],
+  [/^raw natural$/i,               "blanc-casse"],
+  [/^natural$/i,                   "blanc-casse"],
+  [/^sand$/i,                      "beige"],
+  [/^beige$/i,                     "beige"],
+
+  // ── Gris léger (avant gris standard) ─────────────────────────────────────────
+  [/^ash heather$/i,               "gris"],
+  [/^pacific grey$/i,              "gris"],
+  [/^ash$/i,                       "gris"],
+
+  // ── Noir ──────────────────────────────────────────────────────────────────────
+  [/^black pure$/i,                "noir"],
+  [/^used black$/i,                "noir"],
+  [/^black$/i,                     "noir"],
+
+  // ── Marine (avant navy blue qui est aussi marine) ─────────────────────────────
+  [/^french navy heather$/i,       "marine"],
+  [/^navy heather$/i,              "marine"],
+  [/^light navy$/i,                "marine"],
+  [/^navy blue$/i,                 "marine"],
+  [/^navy$/i,                      "marine"],
+
+  // ── Gris standard ─────────────────────────────────────────────────────────────
+  [/^sport grey$/i,                "gris"],
+  [/^grey heather$/i,              "gris-melange"],
+  [/^oxford grey$/i,               "gris"],
+  [/^dark grey$/i,                 "gris-anthracite"],
+  [/^anthracite$/i,                "anthracite"],
+  [/^grey$/i,                      "gris"],
+
+  // ── Bordeaux / Wine ───────────────────────────────────────────────────────────
+  [/^burgundy$/i,                  "bordeaux"],
+  [/^wine$/i,                      "bordeaux"],
+  [/^deep red$/i,                  "bordeaux"],
+
+  // ── Rouge ─────────────────────────────────────────────────────────────────────
+  [/^fire red$/i,                  "rouge"],
+  [/^red$/i,                       "rouge"],
+
+  // ── Bleu Royal (avant générique blue) ────────────────────────────────────────
+  [/^light royal blue$/i,          "bleu-royal"],
+  [/^royal blue$/i,                "bleu-royal"],
+  [/^cobalt blue$/i,               "bleu-royal"],
+  [/^electric blue$/i,             "bleu-royal"],
+
+  // ── Bleu Ciel ─────────────────────────────────────────────────────────────────
+  [/^sky blue$/i,                  "bleu-ciel"],
+  [/^azure$/i,                     "bleu-ciel"],
+  [/^light blue$/i,                "bleu-ciel"],
+
+  // ── Vert ──────────────────────────────────────────────────────────────────────
+  [/^bottle green$/i,              "vert-bouteille"],
+  [/^forest green$/i,              "vert-bouteille"],   // iDeal "Forest Green"
+  [/^kelly green$/i,               "vert-kelly"],
+  [/^orchid green$/i,              "vert-kelly"],
+  [/^pistachio$/i,                 "vert-kelly"],
+
+  // ── Orange ────────────────────────────────────────────────────────────────────
+  [/^orange$/i,                    "orange"],
+  [/^apricot$/i,                   "rose"],             // Apricot = rose-pêche
+
+  // ── Jaune / Or ────────────────────────────────────────────────────────────────
+  [/^solar yellow$/i,              "jaune"],
+  [/^yellow$/i,                    "jaune"],
+  [/^gold$/i,                      "or"],
+
+  // ── Turquoise ─────────────────────────────────────────────────────────────────
+  [/^real turquoise$/i,            "turquoise"],
+  [/^turquoise$/i,                 "turquoise"],
+  [/^atoll blue$/i,                "turquoise"],        // iDeal "Atoll Blue"
+  [/^atoll$/i,                     "turquoise"],
+  [/^diva blue$/i,                 "turquoise"],
+
+  // ── Rose / Fuchsia ────────────────────────────────────────────────────────────
+  [/^fuchsia$/i,                   "fuchsia"],
+  [/^millennial pink$/i,           "rose"],
+
+  // ── Violet / Purple ───────────────────────────────────────────────────────────
+  [/^radiant purple$/i,            "violet"],
+  [/^urban purple$/i,              "violet"],
+
+  // ── Kaki / Sage / Brun ────────────────────────────────────────────────────────
+  [/^urban khaki$/i,               "kaki"],
+  [/^millennial khaki$/i,          "kaki"],
+  [/^light khaki$/i,               "kaki"],
+  [/^khaki$/i,                     "kaki"],
+  [/^sage$/i,                      "sauge"],
+  [/^bear brown$/i,                "kaki"],
+
+  // ── Denim ─────────────────────────────────────────────────────────────────────
+  [/^denim$/i,                     "denim"],
+];
+
+/**
+ * Convertit un nom de couleur TopTex (en anglais, parfois préfixé par la marque)
+ * vers l'ID couleur du site.
+ *
+ * Gère les préfixes marque : "Ideal Black" → "noir", "NS Navy" → "marine".
+ * Retourne null si aucune correspondance.
+ */
+export function normalizeTopTexColorName(name: string): string | null {
+  let trimmed = name.trim();
+
+  // Retirer le préfixe marque si présent
+  for (const prefix of BRAND_PREFIXES) {
+    trimmed = trimmed.replace(prefix, "");
+  }
+  trimmed = trimmed.trim();
+
+  for (const [regex, id] of COLOR_NORMALIZE_MAP) {
+    if (regex.test(trimmed)) return id;
+  }
+  return null;
+}
+
+// ── Helpers couleur/image ─────────────────────────────────────────────────────
+
+/** Extrait le nom EN/FR depuis une variante couleur TopTex */
+function getTopTexColorName(tc: TopTexColorVariant): string {
+  if (!tc.colors) return "";
+  // TopTex met le même texte anglais dans tous les champs langue
+  return (
+    tc.colors.en ??
+    tc.colors.fr ??
+    Object.values(tc.colors).find((v): v is string => typeof v === "string") ??
+    ""
+  );
+}
+
+/**
+ * Extrait les URLs packshot valides (filtre les erreurs Photo Library).
+ * FACE → BACK → SIDE : ordre prioritaire pour la galerie.
+ */
+function extractPackshotUrls(
+  packshots: TopTexColorVariant["packshots"] | undefined
+): string[] {
+  if (!packshots) return [];
+  const urls: string[] = [];
+  for (const view of ["FACE", "BACK", "SIDE"] as const) {
+    const p = packshots[view];
+    if (typeof p === "string" && (p.startsWith("http") || p.startsWith("/"))) {
+      urls.push(p);
+    }
+    // Si p est { error: "..." } → Photo Library non acceptée → ignorer silencieusement
+  }
+  return urls;
 }
 
 // ── API calls ──────────────────────────────────────────────────────────────────
@@ -233,20 +447,47 @@ export async function getTopTexProducts(
 }
 
 /**
- * GET /v3/products?sku={sku}&usage_right={right}
- * Produit unique par SKU ou référence catalogue.
- * Retourne null si non trouvé.
+ * GET /v3/products?catalog_reference={ref}&usage_right={right}
+ *
+ * IMPORTANT : utilise `catalog_reference` (pas `sku`).
+ * Pour les produits B&C, le catalog_reference inclut le préfixe CG :
+ *   TU01T → CGTU01T
+ *
+ * Retourne le produit complet (objet direct, pas un tableau).
+ * Retourne null si non trouvé ou erreur 404.
  */
 export async function getTopTexProductBySku(
-  sku: string,
+  catalogRef: string,
   usageRight: UsageRight = USAGE_RIGHT
 ): Promise<TopTexProduct | null> {
   try {
-    const data = await toptexFetch<TopTexProduct[] | TopTexProduct>(
-      `/v3/products?sku=${encodeURIComponent(sku)}&usage_right=${encodeURIComponent(usageRight)}`
+    const data = await toptexFetch<unknown>(
+      `/v3/products?catalog_reference=${encodeURIComponent(catalogRef)}&usage_right=${encodeURIComponent(usageRight)}`
     );
-    if (Array.isArray(data)) return data[0] ?? null;
-    return data ?? null;
+
+    // L'API retourne le produit directement (objet JSON, pas un tableau)
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      const obj = data as Record<string, unknown>;
+
+      // Vérifier que c'est bien un produit et pas une réponse d'erreur
+      if (obj.errorType || obj.errorMessage) {
+        console.warn(`[TopTex] Erreur API pour catalog_reference=${catalogRef}:`, obj.errorMessage);
+        return null;
+      }
+
+      // Un produit valide a catalogReference, colors, ou designation
+      if (obj.catalogReference || obj.colors || obj.designation) {
+        return obj as TopTexProduct;
+      }
+    }
+
+    // Si tableau vide : référence inconnue
+    if (Array.isArray(data) && data.length === 0) {
+      console.warn(`[TopTex] catalog_reference=${catalogRef} inconnu de l'API`);
+      return null;
+    }
+
+    return null;
   } catch (err) {
     if (err instanceof Error && err.message.includes("404")) return null;
     throw err;
@@ -260,10 +501,8 @@ export interface TopTexStockItem {
   colorName?: string | TopTexLocalizedString;
   sizeCode?: string;
   size?: string;
-  /** Quantité disponible en stock */
   quantity?: number;
   available?: number;
-  /** Date de réapprovisionnement estimée (ISO) */
   expectedDate?: string;
   [key: string]: unknown;
 }
@@ -271,7 +510,6 @@ export interface TopTexStockItem {
 export interface TopTexInventoryResponse {
   catalogReference?: string;
   sku?: string;
-  /** Résumé rapide : true si au moins 1 article en stock */
   inStock?: boolean;
   items?: TopTexStockItem[];
   stock?: TopTexStockItem[];
@@ -283,7 +521,6 @@ export interface TopTexPriceItem {
   colorCode?: string;
   sizeCode?: string;
   size?: string;
-  /** Prix catalogue HT (€) */
   price?: number;
   unitPrice?: number;
   priceHT?: number;
@@ -295,7 +532,6 @@ export interface TopTexPriceResponse {
   catalogReference?: string;
   sku?: string;
   currency?: string;
-  /** Prix unitaire de base HT */
   basePrice?: number;
   price?: number;
   items?: TopTexPriceItem[];
@@ -303,24 +539,15 @@ export interface TopTexPriceResponse {
   [key: string]: unknown;
 }
 
-/**
- * Résumé simplifié du stock pour l'affichage côté client.
- */
 export interface TopTexStockSummary {
   inStock: boolean;
   totalUnits: number;
-  /** Prix de base HT (€) — null si inconnu */
   basePriceHT: number | null;
-  /** Dernier fetch (timestamp ISO) */
   fetchedAt: string;
 }
 
 // ── API calls (inventory & price) ─────────────────────────────────────────────
 
-/**
- * GET /v3/products/{sku}/inventory
- * Stock d'un produit par SKU.
- */
 export async function getTopTexInventory(
   sku: string
 ): Promise<TopTexInventoryResponse | null> {
@@ -333,10 +560,6 @@ export async function getTopTexInventory(
   }
 }
 
-/**
- * GET /v3/products/{sku}/price
- * Prix fournisseur d'un produit par SKU.
- */
 export async function getTopTexPrice(
   sku: string
 ): Promise<TopTexPriceResponse | null> {
@@ -349,72 +572,56 @@ export async function getTopTexPrice(
   }
 }
 
-// ── Color-image mapping helper ────────────────────────────────────────────────
+// ── Color-image mapping helpers ───────────────────────────────────────────────
 
 /**
- * Construit un mapping colorId → imageUrls à partir des médias TopTex.
+ * Construit un mapping colorId → imageUrls depuis les packshots TopTex.
  *
  * Logique :
- *   1. Récupère les couleurs TopTex (code → nom FR)
- *   2. Regroupe les médias par colorCode
- *   3. Pour chaque couleur de notre catalogue, cherche le code TopTex dont
- *      le nom FR correspond au label FR du produit
+ *   1. Pour chaque couleur TopTex, normalise son nom EN → ID couleur site
+ *   2. Extrait les URLs packshot FACE/BACK/SIDE (filtre erreurs Photo Library)
+ *   3. Pour chaque couleur produit HM qui matche, associe les URLs
  *
- * Utilisé côté serveur ET côté client (via /api/toptex/enrichment/[sku]).
+ * Si les packshots sont bloqués (charte Photo Library), retourne {} sans erreur.
+ * L'app utilise alors les images locales comme fallback.
  */
 export function buildColorImageMap(
   productColors: Array<{ id: string; label: string }>,
   toptexProduct: TopTexProduct
 ): Record<string, string[]> {
-  const toptexColors = (toptexProduct.colors ?? []) as TopTexColor[];
-  const medias       = (toptexProduct.medias  ?? []) as TopTexMedia[];
+  const toptexColors = (toptexProduct.colors ?? []) as TopTexColorVariant[];
 
-  // colorCode → nom FR normalisé
-  const codeToFrName: Record<string, string> = {};
+  // Pré-calculer normalizedId → variant TopTex (favori = celui avec le plus d'images)
+  const byNormalizedId: Record<string, TopTexColorVariant> = {};
   for (const tc of toptexColors) {
-    if (!tc.colorCode) continue;
-    const code = String(tc.colorCode);
-    let fr = "";
-    if (typeof tc.colorName === "object" && tc.colorName !== null) {
-      fr = (tc.colorName as TopTexLocalizedString).fr
-        ?? (tc.colorName as TopTexLocalizedString).en
-        ?? Object.values(tc.colorName as TopTexLocalizedString).find(Boolean)
-        ?? "";
-    } else if (typeof tc.colorName === "string") {
-      fr = tc.colorName;
+    const name = getTopTexColorName(tc);
+    if (!name) continue;
+    const id = normalizeTopTexColorName(name);
+    if (!id) {
+      // Log en dev pour détecter les couleurs non mappées
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[TopTex] Couleur non mappée : "${name}" (${toptexProduct.catalogReference})`);
+      }
+      continue;
     }
-    codeToFrName[code] = fr.toLowerCase().trim();
+    if (!byNormalizedId[id]) {
+      byNormalizedId[id] = tc;
+    } else {
+      // Préférer le variant avec des URLs réelles
+      const existing = extractPackshotUrls(byNormalizedId[id].packshots).length;
+      const incoming = extractPackshotUrls(tc.packshots).length;
+      if (incoming > existing) byNormalizedId[id] = tc;
+    }
   }
 
-  // colorCode → tableau d'URLs
-  const codeToImages: Record<string, string[]> = {};
-  for (const media of medias) {
-    if (!media.url || !media.colorCode) continue;
-    const code = String(media.colorCode);
-    if (!codeToImages[code]) codeToImages[code] = [];
-    codeToImages[code].push(media.url as string);
-  }
-
-  // Associer les couleurs produit HM aux codes TopTex par correspondance de nom FR
+  // Associer aux couleurs produit HM
   const result: Record<string, string[]> = {};
   for (const color of productColors) {
-    const labelLower = color.label.toLowerCase().trim();
-
-    const [matchCode] =
-      Object.entries(codeToFrName).find(([, frName]) => {
-        if (!frName) return false;
-        return (
-          frName === labelLower ||
-          frName.startsWith(labelLower) ||
-          labelLower.startsWith(frName) ||
-          // "gris chiné" ↔ "gris" : tolérance partielle
-          (labelLower.length >= 4 && frName.includes(labelLower)) ||
-          (frName.length >= 4 && labelLower.includes(frName))
-        );
-      }) ?? [];
-
-    if (matchCode && codeToImages[matchCode]?.length) {
-      result[color.id] = codeToImages[matchCode];
+    const tc = byNormalizedId[color.id];
+    if (!tc) continue;
+    const urls = extractPackshotUrls(tc.packshots);
+    if (urls.length > 0) {
+      result[color.id] = urls;
     }
   }
 
@@ -422,9 +629,32 @@ export function buildColorImageMap(
 }
 
 /**
- * Résumé agrégé stock + prix pour affichage rapide.
- * Fait deux appels en parallèle et retourne un objet simplifié.
+ * Retourne la liste des IDs couleur site qui existent dans TopTex
+ * (indépendamment de la disponibilité des photos).
+ *
+ * Utilisé pour savoir si une couleur est "commandable" même sans packshot.
  */
+export function buildAvailableColorIds(
+  productColors: Array<{ id: string; label: string }>,
+  toptexProduct: TopTexProduct
+): string[] {
+  const toptexColors = (toptexProduct.colors ?? []) as TopTexColorVariant[];
+
+  const normalizedIds = new Set<string>();
+  for (const tc of toptexColors) {
+    const name = getTopTexColorName(tc);
+    if (!name) continue;
+    const id = normalizeTopTexColorName(name);
+    if (id) normalizedIds.add(id);
+  }
+
+  return productColors
+    .filter((c) => normalizedIds.has(c.id))
+    .map((c) => c.id);
+}
+
+// ── Résumé agrégé stock + prix ────────────────────────────────────────────────
+
 export async function getTopTexStockSummary(
   sku: string
 ): Promise<TopTexStockSummary> {
@@ -433,7 +663,6 @@ export async function getTopTexStockSummary(
     getTopTexPrice(sku),
   ]);
 
-  // Compter les unités disponibles depuis les différentes formes de réponse
   let totalUnits = 0;
 
   if (inventory) {
@@ -448,19 +677,16 @@ export async function getTopTexStockSummary(
         return sum + qty;
       }, 0);
     } else if (inventory.colors) {
-      // Format { WHITE: { S: 50, M: 100 }, ... }
       for (const colorSizes of Object.values(inventory.colors)) {
         for (const qty of Object.values(colorSizes)) {
           totalUnits += qty;
         }
       }
     } else if (typeof inventory.inStock === "boolean") {
-      // L'API retourne directement un champ inStock
       totalUnits = inventory.inStock ? 1 : 0;
     }
   }
 
-  // Extraire le prix de base HT
   let basePriceHT: number | null = null;
   if (price) {
     const raw =
@@ -482,7 +708,6 @@ export async function getTopTexStockSummary(
 
 /**
  * GET /v3/attributes?attributes={type}
- * Attributs produits.
  */
 export async function getTopTexAttributes(
   attributeType = "all"

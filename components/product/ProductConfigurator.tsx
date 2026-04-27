@@ -138,39 +138,47 @@ export default function ProductConfigurator({
         </label>
         <div className="flex flex-wrap gap-2">
           {product.colors.map((c) => {
-            const hasPhoto = colorHasImages(product.images, c, colorImages);
+            // Couleur barrée uniquement si vraiment indisponible dans notre catalogue
             const unavailable = !c.available;
+            // Photo disponible = image locale OU packshot TopTex
+            const hasPhoto = colorHasImages(product.images, c, colorImages);
+            // Photo manquante mais couleur commandable (ex. packshot bloqué par charte TopTex)
+            const photoMissing = !unavailable && !hasPhoto;
+
             return (
               <button
                 key={c.id}
                 onClick={() => !unavailable && handleColorChange(c)}
                 disabled={unavailable}
-                title={
-                  unavailable
-                    ? `${c.label} — rupture de stock`
-                    : !hasPhoto
-                    ? `${c.label} — photo non disponible`
-                    : c.label
-                }
+                title={unavailable ? `${c.label} — rupture de stock` : c.label}
                 className={`relative h-9 min-w-9 rounded-full border-2 transition-all
-                  ${unavailable ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:scale-105"}
+                  ${unavailable
+                    ? "cursor-not-allowed opacity-30"
+                    : "cursor-pointer hover:scale-105"
+                  }
                   ${color?.id === c.id
                     ? "scale-105 border-[var(--hm-primary)] shadow-[0_8px_20px_rgba(177,63,116,0.18)]"
                     : "border-white shadow-[inset_0_0_0_1px_var(--hm-line)]"
                   }
-                  ${!unavailable && !hasPhoto ? "opacity-50" : ""}
                 `}
                 style={{ backgroundColor: c.hex }}
               >
-                {/* Croix indiquant l'absence de photo */}
-                {!unavailable && !hasPhoto && (
+                {/* Croix = uniquement pour couleur vraiment indisponible */}
+                {unavailable && (
                   <span
                     className="pointer-events-none absolute inset-0 flex items-center justify-center"
                     aria-hidden="true"
                   >
-                    <span className="h-[1px] w-4 rotate-45 bg-white/70 absolute" />
-                    <span className="h-[1px] w-4 -rotate-45 bg-white/70 absolute" />
+                    <span className="absolute h-[1px] w-4 rotate-45 bg-white/70" />
+                    <span className="absolute h-[1px] w-4 -rotate-45 bg-white/70" />
                   </span>
+                )}
+                {/* Petit indicateur photo manquante (point) — commandable mais sans visuel */}
+                {photoMissing && (
+                  <span
+                    className="pointer-events-none absolute bottom-0 right-0 h-2 w-2 rounded-full border border-white bg-[var(--hm-text-muted)]"
+                    aria-hidden="true"
+                  />
                 )}
                 <span className="sr-only">{c.label}</span>
               </button>
@@ -179,7 +187,7 @@ export default function ProductConfigurator({
         </div>
         {color && !colorHasImages(product.images, color, colorImages) && (
           <p className="mt-1.5 text-[11px] text-[var(--hm-text-muted)]">
-            Photo non disponible pour cette couleur — vous pouvez tout de même la commander.
+            Visuel non disponible pour cette couleur — vous pouvez tout de même la commander.
           </p>
         )}
       </div>
