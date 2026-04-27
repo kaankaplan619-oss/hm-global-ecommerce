@@ -15,10 +15,12 @@ import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/data/pricing";
 
 // ─── Stripe singleton ─────────────────────────────────────────────────────────
-// Instantiated outside the component to avoid recreating on every render.
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ""
-);
+// Guard against SSR — @stripe/stripe-js accesses `location` at init time,
+// which is undefined during Next.js static page generation.
+const stripePromise =
+  typeof window !== "undefined"
+    ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "")
+    : null;
 
 // ─── Stripe Elements appearance (dark premium) ────────────────────────────────
 const STRIPE_APPEARANCE = {
