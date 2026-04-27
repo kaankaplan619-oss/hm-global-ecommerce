@@ -32,20 +32,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "file et orderId requis" }, { status: 400 });
     }
 
-    // Validate file type
-    const ALLOWED_TYPES = ["application/pdf", "image/png", "image/svg+xml", "application/postscript"];
-    const ALLOWED_EXTENSIONS = [".pdf", ".png", ".svg", ".ai"];
+    // Validate file type — must match bucket allowed_mime_types:
+    // ["image/png","image/jpeg","image/webp","image/svg+xml","application/pdf"]
+    const ALLOWED_TYPES = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/svg+xml",
+    ];
+    const ALLOWED_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".svg"];
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
 
     if (!ALLOWED_EXTENSIONS.includes(ext) && !ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: "Format non supporté. Utilisez PDF, PNG, SVG ou AI." },
+        { error: "Format non supporté. Utilisez PDF, PNG, JPG, WEBP ou SVG." },
         { status: 400 }
       );
     }
 
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: "Fichier trop volumineux (max 50 Mo)" }, { status: 400 });
+    // 10 MB — matches bucket file_size_limit (10 485 760 bytes)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: "Fichier trop volumineux (max 10 Mo)" }, { status: 400 });
     }
 
     // Verify order belongs to user
