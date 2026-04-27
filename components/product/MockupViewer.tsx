@@ -29,15 +29,14 @@ const COLOR_TO_MOCKUP: Record<string, string> = {
 
 // ── Zone de marquage (fraction of canvas) calibrated for B&C Exact 190 ───────
 // [left, top, width, height] as fraction of canvas size
+// Mockup image: 1254×1254, shirt slightly angled (3/4 view).
+// "coeur" = poitrine gauche du porteur = droite du spectateur.
+// Shirt fabric spans roughly x=10%–89%, center neck at ~44%.
+// Left-chest print area sits at approx x=52–66%, y=22–36% of image.
 const ZONES: Record<string, [number, number, number, number]> = {
-  coeur: [0.35, 0.21, 0.17, 0.18],  // left chest
+  coeur: [0.52, 0.22, 0.14, 0.14],  // left chest (wearer's left = viewer's right)
   dos:   [0.24, 0.16, 0.52, 0.40],  // full back
 };
-
-/** Returns true if a mockup image exists for this product color ID. */
-export function hasMockup(colorId: string): boolean {
-  return colorId in COLOR_TO_MOCKUP;
-}
 
 type View = "front" | "back";
 
@@ -180,10 +179,11 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
 
           if (zone) {
             const [lf, tf, wf, hf] = zone;
-            // Scale to 55% of zone, centered inside zone
+            // Scale to 70% of zone, centered inside zone — gives a realistic
+            // default size while keeping some padding inside the dashed rect
             logoScale = Math.min(
-              (wf * canvasSize * 0.55) / logoEl.naturalWidth,
-              (hf * canvasSize * 0.55) / logoEl.naturalHeight,
+              (wf * canvasSize * 0.70) / logoEl.naturalWidth,
+              (hf * canvasSize * 0.70) / logoEl.naturalHeight,
             );
             logoLeft = (lf + wf / 2) * canvasSize;
             logoTop  = (tf + hf / 2) * canvasSize;
@@ -211,22 +211,28 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
             lockUniScaling: true,
           });
 
-          // Constrain logo to stay inside zone
+          // Constrain logo to stay inside zone while dragging
           if (zone) {
             const [lf, tf, wf, hf] = zone;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             canvas.on("object:moving", (e: any) => {
               if (e.target !== logo) return;
               const obj = e.target;
-              const hw  = ((obj.width ?? 0) * (obj.scaleX ?? 1)) / 2;
+              const hw  = ((obj.width  ?? 0) * (obj.scaleX ?? 1)) / 2;
               const hh  = ((obj.height ?? 0) * (obj.scaleY ?? 1)) / 2;
-              const minX = lf * canvasSize + hw;
-              const maxX = (lf + wf) * canvasSize - hw;
-              const minY = tf * canvasSize + hh;
-              const maxY = (tf + hf) * canvasSize - hh;
-              if ((obj.left ?? 0) < minX) obj.set({ left: Math.max(minX, maxX) < minX ? minX : minX });
-              if ((obj.left ?? 0) > maxX) obj.set({ left: maxX });
+              // If logo is larger than zone, clamp to zone center axis
+              const zoneLeft  = lf * canvasSize;
+              const zoneRight = (lf + wf) * canvasSize;
+              const zoneTop   = tf * canvasSize;
+              const zoneBot   = (tf + hf) * canvasSize;
+              const zoneW     = zoneRight - zoneLeft;
+              const zoneH     = zoneBot   - zoneTop;
+              const minX = hw < zoneW / 2 ? zoneLeft  + hw : zoneLeft  + zoneW / 2;
+              const maxX = hw < zoneW / 2 ? zoneRight - hw : zoneLeft  + zoneW / 2;
+              const minY = hh < zoneH / 2 ? zoneTop   + hh : zoneTop   + zoneH / 2;
+              const maxY = hh < zoneH / 2 ? zoneBot   - hh : zoneTop   + zoneH / 2;
               if ((obj.left ?? 0) < minX) obj.set({ left: minX });
+              if ((obj.left ?? 0) > maxX) obj.set({ left: maxX });
               if ((obj.top  ?? 0) < minY) obj.set({ top: minY });
               if ((obj.top  ?? 0) > maxY) obj.set({ top: maxY });
             });

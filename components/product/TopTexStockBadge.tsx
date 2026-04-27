@@ -33,20 +33,28 @@ export default function TopTexStockBadge({ toptexRef, showPrice = false }: Props
 
   if (!stock) return null;
 
-  const isInStock = stock.inStock;
+  // Three states:
+  // 1. inStock = true                        → "En stock" (green)
+  // 2. inStock = false + basePriceHT = null  → "Stock à confirmer" (amber) — partial/unreliable data
+  // 3. inStock = false + basePriceHT != null → "Rupture de stock" (red) — confirmed 0 units
+  const isInStock  = stock.inStock;
+  const isUnknown  = !stock.inStock && stock.basePriceHT === null;
+
+  const styles = isInStock
+    ? { borderColor: "rgb(187 247 208)", background: "rgb(240 253 244)", color: "rgb(22 101 52)" }
+    : isUnknown
+    ? { borderColor: "rgb(253 230 138)", background: "rgb(255 251 235)", color: "rgb(146 64 14)" }
+    : { borderColor: "rgb(254 202 202)", background: "rgb(254 242 242)", color: "rgb(153 27 27)" };
+
+  const dotClass = isInStock ? "bg-green-500" : isUnknown ? "bg-amber-400" : "bg-red-500";
+  const label    = isInStock ? "En stock" : isUnknown ? "Stock à confirmer" : "Rupture de stock";
 
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold"
-      style={{
-        borderColor: isInStock ? "rgb(187 247 208)" : "rgb(254 202 202)",
-        background: isInStock ? "rgb(240 253 244)" : "rgb(254 242 242)",
-        color:      isInStock ? "rgb(22 101 52)"   : "rgb(153 27 27)",
-      }}
+      style={styles}
     >
-      <span
-        className={`h-2 w-2 rounded-full ${isInStock ? "bg-green-500" : "bg-red-500"}`}
-      />
-      {isInStock ? "En stock" : "Rupture de stock"}
+      <span className={`h-2 w-2 rounded-full ${dotClass}`} />
+      {label}
       {showPrice && stock.basePriceHT != null && (
         <span className="ml-1 font-normal opacity-70">
           · {stock.basePriceHT.toFixed(2)} € HT
