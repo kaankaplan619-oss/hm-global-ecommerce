@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Stripe packages access `location` / `window` at module init time.
+  // Marking them as serverExternalPackages prevents Turbopack from bundling
+  // them into shared SSR chunks (_0sobcok._.js) — they are never require()'d
+  // server-side because the payment component is loaded with ssr:false.
+  serverExternalPackages: ["@stripe/stripe-js", "@stripe/react-stripe-js"],
+
   // Images — add your CDN / storage domains here
   images: {
     remotePatterns: [
