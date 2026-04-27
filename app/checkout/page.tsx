@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CreditCard, Lock, ChevronDown, ChevronUp, UserCheck } from "lucide-react";
@@ -31,8 +31,17 @@ export default function CheckoutPage() {
   });
   const [sameShipping, setSameShipping] = useState(true);
 
+  // Guard: never call router.push() during render — it accesses `location`
+  // in Node.js during SSR/static generation → ReferenceError.
+  // Zustand cart is always empty on the server, so this would fire on every
+  // server render. Use useEffect to redirect client-side only.
+  useEffect(() => {
+    if (items.length === 0) {
+      router.push("/panier");
+    }
+  }, [items.length, router]);
+
   if (items.length === 0) {
-    router.push("/panier");
     return null;
   }
 
