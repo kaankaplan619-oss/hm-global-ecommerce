@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     const fileBuffer = await file.arrayBuffer();
 
     const { error: uploadError } = await supabase.storage
-      .from("logos")
+      .from("customer-logos")
       .upload(storagePath, fileBuffer, {
         contentType: file.type || "application/octet-stream",
         upsert:      false,
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
 
     // Get public URL (or signed URL if bucket is private)
     const { data: urlData } = supabase.storage
-      .from("logos")
+      .from("customer-logos")
       .getPublicUrl(storagePath);
 
     const fileUrl = urlData.publicUrl;

@@ -63,12 +63,12 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ─── Supabase Storage: logos bucket ──────────────────────────────────────────
+-- ─── Supabase Storage: customer-logos bucket ────────────────────────────────
 -- Run this AFTER creating the bucket in the Supabase dashboard (or via CLI):
---   supabase storage buckets create logos --public=false
+--   supabase storage buckets create customer-logos --public=true
 
 -- Storage policies are set via the dashboard or supabase storage CLI.
--- Recommended policy for bucket "logos":
+-- Recommended policy for bucket "customer-logos":
 --
 -- ALLOW INSERT for authenticated users to path: orders/{order_id}/{user_id}/**
 -- ALLOW SELECT for authenticated users to their own files
