@@ -3,14 +3,20 @@
  *
  * Base URL : https://api.toptex.io
  *
- * Auth — double système requis simultanément :
- *   1. POST /v3/authenticate → JWT (Bearer token)
- *   2. Header X-Toptex-Authorization: {TOPTEX_API_KEY}
+ * Auth — deux headers requis simultanément sur tous les appels :
+ *   Authorization: Bearer {JWT}          ← token OIDC via POST /v3/authenticate
+ *   X-Api-Key: {TOPTEX_API_KEY}         ← clé du portail portal.toptex.io/apis
+ *
+ * Note : contrairement au reste, POST /v3/authenticate n'utilise PAS
+ * Authorization mais doit avoir X-Api-Key + body { username, password }.
  *
  * Variables d'environnement nécessaires (serveur uniquement) :
- *   TOPTEX_API_KEY      — clé du dashboard TopTex
+ *   TOPTEX_API_KEY      — clé visible sur portal.toptex.io/apis (commence par VmA3i...)
  *   TOPTEX_USERNAME     — identifiant B2B (ex. tofr_hmglobalagence)
- *   TOPTEX_PASSWORD     — mot de passe B2B
+ *   TOPTEX_PASSWORD     — mot de passe du compte TopTex
+ *
+ * Paramètre usage_right requis sur les endpoints produits :
+ *   'b2b_uniquement' | 'b2c_uniquement' | 'b2b_b2c'
  *
  * ⚠️  Ne jamais importer ce fichier dans un Client Component.
  *     Toujours passer par les routes /api/toptex/* côté navigateur.
@@ -18,31 +24,37 @@
 
 const BASE_URL = "https://api.toptex.io";
 
-// ── JWT token cache (mémoire process — durée de vie du serveur Next.js) ───────
+// Droits d'usage par défaut — b2b_b2c = catalogue complet
+export const USAGE_RIGHT = "b2b_b2c" as const;
+type UsageRight = "b2b_uniquement" | "b2c_uniquement" | "b2b_b2c";
+
+// ── JWT token cache ────────────────────────────────────────────────────────────
 
 let cachedToken: string | null = null;
-let tokenExpiresAt: number = 0; // timestamp ms
+let tokenExpiresAt: number = 0;
 
 /**
  * Obtient un JWT via POST /v3/authenticate.
- * Le token est mis en cache et renouvelé 60s avant expiration.
- * JWTs TopTex ont une durée de vie de ~1h typiquement.
+ * Met le token en cache et le renouvelle 60s avant expiration.
+ *
+ * Découverte : l'endpoint authenticate requiert X-Api-Key (pas Authorization).
+ * La réponse contient { username, token, expiry_time, expiry_time_timezone }.
  */
 async function getJwtToken(): Promise<string> {
   const now = Date.now();
 
-  // Retourne le cache si encore valide (marge 60s)
   if (cachedToken && now < tokenExpiresAt - 60_000) {
     return cachedToken;
   }
 
+  const apiKey   = process.env.TOPTEX_API_KEY;
   const username = process.env.TOPTEX_USERNAME;
   const password = process.env.TOPTEX_PASSWORD;
 
-  if (!username || !password) {
+  if (!apiKey || !username || !password) {
     throw new Error(
-      "[TopTex] TOPTEX_USERNAME ou TOPTEX_PASSWORD non défini. " +
-      "Ajoutez ces variables dans .env.local et sur Vercel."
+      "[TopTex] Variables manquantes : TOPTEX_API_KEY, TOPTEX_USERNAME, TOPTEX_PASSWORD. " +
+      "Vérifiez .env.local et les variables Vercel."
     );
   }
 
@@ -51,66 +63,49 @@ async function getJwtToken(): Promise<string> {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      // Obligatoire sur authenticate — différent des autres endpoints
+      "X-Api-Key": apiKey,
     },
     body: JSON.stringify({ username, password }),
-    // Ne pas cacher cette requête d'auth
     cache: "no-store",
   });
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(
-      `[TopTex] Authentification échouée ${res.status}: ${body}`
+      `[TopTex] Authentification échouée ${res.status} — vérifier TOPTEX_USERNAME / TOPTEX_PASSWORD\n${body}`
     );
   }
 
-  const data = await res.json() as Record<string, unknown>;
-
-  // Le JWT peut être dans différents champs selon la version API
-  const token =
-    (data.token ?? data.access_token ?? data.jwt ?? data.accessToken) as string | undefined;
+  // Réponse : { "username": "...", "token": "...", "expiry_time": "...", "expiry_time_timezone": "..." }
+  const data = await res.json() as { username?: string; token?: string; expiry_time?: string };
+  const token = data.token;
 
   if (!token) {
-    throw new Error(
-      `[TopTex] Réponse auth inattendue — champs reçus : ${Object.keys(data).join(", ")}`
-    );
+    throw new Error("[TopTex] Réponse auth sans champ 'token'");
   }
 
-  // Parse expiration depuis le JWT (payload base64) ou TTL par défaut 55 min
-  let ttl = 55 * 60 * 1000; // 55 minutes par défaut
-  try {
-    const payload = JSON.parse(
-      Buffer.from(token.split(".")[1], "base64").toString("utf8")
-    ) as { exp?: number };
-    if (payload.exp) {
-      ttl = payload.exp * 1000 - now;
-    }
-  } catch {
-    // ignore — on garde 55 min
-  }
-
+  // Parse expiry_time (format "2026-04-27T19:30:59.000Z")
+  const expiresAt = data.expiry_time ? new Date(data.expiry_time).getTime() : now + 55 * 60_000;
   cachedToken = token;
-  tokenExpiresAt = now + ttl;
+  tokenExpiresAt = expiresAt;
 
   return token;
 }
 
-// ── Headers complets (API key + JWT) ─────────────────────────────────────────
+// ── Headers complets pour tous les appels (hors authenticate) ─────────────────
 
 async function getAuthHeaders(): Promise<HeadersInit> {
   const apiKey = process.env.TOPTEX_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "[TopTex] TOPTEX_API_KEY non défini. " +
-      "Ajoutez-la dans .env.local et sur Vercel."
-    );
-  }
+  if (!apiKey) throw new Error("[TopTex] TOPTEX_API_KEY non défini");
 
   const jwt = await getJwtToken();
 
   return {
-    "Authorization": `Bearer ${jwt}`,
-    "X-Toptex-Authorization": apiKey,
+    // JWT OIDC dans X-Toptex-Authorization (découvert empiriquement)
+    "X-Toptex-Authorization": jwt,
+    // Clé de souscription portal.toptex.io
+    "X-Api-Key": apiKey,
     "Content-Type": "application/json",
     Accept: "application/json",
   };
@@ -124,11 +119,7 @@ async function toptexFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
   const res = await fetch(url, {
     ...options,
-    headers: {
-      ...headers,
-      ...(options?.headers ?? {}),
-    },
-    // Cache Next.js : revalidation toutes les 5 minutes
+    headers: { ...headers, ...(options?.headers ?? {}) },
     next: { revalidate: 300 },
   });
 
@@ -142,44 +133,51 @@ async function toptexFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+export interface TopTexLocalizedString {
+  fr?: string;
+  en?: string;
+  de?: string;
+  es?: string;
+  it?: string;
+  nl?: string;
+  pt?: string;
+  [key: string]: string | undefined;
+}
+
 export interface TopTexColor {
-  id?: string | number;
-  nom?: string;
-  name?: string;
-  code?: string;
-  hex?: string;
+  colorCode?: string;
+  colorName?: string | TopTexLocalizedString;
+  colorLabel?: string;
   [key: string]: unknown;
 }
 
-export interface TopTexImage {
+export interface TopTexMedia {
   url?: string;
   type?: string;
+  colorCode?: string;
   [key: string]: unknown;
 }
 
 export interface TopTexSize {
+  size?: string;
   label?: string;
   code?: string;
-  stock?: number;
   [key: string]: unknown;
 }
 
 export interface TopTexProduct {
-  id?: string | number;
-  reference?: string;
+  catalogReference?: string;
   sku?: string;
-  nom?: string;
-  name?: string;
-  description?: string;
-  couleurs?: TopTexColor[];
+  brand?: string;
+  designation?: TopTexLocalizedString | string;
+  description?: TopTexLocalizedString | string;
+  composition?: TopTexLocalizedString | string;
+  averageWeight?: string;
   colors?: TopTexColor[];
-  tailles?: (string | TopTexSize)[];
+  medias?: TopTexMedia[];
   sizes?: (string | TopTexSize)[];
-  images?: TopTexImage[];
-  prix?: number;
-  prixFournisseur?: number;
-  price?: number;
-  stock?: number;
+  createdDate?: string;
+  updatedDate?: string;
   [key: string]: unknown;
 }
 
@@ -193,62 +191,62 @@ export interface TopTexAttribute {
   [key: string]: unknown;
 }
 
-// ── Helpers de normalisation ───────────────────────────────────────────────────
+export interface TopTexPaginatedResponse<T> {
+  items: T[];
+  total_count: number;
+  page_number: number;
+  page_size: string | number;
+}
 
-/** Extrait un tableau depuis les différentes formes de réponse possibles */
-function extractArray<T>(
-  data: T[] | { produits?: T[]; products?: T[]; attributs?: T[]; attributes?: T[]; data?: T[] }
-): T[] {
-  if (Array.isArray(data)) return data;
-  return (
-    (data as Record<string, T[] | undefined>).produits ??
-    (data as Record<string, T[] | undefined>).products ??
-    (data as Record<string, T[] | undefined>).attributs ??
-    (data as Record<string, T[] | undefined>).attributes ??
-    (data as Record<string, T[] | undefined>).data ??
-    []
-  );
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+/** Retourne le nom FR d'un champ localisé */
+export function getLabel(
+  field: TopTexLocalizedString | string | undefined,
+  lang: keyof TopTexLocalizedString = "fr"
+): string {
+  if (!field) return "";
+  if (typeof field === "string") return field;
+  return field[lang] ?? field.en ?? Object.values(field).find(Boolean) ?? "";
+}
+
+/** Retourne la première image d'un produit */
+export function getMainImage(product: TopTexProduct): string {
+  const medias = product.medias ?? [];
+  return (medias.find((m) => m.url)?.url ?? "") as string;
 }
 
 // ── API calls ──────────────────────────────────────────────────────────────────
 
 /**
- * GET /v3/produits/tous
- * Catalogue complet — peut être long sur un gros catalogue.
+ * GET /v3/products/all?usage_right={right}
+ * Catalogue complet — peut être volumineux.
  */
-export async function getTopTexProducts(): Promise<TopTexProduct[]> {
-  type Resp = TopTexProduct[] | { produits?: TopTexProduct[]; products?: TopTexProduct[]; data?: TopTexProduct[] };
-  const data = await toptexFetch<Resp>("/v3/produits/tous");
-  return extractArray(data);
-}
-
-/**
- * GET /v3/produits?page=&limit=
- * Catalogue paginé.
- */
-export async function getTopTexProductsPaginated(
-  page = 1,
-  limit = 50
+export async function getTopTexProducts(
+  usageRight: UsageRight = USAGE_RIGHT
 ): Promise<TopTexProduct[]> {
-  type Resp = TopTexProduct[] | { produits?: TopTexProduct[]; products?: TopTexProduct[]; data?: TopTexProduct[] };
-  const data = await toptexFetch<Resp>(`/v3/produits?page=${page}&limit=${limit}`);
-  return extractArray(data);
+  const data = await toptexFetch<TopTexPaginatedResponse<TopTexProduct> | TopTexProduct[]>(
+    `/v3/products/all?usage_right=${encodeURIComponent(usageRight)}`
+  );
+  if (Array.isArray(data)) return data;
+  return data.items ?? [];
 }
 
 /**
- * GET /v3/produits/{sku}
+ * GET /v3/products?sku={sku}&usage_right={right}
  * Produit unique par SKU ou référence catalogue.
- * Retourne null si non trouvé (404).
+ * Retourne null si non trouvé.
  */
 export async function getTopTexProductBySku(
-  sku: string
+  sku: string,
+  usageRight: UsageRight = USAGE_RIGHT
 ): Promise<TopTexProduct | null> {
   try {
-    type Resp = TopTexProduct | { produit?: TopTexProduct; product?: TopTexProduct };
-    const data = await toptexFetch<Resp>(`/v3/produits/${encodeURIComponent(sku)}`);
-    if (data && typeof data === "object" && "produit" in data && (data as { produit?: TopTexProduct }).produit) return (data as { produit: TopTexProduct }).produit;
-    if (data && typeof data === "object" && "product" in data && (data as { product?: TopTexProduct }).product) return (data as { product: TopTexProduct }).product;
-    return data as TopTexProduct;
+    const data = await toptexFetch<TopTexProduct[] | TopTexProduct>(
+      `/v3/products?sku=${encodeURIComponent(sku)}&usage_right=${encodeURIComponent(usageRight)}`
+    );
+    if (Array.isArray(data)) return data[0] ?? null;
+    return data ?? null;
   } catch (err) {
     if (err instanceof Error && err.message.includes("404")) return null;
     throw err;
@@ -256,11 +254,43 @@ export async function getTopTexProductBySku(
 }
 
 /**
- * GET /v3/attributes
- * Attributs produits (couleurs, tailles, matières…).
+ * GET /v3/products/{sku}/inventory
+ * Stock d'un produit par SKU.
  */
-export async function getTopTexAttributes(): Promise<TopTexAttribute[]> {
-  type Resp = TopTexAttribute[] | { attributs?: TopTexAttribute[]; attributes?: TopTexAttribute[]; data?: TopTexAttribute[] };
-  const data = await toptexFetch<Resp>("/v3/attributes");
-  return extractArray(data);
+export async function getTopTexInventory(sku: string): Promise<Record<string, unknown> | null> {
+  try {
+    return await toptexFetch<Record<string, unknown>>(
+      `/v3/products/${encodeURIComponent(sku)}/inventory`
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * GET /v3/products/{sku}/price
+ * Prix fournisseur d'un produit par SKU.
+ */
+export async function getTopTexPrice(sku: string): Promise<Record<string, unknown> | null> {
+  try {
+    return await toptexFetch<Record<string, unknown>>(
+      `/v3/products/${encodeURIComponent(sku)}/price`
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * GET /v3/attributes?attributes={type}
+ * Attributs produits.
+ */
+export async function getTopTexAttributes(
+  attributeType = "all"
+): Promise<TopTexAttribute[]> {
+  const data = await toptexFetch<TopTexPaginatedResponse<TopTexAttribute> | TopTexAttribute[]>(
+    `/v3/attributes?attributes=${encodeURIComponent(attributeType)}`
+  );
+  if (Array.isArray(data)) return data;
+  return data.items ?? [];
 }
