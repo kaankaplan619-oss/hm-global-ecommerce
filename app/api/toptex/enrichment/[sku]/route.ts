@@ -87,13 +87,29 @@ export async function GET(
         (color.packshots as Record<string, unknown> | undefined) ?? {};
 
       // Extraire les URLs valides (FACE → BACK → SIDE), filtrer les erreurs Photo Library
+      // Les packshots sont des objets : { image_id, url_packshot, url, last_update, ... }
+      // url_packshot = CDN public (pas d'auth), url = media avec token (auth requise)
       const urls: string[] = [];
       for (const view of ["FACE", "BACK", "SIDE"]) {
-        const p = packshots[view];
-        if (typeof p === "string" && !p.includes("Please connect")) {
+        const p = packshots[view] as Record<string, unknown> | string | undefined;
+        if (!p) continue;
+
+        // Cas 1 : objet packshot avec url_packshot (format réel de l'API v3)
+        if (typeof p === "object") {
+          const urlPackshot = (p.url_packshot ?? p.url) as string | undefined;
+          if (
+            urlPackshot &&
+            typeof urlPackshot === "string" &&
+            !urlPackshot.includes("Please connect")
+          ) {
+            urls.push(urlPackshot);
+          }
+        }
+        // Cas 2 : chaîne directe (format alternatif / ancien)
+        else if (typeof p === "string" && !p.includes("Please connect")) {
           urls.push(p);
         }
-        // Si p est { error: "Please connect to Photo library..." } → ignorer silencieusement
+        // Cas 3 : { error: "Please connect to Photo library..." } → ignorer silencieusement
       }
 
       if (urls.length > 0) {
