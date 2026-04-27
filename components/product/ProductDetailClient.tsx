@@ -5,6 +5,8 @@ import { Info } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
 import MockupViewer, { hasMockup } from "@/components/product/MockupViewer";
+import TopTexStockBadge from "@/components/product/TopTexStockBadge";
+import { useTopTexMedias } from "@/hooks/useTopTexMedias";
 import { formatPrice } from "@/data/pricing";
 import type { Product, ProductColor, Placement } from "@/types";
 
@@ -20,6 +22,14 @@ export default function ProductDetailClient({ product }: Props) {
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(defaultColor);
   const [placement, setPlacement] = useState<Placement>(product.placements[0]);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+
+  // ── TopTex media enrichment (couleurs → images) ────────────────────────────
+  // Se charge en arrière-plan après l'hydratation.
+  // Produits sans toptexRef → hook reste en "idle", colorImages reste {}
+  const { colorImages, status: mediasStatus } = useTopTexMedias(
+    product.toptexRef,
+    product.colors
+  );
 
   const minPrice = useMemo(() => {
     const prices = [
@@ -40,20 +50,21 @@ export default function ProductDetailClient({ product }: Props) {
         setSelectedColor(defaultColor);
         return;
       }
-
       const canonicalColor = product.colors.find(
         (color) => color.id === nextColor.id && color.available
       );
-
       setSelectedColor(canonicalColor ?? defaultColor);
     },
     [defaultColor, product.colors]
   );
 
+  const showMockup =
+    product.category === "tshirts" && hasMockup(selectedColor?.id ?? "");
+
   return (
     <div className="mb-16 grid grid-cols-1 gap-12 lg:grid-cols-2">
       <div className="flex flex-col gap-4">
-        {product.category === "tshirts" && hasMockup(selectedColor?.id ?? "") ? (
+        {showMockup ? (
           <MockupViewer
             colorId={selectedColor?.id ?? ""}
             placement={placement}
@@ -67,6 +78,8 @@ export default function ProductDetailClient({ product }: Props) {
             colors={product.colors}
             selectedColor={selectedColor}
             badge={product.badge}
+            colorImages={colorImages}
+            mediasLoading={mediasStatus === "loading"}
           />
         )}
 
@@ -127,6 +140,11 @@ export default function ProductDetailClient({ product }: Props) {
           <p className="mb-1 text-sm text-[var(--hm-text-soft)]">
             {product.composition} · {product.weight}
           </p>
+          {product.toptexRef && (
+            <div className="mb-3">
+              <TopTexStockBadge toptexRef={product.toptexRef} />
+            </div>
+          )}
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-[var(--hm-primary)]">
               {formatPrice(minPrice)}
@@ -144,7 +162,8 @@ export default function ProductDetailClient({ product }: Props) {
           onColorChange={handleColorChange}
           onPlacementChange={setPlacement}
           onLogoChange={setLogoFile}
-          hidePreview={product.category === "tshirts" && hasMockup(selectedColor?.id ?? "")}
+          hidePreview={showMockup}
+          colorImages={colorImages}
         />
       </div>
     </div>

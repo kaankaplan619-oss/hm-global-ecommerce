@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import ProductImage from "@/components/product/ProductImage";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import Image from "next/image";
+import { Package } from "lucide-react";
 import type { ProductColor } from "@/types";
 
 // ─── Mapping couleur ID → clés anglaises dans les noms de fichiers ────────────
@@ -19,11 +20,14 @@ const COLOR_IMAGE_MAP: Record<string, string[]> = {
   "gris":           ["SPORTGREY", "ASH", "DARKGREY"],
   "gris-melange":   ["HEATHERGREY", "SPORTGREY", "ASH"],
   "gris-acier":     ["STEELGREY", "DARKGREY", "DARKGREY-NEONORANGE"],
+  "gris-anthracite":["ANTHRACITE", "DARKGREY", "STEELGREY"],
+  "anthracite":     ["ANTHRACITE", "DARKGREY", "STEELGREY"],
   "marine":         ["NAVY", "NAVYBLUE", "LIGHTNAVY", "NAVY-NEONGREEN"],
   "rouge":          ["RED", "FIRERED", "DEEPRED", "RED-WARMGREY"],
   "bleu-royal":     ["ROYALBLUE", "COBALTBLUE"],
   "bleu-ciel":      ["SKYBLUE", "AZURE", "LIGHTBLUE"],
   "vert-bouteille": ["BOTTLEGREEN", "KELLYGREEN"],
+  "vert-kelly":     ["KELLYGREEN", "BOTTLEGREEN"],
   "vert-foret":     ["BOTTLEGREEN", "KELLYGREEN", "ORCHIDGREEN"],
   "bordeaux":       ["BURGUNDY", "DEEPRED"],
   "turquoise":      ["TURQUOISE", "REALTURQUOISE", "ATOLL", "ATOLL-GHOSTGREY"],
@@ -37,31 +41,25 @@ const COLOR_IMAGE_MAP: Record<string, string[]> = {
   "kaki":           ["URBANKHAKI", "MILLENNIALKHAKI", "BEARBROWN"],
   "naturel":        ["NATURAL", "SAND"],
   "blanc-casse":    ["WHITE", "NATURAL"],
+  "beige":          ["SAND", "NATURAL", "BEIGE"],
+  "caramel":        ["CARAMEL", "BEARBROWN", "TAN"],
+  "chocolat":       ["CHOCOLATE", "BEARBROWN", "BROWN"],
 };
 
 // ─── Extraction de la clé couleur depuis un nom de fichier ────────────────────
-//
-// "PS_CGTU01T_WHITE.avif"          → "WHITE"
-// "PS_CGTU01T-B_NAVYBLUE.avif"     → "NAVYBLUE"
-// "PS_CGJUI62_NAVY-NEONGREEN.avif" → "NAVY-NEONGREEN"
-// "front-blanc.jpg"                → "blanc"  (anciens fichiers IA)
-
 function extractImageColor(src: string): string {
   // Format officiel Top Tex : PS_CG{REF}[-B|-S]_{COLOR}.{ext}
   const official = src.match(/_([A-Z][A-Z0-9]+(?:-[A-Z0-9]+)*)\.(?:avif|png)$/i);
   if (official) return official[1].toUpperCase();
-
   // Ancien format IA : front-blanc.jpg / back-noir.jpg / detail-col.jpg
   const legacy = src.match(/(?:front|back|detail)-([^/.]+)\./i);
   if (legacy) return legacy[1].toLowerCase();
-
   return "";
 }
 
 function isBackView(src: string): boolean {
   return /-B_/.test(src) || /back-/.test(src);
 }
-
 function isSideOrDetail(src: string): boolean {
   return /-S_/.test(src) || /detail-/.test(src);
 }
@@ -70,15 +68,19 @@ function isSideOrDetail(src: string): boolean {
 
 function buildVariantGallery(
   images: string[],
-  selectedColor: ProductColor | null
+  selectedColor: ProductColor | null,
+  colorImages?: Record<string, string[]>
 ): string[] {
   if (images.length === 0) return [""];
+
+  // Priorité 1 : images TopTex per-color si disponibles
+  if (selectedColor && colorImages?.[selectedColor.id]?.length) {
+    return colorImages[selectedColor.id];
+  }
+
   if (!selectedColor) return images;
 
   const targetKeys = COLOR_IMAGE_MAP[selectedColor.id] ?? [];
-
-  // Fallback si la couleur n'est pas dans le mapping :
-  // essaie une correspondance directe avec l'ID en majuscules
   const keys =
     targetKeys.length > 0
       ? targetKeys
@@ -92,17 +94,22 @@ function buildVariantGallery(
   const fronts  = images.filter((src) => matchesColor(src) && !isBackView(src) && !isSideOrDetail(src));
   const backs   = images.filter((src) => matchesColor(src) && isBackView(src));
   const details = images.filter((src) => isSideOrDetail(src));
+  const result  = [...fronts, ...backs, ...details];
 
-  const result = [...fronts, ...backs, ...details];
-
-  // Si aucune image ne correspond exactement → première image disponible
+  // Fallback → première image disponible
   return result.length > 0 ? result : [images[0]];
 }
 
-// ─── Utilitaire exporté — indique si une couleur a une photo dans la galerie ──
+// ─── Utilitaire exporté ───────────────────────────────────────────────────────
 
-export function colorHasImages(images: string[], color: ProductColor): boolean {
+export function colorHasImages(
+  images: string[],
+  color: ProductColor,
+  colorImages?: Record<string, string[]>
+): boolean {
   if (images.length === 0) return false;
+  // Si on a des images TopTex pour cette couleur, c'est bon
+  if (colorImages?.[color.id]?.length) return true;
   const targetKeys = COLOR_IMAGE_MAP[color.id] ?? [];
   const keys =
     targetKeys.length > 0
@@ -114,7 +121,67 @@ export function colorHasImages(images: string[], color: ProductColor): boolean {
   });
 }
 
-// ─── Composant ────────────────────────────────────────────────────────────────
+// ─── Image avec fade ──────────────────────────────────────────────────────────
+
+function GalleryImage({
+  src,
+  alt,
+  fill,
+  priority,
+  sizes,
+  className,
+}: {
+  src: string;
+  alt: string;
+  fill?: boolean;
+  priority?: boolean;
+  sizes?: string;
+  className?: string;
+}) {
+  const [error, setError]    = useState(false);
+  const [loaded, setLoaded]  = useState(false);
+
+  // Reset loading state when src changes
+  useEffect(() => {
+    setLoaded(false);
+    setError(false);
+  }, [src]);
+
+  if (!src || error) {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[linear-gradient(180deg,var(--hm-accent-soft-blue),var(--hm-accent-soft-purple))]">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white bg-white/80 shadow-sm">
+          <Package size={36} className="text-[var(--hm-purple)]" />
+        </div>
+        <p className="px-4 text-center text-[11px] font-medium text-[var(--hm-text-soft)]">
+          Visuel produit à venir
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      key={src}
+      src={src}
+      alt={alt}
+      fill={fill}
+      priority={priority}
+      sizes={sizes}
+      className={[
+        className,
+        "transition-opacity duration-300",
+        loaded ? "opacity-100" : "opacity-0",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      onLoad={() => setLoaded(true)}
+      onError={() => setError(true)}
+    />
+  );
+}
+
+// ─── Composant principal ──────────────────────────────────────────────────────
 
 type ProductGalleryProps = {
   name: string;
@@ -122,6 +189,13 @@ type ProductGalleryProps = {
   colors: ProductColor[];
   selectedColor: ProductColor | null;
   badge?: string;
+  /**
+   * Map colorId → imageUrls chargée depuis l'API TopTex.
+   * Prioritaire sur le fallback filename-based.
+   */
+  colorImages?: Record<string, string[]>;
+  /** True pendant le chargement des medias TopTex */
+  mediasLoading?: boolean;
 };
 
 export default function ProductGallery({
@@ -129,10 +203,12 @@ export default function ProductGallery({
   images,
   selectedColor,
   badge,
+  colorImages,
+  mediasLoading,
 }: ProductGalleryProps) {
   const gallery = useMemo(
-    () => buildVariantGallery(images, selectedColor),
-    [images, selectedColor]
+    () => buildVariantGallery(images, selectedColor, colorImages),
+    [images, selectedColor, colorImages]
   );
 
   const [activeImage, setActiveImage] = useState(gallery[0]);
@@ -141,20 +217,30 @@ export default function ProductGallery({
     setActiveImage(gallery[0]);
   }, [gallery]);
 
+  const handleThumb = useCallback((img: string) => {
+    setActiveImage(img);
+  }, []);
+
+  // Indique si ce produit supporte le changement d'image par couleur
+  const hasColorVariants =
+    (colorImages && Object.keys(colorImages).length > 0) ||
+    images.some((img) => extractImageColor(img) !== "");
+
   return (
     <div className="flex flex-col gap-4">
       {/* ── Image principale ── */}
-      <div className="relative aspect-square overflow-hidden rounded-[28px] border
-        border-[var(--hm-line)] bg-white
-        shadow-[0_20px_48px_rgba(63,45,88,0.08)]">
-        <ProductImage
+      <div
+        className="relative aspect-square overflow-hidden rounded-[28px] border
+          border-[var(--hm-line)] bg-white
+          shadow-[0_20px_48px_rgba(63,45,88,0.08)]"
+      >
+        <GalleryImage
           src={activeImage}
           alt={name}
           fill
           priority
           sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-contain"
-          label="Visuel produit"
         />
 
         {badge && (
@@ -163,10 +249,27 @@ export default function ProductGallery({
           </div>
         )}
 
-        <div className="absolute bottom-4 left-4 rounded-full border border-[var(--hm-line)]
-          bg-white/90 px-3 py-1 text-[10px] font-semibold text-[var(--hm-text-soft)]">
-          {gallery.length} vue{gallery.length > 1 ? "s" : ""}
+        {/* Compteur de vues */}
+        <div className="absolute bottom-4 left-4 flex items-center gap-2">
+          <span className="rounded-full border border-[var(--hm-line)] bg-white/90 px-3 py-1 text-[10px] font-semibold text-[var(--hm-text-soft)]">
+            {gallery.length} vue{gallery.length > 1 ? "s" : ""}
+          </span>
+          {/* Indicateur chargement medias */}
+          {mediasLoading && (
+            <span className="rounded-full border border-[var(--hm-line)] bg-white/90 px-3 py-1 text-[10px] text-[var(--hm-text-soft)]">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--hm-purple)]" />
+            </span>
+          )}
         </div>
+
+        {/* Badge "vues par couleur" */}
+        {hasColorVariants && !mediasLoading && (
+          <div className="absolute bottom-4 right-4">
+            <span className="rounded-full bg-[var(--hm-accent-soft-purple)] border border-[var(--hm-line)] px-2.5 py-1 text-[10px] font-semibold text-[var(--hm-purple)]">
+              Photos par coloris
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── Miniatures ── */}
@@ -178,22 +281,21 @@ export default function ProductGallery({
               <button
                 key={`${img}-${index}`}
                 type="button"
-                onClick={() => setActiveImage(img)}
+                onClick={() => handleThumb(img)}
                 className={`relative aspect-square overflow-hidden rounded-2xl border
                   transition-all duration-200
-                  ${active
-                    ? "border-[var(--hm-rose)] shadow-[0_6px_18px_rgba(177,63,116,0.18)]"
-                    : "border-[var(--hm-line)] hover:border-[var(--hm-purple)]"
+                  ${
+                    active
+                      ? "border-[var(--hm-rose)] shadow-[0_6px_18px_rgba(177,63,116,0.18)]"
+                      : "border-[var(--hm-line)] hover:border-[var(--hm-purple)]"
                   }`}
               >
-                <ProductImage
+                <GalleryImage
                   src={img}
                   alt={`${name} vue ${index + 1}`}
                   fill
                   sizes="120px"
                   className="bg-[var(--hm-surface)] object-contain"
-                  iconSize={24}
-                  label="Vue"
                 />
               </button>
             );

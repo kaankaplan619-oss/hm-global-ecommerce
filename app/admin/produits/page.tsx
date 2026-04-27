@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import {
   Package, Search, RefreshCw, AlertCircle, Loader2,
   ChevronLeft, ChevronRight, Tag, Layers, ImageOff,
+  BarChart2,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth";
+import TopTexStockBadge from "@/components/product/TopTexStockBadge";
+import { ALL_PRODUCTS } from "@/data/products";
 import type { TopTexProduct } from "@/lib/toptex";
 
 // ── Gradient HM Global ────────────────────────────────────────────────────────
@@ -388,6 +391,29 @@ export default function AdminProduitsPage() {
                 {" — "}Les données sont rafraîchies toutes les 5 minutes (cache Next.js).
                 La clé API n&rsquo;est jamais exposée au navigateur.
               </p>
+            </div>
+
+            {/* ── Stock catalogue HM Global ─────────────────────────────────── */}
+            <div className="rounded-2xl border border-[#e6e8ee] bg-white shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+              <div className="flex items-center gap-3 border-b border-[#e6e8ee] px-5 py-4">
+                <BarChart2 size={15} style={{ color: "#7B4FA6" }} />
+                <h2 className="text-sm font-bold text-[#3f2d58]">Stock catalogue HM Global</h2>
+              </div>
+              <div className="flex flex-col divide-y divide-[#f0f0f5]">
+                {ALL_PRODUCTS.filter((p) => p.toptexRef).map((product) => (
+                  <div key={product.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-[11px] font-semibold text-[#3f2d58] leading-tight">
+                        {product.shortName}
+                      </p>
+                      <p className="font-mono text-[9px] text-[#a09bb0]">{product.toptexRef}</p>
+                    </div>
+                    <div className="shrink-0">
+                      <TopTexStockBadge toptexRef={product.toptexRef!} showPrice />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -253,13 +253,79 @@ export async function getTopTexProductBySku(
   }
 }
 
+// ── Inventory & Price types ────────────────────────────────────────────────────
+
+export interface TopTexStockItem {
+  colorCode?: string;
+  colorName?: string | TopTexLocalizedString;
+  sizeCode?: string;
+  size?: string;
+  /** Quantité disponible en stock */
+  quantity?: number;
+  available?: number;
+  /** Date de réapprovisionnement estimée (ISO) */
+  expectedDate?: string;
+  [key: string]: unknown;
+}
+
+export interface TopTexInventoryResponse {
+  catalogReference?: string;
+  sku?: string;
+  /** Résumé rapide : true si au moins 1 article en stock */
+  inStock?: boolean;
+  items?: TopTexStockItem[];
+  stock?: TopTexStockItem[];
+  colors?: Record<string, Record<string, number>>;
+  [key: string]: unknown;
+}
+
+export interface TopTexPriceItem {
+  colorCode?: string;
+  sizeCode?: string;
+  size?: string;
+  /** Prix catalogue HT (€) */
+  price?: number;
+  unitPrice?: number;
+  priceHT?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface TopTexPriceResponse {
+  catalogReference?: string;
+  sku?: string;
+  currency?: string;
+  /** Prix unitaire de base HT */
+  basePrice?: number;
+  price?: number;
+  items?: TopTexPriceItem[];
+  prices?: TopTexPriceItem[];
+  [key: string]: unknown;
+}
+
+/**
+ * Résumé simplifié du stock pour l'affichage côté client.
+ */
+export interface TopTexStockSummary {
+  inStock: boolean;
+  totalUnits: number;
+  /** Prix de base HT (€) — null si inconnu */
+  basePriceHT: number | null;
+  /** Dernier fetch (timestamp ISO) */
+  fetchedAt: string;
+}
+
+// ── API calls (inventory & price) ─────────────────────────────────────────────
+
 /**
  * GET /v3/products/{sku}/inventory
  * Stock d'un produit par SKU.
  */
-export async function getTopTexInventory(sku: string): Promise<Record<string, unknown> | null> {
+export async function getTopTexInventory(
+  sku: string
+): Promise<TopTexInventoryResponse | null> {
   try {
-    return await toptexFetch<Record<string, unknown>>(
+    return await toptexFetch<TopTexInventoryResponse>(
       `/v3/products/${encodeURIComponent(sku)}/inventory`
     );
   } catch {
@@ -271,14 +337,147 @@ export async function getTopTexInventory(sku: string): Promise<Record<string, un
  * GET /v3/products/{sku}/price
  * Prix fournisseur d'un produit par SKU.
  */
-export async function getTopTexPrice(sku: string): Promise<Record<string, unknown> | null> {
+export async function getTopTexPrice(
+  sku: string
+): Promise<TopTexPriceResponse | null> {
   try {
-    return await toptexFetch<Record<string, unknown>>(
+    return await toptexFetch<TopTexPriceResponse>(
       `/v3/products/${encodeURIComponent(sku)}/price`
     );
   } catch {
     return null;
   }
+}
+
+// ── Color-image mapping helper ────────────────────────────────────────────────
+
+/**
+ * Construit un mapping colorId → imageUrls à partir des médias TopTex.
+ *
+ * Logique :
+ *   1. Récupère les couleurs TopTex (code → nom FR)
+ *   2. Regroupe les médias par colorCode
+ *   3. Pour chaque couleur de notre catalogue, cherche le code TopTex dont
+ *      le nom FR correspond au label FR du produit
+ *
+ * Utilisé côté serveur ET côté client (via /api/toptex/enrichment/[sku]).
+ */
+export function buildColorImageMap(
+  productColors: Array<{ id: string; label: string }>,
+  toptexProduct: TopTexProduct
+): Record<string, string[]> {
+  const toptexColors = (toptexProduct.colors ?? []) as TopTexColor[];
+  const medias       = (toptexProduct.medias  ?? []) as TopTexMedia[];
+
+  // colorCode → nom FR normalisé
+  const codeToFrName: Record<string, string> = {};
+  for (const tc of toptexColors) {
+    if (!tc.colorCode) continue;
+    const code = String(tc.colorCode);
+    let fr = "";
+    if (typeof tc.colorName === "object" && tc.colorName !== null) {
+      fr = (tc.colorName as TopTexLocalizedString).fr
+        ?? (tc.colorName as TopTexLocalizedString).en
+        ?? Object.values(tc.colorName as TopTexLocalizedString).find(Boolean)
+        ?? "";
+    } else if (typeof tc.colorName === "string") {
+      fr = tc.colorName;
+    }
+    codeToFrName[code] = fr.toLowerCase().trim();
+  }
+
+  // colorCode → tableau d'URLs
+  const codeToImages: Record<string, string[]> = {};
+  for (const media of medias) {
+    if (!media.url || !media.colorCode) continue;
+    const code = String(media.colorCode);
+    if (!codeToImages[code]) codeToImages[code] = [];
+    codeToImages[code].push(media.url as string);
+  }
+
+  // Associer les couleurs produit HM aux codes TopTex par correspondance de nom FR
+  const result: Record<string, string[]> = {};
+  for (const color of productColors) {
+    const labelLower = color.label.toLowerCase().trim();
+
+    const [matchCode] =
+      Object.entries(codeToFrName).find(([, frName]) => {
+        if (!frName) return false;
+        return (
+          frName === labelLower ||
+          frName.startsWith(labelLower) ||
+          labelLower.startsWith(frName) ||
+          // "gris chiné" ↔ "gris" : tolérance partielle
+          (labelLower.length >= 4 && frName.includes(labelLower)) ||
+          (frName.length >= 4 && labelLower.includes(frName))
+        );
+      }) ?? [];
+
+    if (matchCode && codeToImages[matchCode]?.length) {
+      result[color.id] = codeToImages[matchCode];
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Résumé agrégé stock + prix pour affichage rapide.
+ * Fait deux appels en parallèle et retourne un objet simplifié.
+ */
+export async function getTopTexStockSummary(
+  sku: string
+): Promise<TopTexStockSummary> {
+  const [inventory, price] = await Promise.all([
+    getTopTexInventory(sku),
+    getTopTexPrice(sku),
+  ]);
+
+  // Compter les unités disponibles depuis les différentes formes de réponse
+  let totalUnits = 0;
+
+  if (inventory) {
+    const items =
+      (inventory.items as TopTexStockItem[] | undefined) ??
+      (inventory.stock as TopTexStockItem[] | undefined) ??
+      [];
+
+    if (items.length > 0) {
+      totalUnits = items.reduce((sum, item) => {
+        const qty = (item.quantity ?? item.available ?? 0) as number;
+        return sum + qty;
+      }, 0);
+    } else if (inventory.colors) {
+      // Format { WHITE: { S: 50, M: 100 }, ... }
+      for (const colorSizes of Object.values(inventory.colors)) {
+        for (const qty of Object.values(colorSizes)) {
+          totalUnits += qty;
+        }
+      }
+    } else if (typeof inventory.inStock === "boolean") {
+      // L'API retourne directement un champ inStock
+      totalUnits = inventory.inStock ? 1 : 0;
+    }
+  }
+
+  // Extraire le prix de base HT
+  let basePriceHT: number | null = null;
+  if (price) {
+    const raw =
+      price.basePrice ??
+      price.price ??
+      (price.items as TopTexPriceItem[] | undefined)?.[0]?.price ??
+      (price.prices as TopTexPriceItem[] | undefined)?.[0]?.price ??
+      null;
+    if (raw != null) basePriceHT = Number(raw);
+  }
+
+  return {
+    inStock: totalUnits > 0,
+    totalUnits,
+    basePriceHT,
+    fetchedAt: new Date().toISOString(),
+  };
 }
 
 /**

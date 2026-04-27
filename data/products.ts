@@ -193,6 +193,7 @@ export const PRODUCT_TU01T: Product = {
   badge: "Bestseller",
   supplierName: "falk-ross",
   supplierRef: "TU01T",
+  toptexRef: "TU01T",
 };
 
 export const PRODUCT_TW02T: Product = {
@@ -239,6 +240,7 @@ export const PRODUCT_TW02T: Product = {
   seasonal: ["printemps", "ete"],
   supplierName: "falk-ross",
   supplierRef: "TW02T",
+  toptexRef: "TW02T",
 };
 
 export const PRODUCT_TU03T: Product = {
@@ -283,17 +285,24 @@ export const PRODUCT_TU03T: Product = {
   badge: "Meilleur rapport qualité/prix",
   supplierName: "falk-ross",
   supplierRef: "TU03T",
+  toptexRef: "TU03T",
 };
 
 // ─── HOODIES / SWEATS ────────────────────────────────────────────────────────
 
 const HOODIE_COLORS = [
-  { id: "noir", label: "Noir", hex: "#111111", available: true },
-  { id: "blanc", label: "Blanc cassé", hex: "#F5F5F5", available: true },
-  { id: "gris-melange", label: "Gris mélangé", hex: "#6B7280", available: true },
-  { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-  { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
-  { id: "vert-foret", label: "Vert forêt", hex: "#14532D", available: true },
+  { id: "noir",           label: "Noir",            hex: "#111111", available: true },
+  { id: "blanc",          label: "Blanc cassé",     hex: "#F5F5F5", available: true },
+  { id: "gris-melange",   label: "Gris mélangé",    hex: "#6B7280", available: true },
+  { id: "anthracite",     label: "Anthracite",      hex: "#374151", available: true },
+  { id: "marine",         label: "Marine",          hex: "#1E3A5F", available: true },
+  { id: "bleu-royal",     label: "Bleu royal",      hex: "#2563EB", available: true },
+  { id: "bordeaux",       label: "Bordeaux",        hex: "#7F1D1D", available: true },
+  { id: "rouge",          label: "Rouge",           hex: "#DC2626", available: true },
+  { id: "vert-foret",     label: "Vert forêt",      hex: "#14532D", available: true },
+  { id: "vert-bouteille", label: "Vert bouteille",  hex: "#166534", available: true },
+  { id: "kaki",           label: "Kaki",            hex: "#65721F", available: true },
+  { id: "beige",          label: "Beige",           hex: "#D4B896", available: true },
 ];
 
 const HOODIE_SIZES = [
@@ -363,6 +372,7 @@ export const PRODUCT_WG004: Product = {
   seasonal: ["automne", "hiver"],
   supplierName: "falk-ross",
   supplierRef: "WG004",
+  toptexRef: "WG004",
 };
 
 export const PRODUCT_WU620: Product = {
@@ -403,6 +413,7 @@ export const PRODUCT_WU620: Product = {
   badge: "Populaire",
   supplierName: "falk-ross",
   supplierRef: "WU620",
+  toptexRef: "WU620",
 };
 
 // ─── SOFTSHELLS / VESTES ──────────────────────────────────────────────────────
@@ -482,6 +493,7 @@ export const PRODUCT_JUI62: Product = {
   badge: "Premium",
   supplierName: "falk-ross",
   supplierRef: "JUI62",
+  toptexRef: "JUI62",
 };
 
 export const PRODUCT_JWI63: Product = {
@@ -529,17 +541,29 @@ export const PRODUCT_JWI63: Product = {
   badge: "Premium",
   supplierName: "falk-ross",
   supplierRef: "JWI63",
+  toptexRef: "JWI63",
 };
 
 // ─── T-SHIRTS iDeal Basic Brand ───────────────────────────────────────────────
 
+// Palette complète iDeal — couvre les ~20 coloris disponibles sur TopTex
 const IDEAL_COLORS_BASE = [
-  { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
-  { id: "noir", label: "Noir", hex: "#111111", available: true },
-  { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-  { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
-  { id: "gris", label: "Gris chiné", hex: "#9CA3AF", available: true },
-  { id: "bleu-royal", label: "Bleu royal", hex: "#2563EB", available: true },
+  { id: "blanc",          label: "Blanc",           hex: "#FFFFFF", available: true },
+  { id: "noir",           label: "Noir",            hex: "#111111", available: true },
+  { id: "marine",         label: "Marine",          hex: "#1E3A5F", available: true },
+  { id: "rouge",          label: "Rouge",           hex: "#DC2626", available: true },
+  { id: "gris",           label: "Gris chiné",      hex: "#9CA3AF", available: true },
+  { id: "bleu-royal",     label: "Bleu royal",      hex: "#2563EB", available: true },
+  { id: "bordeaux",       label: "Bordeaux",        hex: "#7F1D1D", available: true },
+  { id: "anthracite",     label: "Anthracite",      hex: "#374151", available: true },
+  { id: "vert-bouteille", label: "Vert bouteille",  hex: "#166534", available: true },
+  { id: "turquoise",      label: "Turquoise",       hex: "#0891B2", available: true },
+  { id: "orange",         label: "Orange",          hex: "#EA580C", available: true },
+  { id: "jaune",          label: "Jaune",           hex: "#EAB308", available: true },
+  { id: "rose",           label: "Rose",            hex: "#EC4899", available: true },
+  { id: "beige",          label: "Beige",           hex: "#D4B896", available: true },
+  { id: "violet",         label: "Violet",          hex: "#7C3AED", available: true },
+  { id: "kaki",           label: "Kaki",            hex: "#65721F", available: true },
 ];
 
 // ─── Toptex CDN images ────────────────────────────────────────────────────────
@@ -726,13 +750,22 @@ const POLO_SIZES_STD = [
   { label: "3XL", available: true },
 ];
 
+// Palette complète polos Kariban — couvre les coloris disponibles sur TopTex
 const POLO_COLORS_BASE = [
-  { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
-  { id: "noir", label: "Noir", hex: "#111111", available: true },
-  { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-  { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
-  { id: "gris", label: "Gris", hex: "#9CA3AF", available: true },
-  { id: "bleu-royal", label: "Bleu royal", hex: "#2563EB", available: true },
+  { id: "blanc",          label: "Blanc",           hex: "#FFFFFF", available: true },
+  { id: "noir",           label: "Noir",            hex: "#111111", available: true },
+  { id: "marine",         label: "Marine",          hex: "#1E3A5F", available: true },
+  { id: "rouge",          label: "Rouge",           hex: "#DC2626", available: true },
+  { id: "gris",           label: "Gris chiné",      hex: "#9CA3AF", available: true },
+  { id: "bleu-royal",     label: "Bleu royal",      hex: "#2563EB", available: true },
+  { id: "anthracite",     label: "Anthracite",      hex: "#374151", available: true },
+  { id: "vert-bouteille", label: "Vert bouteille",  hex: "#166534", available: true },
+  { id: "bordeaux",       label: "Bordeaux",        hex: "#7F1D1D", available: true },
+  { id: "orange",         label: "Orange",          hex: "#EA580C", available: true },
+  { id: "turquoise",      label: "Turquoise",       hex: "#0891B2", available: true },
+  { id: "bleu-ciel",      label: "Bleu ciel",       hex: "#38BDF8", available: true },
+  { id: "beige",          label: "Beige",           hex: "#D4B896", available: true },
+  { id: "jaune",          label: "Jaune",           hex: "#EAB308", available: true },
 ];
 
 const POLO_CONSEIL = "💡 Conseil HM Global : Sur les polos piqués, la broderie est recommandée pour un rendu professionnel durable. Le DTF n'est pas adapté à la surface structurée piqué.";

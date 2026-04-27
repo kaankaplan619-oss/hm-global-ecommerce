@@ -16,6 +16,8 @@ interface Props {
   onLogoChange?: (f: File | null) => void;
   onPlacementChange?: (p: Placement) => void;
   hidePreview?: boolean;
+  /** Map colorId → imageUrls chargée depuis l'API TopTex — pour indiquer quelle couleur a des photos */
+  colorImages?: Record<string, string[]>;
 }
 
 export default function ProductConfigurator({
@@ -25,6 +27,7 @@ export default function ProductConfigurator({
   onLogoChange,
   onPlacementChange,
   hidePreview,
+  colorImages,
 }: Props) {
   const { addItem } = useCartStore();
 
@@ -135,7 +138,7 @@ export default function ProductConfigurator({
         </label>
         <div className="flex flex-wrap gap-2">
           {product.colors.map((c) => {
-            const hasPhoto = colorHasImages(product.images, c);
+            const hasPhoto = colorHasImages(product.images, c, colorImages);
             const unavailable = !c.available;
             return (
               <button
@@ -174,7 +177,7 @@ export default function ProductConfigurator({
             );
           })}
         </div>
-        {color && !colorHasImages(product.images, color) && (
+        {color && !colorHasImages(product.images, color, colorImages) && (
           <p className="mt-1.5 text-[11px] text-[var(--hm-text-muted)]">
             Photo non disponible pour cette couleur — vous pouvez tout de même la commander.
           </p>
