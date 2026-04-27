@@ -125,7 +125,8 @@ export interface CartFile {
   name: string;
   size: number;
   type: string;
-  url?: string; // after upload
+  url?: string;       // Supabase public URL — set after upload
+  path?: string;      // Supabase storage path — set after upload
   uploadedAt?: string;
 }
 

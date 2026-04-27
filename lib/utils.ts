@@ -68,23 +68,24 @@ export function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 }
 
+// Matches bucket "customer-logos" allowed_mime_types + file_size_limit
 export const ALLOWED_FILE_TYPES = [
   "application/pdf",
   "image/png",
+  "image/jpeg",
+  "image/webp",
   "image/svg+xml",
-  "application/postscript", // .ai
-  "application/illustrator",
 ];
 
-export const ALLOWED_FILE_EXTENSIONS = [".pdf", ".png", ".svg", ".ai"];
+export const ALLOWED_FILE_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".svg"];
 
-export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB — matches bucket file_size_limit
 
 export function validateLogoFile(file: File): { valid: boolean; error?: string } {
   const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
 
   if (file.size > MAX_FILE_SIZE) {
-    return { valid: false, error: "Le fichier est trop volumineux (max 50 Mo)." };
+    return { valid: false, error: "Le fichier est trop volumineux (max 10 Mo)." };
   }
 
   const isAllowed =
@@ -94,7 +95,7 @@ export function validateLogoFile(file: File): { valid: boolean; error?: string }
   if (!isAllowed) {
     return {
       valid: false,
-      error: `Format non supporté. Formats acceptés : PDF, PNG, SVG, AI.`,
+      error: `Format non supporté. Formats acceptés : PDF, PNG, JPG, WEBP, SVG.`,
     };
   }
 
