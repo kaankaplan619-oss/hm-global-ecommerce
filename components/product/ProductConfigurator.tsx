@@ -444,7 +444,7 @@ export default function ProductConfigurator({
             </p>
             <p className="mt-2 text-[11px] text-[var(--hm-text-muted)]">
               Vous pouvez envoyer un logo, un visuel à imprimer ou un fichier déjà préparé.
-              Les formats vectoriels comme SVG, PDF ou AI restent les plus confortables pour la production.
+              Les formats SVG et PDF restent les plus confortables pour la production.
             </p>
             <input
               id="logo-input"
