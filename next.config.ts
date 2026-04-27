@@ -13,10 +13,15 @@ const nextConfig: NextConfig = {
         hostname: "**.supabase.co",
       },
       {
-        // Toptex CDN — visuels produits fournisseur
+        // Toptex CDN — packshots produits (PS_CGTU01T_WHITE.png, etc.)
         protocol: "https",
         hostname: "cdn.toptex.com",
-        pathname: "/pictures/**",
+        pathname: "/packshots/**",
+      },
+      {
+        // Toptex media authentifié (fallback)
+        protocol: "https",
+        hostname: "media.europeancatalog.com",
       },
     ],
   },

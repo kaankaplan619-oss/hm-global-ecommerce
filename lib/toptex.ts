@@ -170,13 +170,15 @@ export interface TopTexColorVariant {
   saleState?:      string;
   /**
    * Images produit par vue.
-   * Peut être une URL string ou { error: "..." } si charte Photo Library non acceptée.
+   * Format réel API v3 : objet { image_id, url_packshot, url, last_update, rights_end, ... }
+   * Erreur Photo Library : { error: "Please connect to Photo library..." }
+   * Fallback alternatif : URL string directe
    */
   packshots?: {
-    FACE?: string | { error: string };
-    BACK?: string | { error: string };
-    SIDE?: string | { error: string };
-    [key: string]: string | { error: string } | undefined;
+    FACE?: { url_packshot?: string; url?: string; image_id?: string; error?: string; [k: string]: unknown } | string;
+    BACK?: { url_packshot?: string; url?: string; image_id?: string; error?: string; [k: string]: unknown } | string;
+    SIDE?: { url_packshot?: string; url?: string; image_id?: string; error?: string; [k: string]: unknown } | string;
+    [key: string]: { url_packshot?: string; url?: string; image_id?: string; error?: string; [k: string]: unknown } | string | undefined;
   };
   /** Variantes taille — contient colorCode à sizes[0].colorCode */
   sizes?: TopTexSizeVariant[];
@@ -414,6 +416,11 @@ function getTopTexColorName(tc: TopTexColorVariant): string {
 /**
  * Extrait les URLs packshot valides (filtre les erreurs Photo Library).
  * FACE → BACK → SIDE : ordre prioritaire pour la galerie.
+ *
+ * L'API TopTex v3 retourne les packshots sous deux formes :
+ *   - Objet : { image_id, url_packshot, url, last_update, ... }  ← format réel v3
+ *   - Chaîne : "https://..."                                      ← format alternatif
+ *   - Objet erreur : { error: "Please connect to Photo library..." } ← ignoré
  */
 function extractPackshotUrls(
   packshots: TopTexColorVariant["packshots"] | undefined
@@ -422,10 +429,25 @@ function extractPackshotUrls(
   const urls: string[] = [];
   for (const view of ["FACE", "BACK", "SIDE"] as const) {
     const p = packshots[view];
-    if (typeof p === "string" && (p.startsWith("http") || p.startsWith("/"))) {
+    if (!p) continue;
+
+    if (typeof p === "object") {
+      // Format réel v3 : { url_packshot: "https://cdn.toptex.com/...", url: "...", ... }
+      const obj = p as Record<string, unknown>;
+      const urlPackshot = (obj.url_packshot ?? obj.url) as string | undefined;
+      if (
+        urlPackshot &&
+        typeof urlPackshot === "string" &&
+        (urlPackshot.startsWith("http") || urlPackshot.startsWith("/")) &&
+        !urlPackshot.includes("Please connect")
+      ) {
+        urls.push(urlPackshot);
+      }
+      // { error: "Please connect to Photo library..." } → ignoré silencieusement
+    } else if (typeof p === "string" && (p.startsWith("http") || p.startsWith("/"))) {
+      // Format chaîne directe (fallback)
       urls.push(p);
     }
-    // Si p est { error: "..." } → Photo Library non acceptée → ignorer silencieusement
   }
   return urls;
 }
