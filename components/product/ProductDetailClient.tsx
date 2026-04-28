@@ -36,7 +36,8 @@ export default function ProductDetailClient({ product }: Props) {
   // Produits sans toptexRef → hook reste en "idle", colorImages reste {}
   const { colorImages, status: mediasStatus } = useTopTexMedias(
     product.toptexRef,
-    product.colors
+    product.colors,
+    product.id
   );
 
   const minPrice = useMemo(() => {

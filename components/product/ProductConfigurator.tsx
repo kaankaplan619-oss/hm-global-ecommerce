@@ -7,7 +7,7 @@ import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
 import { uploadLogoToSupabase, getUploadErrorMessage } from "@/lib/uploadLogo";
-import { colorHasImages } from "@/components/product/ProductGallery";
+import { colorHasImages, colorHasSpecificImage } from "@/components/product/ProductGallery";
 import type { Product, Technique, Placement, ProductColor } from "@/types";
 
 interface Props {
@@ -177,10 +177,10 @@ export default function ProductConfigurator({
           {product.colors.map((c) => {
             // Couleur barrée uniquement si vraiment indisponible dans notre catalogue
             const unavailable = !c.available;
-            // Photo disponible = image locale OU packshot TopTex
-            const hasPhoto = colorHasImages(product.images, c, colorImages);
-            // Photo manquante mais couleur commandable (ex. packshot bloqué par charte TopTex)
-            const photoMissing = !unavailable && !hasPhoto;
+            // Photo spécifique = packshot exact pour cette couleur (statique ou API)
+            const hasSpecificPhoto = colorHasSpecificImage(c.id, colorImages);
+            // Point gris = couleur commandable mais sans packshot dédié
+            const photoMissing = !unavailable && !hasSpecificPhoto;
 
             return (
               <button

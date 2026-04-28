@@ -196,8 +196,13 @@ function buildVariantGallery(
   return result.length > 0 ? result : [images[0]];
 }
 
-// ─── Utilitaire exporté ───────────────────────────────────────────────────────
+// ─── Utilitaires exportés ─────────────────────────────────────────────────────
 
+/**
+ * `colorHasImages` — vrai si UNE image quelconque existe pour ce produit.
+ * Utilisé pour le banner "Visuel non disponible".
+ * Retourne vrai dès qu'il y a des images CDN génériques (même sans packshot par couleur).
+ */
 export function colorHasImages(
   images: string[],
   color: ProductColor,
@@ -205,13 +210,13 @@ export function colorHasImages(
 ): boolean {
   if (images.length === 0) return false;
 
-  // CDN packshots (https://) sont toujours valides — visuel disponible pour toute couleur
-  if (images.some((img) => img.startsWith("https://"))) return true;
-
-  // Images TopTex per-color disponibles via API
+  // Packshot couleur spécifique disponible (statique ou API)
   if (colorImages && Object.keys(colorImages).length > 0) {
     if (resolveTopTexImages(color.id, colorImages).length > 0) return true;
   }
+
+  // Images CDN génériques (https://) → toujours valides comme fallback
+  if (images.some((img) => img.startsWith("https://"))) return true;
 
   // Fallback : correspondance par nom de fichier local
   const targetKeys = COLOR_IMAGE_MAP[color.id] ?? [];
@@ -223,6 +228,19 @@ export function colorHasImages(
     const imageColor = extractImageColor(src);
     return keys.some((key) => imageColor === key);
   });
+}
+
+/**
+ * `colorHasSpecificImage` — vrai UNIQUEMENT si un packshot couleur précis existe.
+ * Utilisé pour le point gris sur les swatches : si faux, la couleur est commandable
+ * mais n'a pas d'image dédiée (l'image principale ne changera pas au clic).
+ */
+export function colorHasSpecificImage(
+  colorId: string,
+  colorImages?: Record<string, string[]>
+): boolean {
+  if (!colorImages || Object.keys(colorImages).length === 0) return false;
+  return resolveTopTexImages(colorId, colorImages).length > 0;
 }
 
 // ─── Image avec fade ────────────────────────────────────────────
