@@ -29,9 +29,9 @@ const TOPTEX_IMGS: Record<string, string[]> = {
   // ── Sweats & hoodies B&C ─────────────────────────────────────────────────
   wg004: [`${TOPTEX_CDN}CGWG004_2026.jpg`,`${TOPTEX_CDN}CGWG004-1_2026.jpg`,`${TOPTEX_CDN}CGWG004-2_2026.jpg`,`${TOPTEX_CDN}CGWG004-3_2026.jpg`,`${TOPTEX_CDN}CGWG004-4_2026.jpg`],
   wu620: [`${TOPTEX_CDN}CGWU620_2026.jpg`,`${TOPTEX_CDN}CGWU620-1_2026.jpg`,`${TOPTEX_CDN}CGWU620-2_2026.jpg`,`${TOPTEX_CDN}CGWU620-3_2026.jpg`,`${TOPTEX_CDN}CGWU620-4_2026.jpg`],
-  // ── Softshells B&C ───────────────────────────────────────────────────────
-  jui62: [`${TOPTEX_CDN}CGJUI62_2026.jpg`,`${TOPTEX_CDN}CGJUI62-1_2026.jpg`,`${TOPTEX_CDN}CGJUI62-2_2026.jpg`,`${TOPTEX_CDN}CGJUI62-3_2026.jpg`,`${TOPTEX_CDN}CGJUI62-4_2026.jpg`],
-  jwi63: [`${TOPTEX_CDN}CGJWI63_2026.jpg`,`${TOPTEX_CDN}CGJWI63-1_2026.jpg`,`${TOPTEX_CDN}CGJWI63-2_2026.jpg`,`${TOPTEX_CDN}CGJWI63-3_2026.jpg`,`${TOPTEX_CDN}CGJWI63-4_2026.jpg`],
+  // ── Softshells B&C (packshots par coloris via API) ───────────────────────
+  jui62: ["https://cdn.toptex.com/packshots/PS_CGJUI62_BLACK-BLACK.png","https://cdn.toptex.com/packshots/PS_CGJUI62_NAVY-NEONGREEN.png","https://cdn.toptex.com/packshots/PS_CGJUI62_DARKGREY-NEONORANGE.png","https://cdn.toptex.com/packshots/PS_CGJUI62_ATOLL-GHOSTGREY.png","https://cdn.toptex.com/packshots/PS_CGJUI62_RED-WARMGREY.png"],
+  jwi63: ["https://cdn.toptex.com/packshots/PS_CGJWI63_BLACK-BLACK.png","https://cdn.toptex.com/packshots/PS_CGJWI63_NAVY-NEONGREEN.png","https://cdn.toptex.com/packshots/PS_CGJWI63_DARKGREY-NEONORANGE.png","https://cdn.toptex.com/packshots/PS_CGJWI63_ATOLL-GHOSTGREY.png","https://cdn.toptex.com/packshots/PS_CGJWI63_RED-WARMGREY.png"],
   // ── T-shirts iDeal190 ────────────────────────────────────────────────────
   ib320: [`${TOPTEX_CDN}IB320_2026.jpg`,`${TOPTEX_CDN}IB320-1_2026.jpg`,`${TOPTEX_CDN}IB320-2_2026.jpg`,`${TOPTEX_CDN}IB320-3_2026.jpg`,`${TOPTEX_CDN}IB320-4_2026.jpg`],
   ib321: [`${TOPTEX_CDN}IB321_2026.jpg`,`${TOPTEX_CDN}IB321-1_2026.jpg`,`${TOPTEX_CDN}IB321-2_2026.jpg`,`${TOPTEX_CDN}IB321-3_2026.jpg`,`${TOPTEX_CDN}IB321-4_2026.jpg`],
@@ -47,10 +47,10 @@ const TOPTEX_IMGS: Record<string, string[]> = {
   ib401: [`${TOPTEX_CDN}IB401_2026.jpg`,`${TOPTEX_CDN}IB401-1_2026.jpg`,`${TOPTEX_CDN}IB401-2_2026.jpg`,`${TOPTEX_CDN}IB401-3_2026.jpg`,`${TOPTEX_CDN}IB401-4_2026.jpg`],
   ib402: [`${TOPTEX_CDN}IB402_2026.jpg`,`${TOPTEX_CDN}IB402-1_2026.jpg`,`${TOPTEX_CDN}IB402-2_2026.jpg`,`${TOPTEX_CDN}IB402-3_2026.jpg`,`${TOPTEX_CDN}IB402-4_2026.jpg`],
   ib403: [`${TOPTEX_CDN}IB403_2026.jpg`,`${TOPTEX_CDN}IB403-1_2026.jpg`,`${TOPTEX_CDN}IB403-2_2026.jpg`,`${TOPTEX_CDN}IB403-3_2026.jpg`,`${TOPTEX_CDN}IB403-4_2026.jpg`],
-  // ── Sweats & hoodies Native Spirit ────────────────────────────────────────
-  ns400: [`${TOPTEX_CDN}NS400_2026.jpg`,`${TOPTEX_CDN}NS400-1_2026.jpg`,`${TOPTEX_CDN}NS400-2_2026.jpg`,`${TOPTEX_CDN}NS400-3_2026.jpg`,`${TOPTEX_CDN}NS400-4_2026.jpg`],
-  ns401: [`${TOPTEX_CDN}NS401_2026.jpg`,`${TOPTEX_CDN}NS401-1_2026.jpg`,`${TOPTEX_CDN}NS401-2_2026.jpg`,`${TOPTEX_CDN}NS401-3_2026.jpg`,`${TOPTEX_CDN}NS401-4_2026.jpg`],
-  ns408: [`${TOPTEX_CDN}NS408_2026.jpg`,`${TOPTEX_CDN}NS408-1_2026.jpg`,`${TOPTEX_CDN}NS408-2_2026.jpg`,`${TOPTEX_CDN}NS408-3_2026.jpg`,`${TOPTEX_CDN}NS408-4_2026.jpg`],
+  // ── Sweats & hoodies Native Spirit (packshots par coloris via API) ────────
+  ns400: ["https://cdn.toptex.com/packshots/PS_NS400_BLACK.png","https://cdn.toptex.com/packshots/PS_NS400_ALMONDGREEN.png","https://cdn.toptex.com/packshots/PS_NS400_AQUAMARINE.png","https://cdn.toptex.com/packshots/PS_NS400-2_ADRIATICBLUE.png","https://cdn.toptex.com/packshots/PS_NS400-2_ANTIQUEROSE.png"],
+  ns401: ["https://cdn.toptex.com/packshots/PS_NS401_BLACK.png","https://cdn.toptex.com/packshots/PS_NS401_ALMONDGREEN.png","https://cdn.toptex.com/packshots/PS_NS401_AQUAMARINE.png","https://cdn.toptex.com/packshots/PS_NS401-2_ADRIATICBLUE.png","https://cdn.toptex.com/packshots/PS_NS401-2_ANTIQUEROSE.png"],
+  ns408: ["https://cdn.toptex.com/packshots/PS_NS408_BLACK.png","https://cdn.toptex.com/packshots/PS_NS408_AQUAMARINE.png","https://cdn.toptex.com/packshots/PS_NS408_BROOKGREEN.png","https://cdn.toptex.com/packshots/PS_NS408_BURNTBRICK.png","https://cdn.toptex.com/packshots/PS_NS408_DRIFTWOOD.png"],
   // ── Polaires & doudounes ──────────────────────────────────────────────────
   ib900:  [`${TOPTEX_CDN}IB900_2026.jpg`,`${TOPTEX_CDN}IB900-1_2026.jpg`,`${TOPTEX_CDN}IB900-2_2026.jpg`,`${TOPTEX_CDN}IB900-3_2026.jpg`,`${TOPTEX_CDN}IB900-4_2026.jpg`],
   ib6175: [`${TOPTEX_CDN}IB6175_2026.jpg`,`${TOPTEX_CDN}IB6175-1_2026.jpg`,`${TOPTEX_CDN}IB6175-2_2026.jpg`,`${TOPTEX_CDN}IB6175-3_2026.jpg`,`${TOPTEX_CDN}IB6175-4_2026.jpg`],
@@ -59,13 +59,13 @@ const TOPTEX_IMGS: Record<string, string[]> = {
   // ── Casquettes K-up ───────────────────────────────────────────────────────
   kp157:  [`${TOPTEX_CDN}KP157_2026.jpg`,`${TOPTEX_CDN}KP157-1_2026.jpg`,`${TOPTEX_CDN}KP157-2_2026.jpg`,`${TOPTEX_CDN}KP157-3_2026.jpg`,`${TOPTEX_CDN}KP157-4_2026.jpg`],
   kp162:  [`${TOPTEX_CDN}KP162_2026.jpg`,`${TOPTEX_CDN}KP162-1_2026.jpg`,`${TOPTEX_CDN}KP162-2_2026.jpg`,`${TOPTEX_CDN}KP162-3_2026.jpg`,`${TOPTEX_CDN}KP162-4_2026.jpg`],
-  kp165:  [`${TOPTEX_CDN}KP165_2026.jpg`,`${TOPTEX_CDN}KP165-1_2026.jpg`,`${TOPTEX_CDN}KP165-2_2026.jpg`,`${TOPTEX_CDN}KP165-3_2026.jpg`,`${TOPTEX_CDN}KP165-4_2026.jpg`],
-  kp185:  [`${TOPTEX_CDN}KP185_2026.jpg`,`${TOPTEX_CDN}KP185-1_2026.jpg`,`${TOPTEX_CDN}KP185-2_2026.jpg`,`${TOPTEX_CDN}KP185-3_2026.jpg`,`${TOPTEX_CDN}KP185-4_2026.jpg`],
-  // ── Sacs & tote bags Kimood ───────────────────────────────────────────────
-  ki0262: [`${TOPTEX_CDN}KI0262_2026.jpg`,`${TOPTEX_CDN}KI0262-1_2026.jpg`,`${TOPTEX_CDN}KI0262-2_2026.jpg`,`${TOPTEX_CDN}KI0262-3_2026.jpg`,`${TOPTEX_CDN}KI0262-4_2026.jpg`],
-  ki0252: [`${TOPTEX_CDN}KI0252_2026.jpg`,`${TOPTEX_CDN}KI0252-1_2026.jpg`,`${TOPTEX_CDN}KI0252-2_2026.jpg`,`${TOPTEX_CDN}KI0252-3_2026.jpg`,`${TOPTEX_CDN}KI0252-4_2026.jpg`],
-  ki0275: [`${TOPTEX_CDN}KI0275_2026.jpg`,`${TOPTEX_CDN}KI0275-1_2026.jpg`,`${TOPTEX_CDN}KI0275-2_2026.jpg`,`${TOPTEX_CDN}KI0275-3_2026.jpg`,`${TOPTEX_CDN}KI0275-4_2026.jpg`],
-  ki0274: [`${TOPTEX_CDN}KI0274_2026.jpg`,`${TOPTEX_CDN}KI0274-1_2026.jpg`,`${TOPTEX_CDN}KI0274-2_2026.jpg`,`${TOPTEX_CDN}KI0274-3_2026.jpg`,`${TOPTEX_CDN}KI0274-4_2026.jpg`],
+  kp165:  ["https://cdn.toptex.com/packshots/PS_KP165-B_BLACKWASHED.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDBLUEQUARTZ.png","https://cdn.toptex.com/packshots/PS_KP165_DARKPINKWASHED.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDDUSKYORCHID.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDIVYGREEN.png"],
+  kp185:  ["https://cdn.toptex.com/packshots/PS_KP185_BLACK.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-ORANGE.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-RED.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-WHITE.png","https://cdn.toptex.com/packshots/PS_KP185_DARKGREY-LIGHTGREY.png"],
+  // ── Sacs & tote bags Kimood (packshots par coloris via API) ──────────────
+  ki0262: ["https://cdn.toptex.com/packshots/PS_KI0262_NATURAL.png","https://cdn.toptex.com/packshots/PS_KI0262_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0262_NAVYBLUE.png","https://cdn.toptex.com/packshots/PS_KI0262_CURCUMA.png","https://cdn.toptex.com/packshots/PS_KI0262_METALGREY.png"],
+  ki0252: ["https://cdn.toptex.com/packshots/PS_KI0252_NATURAL.png","https://cdn.toptex.com/packshots/PS_KI0252_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0252_NAVYBLUE.png","https://cdn.toptex.com/packshots/PS_KI0252_CURCUMA.png","https://cdn.toptex.com/packshots/PS_KI0252_METALGREY.png"],
+  ki0275: ["https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-BLACK.png","https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-NAVY.png","https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-RED.png"],
+  ki0274: ["https://cdn.toptex.com/packshots/PS_KI0274_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0274_BLACK-SILVER.png","https://cdn.toptex.com/packshots/PS_KI0274_CHERRYRED-GOLD.png","https://cdn.toptex.com/packshots/PS_KI0274_ICEMINT.png","https://cdn.toptex.com/packshots/PS_KI0274_MIDNIGHTBLUE.png"],
 };
 
 // Retourne les 5 URLs CDN Toptex du produit (fallback: placeholder local)
