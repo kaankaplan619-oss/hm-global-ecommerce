@@ -19,10 +19,10 @@ const nextConfig: NextConfig = {
         hostname: "**.supabase.co",
       },
       {
-        // Toptex CDN — packshots produits (PS_CGTU01T_WHITE.png, etc.)
+        // Toptex CDN — images produits sous /pictures/ (ex: IB320-3_2025.jpg)
         protocol: "https",
         hostname: "cdn.toptex.com",
-        pathname: "/packshots/**",
+        pathname: "/pictures/**",
       },
       {
         // Toptex media authentifié (fallback)

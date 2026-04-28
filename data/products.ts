@@ -16,6 +16,9 @@ function buildProductImages(productId: string, images: string[]) {
   return images.map((image) => `/images/products/${productId}/${image}`);
 }
 
+// CDN Toptex — déclaré tôt pour être utilisable partout dans ce fichier
+const TOPTEX_CDN = "https://cdn.toptex.com/pictures/";
+
 // Convention visuelle actuelle :
 // - front-{couleur} / back-{couleur} = vue liée a une variante précise
 // - detail-{theme} = vue neutre réutilisable comme fallback
@@ -314,16 +317,19 @@ const HOODIE_SIZES = [
   { label: "3XL", available: true },
 ];
 
-// Visuels disponibles :
-// - fronts : noir, gris-melange (fichier asset: front-gris)
-// - back : noir
-// - detail : neutre
-const WG004_IMAGES = buildProductImages("wg004", [
-  "front-noir.jpg",
-  "front-gris.jpg",
-  "back-noir.jpg",
-  "detail-molleton.jpg",
-]);
+// Visuels : locaux (noir, gris) + CDN Toptex (coloris supplémentaires)
+const WG004_IMAGES = [
+  ...buildProductImages("wg004", [
+    "front-noir.jpg",
+    "front-gris.jpg",
+    "back-noir.jpg",
+    "detail-molleton.jpg",
+  ]),
+  `${TOPTEX_CDN}CGWG004_2026.jpg`,
+  `${TOPTEX_CDN}CGWG004-1_2026.jpg`,
+  `${TOPTEX_CDN}CGWG004-2_2026.jpg`,
+  `${TOPTEX_CDN}CGWG004-3_2026.jpg`,
+];
 
 // Visuels officiels B&C (Top Tex) — 6 coloris disponibles
 const WU620_IMAGES = buildProductImages("wu620", [
@@ -444,16 +450,19 @@ const JUI62_IMAGES = buildProductImages("jui62", [
   "PS_CGJUI62_ATOLL-GHOSTGREY.avif",
 ]);
 
-// Visuels disponibles :
-// - fronts : noir, marine
-// - back : noir
-// - detail : neutre
-const JWI63_IMAGES = buildProductImages("jwi63", [
-  "front-noir.jpg",
-  "front-marine.jpg",
-  "back-noir.jpg",
-  "detail-softshell.jpg",
-]);
+// Visuels : locaux (noir, marine) + CDN Toptex (coloris supplémentaires)
+const JWI63_IMAGES = [
+  ...buildProductImages("jwi63", [
+    "front-noir.jpg",
+    "front-marine.jpg",
+    "back-noir.jpg",
+    "detail-softshell.jpg",
+  ]),
+  `${TOPTEX_CDN}CGJWI63_2026.jpg`,
+  `${TOPTEX_CDN}CGJWI63-1_2026.jpg`,
+  `${TOPTEX_CDN}CGJWI63-2_2026.jpg`,
+  `${TOPTEX_CDN}CGJWI63-3_2026.jpg`,
+];
 
 export const PRODUCT_JUI62: Product = {
   id: "jui62",
@@ -567,45 +576,208 @@ const IDEAL_COLORS_BASE = [
 ];
 
 // ─── Toptex CDN images ────────────────────────────────────────────────────────
-// URLs vérifiées en live le 20/04/2026 — source : cdn.toptex.com/pictures/
-// next.config.ts autorise ce domaine via remotePatterns
-const TOPTEX_CDN = "https://cdn.toptex.com/pictures/";
+// URLs vérifiées en live le 28/04/2026 — source : cdn.toptex.com/pictures/
+// next.config.ts autorise ce domaine via remotePatterns (pathname: /pictures/**)
+// Convention : {REF}_YYYY = packshot catalogue ; {REF}-N_YYYY = coloris/vue N
+// TOPTEX_CDN est déclaré en haut du fichier pour usage global
 
 const TOPTEX_IMGS: Record<string, string[]> = {
-  // T-shirts iDeal
-  ib320:  [`${TOPTEX_CDN}IB320-3_2025.jpg`, `${TOPTEX_CDN}IB320_2026.jpg`],
-  ib321:  [`${TOPTEX_CDN}IB321-3_2025.jpg`, `${TOPTEX_CDN}IB321_2026.jpg`],
-  ib322:  [`${TOPTEX_CDN}IB322-3_2025.jpg`, `${TOPTEX_CDN}IB322_2026.jpg`],
-  ib323:  [`${TOPTEX_CDN}IB323-3_2025.jpg`, `${TOPTEX_CDN}IB323_2026.jpg`],
-  // Polos Kariban
-  k262:   [`${TOPTEX_CDN}K262-4_2026.jpg`],
-  k256:   [`${TOPTEX_CDN}K256-2_2025.jpg`],
-  k239:   [`${TOPTEX_CDN}K239-3_2025.jpg`],
-  k240:   [`${TOPTEX_CDN}K240-3_2025.jpg`],
-  // Sweats & hoodies iDeal
-  ib400:  [`${TOPTEX_CDN}IB400-2_2026.jpg`, `${TOPTEX_CDN}IB400_2025.jpg`],
-  ib402:  [`${TOPTEX_CDN}IB402-2_2026.jpg`],
-  ib401:  [`${TOPTEX_CDN}IB401_2026.jpg`],
-  ib403:  [`${TOPTEX_CDN}IB403-3_2026.jpg`],
-  // Sweats & hoodies Native Spirit
-  ns400:  [`${TOPTEX_CDN}NS400-8_2025.jpg`],
-  ns401:  [`${TOPTEX_CDN}NS401-21_2025.jpg`],
-  ns408:  [`${TOPTEX_CDN}NS408-4_2025.jpg`],
-  // Polaires & doudounes
-  ib900:  [`${TOPTEX_CDN}IB900_2026.jpg`],
-  ib6175: [`${TOPTEX_CDN}IB6175-3_2026.jpg`],
-  ib6176: [`${TOPTEX_CDN}IB6176-5_2026.jpg`],
-  wk904:  [`${TOPTEX_CDN}WK904_2023.jpg`],
-  // Casquettes K-up
-  kp157:  [`${TOPTEX_CDN}KP157-2_2025.jpg`],
-  kp162:  [`${TOPTEX_CDN}KP162_2026.jpg`],
-  kp165:  [`${TOPTEX_CDN}KP165_2025.jpg`],
-  kp185:  [`${TOPTEX_CDN}KP185-2_2025.jpg`],
-  // Sacs & tote bags Kimood
-  ki0262: [`${TOPTEX_CDN}KI0262_2021.jpg`],
-  ki0252: [`${TOPTEX_CDN}KI0252-P_2017.jpg`],
-  ki0275: [`${TOPTEX_CDN}KI0275-P-2_2017.jpg`],
-  ki0274: [`${TOPTEX_CDN}KI0274-P_2017.jpg`],
+  // ── T-shirts iDeal190 ─────────────────────────────────────────────────────
+  ib320:  [
+    `${TOPTEX_CDN}IB320_2026.jpg`,   // packshot principal
+    `${TOPTEX_CDN}IB320-1_2026.jpg`, // coloris 1
+    `${TOPTEX_CDN}IB320-2_2026.jpg`, // coloris 2
+    `${TOPTEX_CDN}IB320-3_2026.jpg`, // coloris 3
+    `${TOPTEX_CDN}IB320-4_2026.jpg`, // coloris 4
+  ],
+  ib321:  [
+    `${TOPTEX_CDN}IB321_2026.jpg`,
+    `${TOPTEX_CDN}IB321-1_2026.jpg`,
+    `${TOPTEX_CDN}IB321-2_2026.jpg`,
+    `${TOPTEX_CDN}IB321-3_2026.jpg`,
+    `${TOPTEX_CDN}IB321-4_2026.jpg`,
+  ],
+  ib322:  [
+    `${TOPTEX_CDN}IB322_2026.jpg`,
+    `${TOPTEX_CDN}IB322-1_2026.jpg`,
+    `${TOPTEX_CDN}IB322-2_2026.jpg`,
+    `${TOPTEX_CDN}IB322-3_2026.jpg`,
+    `${TOPTEX_CDN}IB322-4_2026.jpg`,
+  ],
+  ib323:  [
+    `${TOPTEX_CDN}IB323_2026.jpg`,
+    `${TOPTEX_CDN}IB323-1_2026.jpg`,
+    `${TOPTEX_CDN}IB323-2_2026.jpg`,
+    `${TOPTEX_CDN}IB323-3_2026.jpg`,
+    `${TOPTEX_CDN}IB323-4_2026.jpg`,
+  ],
+  // ── Polos Kariban ─────────────────────────────────────────────────────────
+  k262:   [
+    `${TOPTEX_CDN}K262_2026.jpg`,
+    `${TOPTEX_CDN}K262-1_2026.jpg`,
+    `${TOPTEX_CDN}K262-2_2026.jpg`,
+    `${TOPTEX_CDN}K262-3_2026.jpg`,
+    `${TOPTEX_CDN}K262-4_2026.jpg`,
+  ],
+  k256:   [
+    `${TOPTEX_CDN}K256_2026.jpg`,
+    `${TOPTEX_CDN}K256-1_2026.jpg`,
+    `${TOPTEX_CDN}K256-2_2026.jpg`,
+    `${TOPTEX_CDN}K256-3_2026.jpg`,
+    `${TOPTEX_CDN}K256-4_2026.jpg`,
+  ],
+  k239:   [
+    `${TOPTEX_CDN}K239_2026.jpg`,
+    `${TOPTEX_CDN}K239-1_2026.jpg`,
+    `${TOPTEX_CDN}K239-2_2026.jpg`,
+    `${TOPTEX_CDN}K239-3_2026.jpg`,
+    `${TOPTEX_CDN}K239-4_2026.jpg`,
+  ],
+  k240:   [
+    `${TOPTEX_CDN}K240_2026.jpg`,
+    `${TOPTEX_CDN}K240-1_2026.jpg`,
+    `${TOPTEX_CDN}K240-2_2026.jpg`,
+    `${TOPTEX_CDN}K240-3_2026.jpg`,
+    `${TOPTEX_CDN}K240-4_2026.jpg`,
+  ],
+  // ── Sweats & hoodies iDeal ────────────────────────────────────────────────
+  ib400:  [
+    `${TOPTEX_CDN}IB400_2026.jpg`,
+    `${TOPTEX_CDN}IB400-1_2026.jpg`,
+    `${TOPTEX_CDN}IB400-2_2026.jpg`,
+    `${TOPTEX_CDN}IB400-3_2026.jpg`,
+    `${TOPTEX_CDN}IB400-4_2026.jpg`,
+  ],
+  ib402:  [
+    `${TOPTEX_CDN}IB402_2026.jpg`,
+    `${TOPTEX_CDN}IB402-1_2026.jpg`,
+    `${TOPTEX_CDN}IB402-2_2026.jpg`,
+    `${TOPTEX_CDN}IB402-3_2026.jpg`,
+    `${TOPTEX_CDN}IB402-4_2026.jpg`,
+  ],
+  ib401:  [
+    `${TOPTEX_CDN}IB401_2026.jpg`,
+    `${TOPTEX_CDN}IB401-1_2026.jpg`,
+    `${TOPTEX_CDN}IB401-2_2026.jpg`,
+    `${TOPTEX_CDN}IB401-3_2026.jpg`,
+    `${TOPTEX_CDN}IB401-4_2026.jpg`,
+  ],
+  ib403:  [
+    `${TOPTEX_CDN}IB403_2026.jpg`,
+    `${TOPTEX_CDN}IB403-1_2026.jpg`,
+    `${TOPTEX_CDN}IB403-2_2026.jpg`,
+    `${TOPTEX_CDN}IB403-3_2026.jpg`,
+    `${TOPTEX_CDN}IB403-4_2026.jpg`,
+  ],
+  // ── Sweats & hoodies Native Spirit ────────────────────────────────────────
+  ns400:  [
+    `${TOPTEX_CDN}NS400_2026.jpg`,
+    `${TOPTEX_CDN}NS400-1_2026.jpg`,
+    `${TOPTEX_CDN}NS400-2_2026.jpg`,
+    `${TOPTEX_CDN}NS400-3_2026.jpg`,
+    `${TOPTEX_CDN}NS400-4_2026.jpg`,
+  ],
+  ns401:  [
+    `${TOPTEX_CDN}NS401_2026.jpg`,
+    `${TOPTEX_CDN}NS401-1_2026.jpg`,
+    `${TOPTEX_CDN}NS401-2_2026.jpg`,
+    `${TOPTEX_CDN}NS401-3_2026.jpg`,
+    `${TOPTEX_CDN}NS401-4_2026.jpg`,
+  ],
+  ns408:  [
+    `${TOPTEX_CDN}NS408_2026.jpg`,
+    `${TOPTEX_CDN}NS408-1_2026.jpg`,
+    `${TOPTEX_CDN}NS408-2_2026.jpg`,
+    `${TOPTEX_CDN}NS408-3_2026.jpg`,
+    `${TOPTEX_CDN}NS408-4_2026.jpg`,
+  ],
+  // ── Polaires & doudounes ──────────────────────────────────────────────────
+  ib900:  [
+    `${TOPTEX_CDN}IB900_2026.jpg`,
+    `${TOPTEX_CDN}IB900-1_2026.jpg`,
+    `${TOPTEX_CDN}IB900-2_2026.jpg`,
+    `${TOPTEX_CDN}IB900-3_2026.jpg`,
+    `${TOPTEX_CDN}IB900-4_2026.jpg`,
+  ],
+  ib6175: [
+    `${TOPTEX_CDN}IB6175_2026.jpg`,
+    `${TOPTEX_CDN}IB6175-1_2026.jpg`,
+    `${TOPTEX_CDN}IB6175-2_2026.jpg`,
+    `${TOPTEX_CDN}IB6175-3_2026.jpg`,
+    `${TOPTEX_CDN}IB6175-4_2026.jpg`,
+  ],
+  ib6176: [
+    `${TOPTEX_CDN}IB6176_2026.jpg`,
+    `${TOPTEX_CDN}IB6176-1_2026.jpg`,
+    `${TOPTEX_CDN}IB6176-2_2026.jpg`,
+    `${TOPTEX_CDN}IB6176-3_2026.jpg`,
+    `${TOPTEX_CDN}IB6176-4_2026.jpg`,
+  ],
+  wk904:  [
+    `${TOPTEX_CDN}WK904_2026.jpg`,
+    `${TOPTEX_CDN}WK904-1_2026.jpg`,
+    `${TOPTEX_CDN}WK904-2_2026.jpg`,
+    `${TOPTEX_CDN}WK904-3_2026.jpg`,
+    `${TOPTEX_CDN}WK904-4_2026.jpg`,
+  ],
+  // ── Casquettes K-up ───────────────────────────────────────────────────────
+  kp157:  [
+    `${TOPTEX_CDN}KP157_2026.jpg`,
+    `${TOPTEX_CDN}KP157-1_2026.jpg`,
+    `${TOPTEX_CDN}KP157-2_2026.jpg`,
+    `${TOPTEX_CDN}KP157-3_2026.jpg`,
+    `${TOPTEX_CDN}KP157-4_2026.jpg`,
+  ],
+  kp162:  [
+    `${TOPTEX_CDN}KP162_2026.jpg`,
+    `${TOPTEX_CDN}KP162-1_2026.jpg`,
+    `${TOPTEX_CDN}KP162-2_2026.jpg`,
+    `${TOPTEX_CDN}KP162-3_2026.jpg`,
+    `${TOPTEX_CDN}KP162-4_2026.jpg`,
+  ],
+  kp165:  [
+    `${TOPTEX_CDN}KP165_2026.jpg`,
+    `${TOPTEX_CDN}KP165-1_2026.jpg`,
+    `${TOPTEX_CDN}KP165-2_2026.jpg`,
+    `${TOPTEX_CDN}KP165-3_2026.jpg`,
+    `${TOPTEX_CDN}KP165-4_2026.jpg`,
+  ],
+  kp185:  [
+    `${TOPTEX_CDN}KP185_2026.jpg`,
+    `${TOPTEX_CDN}KP185-1_2026.jpg`,
+    `${TOPTEX_CDN}KP185-2_2026.jpg`,
+    `${TOPTEX_CDN}KP185-3_2026.jpg`,
+    `${TOPTEX_CDN}KP185-4_2026.jpg`,
+  ],
+  // ── Sacs & tote bags Kimood ───────────────────────────────────────────────
+  ki0262: [
+    `${TOPTEX_CDN}KI0262_2026.jpg`,
+    `${TOPTEX_CDN}KI0262-1_2026.jpg`,
+    `${TOPTEX_CDN}KI0262-2_2026.jpg`,
+    `${TOPTEX_CDN}KI0262-3_2026.jpg`,
+    `${TOPTEX_CDN}KI0262-4_2026.jpg`,
+  ],
+  ki0252: [
+    `${TOPTEX_CDN}KI0252_2026.jpg`,
+    `${TOPTEX_CDN}KI0252-1_2026.jpg`,
+    `${TOPTEX_CDN}KI0252-2_2026.jpg`,
+    `${TOPTEX_CDN}KI0252-3_2026.jpg`,
+    `${TOPTEX_CDN}KI0252-4_2026.jpg`,
+  ],
+  ki0275: [
+    `${TOPTEX_CDN}KI0275_2026.jpg`,
+    `${TOPTEX_CDN}KI0275-1_2026.jpg`,
+    `${TOPTEX_CDN}KI0275-2_2026.jpg`,
+    `${TOPTEX_CDN}KI0275-3_2026.jpg`,
+    `${TOPTEX_CDN}KI0275-4_2026.jpg`,
+  ],
+  ki0274: [
+    `${TOPTEX_CDN}KI0274_2026.jpg`,
+    `${TOPTEX_CDN}KI0274-1_2026.jpg`,
+    `${TOPTEX_CDN}KI0274-2_2026.jpg`,
+    `${TOPTEX_CDN}KI0274-3_2026.jpg`,
+    `${TOPTEX_CDN}KI0274-4_2026.jpg`,
+  ],
 };
 
 // Retourne les URLs CDN Toptex si disponibles, sinon fallback local
@@ -841,7 +1013,6 @@ export const PRODUCT_K256: Product = {
   badge: "Premium",
   supplierName: "toptex",
   supplierRef: "K256",
-  visible: false, // 1 seule photo CDN insuffisante pour le catalogue
 };
 
 export const PRODUCT_K239: Product = {
@@ -1128,7 +1299,6 @@ export const PRODUCT_NS401: Product = {
   supplierName: "toptex",
   supplierRef: "NS401",
   ideaPour: ["Marques éco-responsables", "Associations engagées"],
-  visible: false, // 1 seule photo CDN insuffisante pour le catalogue
 };
 
 export const PRODUCT_NS408: Product = {
@@ -1691,7 +1861,6 @@ export const PRODUCT_KI0274: Product = {
   supplierName: "toptex",
   supplierRef: "KI0274",
   ideaPour: ["Marchés & Épiceries", "Événementiels éco", "Associations"],
-  visible: false, // photo 2017 mauvaise qualité
 };
 
 // ─── ENFANTS ──────────────────────────────────────────────────────────────────
@@ -1837,9 +2006,9 @@ const _ALL_PRODUCTS: Product[] = [
   // ── Hoodies iDeal & Native Spirit — CDN
   PRODUCT_IB400,
   PRODUCT_IB402,
-  PRODUCT_NS400,   // 1 photo CDN — mettre visible: false si insuffisant
-  PRODUCT_NS401,   // 1 photo CDN
-  PRODUCT_NS408,   // 1 photo CDN
+  PRODUCT_NS400,
+  PRODUCT_NS401,
+  PRODUCT_NS408,
 
   // ── Softshells B&C — photos locales complètes ✓
   PRODUCT_JUI62,
