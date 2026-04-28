@@ -242,15 +242,16 @@ function GalleryImage({
   sizes?: string;
   className?: string;
 }) {
-  const [error, setError]    = useState(false);
-  const [loaded, setLoaded]  = useState(false);
+  const [error, setError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
-  // Reset loading state when src changes
+  // Reset state when src changes
   useEffect(() => {
     setLoaded(false);
     setError(false);
   }, [src]);
 
+  // Placeholder uniquement si pas de src ou erreur réelle de chargement
   if (!src || error) {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[linear-gradient(180deg,var(--hm-accent-soft-blue),var(--hm-accent-soft-purple))]">
@@ -265,26 +266,32 @@ function GalleryImage({
   }
 
   return (
-    <Image
-      key={src}
-      src={src}
-      alt={alt}
-      fill={fill}
-      priority={priority}
-      sizes={sizes}
-      className={[
-        className,
-        "transition-opacity duration-300",
-        loaded ? "opacity-100" : "opacity-0",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      onLoad={() => setLoaded(true)}
-      onError={() => setError(true)}
-    />
+    <>
+      {/* Skeleton pendant le chargement de l'image */}
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[var(--hm-accent-soft-blue)] to-[var(--hm-accent-soft-purple)]" />
+      )}
+      <Image
+        key={src}
+        src={src}
+        alt={alt}
+        fill={fill}
+        priority={priority}
+        sizes={sizes}
+        className={[
+          className,
+          "transition-opacity duration-300",
+          loaded ? "opacity-100" : "opacity-0",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+        unoptimized={src.startsWith("https://cdn.toptex.com")}
+      />
+    </>
   );
 }
-
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 type ProductGalleryProps = {
