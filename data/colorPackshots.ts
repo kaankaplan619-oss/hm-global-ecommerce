@@ -163,7 +163,7 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
     "rouge":       "https://cdn.toptex.com/packshots/PS_IB402_IDEALRED.png",
     "bleu-royal":  "https://cdn.toptex.com/packshots/PS_IB402_IDEALROYALBLUE.png",
     "vert-foret":  "https://cdn.toptex.com/packshots/PS_IB402_IDEALFORESTGREEN.png",
-    // bordeaux : pas de packshot IB402 disponible sur CDN
+    "orange":      "https://cdn.toptex.com/packshots/PS_IB402_IDEALORANGE.png",
   },
 
   // ── Hoodie iDeal IB403 ───────────────────────────────────────────────────────

@@ -239,19 +239,31 @@ export const PRODUCT_TU03T: Product = {
 
 // ─── HOODIES / SWEATS ────────────────────────────────────────────────────────
 
-const HOODIE_COLORS = [
-  { id: "noir",           label: "Noir",            hex: "#111111", available: true },
-  { id: "blanc",          label: "Blanc cassé",     hex: "#F5F5F5", available: true },
-  { id: "gris-melange",   label: "Gris mélangé",    hex: "#6B7280", available: true },
-  { id: "anthracite",     label: "Anthracite",      hex: "#374151", available: true },
-  { id: "marine",         label: "Marine",          hex: "#1E3A5F", available: true },
-  { id: "bleu-royal",     label: "Bleu royal",      hex: "#2563EB", available: true },
-  { id: "bordeaux",       label: "Bordeaux",        hex: "#7F1D1D", available: true },
-  { id: "rouge",          label: "Rouge",           hex: "#DC2626", available: true },
-  { id: "vert-foret",     label: "Vert forêt",      hex: "#14532D", available: true },
-  { id: "vert-bouteille", label: "Vert bouteille",  hex: "#166534", available: true },
-  { id: "kaki",           label: "Kaki",            hex: "#65721F", available: true },
-  { id: "beige",          label: "Beige",           hex: "#D4B896", available: true },
+// Couleurs réelles B&C WG004 (vérifiées sur CDN Toptex — packshots confirmés)
+const WG004_COLORS = [
+  { id: "noir",          label: "Noir",          hex: "#111111", available: true },
+  { id: "blanc",         label: "Blanc cassé",   hex: "#F5F5F5", available: true },
+  { id: "gris-melange",  label: "Gris chiné",    hex: "#6B7280", available: true },
+  { id: "anthracite",    label: "Anthracite",    hex: "#374151", available: true },
+  { id: "marine",        label: "Marine",        hex: "#1E3A5F", available: true },
+  { id: "bleu-royal",   label: "Bleu royal",    hex: "#2563EB", available: true },
+  { id: "bordeaux",      label: "Bordeaux",      hex: "#7F1D1D", available: true },
+  { id: "rouge",         label: "Rouge",         hex: "#DC2626", available: true },
+  { id: "vert-bouteille",label: "Vert bouteille",hex: "#166534", available: true },
+  { id: "orange",        label: "Orange",        hex: "#EA580C", available: true },
+];
+
+// Couleurs réelles B&C WU620 (vérifiées sur CDN Toptex — packshots confirmés)
+const WU620_COLORS = [
+  { id: "noir",         label: "Noir",         hex: "#111111", available: true },
+  { id: "blanc",        label: "Blanc cassé",  hex: "#F5F5F5", available: true },
+  { id: "gris-melange", label: "Gris chiné",   hex: "#6B7280", available: true },
+  { id: "anthracite",   label: "Anthracite",   hex: "#374151", available: true },
+  { id: "marine",       label: "Marine",       hex: "#1E3A5F", available: true },
+  { id: "bleu-royal",  label: "Bleu royal",   hex: "#2563EB", available: true },
+  { id: "bordeaux",     label: "Bordeaux",     hex: "#7F1D1D", available: true },
+  { id: "rouge",        label: "Rouge",        hex: "#DC2626", available: true },
+  { id: "kaki",         label: "Kaki",         hex: "#65721F", available: true },
 ];
 
 const HOODIE_SIZES = [
@@ -278,7 +290,7 @@ export const PRODUCT_WG004: Product = {
   composition: "80% coton, 20% polyester",
   weight: "280 g/m²",
   images: PLACEHOLDER_IMAGES("wg004"),
-  colors: HOODIE_COLORS,
+  colors: WG004_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
@@ -318,7 +330,7 @@ export const PRODUCT_WU620: Product = {
   composition: "80% coton ring-spun, 20% polyester",
   weight: "300 g/m²",
   images: PLACEHOLDER_IMAGES("wu620"),
-  colors: HOODIE_COLORS,
+  colors: WU620_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
@@ -865,12 +877,16 @@ export const PRODUCT_IB402: Product = {
   weight: "300 g/m²",
   images: PLACEHOLDER_IMAGES("ib402"),
   colors: [
-    { id: "noir", label: "Noir", hex: "#111111", available: true },
-    { id: "gris-melange", label: "Gris mélangé", hex: "#6B7280", available: true },
-    { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-    { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
-    { id: "blanc-casse", label: "Blanc cassé", hex: "#F5F5F5", available: true },
-    { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
+    { id: "noir",         label: "Noir",          hex: "#111111", available: true },
+    { id: "blanc-casse",  label: "Blanc cassé",   hex: "#F5F5F5", available: true },
+    { id: "gris",         label: "Gris Oxford",   hex: "#9CA3AF", available: true },
+    { id: "gris-melange", label: "Gris chiné",    hex: "#6B7280", available: true },
+    { id: "anthracite",   label: "Anthracite",    hex: "#374151", available: true },
+    { id: "marine",       label: "Marine",        hex: "#1E3A5F", available: true },
+    { id: "rouge",        label: "Rouge",         hex: "#DC2626", available: true },
+    { id: "bleu-royal",   label: "Bleu royal",    hex: "#2563EB", available: true },
+    { id: "vert-foret",   label: "Vert forêt",    hex: "#14532D", available: true },
+    { id: "orange",       label: "Orange",        hex: "#EA580C", available: true },
   ],
   sizes: [
     { label: "XS", available: true },
