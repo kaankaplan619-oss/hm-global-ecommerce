@@ -4,15 +4,19 @@
  */
 
 // Mapping couleur produit → slug mockup
+// Must stay in sync with MockupViewer.tsx COLOR_TO_MOCKUP
 const COLOR_TO_MOCKUP: Record<string, string> = {
-  "blanc": "blanc", "blanc-casse": "blanc", "naturel": "blanc",
-  "noir": "noir",
-  "gris": "gris", "gris-melange": "gris", "gris-acier": "gris",
-  "marine": "marine",
-  "rouge": "rouge",
-  "bleu-royal": "bleu", "bleu-ciel": "bleu",
-  "vert-bouteille": "vert", "vert-foret": "vert",
-  "bordeaux": "bordeaux",
+  "blanc": "blanc", "blanc-casse": "blanc", "naturel": "blanc", "beige": "blanc",
+  "jaune": "blanc", "sable": "blanc", "ecru": "blanc",
+  "noir": "noir", "anthracite": "noir", "gris-anthracite": "noir",
+  "gris": "gris", "gris-melange": "gris", "gris-acier": "gris", "gris-chine": "gris",
+  "marine": "marine", "navy": "marine",
+  "rouge": "rouge", "rouge-feu": "rouge", "orange": "rouge",
+  "rose": "rouge",
+  "bleu-royal": "bleu", "bleu-ciel": "bleu", "bleu": "bleu", "cobalt": "bleu",
+  "turquoise": "bleu", "violet": "bleu",
+  "vert-bouteille": "vert", "vert-foret": "vert", "vert": "vert", "kaki": "vert",
+  "bordeaux": "bordeaux", "bourgogne": "bordeaux",
 };
 
 /** Retourne true si un mockup existe pour cet ID de couleur produit. */
