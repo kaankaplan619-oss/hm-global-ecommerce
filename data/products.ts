@@ -19,6 +19,59 @@ function buildProductImages(productId: string, images: string[]) {
 // CDN Toptex — déclaré tôt pour être utilisable partout dans ce fichier
 const TOPTEX_CDN = "https://cdn.toptex.com/pictures/";
 
+// ─── Images CDN Toptex par produit (5 vues : packshot + 4 coloris) ────────────
+// Convention : {REF}_YYYY = packshot catalogue ; {REF}-N_YYYY = coloris/vue N
+const TOPTEX_IMGS: Record<string, string[]> = {
+  // ── T-shirts B&C Exact 190 ───────────────────────────────────────────────
+  tu01t: [`${TOPTEX_CDN}CGTU01T_2026.jpg`,`${TOPTEX_CDN}CGTU01T-1_2026.jpg`,`${TOPTEX_CDN}CGTU01T-2_2026.jpg`,`${TOPTEX_CDN}CGTU01T-3_2026.jpg`,`${TOPTEX_CDN}CGTU01T-4_2026.jpg`],
+  tw02t: [`${TOPTEX_CDN}CGTW02T_2026.jpg`,`${TOPTEX_CDN}CGTW02T-1_2026.jpg`,`${TOPTEX_CDN}CGTW02T-2_2026.jpg`,`${TOPTEX_CDN}CGTW02T-3_2026.jpg`,`${TOPTEX_CDN}CGTW02T-4_2026.jpg`],
+  tu03t: [`${TOPTEX_CDN}CGTU03T_2026.jpg`,`${TOPTEX_CDN}CGTU03T-1_2026.jpg`,`${TOPTEX_CDN}CGTU03T-2_2026.jpg`,`${TOPTEX_CDN}CGTU03T-3_2026.jpg`,`${TOPTEX_CDN}CGTU03T-4_2026.jpg`],
+  // ── Sweats & hoodies B&C ─────────────────────────────────────────────────
+  wg004: [`${TOPTEX_CDN}CGWG004_2026.jpg`,`${TOPTEX_CDN}CGWG004-1_2026.jpg`,`${TOPTEX_CDN}CGWG004-2_2026.jpg`,`${TOPTEX_CDN}CGWG004-3_2026.jpg`,`${TOPTEX_CDN}CGWG004-4_2026.jpg`],
+  wu620: [`${TOPTEX_CDN}CGWU620_2026.jpg`,`${TOPTEX_CDN}CGWU620-1_2026.jpg`,`${TOPTEX_CDN}CGWU620-2_2026.jpg`,`${TOPTEX_CDN}CGWU620-3_2026.jpg`,`${TOPTEX_CDN}CGWU620-4_2026.jpg`],
+  // ── Softshells B&C ───────────────────────────────────────────────────────
+  jui62: [`${TOPTEX_CDN}CGJUI62_2026.jpg`,`${TOPTEX_CDN}CGJUI62-1_2026.jpg`,`${TOPTEX_CDN}CGJUI62-2_2026.jpg`,`${TOPTEX_CDN}CGJUI62-3_2026.jpg`,`${TOPTEX_CDN}CGJUI62-4_2026.jpg`],
+  jwi63: [`${TOPTEX_CDN}CGJWI63_2026.jpg`,`${TOPTEX_CDN}CGJWI63-1_2026.jpg`,`${TOPTEX_CDN}CGJWI63-2_2026.jpg`,`${TOPTEX_CDN}CGJWI63-3_2026.jpg`,`${TOPTEX_CDN}CGJWI63-4_2026.jpg`],
+  // ── T-shirts iDeal190 ────────────────────────────────────────────────────
+  ib320: [`${TOPTEX_CDN}IB320_2026.jpg`,`${TOPTEX_CDN}IB320-1_2026.jpg`,`${TOPTEX_CDN}IB320-2_2026.jpg`,`${TOPTEX_CDN}IB320-3_2026.jpg`,`${TOPTEX_CDN}IB320-4_2026.jpg`],
+  ib321: [`${TOPTEX_CDN}IB321_2026.jpg`,`${TOPTEX_CDN}IB321-1_2026.jpg`,`${TOPTEX_CDN}IB321-2_2026.jpg`,`${TOPTEX_CDN}IB321-3_2026.jpg`,`${TOPTEX_CDN}IB321-4_2026.jpg`],
+  ib322: [`${TOPTEX_CDN}IB322_2026.jpg`,`${TOPTEX_CDN}IB322-1_2026.jpg`,`${TOPTEX_CDN}IB322-2_2026.jpg`,`${TOPTEX_CDN}IB322-3_2026.jpg`,`${TOPTEX_CDN}IB322-4_2026.jpg`],
+  ib323: [`${TOPTEX_CDN}IB323_2026.jpg`,`${TOPTEX_CDN}IB323-1_2026.jpg`,`${TOPTEX_CDN}IB323-2_2026.jpg`,`${TOPTEX_CDN}IB323-3_2026.jpg`,`${TOPTEX_CDN}IB323-4_2026.jpg`],
+  // ── Polos Kariban ─────────────────────────────────────────────────────────
+  k262:  [`${TOPTEX_CDN}K262_2026.jpg`,`${TOPTEX_CDN}K262-1_2026.jpg`,`${TOPTEX_CDN}K262-2_2026.jpg`,`${TOPTEX_CDN}K262-3_2026.jpg`,`${TOPTEX_CDN}K262-4_2026.jpg`],
+  k256:  [`${TOPTEX_CDN}K256_2026.jpg`,`${TOPTEX_CDN}K256-1_2026.jpg`,`${TOPTEX_CDN}K256-2_2026.jpg`,`${TOPTEX_CDN}K256-3_2026.jpg`,`${TOPTEX_CDN}K256-4_2026.jpg`],
+  k239:  [`${TOPTEX_CDN}K239_2026.jpg`,`${TOPTEX_CDN}K239-1_2026.jpg`,`${TOPTEX_CDN}K239-2_2026.jpg`,`${TOPTEX_CDN}K239-3_2026.jpg`,`${TOPTEX_CDN}K239-4_2026.jpg`],
+  k240:  [`${TOPTEX_CDN}K240_2026.jpg`,`${TOPTEX_CDN}K240-1_2026.jpg`,`${TOPTEX_CDN}K240-2_2026.jpg`,`${TOPTEX_CDN}K240-3_2026.jpg`,`${TOPTEX_CDN}K240-4_2026.jpg`],
+  // ── Sweats & hoodies iDeal ────────────────────────────────────────────────
+  ib400: [`${TOPTEX_CDN}IB400_2026.jpg`,`${TOPTEX_CDN}IB400-1_2026.jpg`,`${TOPTEX_CDN}IB400-2_2026.jpg`,`${TOPTEX_CDN}IB400-3_2026.jpg`,`${TOPTEX_CDN}IB400-4_2026.jpg`],
+  ib401: [`${TOPTEX_CDN}IB401_2026.jpg`,`${TOPTEX_CDN}IB401-1_2026.jpg`,`${TOPTEX_CDN}IB401-2_2026.jpg`,`${TOPTEX_CDN}IB401-3_2026.jpg`,`${TOPTEX_CDN}IB401-4_2026.jpg`],
+  ib402: [`${TOPTEX_CDN}IB402_2026.jpg`,`${TOPTEX_CDN}IB402-1_2026.jpg`,`${TOPTEX_CDN}IB402-2_2026.jpg`,`${TOPTEX_CDN}IB402-3_2026.jpg`,`${TOPTEX_CDN}IB402-4_2026.jpg`],
+  ib403: [`${TOPTEX_CDN}IB403_2026.jpg`,`${TOPTEX_CDN}IB403-1_2026.jpg`,`${TOPTEX_CDN}IB403-2_2026.jpg`,`${TOPTEX_CDN}IB403-3_2026.jpg`,`${TOPTEX_CDN}IB403-4_2026.jpg`],
+  // ── Sweats & hoodies Native Spirit ────────────────────────────────────────
+  ns400: [`${TOPTEX_CDN}NS400_2026.jpg`,`${TOPTEX_CDN}NS400-1_2026.jpg`,`${TOPTEX_CDN}NS400-2_2026.jpg`,`${TOPTEX_CDN}NS400-3_2026.jpg`,`${TOPTEX_CDN}NS400-4_2026.jpg`],
+  ns401: [`${TOPTEX_CDN}NS401_2026.jpg`,`${TOPTEX_CDN}NS401-1_2026.jpg`,`${TOPTEX_CDN}NS401-2_2026.jpg`,`${TOPTEX_CDN}NS401-3_2026.jpg`,`${TOPTEX_CDN}NS401-4_2026.jpg`],
+  ns408: [`${TOPTEX_CDN}NS408_2026.jpg`,`${TOPTEX_CDN}NS408-1_2026.jpg`,`${TOPTEX_CDN}NS408-2_2026.jpg`,`${TOPTEX_CDN}NS408-3_2026.jpg`,`${TOPTEX_CDN}NS408-4_2026.jpg`],
+  // ── Polaires & doudounes ──────────────────────────────────────────────────
+  ib900:  [`${TOPTEX_CDN}IB900_2026.jpg`,`${TOPTEX_CDN}IB900-1_2026.jpg`,`${TOPTEX_CDN}IB900-2_2026.jpg`,`${TOPTEX_CDN}IB900-3_2026.jpg`,`${TOPTEX_CDN}IB900-4_2026.jpg`],
+  ib6175: [`${TOPTEX_CDN}IB6175_2026.jpg`,`${TOPTEX_CDN}IB6175-1_2026.jpg`,`${TOPTEX_CDN}IB6175-2_2026.jpg`,`${TOPTEX_CDN}IB6175-3_2026.jpg`,`${TOPTEX_CDN}IB6175-4_2026.jpg`],
+  ib6176: [`${TOPTEX_CDN}IB6176_2026.jpg`,`${TOPTEX_CDN}IB6176-1_2026.jpg`,`${TOPTEX_CDN}IB6176-2_2026.jpg`,`${TOPTEX_CDN}IB6176-3_2026.jpg`,`${TOPTEX_CDN}IB6176-4_2026.jpg`],
+  wk904:  [`${TOPTEX_CDN}WK904_2026.jpg`,`${TOPTEX_CDN}WK904-1_2026.jpg`,`${TOPTEX_CDN}WK904-2_2026.jpg`,`${TOPTEX_CDN}WK904-3_2026.jpg`,`${TOPTEX_CDN}WK904-4_2026.jpg`],
+  // ── Casquettes K-up ───────────────────────────────────────────────────────
+  kp157:  [`${TOPTEX_CDN}KP157_2026.jpg`,`${TOPTEX_CDN}KP157-1_2026.jpg`,`${TOPTEX_CDN}KP157-2_2026.jpg`,`${TOPTEX_CDN}KP157-3_2026.jpg`,`${TOPTEX_CDN}KP157-4_2026.jpg`],
+  kp162:  [`${TOPTEX_CDN}KP162_2026.jpg`,`${TOPTEX_CDN}KP162-1_2026.jpg`,`${TOPTEX_CDN}KP162-2_2026.jpg`,`${TOPTEX_CDN}KP162-3_2026.jpg`,`${TOPTEX_CDN}KP162-4_2026.jpg`],
+  kp165:  [`${TOPTEX_CDN}KP165_2026.jpg`,`${TOPTEX_CDN}KP165-1_2026.jpg`,`${TOPTEX_CDN}KP165-2_2026.jpg`,`${TOPTEX_CDN}KP165-3_2026.jpg`,`${TOPTEX_CDN}KP165-4_2026.jpg`],
+  kp185:  [`${TOPTEX_CDN}KP185_2026.jpg`,`${TOPTEX_CDN}KP185-1_2026.jpg`,`${TOPTEX_CDN}KP185-2_2026.jpg`,`${TOPTEX_CDN}KP185-3_2026.jpg`,`${TOPTEX_CDN}KP185-4_2026.jpg`],
+  // ── Sacs & tote bags Kimood ───────────────────────────────────────────────
+  ki0262: [`${TOPTEX_CDN}KI0262_2026.jpg`,`${TOPTEX_CDN}KI0262-1_2026.jpg`,`${TOPTEX_CDN}KI0262-2_2026.jpg`,`${TOPTEX_CDN}KI0262-3_2026.jpg`,`${TOPTEX_CDN}KI0262-4_2026.jpg`],
+  ki0252: [`${TOPTEX_CDN}KI0252_2026.jpg`,`${TOPTEX_CDN}KI0252-1_2026.jpg`,`${TOPTEX_CDN}KI0252-2_2026.jpg`,`${TOPTEX_CDN}KI0252-3_2026.jpg`,`${TOPTEX_CDN}KI0252-4_2026.jpg`],
+  ki0275: [`${TOPTEX_CDN}KI0275_2026.jpg`,`${TOPTEX_CDN}KI0275-1_2026.jpg`,`${TOPTEX_CDN}KI0275-2_2026.jpg`,`${TOPTEX_CDN}KI0275-3_2026.jpg`,`${TOPTEX_CDN}KI0275-4_2026.jpg`],
+  ki0274: [`${TOPTEX_CDN}KI0274_2026.jpg`,`${TOPTEX_CDN}KI0274-1_2026.jpg`,`${TOPTEX_CDN}KI0274-2_2026.jpg`,`${TOPTEX_CDN}KI0274-3_2026.jpg`,`${TOPTEX_CDN}KI0274-4_2026.jpg`],
+};
+
+// Retourne les 5 URLs CDN Toptex du produit (fallback: placeholder local)
+const PLACEHOLDER_IMAGES = (id: string): string[] =>
+  TOPTEX_IMGS[id] ?? [`/images/products/${id}/front.jpg`];
+
 // Convention visuelle actuelle :
 // - front-{couleur} / back-{couleur} = vue liée a une variante précise
 // - detail-{theme} = vue neutre réutilisable comme fallback
@@ -48,115 +101,8 @@ const TSHIRT_SIZES = [
   { label: "3XL", available: true },
 ];
 
-// Visuels officiels B&C (Top Tex) — tous coloris front + dos + côté
-const TU01T_IMAGES = buildProductImages("tu01t", [
-  // ── Fronts ──────────────────────────────────────────────────────
-  "PS_CGTU01T_WHITE.avif",
-  "PS_CGTU01T_BLACK.avif",
-  "PS_CGTU01T_BLACKPURE.avif",
-  "PS_CGTU01T_NAVY.avif",
-  "PS_CGTU01T_NAVYBLUE.avif",
-  "PS_CGTU01T_ROYALBLUE.avif",
-  "PS_CGTU01T_COBALTBLUE.avif",
-  "PS_CGTU01T_LIGHTNAVY.avif",
-  "PS_CGTU01T_SKYBLUE.avif",
-  "PS_CGTU01T_AZURE.avif",
-  "PS_CGTU01T_DIVABLUE.avif",
-  "PS_CGTU01T_ELECTRICBLUE.avif",
-  "PS_CGTU01T_DENIM.avif",
-  "PS_CGTU01T_ATOLL.avif",
-  "PS_CGTU01T_REALTURQUOISE.avif",
-  "PS_CGTU01T_TURQUOISE.avif",
-  "PS_CGTU01T_RED.avif",
-  "PS_CGTU01T_FIRERED.avif",
-  "PS_CGTU01T_DEEPRED.avif",
-  "PS_CGTU01T_BURGUNDY.avif",
-  "PS_CGTU01T_SPORTGREY.avif",
-  "PS_CGTU01T_DARKGREY.avif",
-  "PS_CGTU01T_ASH.avif",
-  "PS_CGTU01T_NATURAL.avif",
-  "PS_CGTU01T_SAND.avif",
-  "PS_CGTU01T_GOLD.avif",
-  "PS_CGTU01T_ORANGE.avif",
-  "PS_CGTU01T_SOLARYELLOW.avif",
-  "PS_CGTU01T_APRICOT.avif",
-  "PS_CGTU01T_MILLENNIALPINK.avif",
-  "PS_CGTU01T_FUCHSIA.avif",
-  "PS_CGTU01T_RADIANTPURPLE.avif",
-  "PS_CGTU01T_URBANPURPLE.avif",
-  "PS_CGTU01T_KELLYGREEN.avif",
-  "PS_CGTU01T_BOTTLEGREEN.avif",
-  "PS_CGTU01T_ORCHIDGREEN.avif",
-  "PS_CGTU01T_PISTACHIO.avif",
-  "PS_CGTU01T_BEARBROWN.avif",
-  "PS_CGTU01T_URBANKHAKI.avif",
-  "PS_CGTU01T_MILLENNIALKHAKI.avif",
-  "PS_CGTU01T_USEDBLACK.avif",
-  // ── Dos ─────────────────────────────────────────────────────────
-  "PS_CGTU01T-B_WHITE.avif",
-  "PS_CGTU01T-B_NAVY.avif",
-  "PS_CGTU01T-B_NAVYBLUE.avif",
-  "PS_CGTU01T-B_ROYALBLUE.avif",
-  "PS_CGTU01T-B_RED.avif",
-  "PS_CGTU01T-B_BURGUNDY.avif",
-  "PS_CGTU01T-B_SPORTGREY.avif",
-  "PS_CGTU01T-B_DARKGREY.avif",
-  "PS_CGTU01T-B_ASH.avif",
-  "PS_CGTU01T-B_ATOLL.avif",
-  "PS_CGTU01T-B_AZURE.avif",
-  "PS_CGTU01T-B_BEARBROWN.avif",
-  "PS_CGTU01T-B_BOTTLEGREEN.avif",
-  "PS_CGTU01T-B_COBALTBLUE.avif",
-  "PS_CGTU01T-B_DEEPRED.avif",
-  "PS_CGTU01T-B_DENIM.avif",
-  "PS_CGTU01T-B_DIVABLUE.avif",
-  "PS_CGTU01T-B_ELECTRICBLUE.avif",
-  "PS_CGTU01T-B_FIRERED.avif",
-  "PS_CGTU01T-B_FUCHSIA.avif",
-  "PS_CGTU01T-B_GOLD.avif",
-  "PS_CGTU01T-B_KELLYGREEN.avif",
-  "PS_CGTU01T-B_LIGHTNAVY.avif",
-  "PS_CGTU01T-B_MILLENNIALKHAKI.avif",
-  "PS_CGTU01T-B_MILLENNIALPINK.avif",
-  "PS_CGTU01T-B_NATURAL.avif",
-  "PS_CGTU01T-B_ORANGE.avif",
-  "PS_CGTU01T-B_ORCHIDGREEN.avif",
-  "PS_CGTU01T-B_PISTACHIO.avif",
-  "PS_CGTU01T-B_RADIANTPURPLE.avif",
-  "PS_CGTU01T-B_REALTURQUOISE.avif",
-  "PS_CGTU01T-B_ROYALBLUE.avif",
-  "PS_CGTU01T-B_SAND.avif",
-  "PS_CGTU01T-B_SKYBLUE.avif",
-  "PS_CGTU01T-B_SOLARYELLOW.avif",
-  "PS_CGTU01T-B_TURQUOISE.avif",
-  "PS_CGTU01T-B_URBANKHAKI.avif",
-  "PS_CGTU01T-B_URBANPURPLE.avif",
-  "PS_CGTU01T-B_USEDBLACK.avif",
-  // ── Côté ────────────────────────────────────────────────────────
-  "PS_CGTU01T-S_WHITE.png",
-]);
+// Toutes les images → CDN Toptex (TOPTEX_IMGS ci-dessous)
 
-// Visuels disponibles :
-// - fronts : blanc, noir
-// - back : blanc
-// - detail : neutre
-const TW02T_IMAGES = buildProductImages("tw02t", [
-  "front-blanc.jpg",
-  "front-noir.jpg",
-  "back-blanc.jpg",
-  "detail-coupe.jpg",
-]);
-
-// Visuels disponibles :
-// - fronts : blanc, noir
-// - back : noir
-// - detail : neutre
-const TU03T_IMAGES = buildProductImages("tu03t", [
-  "front-blanc.jpg",
-  "front-noir.jpg",
-  "back-noir.jpg",
-  "detail-tissu.jpg",
-]);
 
 export const PRODUCT_TU01T: Product = {
   id: "tu01t",
@@ -171,7 +117,7 @@ export const PRODUCT_TU01T: Product = {
     "Le T-shirt d'appel de HM Global Agence. Coupe moderne, col rond, jersey simple épaule à épaule. Excellent rapport qualité/prix pour les commandes d'entreprise. Idéal pour débuter votre communication textile.",
   composition: "100% coton semi-peigné",
   weight: "190 g/m²",
-  images: TU01T_IMAGES,
+  images: PLACEHOLDER_IMAGES("tu01t"),
   colors: TSHIRT_COLORS_CLASSIC,
   sizes: TSHIRT_SIZES,
   techniques: ["dtf", "flex", "broderie"],
@@ -212,7 +158,7 @@ export const PRODUCT_TW02T: Product = {
     "Version femme du T-shirt d'appel. Coupe ajustée, encolure arrondie. Même qualité que le modèle homme, pensé pour une silhouette féminine moderne.",
   composition: "100% coton semi-peigné",
   weight: "190 g/m²",
-  images: TW02T_IMAGES,
+  images: PLACEHOLDER_IMAGES("tw02t"),
   colors: TSHIRT_COLORS_CLASSIC,
   sizes: [
     { label: "XS", available: true },
@@ -259,7 +205,7 @@ export const PRODUCT_TU03T: Product = {
     "Le meilleur rapport qualité/prix de notre gamme. Tissu plus dense, col côtelé renforcé, finitions premium. Idéal pour les marques exigeantes qui veulent un résultat professionnel impeccable.",
   composition: "100% coton ring-spun peigné",
   weight: "190 g/m²",
-  images: TU03T_IMAGES,
+  images: PLACEHOLDER_IMAGES("tu03t"),
   colors: [
     ...TSHIRT_COLORS_CLASSIC,
     { id: "khaki", label: "Kaki", hex: "#65721F", available: true },
@@ -317,29 +263,6 @@ const HOODIE_SIZES = [
   { label: "3XL", available: true },
 ];
 
-// Visuels : locaux (noir, gris) + CDN Toptex (coloris supplémentaires)
-const WG004_IMAGES = [
-  ...buildProductImages("wg004", [
-    "front-noir.jpg",
-    "front-gris.jpg",
-    "back-noir.jpg",
-    "detail-molleton.jpg",
-  ]),
-  `${TOPTEX_CDN}CGWG004_2026.jpg`,
-  `${TOPTEX_CDN}CGWG004-1_2026.jpg`,
-  `${TOPTEX_CDN}CGWG004-2_2026.jpg`,
-  `${TOPTEX_CDN}CGWG004-3_2026.jpg`,
-];
-
-// Visuels officiels B&C (Top Tex) — 6 coloris disponibles
-const WU620_IMAGES = buildProductImages("wu620", [
-  "PS_CGWU620_BLACK.avif",
-  "PS_CGWU620_NAVY.avif",
-  "PS_CGWU620_HEATHERGREY.avif",
-  "PS_CGWU620_ROYALBLUE.avif",
-  "PS_CGWU620_RED.avif",
-  "PS_CGWU620_STEELGREY.avif",
-]);
 
 export const PRODUCT_WG004: Product = {
   id: "wg004",
@@ -354,7 +277,7 @@ export const PRODUCT_WG004: Product = {
     "Sweat col rond classique, coupe droite confortable. Intérieur molletonné doux, idéal pour la communication d'entreprise. Résistant au lavage fréquent.",
   composition: "80% coton, 20% polyester",
   weight: "280 g/m²",
-  images: WG004_IMAGES,
+  images: PLACEHOLDER_IMAGES("wg004"),
   colors: HOODIE_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],
@@ -394,7 +317,7 @@ export const PRODUCT_WU620: Product = {
     "Hoodie à capuche double épaisseur, cordon de serrage assorti, poche kangourou. Le classique premium de toute garde-robe corporate. Idéal pour créer une image de marque cohérente.",
   composition: "80% coton ring-spun, 20% polyester",
   weight: "300 g/m²",
-  images: WU620_IMAGES,
+  images: PLACEHOLDER_IMAGES("wu620"),
   colors: HOODIE_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],
@@ -440,29 +363,6 @@ const SOFTSHELL_SIZES = [
   { label: "3XL", available: true },
 ];
 
-// Visuels officiels B&C (Top Tex) — 6 combinaisons coloris
-const JUI62_IMAGES = buildProductImages("jui62", [
-  "PS_CGJUI62_BLACK-BLACK.avif",
-  "PS_CGJUI62_NAVY-NEONGREEN.avif",
-  "PS_CGJUI62_DARKGREY-NEONORANGE.avif",
-  "PS_CGJUI62_RED-WARMGREY.avif",
-  "PS_CGJUI62_WHITE-WHITE.avif",
-  "PS_CGJUI62_ATOLL-GHOSTGREY.avif",
-]);
-
-// Visuels : locaux (noir, marine) + CDN Toptex (coloris supplémentaires)
-const JWI63_IMAGES = [
-  ...buildProductImages("jwi63", [
-    "front-noir.jpg",
-    "front-marine.jpg",
-    "back-noir.jpg",
-    "detail-softshell.jpg",
-  ]),
-  `${TOPTEX_CDN}CGJWI63_2026.jpg`,
-  `${TOPTEX_CDN}CGJWI63-1_2026.jpg`,
-  `${TOPTEX_CDN}CGJWI63-2_2026.jpg`,
-  `${TOPTEX_CDN}CGJWI63-3_2026.jpg`,
-];
 
 export const PRODUCT_JUI62: Product = {
   id: "jui62",
@@ -477,7 +377,7 @@ export const PRODUCT_JUI62: Product = {
     "Veste softshell 3 couches homme. Imperméable, coupe-vent, respirant. Idéal pour les équipes terrain, les commerciaux, les événements outdoor. Finition premium avec broderie recommandée.",
   composition: "96% polyester, 4% élasthanne (3 couches)",
   weight: "300 g/m²",
-  images: JUI62_IMAGES,
+  images: PLACEHOLDER_IMAGES("jui62"),
   colors: SOFTSHELL_COLORS,
   sizes: SOFTSHELL_SIZES,
   techniques: ["broderie", "dtf", "flex"],
@@ -518,7 +418,7 @@ export const PRODUCT_JWI63: Product = {
     "Veste softshell 3 couches femme. Coupe ajustée, imperméable et respirante. Silhouette moderne pour une image de marque professionnelle et premium.",
   composition: "96% polyester, 4% élasthanne (3 couches)",
   weight: "300 g/m²",
-  images: JWI63_IMAGES,
+  images: PLACEHOLDER_IMAGES("jwi63"),
   colors: SOFTSHELL_COLORS,
   sizes: [
     { label: "XS", available: true },
@@ -578,211 +478,6 @@ const IDEAL_COLORS_BASE = [
 // ─── Toptex CDN images ────────────────────────────────────────────────────────
 // URLs vérifiées en live le 28/04/2026 — source : cdn.toptex.com/pictures/
 // next.config.ts autorise ce domaine via remotePatterns (pathname: /pictures/**)
-// Convention : {REF}_YYYY = packshot catalogue ; {REF}-N_YYYY = coloris/vue N
-// TOPTEX_CDN est déclaré en haut du fichier pour usage global
-
-const TOPTEX_IMGS: Record<string, string[]> = {
-  // ── T-shirts iDeal190 ─────────────────────────────────────────────────────
-  ib320:  [
-    `${TOPTEX_CDN}IB320_2026.jpg`,   // packshot principal
-    `${TOPTEX_CDN}IB320-1_2026.jpg`, // coloris 1
-    `${TOPTEX_CDN}IB320-2_2026.jpg`, // coloris 2
-    `${TOPTEX_CDN}IB320-3_2026.jpg`, // coloris 3
-    `${TOPTEX_CDN}IB320-4_2026.jpg`, // coloris 4
-  ],
-  ib321:  [
-    `${TOPTEX_CDN}IB321_2026.jpg`,
-    `${TOPTEX_CDN}IB321-1_2026.jpg`,
-    `${TOPTEX_CDN}IB321-2_2026.jpg`,
-    `${TOPTEX_CDN}IB321-3_2026.jpg`,
-    `${TOPTEX_CDN}IB321-4_2026.jpg`,
-  ],
-  ib322:  [
-    `${TOPTEX_CDN}IB322_2026.jpg`,
-    `${TOPTEX_CDN}IB322-1_2026.jpg`,
-    `${TOPTEX_CDN}IB322-2_2026.jpg`,
-    `${TOPTEX_CDN}IB322-3_2026.jpg`,
-    `${TOPTEX_CDN}IB322-4_2026.jpg`,
-  ],
-  ib323:  [
-    `${TOPTEX_CDN}IB323_2026.jpg`,
-    `${TOPTEX_CDN}IB323-1_2026.jpg`,
-    `${TOPTEX_CDN}IB323-2_2026.jpg`,
-    `${TOPTEX_CDN}IB323-3_2026.jpg`,
-    `${TOPTEX_CDN}IB323-4_2026.jpg`,
-  ],
-  // ── Polos Kariban ─────────────────────────────────────────────────────────
-  k262:   [
-    `${TOPTEX_CDN}K262_2026.jpg`,
-    `${TOPTEX_CDN}K262-1_2026.jpg`,
-    `${TOPTEX_CDN}K262-2_2026.jpg`,
-    `${TOPTEX_CDN}K262-3_2026.jpg`,
-    `${TOPTEX_CDN}K262-4_2026.jpg`,
-  ],
-  k256:   [
-    `${TOPTEX_CDN}K256_2026.jpg`,
-    `${TOPTEX_CDN}K256-1_2026.jpg`,
-    `${TOPTEX_CDN}K256-2_2026.jpg`,
-    `${TOPTEX_CDN}K256-3_2026.jpg`,
-    `${TOPTEX_CDN}K256-4_2026.jpg`,
-  ],
-  k239:   [
-    `${TOPTEX_CDN}K239_2026.jpg`,
-    `${TOPTEX_CDN}K239-1_2026.jpg`,
-    `${TOPTEX_CDN}K239-2_2026.jpg`,
-    `${TOPTEX_CDN}K239-3_2026.jpg`,
-    `${TOPTEX_CDN}K239-4_2026.jpg`,
-  ],
-  k240:   [
-    `${TOPTEX_CDN}K240_2026.jpg`,
-    `${TOPTEX_CDN}K240-1_2026.jpg`,
-    `${TOPTEX_CDN}K240-2_2026.jpg`,
-    `${TOPTEX_CDN}K240-3_2026.jpg`,
-    `${TOPTEX_CDN}K240-4_2026.jpg`,
-  ],
-  // ── Sweats & hoodies iDeal ────────────────────────────────────────────────
-  ib400:  [
-    `${TOPTEX_CDN}IB400_2026.jpg`,
-    `${TOPTEX_CDN}IB400-1_2026.jpg`,
-    `${TOPTEX_CDN}IB400-2_2026.jpg`,
-    `${TOPTEX_CDN}IB400-3_2026.jpg`,
-    `${TOPTEX_CDN}IB400-4_2026.jpg`,
-  ],
-  ib402:  [
-    `${TOPTEX_CDN}IB402_2026.jpg`,
-    `${TOPTEX_CDN}IB402-1_2026.jpg`,
-    `${TOPTEX_CDN}IB402-2_2026.jpg`,
-    `${TOPTEX_CDN}IB402-3_2026.jpg`,
-    `${TOPTEX_CDN}IB402-4_2026.jpg`,
-  ],
-  ib401:  [
-    `${TOPTEX_CDN}IB401_2026.jpg`,
-    `${TOPTEX_CDN}IB401-1_2026.jpg`,
-    `${TOPTEX_CDN}IB401-2_2026.jpg`,
-    `${TOPTEX_CDN}IB401-3_2026.jpg`,
-    `${TOPTEX_CDN}IB401-4_2026.jpg`,
-  ],
-  ib403:  [
-    `${TOPTEX_CDN}IB403_2026.jpg`,
-    `${TOPTEX_CDN}IB403-1_2026.jpg`,
-    `${TOPTEX_CDN}IB403-2_2026.jpg`,
-    `${TOPTEX_CDN}IB403-3_2026.jpg`,
-    `${TOPTEX_CDN}IB403-4_2026.jpg`,
-  ],
-  // ── Sweats & hoodies Native Spirit ────────────────────────────────────────
-  ns400:  [
-    `${TOPTEX_CDN}NS400_2026.jpg`,
-    `${TOPTEX_CDN}NS400-1_2026.jpg`,
-    `${TOPTEX_CDN}NS400-2_2026.jpg`,
-    `${TOPTEX_CDN}NS400-3_2026.jpg`,
-    `${TOPTEX_CDN}NS400-4_2026.jpg`,
-  ],
-  ns401:  [
-    `${TOPTEX_CDN}NS401_2026.jpg`,
-    `${TOPTEX_CDN}NS401-1_2026.jpg`,
-    `${TOPTEX_CDN}NS401-2_2026.jpg`,
-    `${TOPTEX_CDN}NS401-3_2026.jpg`,
-    `${TOPTEX_CDN}NS401-4_2026.jpg`,
-  ],
-  ns408:  [
-    `${TOPTEX_CDN}NS408_2026.jpg`,
-    `${TOPTEX_CDN}NS408-1_2026.jpg`,
-    `${TOPTEX_CDN}NS408-2_2026.jpg`,
-    `${TOPTEX_CDN}NS408-3_2026.jpg`,
-    `${TOPTEX_CDN}NS408-4_2026.jpg`,
-  ],
-  // ── Polaires & doudounes ──────────────────────────────────────────────────
-  ib900:  [
-    `${TOPTEX_CDN}IB900_2026.jpg`,
-    `${TOPTEX_CDN}IB900-1_2026.jpg`,
-    `${TOPTEX_CDN}IB900-2_2026.jpg`,
-    `${TOPTEX_CDN}IB900-3_2026.jpg`,
-    `${TOPTEX_CDN}IB900-4_2026.jpg`,
-  ],
-  ib6175: [
-    `${TOPTEX_CDN}IB6175_2026.jpg`,
-    `${TOPTEX_CDN}IB6175-1_2026.jpg`,
-    `${TOPTEX_CDN}IB6175-2_2026.jpg`,
-    `${TOPTEX_CDN}IB6175-3_2026.jpg`,
-    `${TOPTEX_CDN}IB6175-4_2026.jpg`,
-  ],
-  ib6176: [
-    `${TOPTEX_CDN}IB6176_2026.jpg`,
-    `${TOPTEX_CDN}IB6176-1_2026.jpg`,
-    `${TOPTEX_CDN}IB6176-2_2026.jpg`,
-    `${TOPTEX_CDN}IB6176-3_2026.jpg`,
-    `${TOPTEX_CDN}IB6176-4_2026.jpg`,
-  ],
-  wk904:  [
-    `${TOPTEX_CDN}WK904_2026.jpg`,
-    `${TOPTEX_CDN}WK904-1_2026.jpg`,
-    `${TOPTEX_CDN}WK904-2_2026.jpg`,
-    `${TOPTEX_CDN}WK904-3_2026.jpg`,
-    `${TOPTEX_CDN}WK904-4_2026.jpg`,
-  ],
-  // ── Casquettes K-up ───────────────────────────────────────────────────────
-  kp157:  [
-    `${TOPTEX_CDN}KP157_2026.jpg`,
-    `${TOPTEX_CDN}KP157-1_2026.jpg`,
-    `${TOPTEX_CDN}KP157-2_2026.jpg`,
-    `${TOPTEX_CDN}KP157-3_2026.jpg`,
-    `${TOPTEX_CDN}KP157-4_2026.jpg`,
-  ],
-  kp162:  [
-    `${TOPTEX_CDN}KP162_2026.jpg`,
-    `${TOPTEX_CDN}KP162-1_2026.jpg`,
-    `${TOPTEX_CDN}KP162-2_2026.jpg`,
-    `${TOPTEX_CDN}KP162-3_2026.jpg`,
-    `${TOPTEX_CDN}KP162-4_2026.jpg`,
-  ],
-  kp165:  [
-    `${TOPTEX_CDN}KP165_2026.jpg`,
-    `${TOPTEX_CDN}KP165-1_2026.jpg`,
-    `${TOPTEX_CDN}KP165-2_2026.jpg`,
-    `${TOPTEX_CDN}KP165-3_2026.jpg`,
-    `${TOPTEX_CDN}KP165-4_2026.jpg`,
-  ],
-  kp185:  [
-    `${TOPTEX_CDN}KP185_2026.jpg`,
-    `${TOPTEX_CDN}KP185-1_2026.jpg`,
-    `${TOPTEX_CDN}KP185-2_2026.jpg`,
-    `${TOPTEX_CDN}KP185-3_2026.jpg`,
-    `${TOPTEX_CDN}KP185-4_2026.jpg`,
-  ],
-  // ── Sacs & tote bags Kimood ───────────────────────────────────────────────
-  ki0262: [
-    `${TOPTEX_CDN}KI0262_2026.jpg`,
-    `${TOPTEX_CDN}KI0262-1_2026.jpg`,
-    `${TOPTEX_CDN}KI0262-2_2026.jpg`,
-    `${TOPTEX_CDN}KI0262-3_2026.jpg`,
-    `${TOPTEX_CDN}KI0262-4_2026.jpg`,
-  ],
-  ki0252: [
-    `${TOPTEX_CDN}KI0252_2026.jpg`,
-    `${TOPTEX_CDN}KI0252-1_2026.jpg`,
-    `${TOPTEX_CDN}KI0252-2_2026.jpg`,
-    `${TOPTEX_CDN}KI0252-3_2026.jpg`,
-    `${TOPTEX_CDN}KI0252-4_2026.jpg`,
-  ],
-  ki0275: [
-    `${TOPTEX_CDN}KI0275_2026.jpg`,
-    `${TOPTEX_CDN}KI0275-1_2026.jpg`,
-    `${TOPTEX_CDN}KI0275-2_2026.jpg`,
-    `${TOPTEX_CDN}KI0275-3_2026.jpg`,
-    `${TOPTEX_CDN}KI0275-4_2026.jpg`,
-  ],
-  ki0274: [
-    `${TOPTEX_CDN}KI0274_2026.jpg`,
-    `${TOPTEX_CDN}KI0274-1_2026.jpg`,
-    `${TOPTEX_CDN}KI0274-2_2026.jpg`,
-    `${TOPTEX_CDN}KI0274-3_2026.jpg`,
-    `${TOPTEX_CDN}KI0274-4_2026.jpg`,
-  ],
-};
-
-// Retourne les URLs CDN Toptex si disponibles, sinon fallback local
-const PLACEHOLDER_IMAGES = (id: string): string[] =>
-  TOPTEX_IMGS[id] ?? [`/images/products/${id}/front.jpg`];
 
 export const PRODUCT_IB320: Product = {
   id: "ib320",
@@ -1218,7 +913,7 @@ export const PRODUCT_NS400: Product = {
   description: "Sweat col rond écoresponsable 85% coton biologique / 15% polyester recyclé. 40 coloris uniques, finitions naturelles. Certifié GOTS. Idéal pour les marques engagées.",
   composition: "85% coton biologique, 15% polyester recyclé",
   weight: "300 g/m²",
-  images: ["https://cdn.toptex.com/pictures/NS400-8_2025.jpg"],
+  images: PLACEHOLDER_IMAGES("ns400"),
   colors: [
     { id: "noir", label: "Noir", hex: "#111111", available: true },
     { id: "ecru", label: "Écru naturel", hex: "#F5F0E8", available: true },
@@ -1315,7 +1010,7 @@ export const PRODUCT_NS408: Product = {
   description: "Hoodie oversize écoresponsable, coupe ample tendance streetwear. 15 coloris naturels. Parfait pour les associations, BDE, clubs de sport et marques streetwear.",
   composition: "85% coton biologique, 15% polyester recyclé",
   weight: "350 g/m²",
-  images: ["https://cdn.toptex.com/pictures/NS408-4_2025.jpg"],
+  images: PLACEHOLDER_IMAGES("ns408"),
   colors: [
     { id: "noir", label: "Noir", hex: "#111111", available: true },
     { id: "ecru", label: "Écru naturel", hex: "#F5F0E8", available: true },
@@ -1501,7 +1196,7 @@ export const PRODUCT_WK904: Product = {
   description: "Veste micropolaire bicolore écoresponsable. 8 combinaisons coloris, matière recyclée certifiée. Coupe moderne avec zip pleine longueur.",
   composition: "100% polyester recyclé antipilling",
   weight: "300 g/m²",
-  images: ["https://cdn.toptex.com/pictures/WK904-3_2025.jpg"],
+  images: PLACEHOLDER_IMAGES("wk904"),
   colors: [
     { id: "noir-gris", label: "Noir / Gris", hex: "#111111", available: true },
     { id: "marine-gris", label: "Marine / Gris", hex: "#1E3A5F", available: true },
@@ -1676,7 +1371,7 @@ export const PRODUCT_KP185: Product = {
   description: "Casquette 6 panneaux avec passepoil contrasté sur la visière. 12 combinaisons coloris bicolores. Rendu dynamique et sportif, parfait pour les clubs et équipes.",
   composition: "100% polyester",
   weight: "—",
-  images: ["https://cdn.toptex.com/pictures/KP185_2025.jpg"],
+  images: PLACEHOLDER_IMAGES("kp185"),
   colors: [
     { id: "noir-rouge", label: "Noir / Rouge", hex: "#111111", available: true },
     { id: "marine-blanc", label: "Marine / Blanc", hex: "#1E3A5F", available: true },
@@ -1921,7 +1616,7 @@ export const PRODUCT_IB401: Product = {
   description: "Sweat col rond enfant 300 g/m², molletonné. 10 coloris, du 3/4 ans au 12/14 ans. Confort et durabilité pour les petits.",
   composition: "80% coton, 20% polyester",
   weight: "300 g/m²",
-  images: ["https://cdn.toptex.com/pictures/IB401_2026.jpg"],
+  images: PLACEHOLDER_IMAGES("ib401"),
   colors: [
     { id: "noir", label: "Noir", hex: "#111111", available: true },
     { id: "gris-melange", label: "Gris mélangé", hex: "#6B7280", available: true },
@@ -1959,7 +1654,7 @@ export const PRODUCT_IB403: Product = {
   description: "Hoodie enfant à capuche 300 g/m², poche kangourou. 10 coloris, du 3/4 ans au 12/14 ans. Le classique des tenues de groupe pour les petits.",
   composition: "80% coton, 20% polyester",
   weight: "300 g/m²",
-  images: ["https://cdn.toptex.com/pictures/IB403_2026.jpg"],
+  images: PLACEHOLDER_IMAGES("ib403"),
   colors: [
     { id: "noir", label: "Noir", hex: "#111111", available: true },
     { id: "gris-melange", label: "Gris mélangé", hex: "#6B7280", available: true },
