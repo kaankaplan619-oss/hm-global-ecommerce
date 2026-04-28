@@ -225,7 +225,15 @@ export function colorHasImages(
   });
 }
 
-// ─── Image avec fade ────────────────────────────────────────────────────────
+// ─── Image avec fade ────────────────────────────────────────────
+// Dimensions exactes du logo placeholder Toptex (retourne quand l image n existe pas)
+const TOPTEX_LOGO_W = 1900;
+const TOPTEX_LOGO_H = 2848;
+
+function isTopTexLogo(img: HTMLImageElement): boolean {
+  return img.naturalWidth === TOPTEX_LOGO_W && img.naturalHeight === TOPTEX_LOGO_H;
+}
+
 function GalleryImage({
   src,
   alt,
@@ -249,11 +257,14 @@ function GalleryImage({
     setError(false);
     setLoaded(false);
 
-    // Pour les images CDN Toptex (img natif), on vérifie si déjà en cache
     if (src.startsWith("https://cdn.toptex.com")) {
       const timer = setTimeout(() => {
         if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
-          setLoaded(true);
+          if (isTopTexLogo(imgRef.current)) {
+            setError(true);
+          } else {
+            setLoaded(true);
+          }
         }
       }, 50);
       return () => clearTimeout(timer);
@@ -273,7 +284,6 @@ function GalleryImage({
     );
   }
 
-  // Images CDN Toptex : utiliser img natif pour éviter les problèmes de cache Next.js
   if (src.startsWith("https://cdn.toptex.com")) {
     return (
       <>
@@ -293,14 +303,19 @@ function GalleryImage({
             .filter(Boolean)
             .join(" ")}
           style={{ objectFit: "contain" }}
-          onLoad={() => setLoaded(true)}
+          onLoad={() => {
+            if (imgRef.current && isTopTexLogo(imgRef.current)) {
+              setError(true);
+            } else {
+              setLoaded(true);
+            }
+          }}
           onError={() => setError(true)}
         />
       </>
     );
   }
 
-  // Images locales / packshots B&C : utiliser Next/Image
   return (
     <>
       {!loaded && (
