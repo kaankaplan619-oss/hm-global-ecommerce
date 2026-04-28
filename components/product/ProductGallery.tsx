@@ -225,8 +225,7 @@ export function colorHasImages(
   });
 }
 
-// ─── Image avec fade ──────────────────────────────────────────────────────────
-
+// ─── Image avec fade ────────────────────────────────────────────────────────
 function GalleryImage({
   src,
   alt,
@@ -249,14 +248,16 @@ function GalleryImage({
   useEffect(() => {
     setError(false);
     setLoaded(false);
-    // Si l'image est deja en cache navigateur, onLoad ne se redeclenche pas
-    // On verifie donc directement si l'img est complete
-    const timer = setTimeout(() => {
-      if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
-        setLoaded(true);
-      }
-    }, 50);
-    return () => clearTimeout(timer);
+
+    // Pour les images CDN Toptex (img natif), on vérifie si déjà en cache
+    if (src.startsWith("https://cdn.toptex.com")) {
+      const timer = setTimeout(() => {
+        if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+          setLoaded(true);
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
   }, [src]);
 
   if (!src || error) {
@@ -272,14 +273,40 @@ function GalleryImage({
     );
   }
 
+  // Images CDN Toptex : utiliser img natif pour éviter les problèmes de cache Next.js
+  if (src.startsWith("https://cdn.toptex.com")) {
+    return (
+      <>
+        {!loaded && (
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[var(--hm-accent-soft-blue)] to-[var(--hm-accent-soft-purple)]" />
+        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={imgRef}
+          src={src}
+          alt={alt}
+          className={[
+            className,
+            "absolute inset-0 h-full w-full transition-opacity duration-300",
+            loaded ? "opacity-100" : "opacity-0",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          style={{ objectFit: "contain" }}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+        />
+      </>
+    );
+  }
+
+  // Images locales / packshots B&C : utiliser Next/Image
   return (
     <>
       {!loaded && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[var(--hm-accent-soft-blue)] to-[var(--hm-accent-soft-purple)]" />
       )}
       <Image
-        key={src}
-        ref={imgRef as React.Ref<HTMLImageElement>}
         src={src}
         alt={alt}
         fill={fill}
@@ -294,11 +321,11 @@ function GalleryImage({
           .join(" ")}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
-        unoptimized={src.startsWith("https://cdn.toptex.com")}
       />
     </>
   );
 }
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 type ProductGalleryProps = {
