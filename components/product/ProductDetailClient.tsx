@@ -110,6 +110,7 @@ export default function ProductDetailClient({ product }: Props) {
                 placement={placement}
                 colorId={selectedColor?.id ?? ""}
                 productName={product.name}
+                category={product.category}
               />
             )}
           </>

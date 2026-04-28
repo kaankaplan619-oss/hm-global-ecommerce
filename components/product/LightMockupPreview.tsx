@@ -12,28 +12,34 @@
  */
 
 import { useEffect, useState } from "react";
-import type { Placement } from "@/types";
+import type { Placement, ProductCategory } from "@/types";
 import { isColorDark, EFFECT_OPTIONS } from "@/lib/color-utils";
 import type { LogoEffect } from "@/lib/color-utils";
 
-// ── Positions des zones (en % des dimensions de l'image) ─────────────────────
-// Calibrées pour des packshots produit au format portrait sur fond neutre.
-// coeur : poitrine gauche du porteur (vue face → droite du viewer)
-// dos   : haut du dos centré (vue dos — approximé sur vue face si nécessaire)
-const ZONE_STYLE: Record<"coeur" | "dos", React.CSSProperties> = {
-  coeur: {
-    position: "absolute",
-    top:   "27%",
-    right: "13%",
-    width: "19%",
-  },
-  dos: {
-    position: "absolute",
-    top:  "22%",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "28%",
-  },
+// ── Positions de la zone coeur par catégorie produit ─────────────────────────
+// Calibrées sur les packshots TopTex (portrait, fond neutre).
+// coeur = poitrine gauche du porteur → droite du viewer (left ≈ 42-43%)
+// dos   = haut du dos centré (identique pour toutes les catégories)
+const COEUR_BY_CATEGORY: Partial<Record<ProductCategory, React.CSSProperties>> = {
+  hoodies:    { position: "absolute", top: "30%", left: "43%", width: "18%" },
+  softshells: { position: "absolute", top: "32%", left: "42%", width: "17%" },
+  polos:      { position: "absolute", top: "34%", left: "42%", width: "16%" },
+  // polaires, casquettes, sacs → fallback générique ci-dessous
+};
+
+const COEUR_DEFAULT: React.CSSProperties = {
+  position: "absolute",
+  top:   "30%",
+  left:  "43%",
+  width: "18%",
+};
+
+const DOS_STYLE: React.CSSProperties = {
+  position: "absolute",
+  top:  "22%",
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: "28%",
 };
 
 // ── CSS filter pour "Contour blanc" ──────────────────────────────────────────
@@ -55,6 +61,8 @@ interface Props {
   colorId:     string;
   /** Nom du produit (alt text). */
   productName: string;
+  /** Catégorie produit — détermine la position calibrée de la zone coeur. */
+  category?:   ProductCategory;
 }
 
 export default function LightMockupPreview({
@@ -63,6 +71,7 @@ export default function LightMockupPreview({
   placement,
   colorId,
   productName,
+  category,
 }: Props) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoEffect, setLogoEffect] = useState<LogoEffect>(() =>
@@ -89,6 +98,10 @@ export default function LightMockupPreview({
   const showCoeur = placement === "coeur" || placement === "coeur-dos";
   const showDos   = placement === "dos"   || placement === "coeur-dos";
 
+  // Position coeur calibrée selon la catégorie produit
+  const coeurStyle: React.CSSProperties =
+    (category && COEUR_BY_CATEGORY[category]) ?? COEUR_DEFAULT;
+
   // Style appliqué à l'<img> du logo selon l'effet choisi
   const logoImgStyle: React.CSSProperties =
     logoEffect === "white-outline"
@@ -114,7 +127,7 @@ export default function LightMockupPreview({
 
         {/* ── Zone cœur (poitrine gauche porteur) ───────────────────────── */}
         {showCoeur && (
-          <div style={ZONE_STYLE.coeur}>
+          <div style={coeurStyle}>
             {/* Délimiteur de zone (pointillés) */}
             <div
               className="absolute inset-0 rounded"
@@ -136,7 +149,7 @@ export default function LightMockupPreview({
 
         {/* ── Zone dos (haut du dos centré) ─────────────────────────────── */}
         {showDos && (
-          <div style={ZONE_STYLE.dos}>
+          <div style={DOS_STYLE}>
             <div
               className="absolute inset-0 rounded"
               style={{
