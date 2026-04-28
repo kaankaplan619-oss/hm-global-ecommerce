@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { Package } from "lucide-react";
 import type { ProductColor } from "@/types";
@@ -244,14 +244,21 @@ function GalleryImage({
 }) {
   const [error, setError] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
-  // Reset state when src changes
   useEffect(() => {
-    setLoaded(false);
     setError(false);
+    setLoaded(false);
+    // Si l'image est deja en cache navigateur, onLoad ne se redeclenche pas
+    // On verifie donc directement si l'img est complete
+    const timer = setTimeout(() => {
+      if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+        setLoaded(true);
+      }
+    }, 50);
+    return () => clearTimeout(timer);
   }, [src]);
 
-  // Placeholder uniquement si pas de src ou erreur réelle de chargement
   if (!src || error) {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[linear-gradient(180deg,var(--hm-accent-soft-blue),var(--hm-accent-soft-purple))]">
@@ -259,7 +266,7 @@ function GalleryImage({
           <Package size={36} className="text-[var(--hm-purple)]" />
         </div>
         <p className="px-4 text-center text-[11px] font-medium text-[var(--hm-text-soft)]">
-          Visuel produit à venir
+          Visuel produit a venir
         </p>
       </div>
     );
@@ -267,12 +274,12 @@ function GalleryImage({
 
   return (
     <>
-      {/* Skeleton pendant le chargement de l'image */}
       {!loaded && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[var(--hm-accent-soft-blue)] to-[var(--hm-accent-soft-purple)]" />
       )}
       <Image
         key={src}
+        ref={imgRef as React.Ref<HTMLImageElement>}
         src={src}
         alt={alt}
         fill={fill}
