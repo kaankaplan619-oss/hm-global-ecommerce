@@ -162,12 +162,18 @@ function buildVariantGallery(
 ): string[] {
   if (images.length === 0) return [""];
 
-  // Priorité 1 : images TopTex per-color si disponibles
+  // Priorité 1 : images TopTex per-color si disponibles via API
   if (selectedColor && colorImages && Object.keys(colorImages).length > 0) {
     const topTexUrls = resolveTopTexImages(selectedColor.id, colorImages);
     if (topTexUrls.length > 0) return topTexUrls;
   }
 
+  // Priorité 2 : images CDN (https://) → toutes les vues, peu importe la couleur
+  // Les packshots Toptex sont valables pour n'importe quelle couleur sélectionnée.
+  const cdnImages = images.filter((img) => img.startsWith("https://"));
+  if (cdnImages.length > 0) return cdnImages;
+
+  // Priorité 3 : correspondance par nom de fichier (ancien format local)
   if (!selectedColor) return images;
 
   const targetKeys = COLOR_IMAGE_MAP[selectedColor.id] ?? [];
@@ -198,10 +204,15 @@ export function colorHasImages(
   colorImages?: Record<string, string[]>
 ): boolean {
   if (images.length === 0) return false;
-  // Images TopTex disponibles pour cette couleur (via mapping EN → ID)
+
+  // CDN packshots (https://) sont toujours valides — visuel disponible pour toute couleur
+  if (images.some((img) => img.startsWith("https://"))) return true;
+
+  // Images TopTex per-color disponibles via API
   if (colorImages && Object.keys(colorImages).length > 0) {
     if (resolveTopTexImages(color.id, colorImages).length > 0) return true;
   }
+
   // Fallback : correspondance par nom de fichier local
   const targetKeys = COLOR_IMAGE_MAP[color.id] ?? [];
   const keys =
