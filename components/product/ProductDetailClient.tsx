@@ -89,6 +89,7 @@ export default function ProductDetailClient({ product }: Props) {
             badge={product.badge}
             colorImages={colorImages}
             mediasLoading={mediasStatus === "loading"}
+            productId={product.id}
           />
         )}
 

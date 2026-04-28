@@ -368,12 +368,14 @@ type ProductGalleryProps = {
   selectedColor: ProductColor | null;
   badge?: string;
   /**
-   * Map colorId → imageUrls chargée depuis l'API TopTex.
+   * Map colorId → imageUrls chargée depuis l'API TopTex + packshots statiques.
    * Prioritaire sur le fallback filename-based.
    */
   colorImages?: Record<string, string[]>;
   /** True pendant le chargement des medias TopTex */
   mediasLoading?: boolean;
+  /** Identifiant produit — utilisé uniquement pour le log de debug */
+  productId?: string;
 };
 
 export default function ProductGallery({
@@ -383,6 +385,7 @@ export default function ProductGallery({
   badge,
   colorImages,
   mediasLoading,
+  productId,
 }: ProductGalleryProps) {
   const gallery = useMemo(
     () => buildVariantGallery(images, selectedColor, colorImages),
@@ -398,6 +401,46 @@ export default function ProductGallery({
   const handleThumb = useCallback((img: string) => {
     setActiveImage(img);
   }, []);
+
+  // ── Debug log (développement uniquement) ────────────────────────────────────
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development" || !selectedColor) return;
+
+    const cid = selectedColor.id;
+
+    // Source de l'image : packshot statique (colorId direct), API (nom TopTex EN), CDN générique, local
+    const directMatch = (colorImages?.[cid]?.length ?? 0) > 0;
+    const apiMatch = !directMatch && (colorImages
+      ? Object.entries(colorImages).some(
+          ([k, v]) => k !== cid && v.length > 0 && resolveTopTexImages(cid, colorImages).length > 0
+        )
+      : false);
+
+    let imageSource: string;
+    if (directMatch)        imageSource = "static_packshot";
+    else if (apiMatch)      imageSource = "api_packshot";
+    else if (gallery[0]?.startsWith("https://")) imageSource = "cdn_generic_fallback";
+    else                    imageSource = "local_fallback";
+
+    const hasSpecific = directMatch || apiMatch;
+
+    console.group(
+      `%c[Gallery] ${productId ?? name} → ${selectedColor.label} (${cid})`,
+      "color:#7B4FA6;font-weight:bold"
+    );
+    console.log({
+      productId: productId ?? name,
+      selectedColor: { id: cid, label: selectedColor.label, hex: selectedColor.hex },
+      normalizedColorKey: cid,
+      imageUsed:       gallery[0] ?? "(none)",
+      imageSource,
+      hasSpecificImage: hasSpecific,
+      isFallback:      !hasSpecific,
+      gallerySize:     gallery.length,
+      colorImagesKeys: Object.keys(colorImages ?? {}).slice(0, 20),
+    });
+    console.groupEnd();
+  }, [selectedColor, gallery, colorImages, productId, name]);
 
   // Indique si ce produit supporte le changement d'image par couleur
   const hasColorVariants =
