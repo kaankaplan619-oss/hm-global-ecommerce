@@ -32,9 +32,9 @@ const COLOR_TO_MOCKUP: Record<string, string> = {
 // Mockup image: 1254×1254, shirt slightly angled (3/4 view).
 // "coeur" = poitrine gauche du porteur = droite du spectateur.
 // Shirt fabric spans roughly x=10%–89%, center neck at ~44%.
-// Left-chest print area sits at approx x=52–66%, y=22–36% of image.
+// Left-chest print area sits at approx x=62–73%, y=26–37% of image (~9cm badge zone).
 const ZONES: Record<string, [number, number, number, number]> = {
-  coeur: [0.52, 0.22, 0.14, 0.14],  // left chest (wearer's left = viewer's right)
+  coeur: [0.62, 0.26, 0.11, 0.11],  // left chest (wearer's left = viewer's right) — 8–10 cm badge
   dos:   [0.24, 0.16, 0.52, 0.40],  // full back
 };
 
