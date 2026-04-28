@@ -30,6 +30,15 @@ const COLOR_TO_MOCKUP: Record<string, string> = {
   "bordeaux": "bordeaux", "bourgogne": "bordeaux",
 };
 
+// ── Dark-textile detection ────────────────────────────────────────────────────
+// Slugs where a logo without protection risks disappearing on the fabric.
+const DARK_SLUGS = new Set(["noir", "marine", "bordeaux", "vert", "bleu", "gris", "rouge"]);
+
+function isColorDark(colorId: string): boolean {
+  const slug = COLOR_TO_MOCKUP[colorId] ?? "blanc";
+  return DARK_SLUGS.has(slug);
+}
+
 // ── Zone de marquage (fraction of canvas) calibrated for B&C Exact 190 ───────
 // [left, top, width, height] as fraction of canvas size
 const ZONES: Record<string, [number, number, number, number]> = {
@@ -37,25 +46,42 @@ const ZONES: Record<string, [number, number, number, number]> = {
   dos:   [0.24, 0.16, 0.52, 0.40],  // full back
 };
 
-type View = "front" | "back";
+type View       = "front" | "back";
+type LogoEffect = "none" | "white-outline" | "white-bg";
 
 interface Props {
-  colorId: string;
+  colorId:   string;
   placement: Placement;
-  logoFile: File | null;
-  badge?: string;
+  logoFile:  File | null;
+  badge?:    string;
 }
 
-export default function MockupViewer({ colorId, placement, logoFile, badge }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef    = useRef<HTMLCanvasElement>(null);
+const EFFECT_OPTIONS: { value: LogoEffect; label: string }[] = [
+  { value: "none",          label: "Aucun"         },
+  { value: "white-outline", label: "Contour blanc"  },
+  { value: "white-bg",      label: "Fond blanc"     },
+];
 
+export default function MockupViewer({ colorId, placement, logoFile, badge }: Props) {
+  const containerRef  = useRef<HTMLDivElement>(null);
+  const canvasRef     = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fabricRef    = useRef<any>(null);
+  const fabricRef     = useRef<any>(null);
   const canvasSizeRef = useRef(0);
-  const [view, setView]         = useState<View>("front");
-  const [canvasSize, setCanvasSize] = useState(0);
+
+  const [view,        setView]        = useState<View>("front");
+  const [canvasSize,  setCanvasSize]  = useState(0);
   const [fabricReady, setFabricReady] = useState(false);
+
+  // ── Logo effect — smart default based on textile darkness ────────────────
+  const [logoEffect, setLogoEffect] = useState<LogoEffect>(() =>
+    isColorDark(colorId) ? "white-outline" : "none"
+  );
+
+  // Reset to smart default when color changes
+  useEffect(() => {
+    setLogoEffect(isColorDark(colorId) ? "white-outline" : "none");
+  }, [colorId]);
 
   // ── Active zone for current view/placement ────────────────────────────────
   const getZone = useCallback((): [number, number, number, number] | null => {
@@ -92,7 +118,7 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
           selection: false,
           backgroundColor: "#ffffff",
           renderOnAddRemove: false,
-          allowTouchScrolling: false,  // required for touch drag in Fabric v7
+          allowTouchScrolling: false,
         });
         fabricRef.current = canvas;
         canvasSizeRef.current = w;
@@ -101,13 +127,11 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
       });
     };
 
-    // Measure after layout is settled
     const measure = () => {
       const w = Math.floor(containerRef.current!.getBoundingClientRect().width);
       return w > 0 ? w : 480;
     };
 
-    // ResizeObserver: reinit if container resizes (orientation change, etc.)
     let initialized = false;
     const ro = new ResizeObserver((entries) => {
       const w = Math.floor(entries[0].contentRect.width);
@@ -116,7 +140,6 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
         initialized = true;
         initCanvas(w);
       } else if (fabricRef.current && Math.abs(w - canvasSizeRef.current) > 4) {
-        // Resize existing canvas without full reinit
         fabricRef.current.setWidth(w);
         fabricRef.current.setHeight(w);
         canvasSizeRef.current = w;
@@ -127,7 +150,6 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
 
     ro.observe(containerRef.current);
 
-    // Fallback: init after one rAF if ResizeObserver doesn't fire quickly
     const raf = requestAnimationFrame(() => {
       if (!initialized) {
         initialized = true;
@@ -157,7 +179,10 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
     canvas.off("object:moving");
     canvas.clear();
 
-    import("fabric").then(({ FabricImage, Rect }) => {
+    // Capture logoEffect in closure so it stays stable for this render cycle
+    const currentEffect = logoEffect;
+
+    import("fabric").then(({ FabricImage, Rect, Shadow }) => {
       // ── Shirt image ───────────────────────────────────────────────────────
       const shirtEl = new window.Image();
       shirtEl.crossOrigin = "anonymous";
@@ -211,13 +236,12 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
         logoEl.src      = objectUrl;
 
         logoEl.onload = () => {
-          // Handle SVG with no intrinsic size
           const nw = logoEl.naturalWidth  || 200;
           const nh = logoEl.naturalHeight || 200;
 
           let logoScale: number;
-          let logoLeft: number;
-          let logoTop:  number;
+          let logoLeft:  number;
+          let logoTop:   number;
 
           if (zone) {
             const [lf, tf, wf, hf] = zone;
@@ -237,12 +261,12 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
           }
 
           const logo = new FabricImage(logoEl, {
-            scaleX:  logoScale,
-            scaleY:  logoScale,
-            left:    logoLeft,
-            top:     logoTop,
-            originX: "center",
-            originY: "center",
+            scaleX:             logoScale,
+            scaleY:             logoScale,
+            left:               logoLeft,
+            top:                logoTop,
+            originX:            "center",
+            originY:            "center",
             selectable:         true,
             hasControls:        true,
             hasBorders:         true,
@@ -251,6 +275,25 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
             transparentCorners: false,
             lockUniScaling:     true,
           });
+
+          // ── Apply logo effect for dark-textile readability ──────────────
+          if (currentEffect === "white-outline") {
+            // White glow/halo around the logo shape — no layout shift
+            logo.shadow = new Shadow({
+              color:   "rgba(255,255,255,0.95)",
+              blur:    14,
+              offsetX: 0,
+              offsetY: 0,
+            });
+          } else if (currentEffect === "white-bg") {
+            // Solid white rectangle behind the logo bounding-box
+            // padding (in canvas px) adds breathing room
+            logo.set({
+              backgroundColor: "white",
+              padding:         8,
+            });
+          }
+          // "none" → nothing applied
 
           // Constrain drag inside zone
           if (zone) {
@@ -261,12 +304,12 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
               const obj = e.target;
               const hw  = ((obj.width  ?? 0) * (obj.scaleX ?? 1)) / 2;
               const hh  = ((obj.height ?? 0) * (obj.scaleY ?? 1)) / 2;
-              const zL = lf * canvasSize;
-              const zR = (lf + wf) * canvasSize;
-              const zT = tf * canvasSize;
-              const zB = (tf + hf) * canvasSize;
-              const zW = zR - zL;
-              const zH = zB - zT;
+              const zL  = lf * canvasSize;
+              const zR  = (lf + wf) * canvasSize;
+              const zT  = tf * canvasSize;
+              const zB  = (tf + hf) * canvasSize;
+              const zW  = zR - zL;
+              const zH  = zB - zT;
               const minX = hw < zW / 2 ? zL + hw : zL + zW / 2;
               const maxX = hw < zW / 2 ? zR - hw : zL + zW / 2;
               const minY = hh < zH / 2 ? zT + hh : zT + zH / 2;
@@ -278,7 +321,7 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
 
           canvas.add(logo);
           canvas.setActiveObject(logo);
-          canvas.requestRenderAll();   // use requestRenderAll for Fabric.js v7
+          canvas.requestRenderAll();
           URL.revokeObjectURL(objectUrl);
         };
 
@@ -287,7 +330,7 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
 
       shirtEl.onerror = () => canvas.requestRenderAll();
     });
-  }, [fabricReady, src, placement, view, logoFile, canvasSize, getZone]);
+  }, [fabricReady, src, placement, view, logoFile, canvasSize, getZone, logoEffect]);
 
   const zoneVisible = !!getZone();
   const hint =
@@ -301,10 +344,6 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
     <div className="flex flex-col gap-4">
 
       {/* ── Canvas wrapper ─────────────────────────────────────────────────── */}
-      {/*
-        No overflow-hidden here — it clips Fabric.js upper-canvas pointer events.
-        Border-radius is applied via a decorative ring overlay instead.
-      */}
       <div
         ref={containerRef}
         className="relative rounded-[28px] border border-[var(--hm-line)] bg-white shadow-[0_20px_48px_rgba(63,45,88,0.08)]"
@@ -317,11 +356,6 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
           </div>
         )}
 
-        {/*
-          touch-action: none → lets Fabric.js handle touch drag without
-          browser intercepting the gesture as a scroll.
-          The canvas itself clips content at its natural square boundary.
-        */}
         <canvas
           ref={canvasRef}
           style={{
@@ -369,6 +403,36 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
           </button>
         ))}
       </div>
+
+      {/* ── Logo effect selector — visible only when logo is loaded ─────────
+          Apparaît automatiquement dès qu'un logo est uploadé.
+          Le bouton actif change automatiquement selon la couleur du textile :
+          - textile sombre → "Contour blanc" par défaut
+          - textile clair  → "Aucun" par défaut
+          L'utilisateur peut surcharger manuellement à tout moment.         */}
+      {logoFile && (
+        <div className="flex flex-col gap-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+            Lisibilité du logo
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {EFFECT_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setLogoEffect(value)}
+                className={`rounded-xl border py-2.5 text-xs font-semibold transition-all
+                  ${logoEffect === value
+                    ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)] shadow-[0_4px_12px_rgba(177,63,116,0.12)]"
+                    : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Drag hint when logo is loaded ─────────────────────────────────── */}
       {logoFile && zoneVisible && (
