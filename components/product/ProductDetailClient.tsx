@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { Info } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
+import LightMockupPreview from "@/components/product/LightMockupPreview";
 import TopTexStockBadge from "@/components/product/TopTexStockBadge";
 import { useTopTexMedias } from "@/hooks/useTopTexMedias";
 import { hasMockup } from "@/lib/mockup-utils";
@@ -70,6 +71,14 @@ export default function ProductDetailClient({ product }: Props) {
   const showMockup =
     product.category === "tshirts" && hasMockup(selectedColor?.id ?? "");
 
+  // Image produit actuelle (couleur sélectionnée ou première image générique)
+  // Utilisée par LightMockupPreview pour les produits hors-tshirt.
+  const currentImageUrl = useMemo(() => {
+    const cid = selectedColor?.id ?? "";
+    if (cid && colorImages[cid]?.[0]) return colorImages[cid][0];
+    return product.images[0] ?? "";
+  }, [selectedColor, colorImages, product.images]);
+
   return (
     <div className="mb-16 grid grid-cols-1 gap-12 lg:grid-cols-2">
       <div className="flex flex-col gap-4">
@@ -81,16 +90,29 @@ export default function ProductDetailClient({ product }: Props) {
             badge={product.badge}
           />
         ) : (
-          <ProductGallery
-            name={product.name}
-            images={product.images}
-            colors={product.colors}
-            selectedColor={selectedColor}
-            badge={product.badge}
-            colorImages={colorImages}
-            mediasLoading={mediasStatus === "loading"}
-            productId={product.id}
-          />
+          <>
+            <ProductGallery
+              name={product.name}
+              images={product.images}
+              colors={product.colors}
+              selectedColor={selectedColor}
+              badge={product.badge}
+              colorImages={colorImages}
+              mediasLoading={mediasStatus === "loading"}
+              productId={product.id}
+            />
+            {/* Aperçu overlay CSS — visible uniquement quand un logo est uploadé
+                et que le produit n'utilise pas le MockupViewer Fabric (hors t-shirts). */}
+            {logoFile && (
+              <LightMockupPreview
+                imageUrl={currentImageUrl}
+                logoFile={logoFile}
+                placement={placement}
+                colorId={selectedColor?.id ?? ""}
+                productName={product.name}
+              />
+            )}
+          </>
         )}
 
         <div className="rounded-[28px] border border-[var(--hm-line)] bg-white p-6 shadow-[0_18px_48px_rgba(63,45,88,0.06)]">
@@ -172,7 +194,7 @@ export default function ProductDetailClient({ product }: Props) {
           onColorChange={handleColorChange}
           onPlacementChange={setPlacement}
           onLogoChange={setLogoFile}
-          hidePreview={showMockup}
+          hidePreview={showMockup || !!logoFile}
           colorImages={colorImages}
         />
       </div>

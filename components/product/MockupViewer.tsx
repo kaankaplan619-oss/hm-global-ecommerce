@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Placement } from "@/types";
+import { isColorDark, EFFECT_OPTIONS } from "@/lib/color-utils";
+import type { LogoEffect } from "@/lib/color-utils";
 
 // ── Mockup image paths ────────────────────────────────────────────────────────
 const MOCKUP_FILES: Record<string, { front: string; back: string }> = {
@@ -30,15 +32,6 @@ const COLOR_TO_MOCKUP: Record<string, string> = {
   "bordeaux": "bordeaux", "bourgogne": "bordeaux",
 };
 
-// ── Dark-textile detection ────────────────────────────────────────────────────
-// Slugs where a logo without protection risks disappearing on the fabric.
-const DARK_SLUGS = new Set(["noir", "marine", "bordeaux", "vert", "bleu", "gris", "rouge"]);
-
-function isColorDark(colorId: string): boolean {
-  const slug = COLOR_TO_MOCKUP[colorId] ?? "blanc";
-  return DARK_SLUGS.has(slug);
-}
-
 // ── Zone de marquage (fraction of canvas) calibrated for B&C Exact 190 ───────
 // [left, top, width, height] as fraction of canvas size
 const ZONES: Record<string, [number, number, number, number]> = {
@@ -46,8 +39,7 @@ const ZONES: Record<string, [number, number, number, number]> = {
   dos:   [0.24, 0.16, 0.52, 0.40],  // full back
 };
 
-type View       = "front" | "back";
-type LogoEffect = "none" | "white-outline" | "white-bg";
+type View = "front" | "back";
 
 interface Props {
   colorId:   string;
@@ -55,12 +47,6 @@ interface Props {
   logoFile:  File | null;
   badge?:    string;
 }
-
-const EFFECT_OPTIONS: { value: LogoEffect; label: string }[] = [
-  { value: "none",          label: "Aucun"         },
-  { value: "white-outline", label: "Contour blanc"  },
-  { value: "white-bg",      label: "Fond blanc"     },
-];
 
 export default function MockupViewer({ colorId, placement, logoFile, badge }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
