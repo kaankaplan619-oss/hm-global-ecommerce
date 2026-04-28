@@ -26,6 +26,9 @@ const LINKS_CATALOGUE = [
   { label: "Polos",                    href: "/catalogue/polos" },
   { label: "Hoodies & Sweats",         href: "/catalogue/hoodies" },
   { label: "Softshells & Vestes",      href: "/catalogue/softshells" },
+  { label: "Polaires & Doudounes",     href: "/catalogue/polaires" },
+  { label: "Casquettes & Bonnets",     href: "/catalogue/casquettes" },
+  { label: "Sacs & Goodies",           href: "/catalogue/sacs" },
   { label: "Voir tout le catalogue →", href: "/catalogue" },
 ];
 
