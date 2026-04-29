@@ -7,14 +7,20 @@ import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
 import type { Technique, Placement } from "@/types";
 
 interface CartItemInput {
-  productId:  string;
-  quantity:   number;
-  size:       string;
-  colorId:    string;
-  colorLabel: string;
-  colorHex:   string;
-  technique:  Technique;
-  placement:  Placement;
+  productId:    string;
+  quantity:     number;
+  size:         string;
+  colorId:      string;
+  colorLabel:   string;
+  colorHex:     string;
+  technique:    Technique;
+  placement:    Placement;
+  // Logo — optionnel, transmis depuis le panier si l'utilisateur a uploadé un fichier
+  logoFileName: string | null;
+  logoFileUrl:  string | null;
+  logoFilePath: string | null;
+  logoFileType: string | null;
+  logoFileSize: number | null;
 }
 
 /**
@@ -109,6 +115,11 @@ export async function POST(req: NextRequest) {
         unitPriceTTC,
         totalHT,
         totalTTC,
+        // Propagate logo fields — never recomputed, passed through as-is
+        logoFileName:  item.logoFileName  ?? null,
+        logoFileUrl:   item.logoFileUrl   ?? null,
+        logoFileType:  item.logoFileType  ?? null,
+        logoFileSize:  item.logoFileSize  ?? null,
       };
     });
 
@@ -177,6 +188,13 @@ export async function POST(req: NextRequest) {
       unit_price_ttc:    item.unitPriceTTC,
       total_ht:          item.totalHT,
       total_ttc:         item.totalTTC,
+      // Logo — transmis depuis le panier (path cart/{sessionId}/..., uploadé lors de la sélection)
+      logo_file_name:    item.logoFileName   ?? null,
+      logo_file_url:     item.logoFileUrl    ?? null,
+      logo_file_type:    item.logoFileType   ?? null,
+      logo_file_size:    item.logoFileSize   ?? null,
+      logo_file_status:  item.logoFileUrl    ? "en_attente" : null,
+      logo_uploaded_at:  item.logoFileUrl    ? new Date().toISOString() : null,
     }));
 
     const { error: itemsError } = await supabase.from("order_items").insert(itemRows);
