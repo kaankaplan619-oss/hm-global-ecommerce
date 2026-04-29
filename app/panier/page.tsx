@@ -51,7 +51,7 @@ export default function PanierPage() {
                 <div className="flex gap-4">
                   {/* Image */}
                   <div className="w-20 h-20 bg-[#1a1a1a] rounded-lg shrink-0 overflow-hidden flex items-center justify-center border border-[#2a2a2a]">
-                    {item.product.images[0] ? (
+                    {item.product.images?.[0] ? (
                       <Image
                         src={item.product.images[0]}
                         alt={item.product.name}

@@ -73,7 +73,7 @@ export default function BestSellers() {
                 {/* ── Zone image ── */}
                 <div className="relative aspect-[4/4.8] overflow-hidden bg-[var(--hm-surface)]">
                   <ProductImage
-                    src={product.images[0]}
+                    src={product.images?.[0]}
                     alt={product.name}
                     fill
                     sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
