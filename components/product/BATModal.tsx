@@ -1,16 +1,19 @@
 "use client";
 
 /**
- * BATModal — modal de prévisualisation BAT imprimable (V1 — sans Supabase).
+ * BATModal — modal de prévisualisation BAT imprimable (V2).
  *
- * Rendu via createPortal dans document.body pour que @media print fonctionne.
- * Bouton "Imprimer / Enregistrer en PDF" déclenche window.print().
- * CSS @media print défini dans globals.css (classe .bat-print-root).
+ * Améliorations V2 :
+ * - Badge statut "À VALIDER" dans l'en-tête
+ * - Section logo enrichie : source URL (Supabase / blob local / aucun)
+ * - Section "Position logo" (si logoTransform Fabric.js disponible)
+ * - Mention légale obligatoire claire dans les avertissements et la validation
+ * - Rendu via createPortal → @media print fonctionne dans globals.css
  */
 
 import { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Printer, FileCheck } from "lucide-react";
+import { X, Printer, FileCheck, CheckCircle2 } from "lucide-react";
 import BATPreviewCard from "@/components/product/BATPreviewCard";
 import {
   type BATData,
@@ -48,6 +51,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Détermine la source lisible de l'URL logo. */
+function getLogoUrlSource(logoUrl: string | null): string | undefined {
+  if (!logoUrl) return undefined;
+  if (logoUrl.startsWith("blob:"))  return "Fichier local (aperçu session)";
+  if (logoUrl.startsWith("https:")) return "URL Supabase — stable ✓";
+  return "URL distante";
+}
+
 // ── BATModal ──────────────────────────────────────────────────────────────────
 interface Props {
   bat:     BATData;
@@ -72,11 +85,12 @@ export default function BATModal({ bat, onClose }: Props) {
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  const handlePrint = useCallback(() => {
-    window.print();
-  }, []);
+  const handlePrint = useCallback(() => { window.print(); }, []);
 
   if (!mounted) return null;
+
+  const logoUrlSource = getLogoUrlSource(bat.logoUrl);
+  const hasTransform  = !!bat.logoTransform;
 
   const content = (
     <div id="bat-print-root" className="bat-print-root">
@@ -137,7 +151,7 @@ export default function BATModal({ bat, onClose }: Props) {
           {/* === CONTENU IMPRIMABLE === */}
           <div className="bat-content">
 
-            {/* En-tête BAT (imprimable) */}
+            {/* ── En-tête BAT ─────────────────────────────────────────────── */}
             <div className="bat-header mb-6 flex items-start justify-between border-b-2 border-[var(--hm-primary,#b13f74)] pb-4">
               <div>
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--hm-primary,#b13f74)]">
@@ -147,6 +161,11 @@ export default function BATModal({ bat, onClose }: Props) {
                   Bon à Tirer
                 </h1>
                 <p className="mt-0.5 text-[11px] text-gray-400">Réf. {bat.batRef}</p>
+                {/* Badge statut */}
+                <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  À valider
+                </span>
               </div>
               <div className="text-right">
                 <p className="text-[11px] text-gray-400">Généré le</p>
@@ -154,11 +173,12 @@ export default function BATModal({ bat, onClose }: Props) {
               </div>
             </div>
 
-            {/* Grid : infos + aperçu */}
+            {/* ── Grid : données + aperçu ──────────────────────────────────── */}
             <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-[1fr_200px]">
 
-              {/* Colonne données */}
+              {/* ── Colonne données ── */}
               <div>
+
                 {/* Produit */}
                 <Section title="Produit">
                   <Row label="Nom"         value={bat.productName} />
@@ -169,8 +189,8 @@ export default function BATModal({ bat, onClose }: Props) {
                   <Row label="Grammage"    value={bat.weight} />
                 </Section>
 
-                {/* Commande */}
-                <Section title="Configuration">
+                {/* Configuration */}
+                <Section title="Personnalisation">
                   <Row label="Couleur"     value={bat.color ? `${bat.color.label} (${bat.color.id})` : "—"} />
                   <Row label="Taille"      value={bat.size || "—"} />
                   <Row label="Quantité"    value={bat.quantity} />
@@ -179,13 +199,37 @@ export default function BATModal({ bat, onClose }: Props) {
                 </Section>
 
                 {/* Logo */}
-                <Section title="Logo">
+                <Section title="Logo & visuel">
                   <Row label="Fichier"     value={bat.logoFileName ?? "Aucun logo"} />
                   <Row label="Effet"       value={bat.logoFileName ? LOGO_EFFECT_LABELS[bat.logoEffect] : undefined} />
+                  <Row label="Source URL"  value={logoUrlSource} />
                 </Section>
+
+                {/* Position Fabric.js — affiché uniquement si logoTransform disponible */}
+                {hasTransform && (
+                  <Section title="Position logo enregistrée">
+                    <Row
+                      label="Centre (X / Y)"
+                      value={`${Math.round(bat.logoTransform!.left)} px / ${Math.round(bat.logoTransform!.top)} px`}
+                    />
+                    <Row
+                      label="Échelle"
+                      value={`${(bat.logoTransform!.scaleX * 100).toFixed(0)} %`}
+                    />
+                    <Row
+                      label="Canevas"
+                      value={`${bat.logoTransform!.canvasSize} × ${bat.logoTransform!.canvasSize} px`}
+                    />
+                    <Row
+                      label="Source"
+                      value="Fabric.js — position capturée après drag/resize"
+                    />
+                  </Section>
+                )}
+
               </div>
 
-              {/* Aperçu visuel */}
+              {/* ── Aperçu visuel ── */}
               <div className="flex flex-col gap-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--hm-primary,#b13f74)]">
                   Aperçu visuel
@@ -214,20 +258,43 @@ export default function BATModal({ bat, onClose }: Props) {
                     <span className="text-[11px] text-gray-500">{bat.color.label}</span>
                   </div>
                 )}
+                {/* Indication aperçu (sans transform) */}
+                {!hasTransform && bat.logoFileName && (
+                  <p className="text-[10px] leading-tight text-gray-400">
+                    Position indicative — basée sur le type d&apos;emplacement.
+                  </p>
+                )}
+                {/* Indication aperçu (avec transform Fabric.js) */}
+                {hasTransform && (
+                  <p className="text-[10px] leading-tight text-green-600 flex items-start gap-1">
+                    <CheckCircle2 size={11} className="mt-0.5 shrink-0" />
+                    Position Fabric.js capturée
+                  </p>
+                )}
               </div>
-            </div>
 
-            {/* Avertissements */}
+            </div>
+            {/* /grid */}
+
+            {/* ── Mentions importantes ──────────────────────────────────────── */}
             <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-              <p className="text-[11px] font-semibold text-amber-700">
-                ⚠ Aperçu indicatif — le positionnement exact du logo sera confirmé avant production.
+              <p className="mb-1.5 text-[11px] font-bold text-amber-800">
+                ⚠ BAT à vérifier par le client avant production. Toute validation vaut accord pour impression / personnalisation.
               </p>
-              <p className="mt-1 text-[11px] text-amber-600">
-                Les couleurs à l&apos;écran peuvent différer légèrement du rendu final selon le support et la technique de marquage.
-              </p>
+              <ul className="space-y-0.5">
+                <li className="text-[11px] text-amber-700">
+                  • La position du logo est indicative — le positionnement exact est confirmé avant impression.
+                </li>
+                <li className="text-[11px] text-amber-700">
+                  • Les couleurs à l&apos;écran peuvent différer légèrement du rendu final selon le support et la technique de marquage.
+                </li>
+                <li className="text-[11px] text-amber-700">
+                  • Vérifiez la lisibilité du logo, les proportions, la technique choisie et l&apos;emplacement avant de signer.
+                </li>
+              </ul>
             </div>
 
-            {/* Bloc validation client */}
+            {/* ── Bloc validation client ────────────────────────────────────── */}
             <div className="validation-block rounded-xl border-2 border-gray-200 p-5">
               <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-gray-500">
                 Validation client — Bon pour accord
@@ -250,15 +317,16 @@ export default function BATModal({ bat, onClose }: Props) {
                   <div className="h-8 border-b border-gray-300" />
                 </div>
               </div>
-              <p className="mt-4 text-[10px] text-gray-400">
-                En signant ce document, le client confirme avoir vérifié et approuvé le visuel, les couleurs, les textes et le positionnement du logo.
-                HM Global Agence ne pourra être tenu responsable des erreurs non signalées avant production.
+              <p className="mt-4 text-[10px] leading-relaxed text-gray-400">
+                BAT à vérifier par le client avant production. Toute validation vaut accord pour impression/personnalisation.
+                En signant ce document, le client confirme avoir vérifié et approuvé le visuel, les couleurs, les textes et
+                le positionnement du logo. HM Global Agence ne pourra être tenu responsable des erreurs non signalées avant production.
               </p>
             </div>
 
-            {/* Pied de page */}
+            {/* ── Pied de page ─────────────────────────────────────────────── */}
             <p className="mt-4 text-center text-[9px] text-gray-300">
-              HM Global Agence · hmglobal.fr · BAT V1 · {bat.batRef}
+              HM Global Agence · hmglobal.fr · BAT V2 · {bat.batRef}
             </p>
 
           </div>
