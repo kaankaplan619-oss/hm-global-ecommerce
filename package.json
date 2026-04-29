@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
-    "stripe:listen": "stripe listen --forward-to localhost:3000/api/stripe/webhook"
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/stripe/webhook",
+    "agent:report": "bash scripts/agent-report.sh"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
