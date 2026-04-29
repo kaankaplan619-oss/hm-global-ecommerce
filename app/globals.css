@@ -375,3 +375,58 @@ body {
 .badge-error   { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
 .badge-info    { background: rgba(76,47,111,0.1); color: var(--hm-purple); border: 1px solid rgba(76,47,111,0.2); }
 .badge-neutral { background: rgba(242,244,247,1); color: var(--hm-text-soft); border: 1px solid var(--hm-line); }
+
+/* ─── BAT Print ─────────────────────────────────────────────────────── */
+/*
+ * Quand window.print() est appelé depuis BATModal, on veut imprimer
+ * uniquement le contenu #bat-print-root (le modal est rendu en portal body).
+ * Tout le reste est masqué.
+ */
+@media print {
+  /* Masquer toute la page sauf le BAT */
+  body > *:not(#bat-print-root) {
+    display: none !important;
+  }
+
+  /* Le root BAT devient statique (plus de fixed/overlay) */
+  #bat-print-root {
+    position: static !important;
+  }
+
+  /* Masquer overlay fond, header du modal, boutons */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Le panneau modal devient une page blanche normale */
+  #bat-print-root [role="dialog"] {
+    position: static !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    overflow: visible !important;
+    max-width: 100% !important;
+    max-height: none !important;
+  }
+
+  /* Corps scrollable : revient à flux normal */
+  .bat-body {
+    overflow: visible !important;
+    flex: none !important;
+  }
+
+  /* Impression sur une seule page quand possible */
+  .bat-content {
+    page-break-inside: avoid;
+  }
+
+  .validation-block {
+    page-break-inside: avoid;
+  }
+
+  /* Forcer les couleurs (Chrome masque les bg par défaut en print) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

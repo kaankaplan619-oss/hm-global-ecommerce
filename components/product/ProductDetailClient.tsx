@@ -1,16 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Info } from "lucide-react";
+import { Info, FileCheck } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
 import LightMockupPreview from "@/components/product/LightMockupPreview";
+import BATModal from "@/components/product/BATModal";
 import TopTexStockBadge from "@/components/product/TopTexStockBadge";
 import { useTopTexMedias } from "@/hooks/useTopTexMedias";
 import { hasMockup } from "@/lib/mockup-utils";
+import { isColorDark } from "@/lib/color-utils";
+import { buildBATData } from "@/lib/bat-utils";
 import { formatPrice } from "@/data/pricing";
-import type { Product, ProductColor, Placement } from "@/types";
+import type { Product, ProductColor, Placement, Technique } from "@/types";
+import type { LogoEffect } from "@/lib/color-utils";
 
 // Chargé uniquement côté client — Fabric.js accède à `window.location`
 // et ne peut pas s'exécuter dans le contexte SSR de Next.js.
@@ -29,12 +33,38 @@ export default function ProductDetailClient({ product }: Props) {
     [product]
   );
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(defaultColor);
-  const [placement, setPlacement] = useState<Placement>(product.placements[0]);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [placement, setPlacement]   = useState<Placement>(product.placements[0]);
+  const [logoFile, setLogoFile]     = useState<File | null>(null);
 
-  // ── TopTex media enrichment (couleurs → images) ────────────────────────────
-  // Se charge en arrière-plan après l'hydratation.
-  // Produits sans toptexRef → hook reste en "idle", colorImages reste {}
+  // ── État remonté depuis ProductConfigurator (pour le BAT) ─────────────────
+  const [technique, setTechnique]   = useState<Technique>(product.techniques[0]);
+  const [size, setSize]             = useState<string>("");
+  const [quantity, setQuantity]     = useState<number>(1);
+
+  // ── logoEffect : suivi depuis LightMockupPreview (pour le BAT) ───────────
+  const [logoEffect, setLogoEffect] = useState<LogoEffect>(() =>
+    isColorDark(defaultColor?.id ?? "") ? "white-outline" : "none"
+  );
+
+  // Reset logoEffect quand la couleur change (en phase avec LightMockupPreview)
+  useEffect(() => {
+    setLogoEffect(isColorDark(selectedColor?.id ?? "") ? "white-outline" : "none");
+  }, [selectedColor?.id]);
+
+  // ── Blob URL du logo pour le BAT (créé/révoqué ici pour éviter la dépendance
+  //    sur l'URL interne de LightMockupPreview) ──────────────────────────────
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!logoFile) { setLogoUrl(null); return; }
+    const url = URL.createObjectURL(logoFile);
+    setLogoUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [logoFile]);
+
+  // ── BAT modal ────────────────────────────────────────────────────────────
+  const [showBAT, setShowBAT] = useState(false);
+
+  // ── TopTex media enrichment ───────────────────────────────────────────────
   const { colorImages, status: mediasStatus } = useTopTexMedias(
     product.toptexRef,
     product.colors,
@@ -69,20 +99,41 @@ export default function ProductDetailClient({ product }: Props) {
   );
 
   // MockupViewer uniquement pour les t-shirts B&C (supplierName: "falk-ross").
-  // Les t-shirts iDeal (supplierName: "toptex") utilisent LightMockupPreview
-  // pour éviter d'afficher les photos mockup B&C (étiquette col incorrecte).
   const showMockup =
     product.category === "tshirts" &&
     product.supplierName === "falk-ross" &&
     hasMockup(selectedColor?.id ?? "");
 
-  // Image produit actuelle (couleur sélectionnée ou première image générique)
-  // Utilisée par LightMockupPreview pour les produits hors-tshirt.
+  // Image produit actuelle (utilisée par LightMockupPreview + BAT)
   const currentImageUrl = useMemo(() => {
     const cid = selectedColor?.id ?? "";
     if (cid && colorImages[cid]?.[0]) return colorImages[cid][0];
     return product.images[0] ?? "";
   }, [selectedColor, colorImages, product.images]);
+
+  // ── Condition BAT visible ─────────────────────────────────────────────────
+  // Exige au minimum : couleur sélectionnée + logo uploadé
+  const batReady = !!selectedColor && !!logoFile;
+
+  // ── Construction des données BAT ──────────────────────────────────────────
+  const batData = useMemo(() => {
+    if (!batReady) return null;
+    return buildBATData(
+      product,
+      selectedColor,
+      size,
+      quantity,
+      technique,
+      placement,
+      logoFile,
+      logoEffect,
+      currentImageUrl,
+      logoUrl,
+    );
+  }, [
+    batReady, product, selectedColor, size, quantity,
+    technique, placement, logoFile, logoEffect, currentImageUrl, logoUrl,
+  ]);
 
   return (
     <div className="mb-16 grid grid-cols-1 gap-12 lg:grid-cols-2">
@@ -106,8 +157,6 @@ export default function ProductDetailClient({ product }: Props) {
               mediasLoading={mediasStatus === "loading"}
               productId={product.id}
             />
-            {/* Aperçu overlay CSS — visible uniquement quand un logo est uploadé
-                et que le produit n'utilise pas le MockupViewer Fabric (hors t-shirts). */}
             {logoFile && (
               <LightMockupPreview
                 imageUrl={currentImageUrl}
@@ -116,6 +165,7 @@ export default function ProductDetailClient({ product }: Props) {
                 colorId={selectedColor?.id ?? ""}
                 productName={product.name}
                 category={product.category}
+                onLogoEffectChange={setLogoEffect}
               />
             )}
           </>
@@ -200,10 +250,40 @@ export default function ProductDetailClient({ product }: Props) {
           onColorChange={handleColorChange}
           onPlacementChange={setPlacement}
           onLogoChange={setLogoFile}
+          onTechniqueChange={setTechnique}
+          onSizeChange={setSize}
+          onQuantityChange={setQuantity}
           hidePreview={showMockup || !!logoFile}
           colorImages={colorImages}
         />
+
+        {/* ── Bouton Prévisualiser le BAT ─────────────────────────────────── */}
+        {batReady && (
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowBAT(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] px-5 py-3.5 text-sm font-bold text-[var(--hm-primary)] transition-all hover:bg-[var(--hm-primary)] hover:text-white active:scale-[0.98]"
+            >
+              <FileCheck size={16} />
+              Prévisualiser le BAT
+            </button>
+            {!size && (
+              <p className="mt-1.5 text-center text-[11px] text-[var(--hm-text-soft)]">
+                💡 Sélectionnez une taille pour un BAT complet
+              </p>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* ── Modal BAT (portal body) ──────────────────────────────────────── */}
+      {showBAT && batData && (
+        <BATModal
+          bat={batData}
+          onClose={() => setShowBAT(false)}
+        />
+      )}
     </div>
   );
 }

@@ -16,6 +16,10 @@ interface Props {
   onColorChange?: (color: ProductColor | null) => void;
   onLogoChange?: (f: File | null) => void;
   onPlacementChange?: (p: Placement) => void;
+  /** Callbacks pour remonter l'état vers ProductDetailClient (BAT, etc.) */
+  onTechniqueChange?: (t: Technique) => void;
+  onSizeChange?: (s: string) => void;
+  onQuantityChange?: (q: number) => void;
   hidePreview?: boolean;
   /** Map colorId → imageUrls chargée depuis l'API TopTex — pour indiquer quelle couleur a des photos */
   colorImages?: Record<string, string[]>;
@@ -27,6 +31,9 @@ export default function ProductConfigurator({
   onColorChange,
   onLogoChange,
   onPlacementChange,
+  onTechniqueChange,
+  onSizeChange,
+  onQuantityChange,
   hidePreview,
   colorImages,
 }: Props) {
@@ -239,7 +246,7 @@ export default function ProductConfigurator({
               <button
                 type="button"
                 key={s.label}
-                onClick={() => s.available && !s.soldOut && setSize(s.label)}
+                onClick={() => { if (s.available && !s.soldOut) { setSize(s.label); onSizeChange?.(s.label); } }}
                 disabled={!s.available || s.soldOut}
                 aria-pressed={active}
                 className={`relative flex h-10 min-w-[50px] items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all
@@ -291,7 +298,7 @@ export default function ProductConfigurator({
             return (
               <button
                 key={tech.id}
-                onClick={() => setTechnique(tech.id)}
+                onClick={() => { setTechnique(tech.id); onTechniqueChange?.(tech.id); }}
                 className={`w-full rounded-[1rem] border p-3 text-left transition-all
                   ${active
                     ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] shadow-[0_10px_24px_rgba(177,63,116,0.08)]"
@@ -390,7 +397,7 @@ export default function ProductConfigurator({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                onClick={() => { const nq = Math.max(1, quantity - 1); setQuantity(nq); onQuantityChange?.(nq); }}
                 className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/30 hover:text-[var(--hm-text)]"
               >
                 <Minus size={14} />
@@ -399,7 +406,7 @@ export default function ProductConfigurator({
                 {quantity}
               </span>
               <button
-                onClick={() => setQuantity((q) => q + 1)}
+                onClick={() => { const nq = quantity + 1; setQuantity(nq); onQuantityChange?.(nq); }}
                 className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/30 hover:text-[var(--hm-text)]"
               >
                 <Plus size={14} />

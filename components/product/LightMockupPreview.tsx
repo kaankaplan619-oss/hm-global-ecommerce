@@ -65,6 +65,8 @@ interface Props {
   productName: string;
   /** Catégorie produit — détermine la position calibrée de la zone coeur. */
   category?:   ProductCategory;
+  /** Callback optionnel — remonte l'effet logo vers le parent (ex. ProductDetailClient pour le BAT). */
+  onLogoEffectChange?: (effect: LogoEffect) => void;
 }
 
 export default function LightMockupPreview({
@@ -74,6 +76,7 @@ export default function LightMockupPreview({
   colorId,
   productName,
   category,
+  onLogoEffectChange,
 }: Props) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoEffect, setLogoEffect] = useState<LogoEffect>(() =>
@@ -82,7 +85,10 @@ export default function LightMockupPreview({
 
   // Auto-reset de l'effet par défaut quand la couleur change
   useEffect(() => {
-    setLogoEffect(isColorDark(colorId) ? "white-outline" : "none");
+    const next = isColorDark(colorId) ? "white-outline" : "none";
+    setLogoEffect(next);
+    onLogoEffectChange?.(next);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colorId]);
 
   // Création / révocation de l'URL blob du logo
@@ -186,7 +192,7 @@ export default function LightMockupPreview({
             <button
               key={value}
               type="button"
-              onClick={() => setLogoEffect(value)}
+              onClick={() => { setLogoEffect(value); onLogoEffectChange?.(value); }}
               className={`rounded-xl border py-2.5 text-xs font-semibold transition-all
                 ${logoEffect === value
                   ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)] shadow-[0_4px_12px_rgba(177,63,116,0.12)]"
