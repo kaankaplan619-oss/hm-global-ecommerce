@@ -68,8 +68,13 @@ export default function ProductDetailClient({ product }: Props) {
     [defaultColor, product.colors]
   );
 
+  // MockupViewer uniquement pour les t-shirts B&C (supplierName: "falk-ross").
+  // Les t-shirts iDeal (supplierName: "toptex") utilisent LightMockupPreview
+  // pour éviter d'afficher les photos mockup B&C (étiquette col incorrecte).
   const showMockup =
-    product.category === "tshirts" && hasMockup(selectedColor?.id ?? "");
+    product.category === "tshirts" &&
+    product.supplierName === "falk-ross" &&
+    hasMockup(selectedColor?.id ?? "");
 
   // Image produit actuelle (couleur sélectionnée ou première image générique)
   // Utilisée par LightMockupPreview pour les produits hors-tshirt.

@@ -49,7 +49,7 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
     "bordeaux":      "https://cdn.toptex.com/packshots/PS_CGTW02T_BURGUNDY.png",
   },
 
-  // ── T-shirt enfant B&C TU03T ─────────────────────────────────────────────────
+  // ── T-shirt adulte B&C Exact 190 Premium TU03T ─────────────────────────────
   "tu03t": {
     "blanc":   "https://cdn.toptex.com/packshots/PS_CGTU03T_WHITE.png",
     "noir":    "https://cdn.toptex.com/packshots/PS_CGTU03T_BLACK.png",
@@ -86,35 +86,48 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
     // vert-foret, vert-bouteille, beige : pas de packshot CDN pour WU620
   },
 
-  // ── T-shirt iDeal 190 IB320 ──────────────────────────────────────────────────
+  // ── T-shirt iDeal190 Homme IB320 ─────────────────────────────────────────────
+  // ⚠️  "anthracite" et "gris-anthracite" sont deux ID distincts dans IDEAL_COLORS_BASE :
+  //     le produit utilise "anthracite" → clé dupliquée vers IDEALDARKGREY.
+  //     "vert-bouteille" est mappé sur ForestGreen (couleur la plus proche disponible).
+  //     "turquoise", "rose", "beige", "violet", "kaki" : pas de packshot iDeal CDN
+  //     confirmé → fallback générique IB320_2026.jpg (image iDeal, pas B&C).
   "ib320": {
-    "blanc":         "https://cdn.toptex.com/packshots/PS_IB320_IDEALWHITE.png",
-    "noir":          "https://cdn.toptex.com/packshots/PS_IB320_IDEALBLACK.png",
-    "gris":          "https://cdn.toptex.com/packshots/PS_IB320_IDEALASHHEATHER.png",
+    "blanc":          "https://cdn.toptex.com/packshots/PS_IB320_IDEALWHITE.png",
+    "noir":           "https://cdn.toptex.com/packshots/PS_IB320_IDEALBLACK.png",
+    "gris":           "https://cdn.toptex.com/packshots/PS_IB320_IDEALASHHEATHER.png",
+    "anthracite":     "https://cdn.toptex.com/packshots/PS_IB320_IDEALDARKGREY.png",
     "gris-anthracite":"https://cdn.toptex.com/packshots/PS_IB320_IDEALDARKGREY.png",
-    "gris-melange":  "https://cdn.toptex.com/packshots/PS_IB320_IDEALOXFORDGREY.png",
-    "marine":        "https://cdn.toptex.com/packshots/PS_IB320_IDEALNAVY.png",
-    "rouge":         "https://cdn.toptex.com/packshots/PS_IB320_IDEALRED.png",
-    "bleu-royal":    "https://cdn.toptex.com/packshots/PS_IB320_IDEALROYALBLUE.png",
-    "bleu-ciel":     "https://cdn.toptex.com/packshots/PS_IB320_IDEALSKYBLUE.png",
-    "vert-foret":    "https://cdn.toptex.com/packshots/PS_IB320_IDEALFORESTGREEN.png",
-    "vert-kelly":    "https://cdn.toptex.com/packshots/PS_IB320_IDEALKELLYGREEN.png",
-    "bordeaux":      "https://cdn.toptex.com/packshots/PS_IB320_IDEALBURGUNDY.png",
-    "or":            "https://cdn.toptex.com/packshots/PS_IB320_IDEALGOLD.png",
-    "jaune":         "https://cdn.toptex.com/packshots/PS_IB320_IDEALGOLD.png",
-    "fuchsia":       "https://cdn.toptex.com/packshots/PS_IB320_IDEALFUCHSIA.png",
-    "orange":        "https://cdn.toptex.com/packshots/PS_IB320_IDEALORANGE.png",
+    "gris-melange":   "https://cdn.toptex.com/packshots/PS_IB320_IDEALOXFORDGREY.png",
+    "marine":         "https://cdn.toptex.com/packshots/PS_IB320_IDEALNAVY.png",
+    "rouge":          "https://cdn.toptex.com/packshots/PS_IB320_IDEALRED.png",
+    "bleu-royal":     "https://cdn.toptex.com/packshots/PS_IB320_IDEALROYALBLUE.png",
+    "bleu-ciel":      "https://cdn.toptex.com/packshots/PS_IB320_IDEALSKYBLUE.png",
+    "vert-foret":     "https://cdn.toptex.com/packshots/PS_IB320_IDEALFORESTGREEN.png",
+    "vert-bouteille": "https://cdn.toptex.com/packshots/PS_IB320_IDEALFORESTGREEN.png",
+    "vert-kelly":     "https://cdn.toptex.com/packshots/PS_IB320_IDEALKELLYGREEN.png",
+    "bordeaux":       "https://cdn.toptex.com/packshots/PS_IB320_IDEALBURGUNDY.png",
+    "or":             "https://cdn.toptex.com/packshots/PS_IB320_IDEALGOLD.png",
+    "jaune":          "https://cdn.toptex.com/packshots/PS_IB320_IDEALGOLD.png",
+    "fuchsia":        "https://cdn.toptex.com/packshots/PS_IB320_IDEALFUCHSIA.png",
+    "orange":         "https://cdn.toptex.com/packshots/PS_IB320_IDEALORANGE.png",
   },
 
-  // ── T-shirt femme iDeal IB321 ────────────────────────────────────────────────
+  // ── T-shirt femme iDeal190 IB321 ─────────────────────────────────────────────
+  // Mêmes règles que IB320 : "anthracite" dupliqué + "vert-bouteille" → ForestGreen.
+  // Couleurs sans packshot CDN confirmé (turquoise, rose, beige, violet, kaki,
+  // bordeaux, or, jaune, fuchsia, orange) → fallback IB321_2026.jpg (iDeal).
   "ib321": {
-    "blanc":      "https://cdn.toptex.com/packshots/PS_IB321_IDEALWHITE.png",
-    "noir":       "https://cdn.toptex.com/packshots/PS_IB321_IDEALBLACK.png",
-    "gris":       "https://cdn.toptex.com/packshots/PS_IB321_IDEALASHHEATHER.png",
-    "marine":     "https://cdn.toptex.com/packshots/PS_IB321_IDEALNAVY.png",
-    "rouge":      "https://cdn.toptex.com/packshots/PS_IB321_IDEALRED.png",
-    "bleu-royal": "https://cdn.toptex.com/packshots/PS_IB321_IDEALROYALBLUE.png",
-    "vert-foret": "https://cdn.toptex.com/packshots/PS_IB321_IDEALFORESTGREEN.png",
+    "blanc":          "https://cdn.toptex.com/packshots/PS_IB321_IDEALWHITE.png",
+    "noir":           "https://cdn.toptex.com/packshots/PS_IB321_IDEALBLACK.png",
+    "gris":           "https://cdn.toptex.com/packshots/PS_IB321_IDEALASHHEATHER.png",
+    "anthracite":     "https://cdn.toptex.com/packshots/PS_IB321_IDEALDARKGREY.png",
+    "gris-anthracite":"https://cdn.toptex.com/packshots/PS_IB321_IDEALDARKGREY.png",
+    "marine":         "https://cdn.toptex.com/packshots/PS_IB321_IDEALNAVY.png",
+    "rouge":          "https://cdn.toptex.com/packshots/PS_IB321_IDEALRED.png",
+    "bleu-royal":     "https://cdn.toptex.com/packshots/PS_IB321_IDEALROYALBLUE.png",
+    "vert-foret":     "https://cdn.toptex.com/packshots/PS_IB321_IDEALFORESTGREEN.png",
+    "vert-bouteille": "https://cdn.toptex.com/packshots/PS_IB321_IDEALFORESTGREEN.png",
   },
 
   // ── T-shirt enfant iDeal IB322 ───────────────────────────────────────────────

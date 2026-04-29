@@ -21,6 +21,8 @@ import type { LogoEffect } from "@/lib/color-utils";
 // coeur = poitrine gauche du porteur → droite du viewer (left ≈ 42-43%)
 // dos   = haut du dos centré (identique pour toutes les catégories)
 const COEUR_BY_CATEGORY: Partial<Record<ProductCategory, React.CSSProperties>> = {
+  // T-shirts iDeal (packshots portrait, coupe plus courte que hoodie → coeur plus haut)
+  tshirts:    { position: "absolute", top: "26%", left: "43%", width: "17%" },
   hoodies:    { position: "absolute", top: "30%", left: "43%", width: "18%" },
   softshells: { position: "absolute", top: "32%", left: "42%", width: "17%" },
   polos:      { position: "absolute", top: "34%", left: "42%", width: "16%" },
