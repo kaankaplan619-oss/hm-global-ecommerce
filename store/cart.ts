@@ -34,6 +34,24 @@ interface CartState {
   getTotalItems: () => number;
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Clé stable d'identification d'un logo pour la déduplication panier.
+ * Priorité : URL Supabase (unique par upload) > "name|size|type" (fingerprint
+ * fichier local). Une absence de logo retourne "".
+ *
+ * Garanties :
+ *   - Même fichier uploadé deux fois → même URL Supabase → même clé → fusion ✅
+ *   - Deux fichiers différents (même nom, taille différente) → clés distinctes ✅
+ *   - Aucun logo → "" → fusionné uniquement avec d'autres sans-logo ✅
+ */
+function getLogoKey(logo: CartItem["logoFile"]): string {
+  if (!logo) return "";
+  if (logo.url) return logo.url;
+  return `${logo.name}|${logo.size}|${logo.type}`;
+}
+
 // ─── Store ────────────────────────────────────────────────────────────────────
 
 export const useCartStore = create<CartState>()(
@@ -50,14 +68,17 @@ export const useCartStore = create<CartState>()(
         const unitPrice = computeUnitPrice({ basePrice, technique, placement });
         const totalPrice = Math.round(unitPrice * quantity * 100) / 100;
 
-        // Vérifier si un item identique existe déjà
+        // Vérifier si un item identique existe déjà.
+        // Deux logos différents (clés distinctes) → nouvelles lignes panier séparées.
+        // Sans logo (clé "") → fusionné uniquement avec d'autres articles sans logo.
         const existingIndex = get().items.findIndex(
           (item) =>
             item.productId === product.id &&
             item.size === size &&
             item.color.id === color.id &&
             item.technique === technique &&
-            item.placement === placement
+            item.placement === placement &&
+            getLogoKey(item.logoFile) === getLogoKey(logoFile)
         );
 
         if (existingIndex >= 0) {
@@ -74,7 +95,7 @@ export const useCartStore = create<CartState>()(
           });
         } else {
           const newItem: CartItem = {
-            id: `${product.id}-${size}-${color.id}-${technique}-${placement}-${Date.now()}`,
+            id: crypto.randomUUID(),
             productId: product.id,
             product,
             quantity,
