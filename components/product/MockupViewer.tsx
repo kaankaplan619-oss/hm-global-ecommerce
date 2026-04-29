@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Placement } from "@/types";
 import { isColorDark, EFFECT_OPTIONS } from "@/lib/color-utils";
 import type { LogoEffect } from "@/lib/color-utils";
+import type { LogoPlacementTransform } from "@/lib/bat-utils";
 
 // ── Mockup image paths ────────────────────────────────────────────────────────
 const MOCKUP_FILES: Record<string, { front: string; back: string }> = {
@@ -42,18 +43,26 @@ const ZONES: Record<string, [number, number, number, number]> = {
 type View = "front" | "back";
 
 interface Props {
-  colorId:   string;
-  placement: Placement;
-  logoFile:  File | null;
-  badge?:    string;
+  colorId:                string;
+  placement:              Placement;
+  logoFile:               File | null;
+  badge?:                 string;
+  onLogoPositionChange?:  (t: LogoPlacementTransform) => void;
 }
 
-export default function MockupViewer({ colorId, placement, logoFile, badge }: Props) {
+export default function MockupViewer({ colorId, placement, logoFile, badge, onLogoPositionChange }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
   const canvasRef     = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fabricRef     = useRef<any>(null);
   const canvasSizeRef = useRef(0);
+
+  // Keep a stable ref to the latest callback so it never needs to be a dep
+  // of the heavy canvas-rebuild effect.
+  const onLogoPositionChangeRef = useRef(onLogoPositionChange);
+  useEffect(() => {
+    onLogoPositionChangeRef.current = onLogoPositionChange;
+  });
 
   const [view,        setView]        = useState<View>("front");
   const [canvasSize,  setCanvasSize]  = useState(0);
@@ -163,6 +172,7 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
     const zone   = getZone();
 
     canvas.off("object:moving");
+    canvas.off("object:modified");
     canvas.clear();
 
     // Capture logoEffect in closure so it stays stable for this render cycle
@@ -281,6 +291,20 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
           }
           // "none" → nothing applied
 
+          // Helper: build a LogoPlacementTransform from the current logo state
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const captureTransform = (obj: any): LogoPlacementTransform => ({
+            left:       obj.left       ?? 0,
+            top:        obj.top        ?? 0,
+            scaleX:     obj.scaleX     ?? 1,
+            scaleY:     obj.scaleY     ?? 1,
+            width:      obj.width      ?? 0,
+            height:     obj.height     ?? 0,
+            angle:      obj.angle      ?? 0,
+            canvasSize,
+            source:     "fabric-canvas",
+          });
+
           // Constrain drag inside zone
           if (zone) {
             const [lf, tf, wf, hf] = zone;
@@ -305,9 +329,20 @@ export default function MockupViewer({ colorId, placement, logoFile, badge }: Pr
             });
           }
 
+          // Emit transform after any interaction ends (move OR scale)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          canvas.on("object:modified", (e: any) => {
+            if (e.target !== logo) return;
+            onLogoPositionChangeRef.current?.(captureTransform(e.target));
+          });
+
           canvas.add(logo);
           canvas.setActiveObject(logo);
           canvas.requestRenderAll();
+
+          // Emit initial placement position
+          onLogoPositionChangeRef.current?.(captureTransform(logo));
+
           URL.revokeObjectURL(objectUrl);
         };
 

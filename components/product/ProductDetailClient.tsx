@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LogoUploadResult } from "@/lib/uploadLogo";
+import type { LogoPlacementTransform } from "@/lib/bat-utils";
 import dynamic from "next/dynamic";
 import { Info, FileCheck } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
@@ -71,6 +72,20 @@ export default function ProductDetailClient({ product }: Props) {
       // si React n'a pas encore commité le nouveau logoUrl avant la révocation.
       window.setTimeout(() => URL.revokeObjectURL(url), 0);
     };
+  }, [logoFile]);
+
+  // ── Position Fabric.js du logo (MockupViewer uniquement) ─────────────────
+  // Resetée quand le fichier change ; mise à jour après placement initial
+  // et après chaque drag/resize dans le canvas Fabric.
+  const [logoPlacementTransform, setLogoPlacementTransform] =
+    useState<LogoPlacementTransform | null>(null);
+  const handleLogoPositionChange = useCallback(
+    (t: LogoPlacementTransform) => setLogoPlacementTransform(t),
+    []
+  );
+  // Reset when logoFile changes (new file = new initial position)
+  useEffect(() => {
+    setLogoPlacementTransform(null);
   }, [logoFile]);
 
   // ── BAT modal ────────────────────────────────────────────────────────────
@@ -146,10 +161,12 @@ export default function ProductDetailClient({ product }: Props) {
       logoEffect,
       currentImageUrl,
       batLogoUrl,
+      logoPlacementTransform,
     );
   }, [
     batReady, product, selectedColor, size, quantity,
-    technique, placement, logoFile, logoEffect, currentImageUrl, batLogoUrl,
+    technique, placement, logoFile, logoEffect, currentImageUrl,
+    batLogoUrl, logoPlacementTransform,
   ]);
 
   return (
@@ -161,6 +178,7 @@ export default function ProductDetailClient({ product }: Props) {
             placement={placement}
             logoFile={logoFile}
             badge={product.badge}
+            onLogoPositionChange={handleLogoPositionChange}
           />
         ) : (
           <>

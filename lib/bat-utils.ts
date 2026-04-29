@@ -10,6 +10,29 @@ import type { LogoEffect } from "@/lib/color-utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+/**
+ * Transform snapshot of the Fabric.js logo object at the time of BAT generation.
+ * All coordinates are in canvas pixels; `canvasSize` allows normalisation to [0,1].
+ * originX / originY of the Fabric object are both "center".
+ */
+export interface LogoPlacementTransform {
+  /** Canvas-px position of the logo center (originX/Y = "center") */
+  left:       number;
+  top:        number;
+  /** Scale factors applied to the natural image dimensions */
+  scaleX:     number;
+  scaleY:     number;
+  /** Natural pixel dimensions of the image (before scale) */
+  width:      number;
+  height:     number;
+  /** Rotation in degrees — default 0 (canvas UI does not expose a rotation handle) */
+  angle:      number;
+  /** Square canvas side length in px — required for coordinate normalisation */
+  canvasSize: number;
+  /** Coordinate-system tag for future conversion logic */
+  source:     "fabric-canvas";
+}
+
 export interface BATData {
   // Produit
   productId:        string;
@@ -28,6 +51,7 @@ export interface BATData {
   // Logo
   logoFileName:     string | null;
   logoEffect:       LogoEffect;
+  logoTransform:    LogoPlacementTransform | null; // position Fabric.js au moment du BAT
   // Visuels (URLs pour le rendu React)
   imageUrl:         string;
   logoUrl:          string | null;   // URL Supabase (prioritaire) ou blob URL local, ou null
@@ -91,16 +115,17 @@ function buildBATRef(productRef: string, date: Date = new Date()): string {
 // ── buildBATData ──────────────────────────────────────────────────────────────
 
 export function buildBATData(
-  product:    Product,
-  color:      ProductColor | null,
-  size:       string,
-  quantity:   number,
-  technique:  Technique,
-  placement:  Placement,
-  logoFile:   File | null,
-  logoEffect: LogoEffect,
-  imageUrl:   string,
-  logoUrl:    string | null,
+  product:       Product,
+  color:         ProductColor | null,
+  size:          string,
+  quantity:      number,
+  technique:     Technique,
+  placement:     Placement,
+  logoFile:      File | null,
+  logoEffect:    LogoEffect,
+  imageUrl:      string,
+  logoUrl:       string | null,
+  logoTransform: LogoPlacementTransform | null,
 ): BATData {
   const now = new Date();
   return {
@@ -118,6 +143,7 @@ export function buildBATData(
     placement,
     logoFileName:     logoFile?.name ?? null,
     logoEffect,
+    logoTransform,
     imageUrl,
     logoUrl,
     batRef:           buildBATRef(product.reference, now),
