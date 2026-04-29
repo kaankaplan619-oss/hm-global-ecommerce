@@ -28,11 +28,11 @@ import {
 function Row({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (!value && value !== 0) return null;
   return (
-    <tr className="border-b border-gray-100 last:border-0">
-      <td className="py-1.5 pr-4 text-[11px] font-semibold uppercase tracking-wide text-gray-400 align-top whitespace-nowrap w-40">
+    <tr className="border-b border-[var(--hm-line)] last:border-0">
+      <td className="py-1.5 pr-4 text-[11px] font-semibold uppercase tracking-wide text-[var(--hm-text-muted)] align-top whitespace-nowrap w-40">
         {label}
       </td>
-      <td className="py-1.5 text-[12px] text-gray-800 font-medium">{value}</td>
+      <td className="py-1.5 text-[12px] text-[var(--hm-text)] font-medium">{value}</td>
     </tr>
   );
 }
@@ -44,7 +44,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--hm-primary,#b13f74)]">
         {title}
       </p>
-      <div className="rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-1">
+      <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-1">
         <table className="w-full">{children}</table>
       </div>
     </div>
@@ -137,7 +137,7 @@ export default function BATModal({ bat, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--hm-line,#ede8f4)] text-[var(--hm-text-soft,#8b7a9a)] transition-colors hover:bg-gray-50"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--hm-line,#ede8f4)] text-[var(--hm-text-soft,#8b7a9a)] transition-colors hover:bg-[var(--hm-surface)]"
               aria-label="Fermer"
             >
               <X size={16} />
@@ -157,10 +157,10 @@ export default function BATModal({ bat, onClose }: Props) {
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--hm-primary,#b13f74)]">
                   HM Global Agence
                 </p>
-                <h1 className="mt-0.5 text-xl font-black text-gray-900">
+                <h1 className="mt-0.5 text-xl font-black text-[var(--hm-text)]">
                   Bon à Tirer
                 </h1>
-                <p className="mt-0.5 text-[11px] text-gray-400">Réf. {bat.batRef}</p>
+                <p className="mt-0.5 text-[11px] text-[var(--hm-text-muted)]">Réf. {bat.batRef}</p>
                 {/* Badge statut */}
                 <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -168,8 +168,8 @@ export default function BATModal({ bat, onClose }: Props) {
                 </span>
               </div>
               <div className="text-right">
-                <p className="text-[11px] text-gray-400">Généré le</p>
-                <p className="text-sm font-bold text-gray-800">{bat.generatedAt}</p>
+                <p className="text-[11px] text-[var(--hm-text-muted)]">Généré le</p>
+                <p className="text-sm font-bold text-[var(--hm-text)]">{bat.generatedAt}</p>
               </div>
             </div>
 
@@ -245,22 +245,22 @@ export default function BATModal({ bat, onClose }: Props) {
                     size="compact"
                   />
                 ) : (
-                  <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-gray-200 text-[11px] text-gray-400">
+                  <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-[var(--hm-line)] text-[11px] text-[var(--hm-text-muted)]">
                     Pas d&apos;image
                   </div>
                 )}
                 {bat.color && (
                   <div className="mt-1 flex items-center gap-1.5">
                     <div
-                      className="h-4 w-4 rounded-full border border-gray-200"
+                      className="h-4 w-4 rounded-full border border-[var(--hm-line)]"
                       style={{ backgroundColor: bat.color.hex }}
                     />
-                    <span className="text-[11px] text-gray-500">{bat.color.label}</span>
+                    <span className="text-[11px] text-[var(--hm-text-soft)]">{bat.color.label}</span>
                   </div>
                 )}
                 {/* Indication aperçu (sans transform) */}
                 {!hasTransform && bat.logoFileName && (
-                  <p className="text-[10px] leading-tight text-gray-400">
+                  <p className="text-[10px] leading-tight text-[var(--hm-text-muted)]">
                     Position indicative — basée sur le type d&apos;emplacement.
                   </p>
                 )}
@@ -295,29 +295,29 @@ export default function BATModal({ bat, onClose }: Props) {
             </div>
 
             {/* ── Bloc validation client ────────────────────────────────────── */}
-            <div className="validation-block rounded-xl border-2 border-gray-200 p-5">
-              <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-gray-500">
+            <div className="validation-block rounded-xl border-2 border-[var(--hm-line)] p-5">
+              <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-[var(--hm-text-soft)]">
                 Validation client — Bon pour accord
               </p>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 <div>
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-gray-400">Nom / Société</p>
-                  <div className="h-8 border-b border-gray-300" />
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">Nom / Société</p>
+                  <div className="h-8 border-b border-[var(--hm-line)]" />
                 </div>
                 <div>
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-gray-400">Date</p>
-                  <div className="h-8 border-b border-gray-300" />
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">Date</p>
+                  <div className="h-8 border-b border-[var(--hm-line)]" />
                 </div>
                 <div className="col-span-2">
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-gray-400">Signature</p>
-                  <div className="h-16 border-b border-gray-300" />
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">Signature</p>
+                  <div className="h-16 border-b border-[var(--hm-line)]" />
                 </div>
                 <div className="col-span-2">
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-gray-400">Bon pour accord</p>
-                  <div className="h-8 border-b border-gray-300" />
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">Bon pour accord</p>
+                  <div className="h-8 border-b border-[var(--hm-line)]" />
                 </div>
               </div>
-              <p className="mt-4 text-[10px] leading-relaxed text-gray-400">
+              <p className="mt-4 text-[10px] leading-relaxed text-[var(--hm-text-muted)]">
                 BAT à vérifier par le client avant production. Toute validation vaut accord pour impression/personnalisation.
                 En signant ce document, le client confirme avoir vérifié et approuvé le visuel, les couleurs, les textes et
                 le positionnement du logo. HM Global Agence ne pourra être tenu responsable des erreurs non signalées avant production.
@@ -325,7 +325,7 @@ export default function BATModal({ bat, onClose }: Props) {
             </div>
 
             {/* ── Pied de page ─────────────────────────────────────────────── */}
-            <p className="mt-4 text-center text-[9px] text-gray-300">
+            <p className="mt-4 text-center text-[9px] text-[var(--hm-text-muted)]">
               HM Global Agence · hmglobal.fr · BAT V2 · {bat.batRef}
             </p>
 

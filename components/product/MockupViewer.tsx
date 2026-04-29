@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Shirt, RotateCcw } from "lucide-react";
 import type { Placement } from "@/types";
 import { isColorDark, EFFECT_OPTIONS } from "@/lib/color-utils";
 import type { LogoEffect } from "@/lib/color-utils";
@@ -207,8 +208,8 @@ export default function MockupViewer({ colorId, placement, logoFile, badge, onLo
             top:             tf * canvasSize,
             width:           wf * canvasSize,
             height:          hf * canvasSize,
-            fill:            "rgba(123,79,166,0.07)",
-            stroke:          "#7B4FA6",
+            fill:            "rgba(177,63,116,0.07)",
+            stroke:          "#b13f74",
             strokeWidth:     1.5,
             strokeDashArray: [6, 4],
             rx: 6, ry: 6,
@@ -265,7 +266,7 @@ export default function MockupViewer({ colorId, placement, logoFile, badge, onLo
             selectable:         true,
             hasControls:        true,
             hasBorders:         true,
-            cornerColor:        "#7B4FA6",
+            cornerColor:        "#b13f74",
             cornerSize:         10,
             transparentCorners: false,
             lockUniScaling:     true,
@@ -419,7 +420,10 @@ export default function MockupViewer({ colorId, placement, logoFile, badge, onLo
                 : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
               }`}
           >
-            {v === "front" ? "👕 Face" : "🔄 Dos"}
+            {v === "front"
+              ? <><Shirt size={13} aria-hidden="true" /> Face</>
+              : <><RotateCcw size={13} aria-hidden="true" /> Dos</>
+            }
           </button>
         ))}
       </div>
