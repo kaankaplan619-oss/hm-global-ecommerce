@@ -15,6 +15,8 @@ interface Props {
   selectedColor?: ProductColor | null;
   onColorChange?: (color: ProductColor | null) => void;
   onLogoChange?: (f: File | null) => void;
+  /** Remonte le résultat d'upload Supabase vers le parent (BAT, panier) dès que disponible */
+  onLogoUploadResult?: (result: LogoUploadResult | null) => void;
   onPlacementChange?: (p: Placement) => void;
   /** Callbacks pour remonter l'état vers ProductDetailClient (BAT, etc.) */
   onTechniqueChange?: (t: Technique) => void;
@@ -30,6 +32,7 @@ export default function ProductConfigurator({
   selectedColor,
   onColorChange,
   onLogoChange,
+  onLogoUploadResult,
   onPlacementChange,
   onTechniqueChange,
   onSizeChange,
@@ -113,6 +116,7 @@ export default function ProductConfigurator({
     setUploadError(null);
     setUploadNotice(null);
     setLogoUploadResult(null);
+    onLogoUploadResult?.(null); // Notifier le parent que l'URL précédente est invalidée
 
     if (!file) {
       setLogoFile(null);
@@ -143,6 +147,7 @@ export default function ProductConfigurator({
 
     if (data) {
       setLogoUploadResult(data);
+      onLogoUploadResult?.(data); // Remonter l'URL Supabase vers le parent (BAT, etc.)
     } else if (error === "NOT_AUTHENTICATED") {
       // Message informatif non-bloquant — le logo sera demandé à l'envoi de la commande
       setUploadNotice(getUploadErrorMessage(error));
@@ -150,7 +155,7 @@ export default function ProductConfigurator({
       // Erreur technique non-bloquante — tentative de renvoi au clic "Ajouter au panier"
       setUploadNotice(getUploadErrorMessage(error));
     }
-  }, [onLogoChange, sessionId]);
+  }, [onLogoChange, onLogoUploadResult, sessionId]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -539,6 +544,7 @@ export default function ProductConfigurator({
                 setUploadNotice(null);
                 setUploadError(null);
                 onLogoChange?.(null);
+                onLogoUploadResult?.(null); // Invalider l'URL Supabase dans le parent
               }}
               disabled={isUploadingOnSelect}
               className="text-[var(--hm-text-muted)] transition-colors hover:text-[#b91c1c] disabled:pointer-events-none disabled:opacity-40"

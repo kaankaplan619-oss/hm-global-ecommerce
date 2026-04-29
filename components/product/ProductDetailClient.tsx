@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { LogoUploadResult } from "@/lib/uploadLogo";
 import dynamic from "next/dynamic";
 import { Info, FileCheck } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
@@ -52,14 +53,24 @@ export default function ProductDetailClient({ product }: Props) {
     setLogoEffect(isColorDark(selectedColor?.id ?? "") ? "white-outline" : "none");
   }, [selectedColor?.id]);
 
-  // ── Blob URL du logo pour le BAT (créé/révoqué ici pour éviter la dépendance
-  //    sur l'URL interne de LightMockupPreview) ──────────────────────────────
+  // ── URL Supabase remontée depuis ProductConfigurator dès l'upload ─────────
+  // Priorité dans BATData : logoSupabaseUrl > logoUrl (blob local)
+  const [logoSupabaseUrl, setLogoSupabaseUrl] = useState<string | null>(null);
+  const handleLogoUploadResult = useCallback((result: LogoUploadResult | null) => {
+    setLogoSupabaseUrl(result?.logoFileUrl ?? null);
+  }, []);
+
+  // ── Blob URL du logo pour l'aperçu (créé/révoqué ici) ────────────────────
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   useEffect(() => {
     if (!logoFile) { setLogoUrl(null); return; }
     const url = URL.createObjectURL(logoFile);
     setLogoUrl(url);
-    return () => URL.revokeObjectURL(url);
+    return () => {
+      // Révocation différée d'un tick pour éviter l'image cassée dans BATModal
+      // si React n'a pas encore commité le nouveau logoUrl avant la révocation.
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    };
   }, [logoFile]);
 
   // ── BAT modal ────────────────────────────────────────────────────────────
@@ -119,6 +130,9 @@ export default function ProductDetailClient({ product }: Props) {
   const batReady = !!selectedColor && !!logoFile;
 
   // ── Construction des données BAT ──────────────────────────────────────────
+  // Priorité d'URL logo : URL Supabase (persistante) > blob local (fragile)
+  const batLogoUrl = logoSupabaseUrl ?? logoUrl;
+
   const batData = useMemo(() => {
     if (!batReady) return null;
     return buildBATData(
@@ -131,11 +145,11 @@ export default function ProductDetailClient({ product }: Props) {
       logoFile,
       logoEffect,
       currentImageUrl,
-      logoUrl,
+      batLogoUrl,
     );
   }, [
     batReady, product, selectedColor, size, quantity,
-    technique, placement, logoFile, logoEffect, currentImageUrl, logoUrl,
+    technique, placement, logoFile, logoEffect, currentImageUrl, batLogoUrl,
   ]);
 
   return (
@@ -253,6 +267,7 @@ export default function ProductDetailClient({ product }: Props) {
           onColorChange={handleColorChange}
           onPlacementChange={setPlacement}
           onLogoChange={setLogoFile}
+          onLogoUploadResult={handleLogoUploadResult}
           onTechniqueChange={setTechnique}
           onSizeChange={setSize}
           onQuantityChange={setQuantity}

@@ -30,7 +30,7 @@ export interface BATData {
   logoEffect:       LogoEffect;
   // Visuels (URLs pour le rendu React)
   imageUrl:         string;
-  logoUrl:          string | null;   // blob URL ou null
+  logoUrl:          string | null;   // URL Supabase (prioritaire) ou blob URL local, ou null
   // Méta
   batRef:           string;          // ex. "BAT-IB320-20260429"
   generatedAt:      string;          // date formatée "29/04/2026"
