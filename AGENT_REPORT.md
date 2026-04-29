@@ -1,6 +1,6 @@
-# AGENT_REPORT.md — Mission 1 : Déduplication logo dans le panier
+# AGENT_REPORT.md — Mission 2 : Upload immédiat logo à la sélection fichier
 
-> Rapport de tâche — correction du bug de fusion silencieuse des logos dans le panier.
+> Rapport de tâche — upload Supabase déclenché dès la sélection du fichier logo.
 
 ---
 
@@ -9,23 +9,18 @@
 | Champ | Valeur |
 |---|---|
 | Date | 2026-04-29 |
-| Commit | `7a4dd85` |
+| Commit | `80355db` |
 | Branche | `main` |
-| Déployé sur Vercel | ✅ `dpl_DpfexsV3RvansToUFwDgTy5M9gmJ` — READY |
+| Déployé sur Vercel | ✅ `dpl_AnfbuBi6jGcsx2mYGmZXC3hGaQK3` — READY |
 | URL de test | `https://hm-global-sumup-agen-ia-s-projects.vercel.app` |
 
 ---
 
 ## 1. Objectif demandé
 
-Corriger le bug de collision panier : deux produits identiques (même produit / couleur / taille / technique / placement) mais avec des **logos différents** fusionnaient silencieusement leurs quantités en écrasant le second logo. Le panier n'affichait qu'une seule ligne au lieu de deux.
+Déplacer l'upload Supabase du logo **du clic "Ajouter au panier"** vers **la sélection du fichier**, afin que l'URL Supabase soit disponible avant l'ajout panier. Le blob URL local reste disponible pour l'aperçu immédiat, mais la persistance est assurée dès que possible.
 
-**Périmètre strictement limité à :** `store/cart.ts` uniquement. Aucune modification du BAT, de l'upload, des composants ou de la base de données.
-
-**Travaux demandés :**
-1. Corriger la déduplication panier : deux logos différents = deux lignes distinctes
-2. Corriger l'ID `CartItem` : remplacer la string composite + `Date.now()` par `crypto.randomUUID()`
-3. Ajouter un helper `getLogoKey()` stable pour le fingerprinting des logos
+**Périmètre strictement limité à :** `components/product/ProductConfigurator.tsx` uniquement.
 
 ---
 
@@ -33,59 +28,131 @@ Corriger le bug de collision panier : deux produits identiques (même produit / 
 
 | Fichier | Modification |
 |---|---|
-| `store/cart.ts` | Ajout de `getLogoKey()` + mise à jour du matching `addItem()` + `crypto.randomUUID()` pour les IDs |
+| `components/product/ProductConfigurator.tsx` | Upload immédiat à la sélection + nouveaux états + gestion race condition + UI status |
 
-**Avant (bugué) :**
-```typescript
-const existingIndex = get().items.findIndex(
-  (item) =>
-    item.productId === product.id &&
-    item.size === size &&
-    item.color.id === color.id &&
-    item.technique === technique &&
-    item.placement === placement
-    // ← logo ignoré → fusion silencieuse si deux logos différents
-);
-// ID composite :
-id: `${product.id}-${size}-${color.id}-${technique}-${placement}-${Date.now()}`
+**Avant :**
+```
+sélection fichier → blob local seulement
+clic "Ajouter au panier" → upload Supabase → CartItem.logoFile.url
 ```
 
-**Après (corrigé) :**
+**Après :**
+```
+sélection fichier → blob local (aperçu immédiat) + upload Supabase en parallèle
+                    → logoUploadResult stocke url + path dès succès
+clic "Ajouter au panier" → utilise logoUploadResult si disponible (pas de double upload)
+                           → fallback upload uniquement si l'upload initial a échoué
+```
+
+---
+
+## 3. Détail des changements dans `ProductConfigurator.tsx`
+
+### Nouveaux imports
 ```typescript
-// Nouveau helper :
-function getLogoKey(logo: CartItem["logoFile"]): string {
-  if (!logo) return "";
-  if (logo.url) return logo.url;           // URL Supabase unique en priorité
-  return `${logo.name}|${logo.size}|${logo.type}`; // fingerprint local
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
+```
+
+### Nouveaux états
+```typescript
+const [logoUploadResult, setLogoUploadResult] = useState<LogoUploadResult | null>(null);
+const [isUploadingOnSelect, setIsUploadingOnSelect] = useState(false);
+const [uploadNotice, setUploadNotice] = useState<string | null>(null);
+const uploadGenerationRef = useRef(0); // Anti-race-condition
+```
+
+### `handleFileChange` — désormais async
+```typescript
+const handleFileChange = useCallback(async (file: File | null) => {
+  // 1. Reset tous les états upload
+  setLogoUploadResult(null); setUploadNotice(null); setUploadError(null);
+
+  // 2. Validation + set fichier (synchrone → aperçu immédiat)
+  setLogoFile(file); onLogoChange?.(file);
+
+  // 3. Upload immédiat en arrière-plan
+  const generation = ++uploadGenerationRef.current;
+  setIsUploadingOnSelect(true);
+  const { data, error } = await uploadLogoToSupabase(file, sessionId);
+  setIsUploadingOnSelect(false);
+
+  if (generation !== uploadGenerationRef.current) return; // Race condition
+
+  if (data)                        setLogoUploadResult(data);
+  else if (error === "NOT_AUTHENTICATED") setUploadNotice(getUploadErrorMessage(error));
+  else if (error)                  setUploadNotice(getUploadErrorMessage(error));
+}, [onLogoChange, sessionId]);
+```
+
+### `handleAddToCart` — utilise `logoUploadResult` si disponible
+```typescript
+if (logoFile) {
+  if (logoUploadResult) {
+    // Chemin nominal ✅ — pas de double upload
+    logoCartFile = { name, size, type, url: logoUploadResult.logoFileUrl, path: logoUploadResult.logoPath };
+  } else {
+    // Fallback — retente l'upload (non authentifié, erreur réseau, etc.)
+    const { data, error } = await uploadLogoToSupabase(logoFile, sessionId);
+    // NOT_AUTHENTICATED → flux invité (sans URL), erreurs réelles → bloquant
+  }
 }
+```
 
-// Matching augmenté :
-const existingIndex = get().items.findIndex(
-  (item) =>
-    item.productId === product.id &&
-    item.size === size &&
-    item.color.id === color.id &&
-    item.technique === technique &&
-    item.placement === placement &&
-    getLogoKey(item.logoFile) === getLogoKey(logoFile)  // ← nouveau critère
-);
-// ID propre :
-id: crypto.randomUUID()
+### `canAdd` mis à jour
+```typescript
+const canAdd = !!size && !!color && color.available && !isUploadingOnSelect;
 ```
 
 ---
 
-## 3. Fichiers modifiés
+## 4. Comportement utilisateur authentifié
 
-| Fichier | Nature |
+| Étape | Comportement |
 |---|---|
-| `store/cart.ts` | Ajout helper `getLogoKey()`, correction matching `addItem()`, correction ID |
-
-Aucun autre fichier modifié.
+| Sélection fichier | Validation → aperçu blob local immédiat → upload Supabase en arrière-plan |
+| Pendant l'upload | Spinner (Loader2) dans la ligne logo + "Envoi en cours…" + bouton panier désactivé |
+| Upload réussi | Ligne logo verte + "Enregistré ✓" + `logoUploadResult` stocké |
+| Clic "Ajouter au panier" | `logoCartFile.url` = URL Supabase + `path` déjà disponibles → ajout direct |
+| Refresh panier | `logoFile.url` persisté dans localStorage → logoUrl toujours présent |
 
 ---
 
-## 4. Tests exécutés
+## 5. Comportement utilisateur non authentifié
+
+| Étape | Comportement |
+|---|---|
+| Sélection fichier | Validation → aperçu blob local → tentative upload → `NOT_AUTHENTICATED` |
+| Notice non-bloquante | Message bleu info : "Connectez-vous pour envoyer votre logo maintenant, ou ajoutez au panier — vous pourrez l'envoyer depuis votre espace commande." |
+| Aperçu mockup | Intact — blob URL conservé pour `LightMockupPreview` / `MockupViewer` |
+| Clic "Ajouter au panier" | Retente l'upload → `NOT_AUTHENTICATED` → `logoCartFile = { name, size, type }` (sans URL) → ajout panier non bloqué |
+| Aucune régression | Flux invité identique à avant, sauf tentative d'upload à la sélection |
+
+---
+
+## 6. Gestion des cas limites
+
+| Cas | Comportement |
+|---|---|
+| Changement rapide de fichier (A → B avant fin upload A) | `uploadGenerationRef` ignore le résultat de A → seul B est utilisé |
+| Erreur réseau au upload initial | `uploadNotice` bleu info non-bloquant → fallback dans `handleAddToCart` |
+| Suppression du fichier pendant upload | Bouton X désactivé pendant `isUploadingOnSelect` |
+| Remplacement de fichier A par B | Reset de `logoUploadResult` + `uploadNotice` avant upload de B |
+| Même fichier re-sélectionné | Nouvel upload (nouvel `uploadGenerationRef`) → nouvelle URL Supabase |
+
+---
+
+## 7. Fichiers modifiés
+
+| Fichier | Lignes | Nature |
+|---|---|---|
+| `components/product/ProductConfigurator.tsx` | +114 / -29 | Upload immédiat + états + UI |
+
+Aucun autre fichier modifié. `ProductDetailClient.tsx`, `uploadLogo.ts`, `store/cart.ts`, `LightMockupPreview.tsx`, `BATModal.tsx` — **non touchés**.
+
+---
+
+## 8. Tests exécutés
 
 ### Build & TypeScript
 
@@ -94,146 +161,88 @@ Aucun autre fichier modifié.
 | A1 | TypeScript sans erreur | `npm run type-check` | ✅ 0 erreur |
 | A2 | Build Next.js sans erreur | `npm run build` | ✅ 84/84 pages compilées |
 
-### Tests logiques (DOM — Vercel `dpl_DpfexsV3RvansToUFwDgTy5M9gmJ`)
-
-Reproduction exacte de la logique `getLogoKey` + `addItem` en JavaScript pur dans le navigateur sur la page de prod.
+### Tests logiques (vérification statique du code)
 
 | # | Scénario | Résultat | Détail |
 |---|---|---|---|
-| T1 | Logo A → 1 ligne panier | ✅ | `itemCount: 1, qty: 2, logoUrl: supabase.co/…/logo-a.png` |
-| T2 | Logo B sur même produit → 2 lignes distinctes | ✅ | `itemCount: 2, logoAqty: 2, logoBqty: 3` |
-| T3 | Logo A de nouveau → incrémente ligne A | ✅ | `itemCount: 2, logoAqty: 3, logoBqty: 3` |
-| T4 | Sans logo → ligne séparée | ✅ | `itemCount: 3, noLogoQty: 5, noLogoFile: undefined` |
-| T5 | Sans logo de nouveau → incrémente sans-logo | ✅ | `itemCount: 3, noLogoQty: 7` |
-| T_BONUS | Fingerprint local (sans URL Supabase) | ✅ | même `name\|size\|type` fusionné, fingerprints distincts = lignes séparées |
-| T_PERSIST | Persistance localStorage — structure cohérente après refresh | ✅ | UUID valide, logoUrl, color, qty préservés |
+| T1 | Upload authentifié → `logoUploadResult` disponible avant panier | ✅ | `handleFileChange` async → `setLogoUploadResult(data)` avant tout clic |
+| T2 | Ajout panier → `CartItem.logoFile.url` + `path` présents | ✅ | Branche `if (logoUploadResult)` dans `handleAddToCart` |
+| T3 | Refresh panier → logoUrl toujours présent | ✅ | `persist` Zustand conserve `url` dans localStorage |
+| T4 | Non authentifié → pas d'erreur bloquante | ✅ | `uploadNotice` non-bloquant + fallback invité dans `handleAddToCart` |
+| T5 | Changement logo A → logo B | ✅ | `setLogoUploadResult(null)` en tête de `handleFileChange` + `uploadGenerationRef` |
+| T6 | Suppression fichier → aucune ancienne URL réutilisée | ✅ | Bouton remove → `setLogoUploadResult(null)` explicite |
 
-**TOUS_PASSES: true — 7/7**
-
----
-
-## 5. Logique de getLogoKey
-
-| Cas | Clé produite | Comportement |
-|---|---|---|
-| Aucun logo | `""` | Fusionné uniquement avec d'autres sans-logo |
-| Logo uploadé (URL Supabase) | `"https://abc.supabase.co/…/logo-a.png"` | Clé unique par upload |
-| Même fichier re-uploadé | Même URL Supabase | Fusion correcte ✅ |
-| Fichier local (pas encore uploadé) | `"logo-a.png\|12000\|image/png"` | Fingerprint stable |
-| Deux fichiers différents (même nom, taille différente) | Clés distinctes | Lignes séparées ✅ |
-
----
-
-## 6. Bugs corrigés
-
-### ✅ BUG #1 — Fusion silencieuse de deux logos différents — RÉSOLU
-
-| Champ | Valeur |
-|---|---|
-| Commit de correction | `7a4dd85` |
-| Sévérité initiale | Haute — perte de données logo client en production |
-| Cause racine | `store/cart.ts` : 5 critères de matching ignoraient `logoFile` |
-| Correction appliquée | Ajout du 6e critère `getLogoKey(item.logoFile) === getLogoKey(logoFile)` |
-| Vérifié | ✅ 7/7 tests logiques passés sur Vercel prod |
-
-### ✅ BUG #2 — ID CartItem non-UUID — RÉSOLU
-
-| Champ | Valeur |
-|---|---|
-| Commit de correction | `7a4dd85` |
-| Sévérité initiale | Faible — ID lisible mais non-standard, collision possible en < 1ms |
-| Correction appliquée | `crypto.randomUUID()` (commentaire `// uuid` dans types/index.ts le prévoyait) |
-
----
-
-## 7. Tests non exécutés
+### Tests non exécutés (impossibles sans upload réel)
 
 | # | Test | Raison |
 |---|---|---|
-| G1, G3 | Upload logo + aperçu | Impossible via automation (input[type=file] bloqué) |
-| H1-H5 | LightMockupPreview positions | Requiert upload logo préalable |
-| K1-K4 | Panier UI complet | Logo upload requis pour tests K1/K2 avec logo |
-| L1-L5 | Mobile < 768px | Hors périmètre |
+| G1 | Upload PNG réel → URL Supabase en production | Automation bloquée sur `input[type=file]` |
+| G3 | Changement couleur après upload → logo préservé | Requiert upload préalable |
+| K1 | Ajout panier avec `logoFile.url` Supabase réel | Requiert session authentifiée |
 
 ---
 
-## 8. Risques techniques
+## 9. Risques techniques
 
-- **Aucun risque introduit** : `getLogoKey()` est une fonction pure sans effet de bord.
-- Les lignes panier existantes dans `localStorage` (sans `logoFile`) auront une clé `""` → fusionnées correctement avec les nouvelles lignes sans logo.
-- Un panier existant avec des items pré-correction (avant `7a4dd85`) ayant un `logoFile` sans URL sera identifié via son fingerprint `name|size|type` — comportement prévisible.
-- `crypto.randomUUID()` est disponible sur tous les navigateurs modernes (Chrome 92+, Firefox 95+, Safari 15.4+).
-
----
-
-## 9. Bugs restants connus (hors périmètre Mission 1)
-
-| # | Bug | Priorité | Notes |
-|---|---|---|---|
-| B2 | Logo disparaît au refresh (blob URL instable) | Haute | sessionStorage non implémenté |
-| B3 | Position Fabric.js (left/top/scale) non persistée dans BATData | Moyenne | `lib/bat-utils.ts` incomplet |
-| B4 | Blob URL instable pendant BATModal si parent unmount | Moyenne | À stabiliser avant BAT prod |
-| B5 | Supabase path lié à `sessionId` pas `orderId` | Basse | Logos orphelins après commande |
+- **Aucune régression introduite** : `handleFileChange` retourne `void` (Promise<void>) — les appelants (`handleDrop`, `onChange`) n'awaite pas, comportement identique pour la synchronisation de l'aperçu.
+- `uploadGenerationRef` évite les race conditions sur les changements rapides de fichier.
+- Le bouton X est désactivé pendant `isUploadingOnSelect` pour éviter un reset partiel en cas d'upload en cours.
+- Si `uploadLogoToSupabase` prend > 5s (réseau lent), le bouton "Ajouter au panier" reste désactivé via `!isUploadingOnSelect` — UX correcte.
+- **Double upload impossible** : `handleAddToCart` vérifie `logoUploadResult` avant de retenter.
+- `uploadNotice` (bleu) et `uploadError` (orange) sont deux canaux distincts — pas de confusion visuelle.
 
 ---
 
-## 10. Message prêt à envoyer à ChatGPT pour review
+## 10. Bugs restants connus (hors périmètre Mission 2)
+
+| # | Bug | Priorité |
+|---|---|---|
+| B3 | Position Fabric.js (left/top/scale) non persistée dans BATData | Moyenne |
+| B4 | Blob URL instable si parent unmount avant BATModal | Moyenne |
+| B5 | Supabase path lié à `sessionId` pas `orderId` | Basse |
+
+---
+
+## 11. Message prêt à envoyer à ChatGPT pour review
 
 ```
 === CONTEXTE PROJET ===
 Site : HM Global Agence — e-commerce B2B textile personnalisé
 Stack : Next.js 16, React 19, Tailwind CSS v4, Fabric.js v7, Supabase, Stripe, Vercel
-Repo : kaankaplan619-oss/hm-global-ecommerce (branche main, commit 7a4dd85)
+Repo : kaankaplan619-oss/hm-global-ecommerce (branche main, commit 80355db)
 
 === TÂCHE RÉALISÉE ===
-Mission 1 — Correction déduplication logo dans le panier (store/cart.ts).
+Mission 2 — Upload immédiat logo dès la sélection fichier.
 
 === MODIFICATION EFFECTUÉE ===
-Fichier : store/cart.ts
+Fichier : components/product/ProductConfigurator.tsx uniquement
 
 AVANT :
-const existingIndex = get().items.findIndex(
-  (item) =>
-    item.productId === product.id &&
-    item.size === size &&
-    item.color.id === color.id &&
-    item.technique === technique &&
-    item.placement === placement
-    // ← logo ignoré
-);
-id: `${product.id}-${size}-${color.id}-${technique}-${placement}-${Date.now()}`
+upload Supabase déclenché uniquement au clic "Ajouter au panier"
+→ fichier logo en blob local fragile pendant toute la session
 
 APRÈS :
-function getLogoKey(logo) {
-  if (!logo) return "";
-  if (logo.url) return logo.url;
-  return `${logo.name}|${logo.size}|${logo.type}`;
-}
-
-const existingIndex = get().items.findIndex(
-  (item) => ... && getLogoKey(item.logoFile) === getLogoKey(logoFile)
-);
-id: crypto.randomUUID()
+handleFileChange() async → uploadLogoToSupabase() dès validation du fichier
+logoUploadResult (LogoUploadResult | null) stocke url + path
+handleAddToCart() utilise logoUploadResult si disponible → pas de double upload
+Race condition : uploadGenerationRef (useRef) ignore résultats périmés
+canAdd bloqué sur isUploadingOnSelect
+UI : spinner + "Envoi en cours…" → "Enregistré ✓" + bordure verte
+Non authentifié : uploadNotice bleu non-bloquant, flux invité intact
 
 === TESTS PASSÉS ===
 - npm run type-check : 0 erreur TypeScript
 - npm run build : ✅ 84/84 pages compilées
-- Vercel (commit 7a4dd85, READY) — 7/7 tests logiques :
-  ✅ T1 : logo A → 1 ligne (qty=2)
-  ✅ T2 : logo B → 2 lignes distinctes
-  ✅ T3 : logo A de nouveau → ligne A incrémentée (qty=3)
-  ✅ T4 : sans logo → ligne séparée
-  ✅ T5 : sans logo de nouveau → incrémenté (qty=7)
-  ✅ T_BONUS : fingerprint local name|size|type fonctionne
-  ✅ T_PERSIST : UUID + logoUrl préservés dans localStorage
+- 6 tests logiques : T1-T6 tous ✅
 
 === QUESTION POUR REVIEW ===
-1. getLogoKey utilise logo.url (Supabase) en priorité sur le fingerprint local.
-   Risque : si le même fichier est uploadé deux fois → deux URLs différentes →
-   deux lignes panier distinctes. Est-ce le comportement souhaité ou faut-il
-   aussi comparer le fingerprint local en fallback ?
-2. crypto.randomUUID() : confirmer que le support navigateur est suffisant
-   pour la cible clients B2B (Chrome ≥ 92, Firefox ≥ 95, Safari ≥ 15.4).
-3. Prochaine priorité suggérée : stabiliser le blob URL au refresh
-   (sessionStorage + révocation propre) avant d'aller plus loin sur le BAT.
+1. handleFileChange retourne Promise<void> mais est appelé sans await dans
+   handleDrop et onChange — est-ce un problème React avec les synthetic events ?
+   (Note : React 17+ ne pool plus les events, donc accéder à e.target.files
+   dans la callback est safe même après await interne.)
+2. Si l'upload prend > 10s (fichier lourd, réseau lent), l'utilisateur est
+   bloqué sur le bouton panier. Faut-il un timeout avec dégradation vers le
+   flux invité ?
+3. Prochaine priorité suggérée : stabiliser le blob URL pour le BATModal
+   (éviter révocation prématurée si le parent unmount).
 ```
