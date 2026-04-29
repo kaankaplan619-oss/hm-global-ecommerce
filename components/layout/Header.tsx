@@ -33,7 +33,19 @@ export default function Header() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { toggleCart, getTotalItems } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
-  const totalItems = getTotalItems();
+
+  // ── Hydration guard ──────────────────────────────────────────────────────────
+  // Le store utilise skipHydration:true pour éviter l'erreur #418.
+  // On déclenche la réhydratation ici (côté client uniquement) et on bloque
+  // l'affichage du badge panier jusqu'à ce que le composant soit monté,
+  // garantissant que le HTML initial correspond au rendu serveur (badge absent).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    useCartStore.persist.rehydrate();
+    setMounted(true);
+  }, []);
+
+  const totalItems = mounted ? getTotalItems() : 0;
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);

@@ -166,6 +166,11 @@ export const useCartStore = create<CartState>()(
       name: "hm-global-cart",
       // Ne pas persister isOpen
       partialize: (state) => ({ items: state.items }),
+      // Empêche la réhydratation automatique pendant le rendu React (SSR/CSR).
+      // Sans cette option, Zustand lit localStorage pendant le render → mismatch
+      // HTML server/client → React Hydration Error #418.
+      // La réhydratation manuelle est déclenchée dans Header via useEffect.
+      skipHydration: true,
     }
   )
 );
