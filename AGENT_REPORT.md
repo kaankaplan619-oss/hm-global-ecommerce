@@ -1,7 +1,6 @@
-# AGENT_REPORT.md — Audit configurateur produit
+# AGENT_REPORT.md — Correction doublons couleurs IB320
 
-> Rapport d'audit — aucune modification de code dans cette tâche.
-> Objectif : dresser un état des lieux complet du configurateur avant correction.
+> Rapport de tâche — correction du bug IB320 (couleurs en double).
 
 ---
 
@@ -10,30 +9,52 @@
 | Champ | Valeur |
 |---|---|
 | Date | 2026-04-29 |
-| Commit audité | `d2f3d5a` (dernier en production) |
+| Commit | `2e6cfaa` |
 | Branche | `main` |
-| Déployé sur Vercel | ✅ Oui |
+| Déployé sur Vercel | ✅ `dpl_7yrSww6kcQTFz3gtfCmenXgEkV3w` — READY |
 | URL de test | `https://hm-global-sumup-agen-ia-s-projects.vercel.app` |
 
 ---
 
 ## 1. Objectif demandé
 
-Audit complet du configurateur produit sur t-shirts, hoodies, softshells et polos.
-Vérifier le changement couleur, l'affichage image, l'upload logo, le placement, le MockupViewer,
-le LightMockupPreview, l'ajout panier et la génération BAT. **Aucune modification de code.**
+Corriger le bug confirmé lors de l'audit précédent : le produit IB320 (`tshirt-ideal-190-homme`) affichait 18 swatches couleur au lieu de 16 — "Bordeaux" et "Vert bouteille" étaient chacun présents deux fois à cause de lignes en doublon dans `data/products.ts`.
+
+**Périmètre strictement limité à :** `data/products.ts`, IB320 uniquement. Aucune autre modification.
 
 ---
 
 ## 2. Résumé des modifications
 
-Aucune modification de code dans cette tâche. Audit uniquement.
+| Fichier | Modification |
+|---|---|
+| `data/products.ts` | Suppression des 2 lignes en doublon dans la définition `colors` de IB320 |
+
+**Avant (bugué) :**
+```typescript
+colors: [
+  ...IDEAL_COLORS_BASE,
+  { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },       // DOUBLON
+  { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true }, // DOUBLON
+],
+```
+
+**Après (corrigé) :**
+```typescript
+colors: IDEAL_COLORS_BASE,
+```
+
+`IDEAL_COLORS_BASE` contient déjà 16 couleurs dont Bordeaux et Vert bouteille.
 
 ---
 
 ## 3. Fichiers modifiés
 
-Aucun fichier de code modifié. Seul `AGENT_REPORT.md` est mis à jour.
+| Fichier | Lignes | Nature |
+|---|---|---|
+| `data/products.ts` | 510-514 → 510 | Suppression doublon + simplification array → ref directe |
+
+Aucun autre fichier modifié.
 
 ---
 
@@ -41,172 +62,129 @@ Aucun fichier de code modifié. Seul `AGENT_REPORT.md` est mis à jour.
 
 ### Build & TypeScript
 
-| Test | Commande | Résultat |
-|---|---|---|
-| TypeScript | `npm run type-check` | ⏭ Non lancé — audit sans modification de code |
-| Build | `npm run build` | ⏭ Non lancé — audit sans modification de code |
-
-### Tests visuels sur Vercel
-
-| Réf. | Test | Résultat | Détail |
+| # | Test | Commande | Résultat |
 |---|---|---|---|
-| B2 | Catalogue T-shirts | ✅ | 6 produits, tous packshots |
-| B3 | Catalogue Hoodies | ✅ | 7 produits, tous packshots |
-| B4 | Catalogue Polos | ✅ | 4 produits, tous packshots |
-| B5 | Catalogue Softshells | ✅ | 2 produits, packshots JUI62/JWI63 |
-| C1 | Page IB320 (iDeal t-shirt) | ✅ | Chargement OK |
-| C2 | Page TU03T (B&C t-shirt) | ✅ | Chargement OK |
-| C3 | Image principale = packshot au chargement | ✅ | IB320 → PS_IB320_IDEALWHITE.png (1666×2500) |
-| C4 | Référence, composition, grammage, prix | ✅ | Tous affichés |
-| D1 | Page WU620 (hoodie B&C) | ✅ | Chargement OK |
-| D2 | Page IB400 (hoodie iDeal) | ⏭ | Non testé dans cet audit |
-| E1 | Page JUI62 (softshell B&C) | ✅ | Chargement OK |
-| E2 | Bandeau softshell "broderie recommandée" | ✅ | Panneau info violet visible |
-| F1-F4 | Changement de couleur | ⏭ | Non simulable sans interaction manuelle complète |
-| G1 | Upload logo → aperçu | ⏭ | Impossible via automation (input[type=file]) |
-| G2 | Bouton BAT absent sans logo | ✅ | Correctement absent |
-| G3 | Logo reste après changement couleur | ⏭ | Non testable sans upload |
-| H1-H5 | LightMockupPreview positions + effets | ⏭ | Non testable sans upload logo |
-| I1-I4 | MockupViewer drag/resize (B&C) | ⏭ | Canvas présent, interaction non testable |
-| J1-J6 | BAT modal complet | ⏭ | Non testable sans upload logo |
-| K1 | Ajouter au panier après sélection taille | ✅ | Bouton activé après clic "M" |
-| K2-K4 | Quantité / suppression / total panier | ⏭ | Non testé |
-| L2-L3 | Swatches + tailles accessibles mobile | ⏭ | Resize viewport non fonctionnel via automation |
-| M2 | Layout 2 colonnes desktop | ✅ | Galerie + configurateur côte à côte |
+| A1 | TypeScript sans erreur | `npm run type-check` | ✅ 0 erreur |
+| A2 | Build Next.js sans erreur | `npm run build` | ✅ 84/84 pages compilées |
+
+### Tests visuels Vercel (commit `2e6cfaa`, déploiement `dpl_7yrSww6kcQTFz3gtfCmenXgEkV3w`)
+
+| # | Test | Résultat | Détail |
+|---|---|---|---|
+| V1 | Nombre total de swatches IB320 | ✅ | **16** (était 18 avant correction) |
+| V2 | Bordeaux présent une seule fois | ✅ | `bordeauxCount: 1` |
+| V3 | Vert bouteille présent une seule fois | ✅ | `vertBouteilleCount: 1` |
+| V4 | 16 couleurs uniques (aucun doublon) | ✅ | `uniqueCount: 16` |
+| V5 | Image principale = packshot iDeal blanc | ✅ | `PS_IB320_IDEALWHITE.png` |
+| V6 | Tailles disponibles XS→5XL | ✅ | XS, S, M, L, XL, XXL, 3XL, 4XL, 5XL |
+| V7 | Bouton "Ajouter au panier" activé après sélection taille | ✅ | `disabled: false` après clic M |
 
 ---
 
 ## 5. Résultats observés
 
-### ✅ Ce qui fonctionne
+### ✅ Ce qui fonctionne après correction
 
-| Produit | Configurateur | Techniques | Couleurs | Tailles | Canvas/LightMockup | Panier |
+| Produit | Swatches | Bordeaux | Vert bouteille | Image | Tailles | Panier |
 |---|---|---|---|---|---|---|
-| TU03T — T-shirt B&C | ✅ | DTF + Flex + Broderie | 10 (Blanc→Orange) | XS→3XL | ✅ Canvas Fabric.js | ✅ Activé après taille |
-| IB320 — T-shirt iDeal | ⚠️ Bug couleurs | DTF + Flex + Broderie | 16 uniques + **2 doublons** | XS→5XL | ✅ File input (LightMockup) | ✅ Activé après taille |
-| WU620 — Hoodie B&C | ✅ | DTF + Flex + Broderie | 9 (Noir→Kaki) | S→3XL | ✅ File input (LightMockup) | ✅ Activé après taille |
-| JUI62 — Softshell B&C | ✅ | Broderie + DTF + Flex | 4 (Noir, Marine, Gris acier, Rouge) | S→3XL | ✅ File input (LightMockup) | ✅ Activé après taille |
-| K239 — Polo Kariban | ✅ | Broderie only (intentionnel) | 5 (Blanc, Noir, Marine, Rouge, Gris) | S→3XL | ✅ File input (LightMockup) | ✅ Activé après taille |
+| IB320 — T-shirt iDeal190 Homme | **16** ✅ | × 1 ✅ | × 1 ✅ | PS_IB320_IDEALWHITE.png ✅ | XS→5XL ✅ | Activé ✅ |
 
-**Autres confirmations :**
-- Alerte "DTF/Flex déconseillé sur softshell" s'affiche uniquement quand DTF ou Flex sélectionné ✅
-- Panneau info violet "broderie recommandée" toujours visible sur softshell ✅
-- Placements Cœur / Dos / Cœur+Dos présents sur tous les produits ✅
-- Images B&C ne s'affichent PAS sur les pages iDeal (protection OK) ✅
-- Images iDeal ne s'affichent PAS sur les pages B&C (protection OK) ✅
+**Produits non impactés** (vérifié statiquement) :
+- IB321, IB322, IB323 → utilisaient déjà `colors: IDEAL_COLORS_BASE` directement → aucun changement de comportement
 
 ---
 
-## 6. Bugs confirmés
+## 6. Bugs corrigés
 
-### 🐛 BUG #1 — IB320 : couleurs "Bordeaux" et "Vert bouteille" en double
+### ✅ BUG #1 — IB320 : doublons Bordeaux + Vert bouteille — RÉSOLU
 
 | Champ | Valeur |
 |---|---|
-| Sévérité | Moyenne — UX confuse, pas bloquant |
-| Produit impacté | IB320 (`tshirt-ideal-190-homme`) uniquement |
-| Symptôme | 18 swatches couleur affichés au lieu de 16 — "Bordeaux" et "Vert bouteille" chacun en double |
-| Cause racine | `data/products.ts` lignes 512-513 : ces 2 couleurs sont ajoutées explicitement après le spread `...IDEAL_COLORS_BASE` qui les contient déjà |
-| Fichier | `data/products.ts`, lignes 511-514 |
-| Correction | Supprimer les lignes 512-513 (les entrées en double) |
-
-```typescript
-// AVANT (bugué) :
-colors: [
-  ...IDEAL_COLORS_BASE,
-  { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },      // ← DOUBLON
-  { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true }, // ← DOUBLON
-],
-
-// APRÈS (corrigé) :
-colors: IDEAL_COLORS_BASE,
-```
-
-**Autres produits non impactés :** IB321, IB322, IB323 utilisent `colors: IDEAL_COLORS_BASE` (sans spread ni ajout extra) → aucun doublon.
+| Commit de correction | `2e6cfaa` |
+| Sévérité initiale | Moyenne — UX confuse, 18 swatches au lieu de 16 |
+| Cause racine | `data/products.ts` : 2 couleurs ajoutées en double après `...IDEAL_COLORS_BASE` |
+| Correction appliquée | `colors: [...IDEAL_COLORS_BASE, ...]` → `colors: IDEAL_COLORS_BASE` |
+| Vérifié en production | ✅ Vercel READY, DOM testé — 16 swatches, 0 doublon |
 
 ---
 
 ## 7. Tests non exécutés
 
-| Réf. | Test | Raison |
+| # | Test | Raison |
 |---|---|---|
-| G1, G3 | Upload logo + aperçu | Impossible via automation (API navigateur bloque input[type=file] programmatique) |
+| G1, G3 | Upload logo + aperçu | Impossible via automation (API navigateur bloque input[type=file]) |
 | H1-H5 | LightMockupPreview positions | Requiert upload logo préalable |
-| I1-I4 | MockupViewer drag/resize | Requiert upload logo + interaction canvas Fabric.js |
-| J1-J6 | BAT modal | Requiert upload logo |
-| F1-F4 | Changement couleur + image | DOM testé, non simulé en interaction complète |
-| K2-K4 | Panier (quantité, suppression, total) | Non simulé |
-| L1-L5 | Mobile < 768px | Resize viewport non fonctionnel via extension Chrome |
+| F1-F4 | Changement couleur (interaction complète) | Non simulé — swatches DOM vérifiés |
+| K2-K4 | Panier (quantité, suppression, total) | Hors périmètre de cette tâche |
+| L1-L5 | Mobile < 768px | Resize viewport non fonctionnel via Chrome extension |
 
 ---
 
 ## 8. Risques techniques
 
-- **Doublon couleur IB320** : si un utilisateur clique sur le 2ème swatch "Bordeaux", il déclenche `handleColorChange("bordeaux")` deux fois — probablement inoffensif (même colorId) mais génère une entrée parasite dans le rendu et peut confondre l'interface swatches (deux cercles actifs au même titre)
-- **Techniques filtrées par longueur textContent** : la détection automatique des techniques affichées est trompeuse — les boutons avec description longue (DTF, Broderie) ont un textContent > 35 chars qui fausse les scripts d'audit. À noter pour les futurs audits automatisés.
-- **LightMockupPreview non testé** : les positions calibrées par catégorie (`COEUR_BY_CATEGORY`) n'ont pas pu être vérifiées visuellement en dehors de l'analyse statique du code.
+- **Aucun risque introduit** par cette correction : passage de `[...IDEAL_COLORS_BASE, ...]` à `IDEAL_COLORS_BASE` est une simplification pure, sans effet de bord.
+- `ProductGallery`, `useTopTexMedias`, `ProductConfigurator`, `ProductCard` utilisent tous le tableau `colors` de façon identique — 16 entrées uniques vs 18 avec doublons ne change que le rendu des swatches.
+- IB321/IB322/IB323 non affectés.
 
 ---
 
-## 9. Fonctionnalités potentiellement impactées si on corrige le bug
+## 9. Fonctionnalités vérifiées après correction
 
-- `data/products.ts` IB320 → `ProductCard` (catalogue), `ProductDetailClient` (page produit), `ProductConfigurator` (swatches couleur), `useTopTexMedias` (galerie images)
-- Aucun autre produit impacté (correction isolée à IB320)
-
----
-
-## 10. Prochaine action recommandée
-
-**Correction immédiate (5 min, risque très faible) :**
-Supprimer les 2 lignes en doublon dans `data/products.ts` pour IB320 :
-```typescript
-// Ligne 512 → supprimer
-{ id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
-// Ligne 513 → supprimer
-{ id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true },
-```
-Puis changer `colors: [...IDEAL_COLORS_BASE,]` → `colors: IDEAL_COLORS_BASE`.
-
-**Après correction :**
-Tester manuellement avec upload logo (impossible via automation) :
-- LightMockupPreview sur IB320 (cœur + dos)
-- MockupViewer sur TU03T (drag + resize)
-- BAT modal complet sur un produit iDeal et un B&C
+| Fonctionnalité | Résultat |
+|---|---|
+| Catalogue `/catalogue/tshirts` — IB320 visible | ✅ Non modifié (packshot blanc affiché) |
+| Page produit IB320 — chargement | ✅ |
+| Swatches couleur — 16 uniques | ✅ |
+| Image principale au chargement (packshot blanc) | ✅ |
+| Tailles XS→5XL | ✅ |
+| Bouton panier activé après taille | ✅ |
 
 ---
 
-## 11. Message prêt à envoyer à ChatGPT pour review
+## 10. Message prêt à envoyer à ChatGPT pour review
 
 ```
 === CONTEXTE PROJET ===
 Site : HM Global Agence — e-commerce B2B textile personnalisé
 Stack : Next.js 16, React 19, Tailwind CSS v4, Fabric.js v7, Supabase, Stripe, Vercel
-Repo : kaankaplan619-oss/hm-global-ecommerce (branche main, commit d2f3d5a)
+Repo : kaankaplan619-oss/hm-global-ecommerce (branche main, commit 2e6cfaa)
 
 === TÂCHE RÉALISÉE ===
-Audit complet du configurateur produit — aucun code modifié.
-Produits testés : TU03T (B&C t-shirt), IB320 (iDeal t-shirt), WU620 (hoodie B&C),
-JUI62 (softshell B&C), K239 (polo Kariban).
+Correction du bug IB320 : doublons couleurs Bordeaux + Vert bouteille dans le configurateur.
 
-=== CE QUI FONCTIONNE ===
-- Configurateur : techniques DTF/Flex/Broderie présentes sur tous les produits concernés
-- Tailles : correctes par produit (XS-5XL iDeal, XS-3XL B&C, S-3XL hoodies/softshells/polos)
-- Images : packshots isolés affichés en priorité, aucune contamination B&C/iDeal
-- Panier : bouton "Ajouter au panier" s'active après sélection taille
-- Alerte softshell : s'affiche uniquement quand DTF/Flex sélectionné
-- Canvas Fabric.js présent sur TU03T (B&C) ✅
+=== MODIFICATION EFFECTUÉE ===
+Fichier : data/products.ts
+Produit : IB320 (tshirt-ideal-190-homme)
 
-=== BUG CONFIRMÉ ===
-IB320 (tshirt-ideal-190-homme) : doublons couleurs Bordeaux + Vert bouteille
-Cause : data/products.ts lignes 512-513 ajoutent ces couleurs après ...IDEAL_COLORS_BASE
-qui les contient déjà. 18 swatches affichés au lieu de 16.
-Correction : supprimer les 2 lignes en doublon.
+AVANT :
+colors: [
+  ...IDEAL_COLORS_BASE,
+  { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
+  { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true },
+],
 
-=== NON TESTÉ (requiert upload logo manuel) ===
-LightMockupPreview (positions cœur/dos), MockupViewer (drag/resize),
-BAT modal, effets lisibilité logo, mobile layout.
+APRÈS :
+colors: IDEAL_COLORS_BASE,
+
+IDEAL_COLORS_BASE contient déjà 16 couleurs dont bordeaux et vert-bouteille.
+IB321/322/323 utilisaient déjà colors: IDEAL_COLORS_BASE — non impactés.
+
+=== TESTS PASSÉS ===
+- npm run type-check : 0 erreur TypeScript
+- npm run build : ✅ 84/84 pages compilées
+- Vercel (commit 2e6cfaa, READY) :
+  ✅ 16 swatches (était 18)
+  ✅ Bordeaux × 1 (était × 2)
+  ✅ Vert bouteille × 1 (était × 2)
+  ✅ Image principale = PS_IB320_IDEALWHITE.png
+  ✅ Tailles XS→5XL présentes
+  ✅ Bouton panier activé après sélection taille M
 
 === QUESTION POUR REVIEW ===
-Le doublon couleur IB320 est-il le seul bug à corriger en priorité ?
-Y a-t-il un risque d'impact sur useTopTexMedias ou ProductGallery lors de la correction ?
+1. Y a-t-il un risque que useTopTexMedias ou ProductGallery se comportent différemment
+   avec 16 couleurs vs 18 (les 2 bordeaux/vert-bouteille en double) ?
+2. IB321/322/323 semblent correctement configurés — confirmer qu'aucun audit complémentaire
+   sur ces références n'est nécessaire.
+3. Prochaine priorité suggérée : LightMockupPreview (positions cœur/dos) et BAT modal —
+   ces fonctionnalités nécessitent un test manuel avec upload logo réel.
 ```
