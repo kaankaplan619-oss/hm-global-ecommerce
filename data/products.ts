@@ -507,11 +507,7 @@ export const PRODUCT_IB320: Product = {
   composition: "100% coton semi-peigné",
   weight: "190 g/m²",
   images: PLACEHOLDER_IMAGES("ib320"),
-  colors: [
-    ...IDEAL_COLORS_BASE,
-    { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
-    { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true },
-  ],
+  colors: IDEAL_COLORS_BASE,
   sizes: [
     { label: "XS", available: true },
     { label: "S", available: true },
