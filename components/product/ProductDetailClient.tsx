@@ -12,6 +12,7 @@ import { useTopTexMedias } from "@/hooks/useTopTexMedias";
 import { hasMockup } from "@/lib/mockup-utils";
 import { isColorDark } from "@/lib/color-utils";
 import { buildBATData } from "@/lib/bat-utils";
+import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { formatPrice } from "@/data/pricing";
 import type { Product, ProductColor, Placement, Technique } from "@/types";
 import type { LogoEffect } from "@/lib/color-utils";
@@ -105,11 +106,13 @@ export default function ProductDetailClient({ product }: Props) {
     hasMockup(selectedColor?.id ?? "");
 
   // Image produit actuelle (utilisée par LightMockupPreview + BAT)
+  // Priorité : packshot couleur sélectionnée → packshot catalogue → photo mannequin (dernier recours)
   const currentImageUrl = useMemo(() => {
     const cid = selectedColor?.id ?? "";
     if (cid && colorImages[cid]?.[0]) return colorImages[cid][0];
-    return product.images[0] ?? "";
-  }, [selectedColor, colorImages, product.images]);
+    // Fallback : meilleur packshot disponible pour ce produit (évite la photo mannequin)
+    return getProductCatalogImage(product);
+  }, [selectedColor, colorImages, product]);
 
   // ── Condition BAT visible ─────────────────────────────────────────────────
   // Exige au minimum : couleur sélectionnée + logo uploadé

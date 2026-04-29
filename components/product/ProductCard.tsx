@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Camera, Layers3 } from "lucide-react";
 import { formatPrice } from "@/data/pricing";
+import { getProductCatalogImage } from "@/lib/product-image-utils";
 import type { Product } from "@/types";
 import ProductImage from "@/components/product/ProductImage";
 
@@ -28,6 +29,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   ].filter((p) => p > 0);
   const basePrice = prices.length > 0 ? Math.min(...prices) : 0;
 
+  // Image catalogue : packshot isolé prioritaire sur photo mannequin
+  const catalogImage = getProductCatalogImage(product);
+
   return (
     <Link
       href={`/produits/${product.slug}`}
@@ -35,7 +39,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     >
       <div className="relative aspect-square overflow-hidden rounded-t-xl bg-gray-50">
         <ProductImage
-          src={product.images[0]}
+          src={catalogImage}
           alt={product.name}
           fill
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
