@@ -128,6 +128,9 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
     "bleu-royal":     "https://cdn.toptex.com/packshots/PS_IB321_IDEALROYALBLUE.png",
     "vert-foret":     "https://cdn.toptex.com/packshots/PS_IB321_IDEALFORESTGREEN.png",
     "vert-bouteille": "https://cdn.toptex.com/packshots/PS_IB321_IDEALFORESTGREEN.png",
+    "bordeaux":       "https://cdn.toptex.com/packshots/PS_IB321_IDEALBURGUNDY.png",
+    "orange":         "https://cdn.toptex.com/packshots/PS_IB321_IDEALORANGE.png",
+    "jaune":          "https://cdn.toptex.com/packshots/PS_IB321_IDEALGOLD.png",
   },
 
   // ── T-shirt enfant iDeal IB322 ───────────────────────────────────────────────
