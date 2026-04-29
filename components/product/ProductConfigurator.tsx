@@ -139,8 +139,19 @@ export default function ProductConfigurator({
 
     // Tenter l'upload immédiatement (utilisateur authentifié uniquement)
     setIsUploadingOnSelect(true);
-    const { data, error } = await uploadLogoToSupabase(file, sessionId);
-    setIsUploadingOnSelect(false);
+    let data: import("@/lib/uploadLogo").LogoUploadResult | null = null;
+    let error: import("@/lib/uploadLogo").LogoUploadError | null = null;
+    try {
+      ({ data, error } = await uploadLogoToSupabase(file, sessionId));
+    } catch (e) {
+      // uploadLogoToSupabase a levé une exception (ex: Supabase client non configuré).
+      // On traite ça comme une erreur technique non-bloquante.
+      console.error("[handleFileChange] uploadLogoToSupabase threw:", e);
+      error = "SUPABASE_UPLOAD_ERROR";
+    } finally {
+      // Toujours débloquer le CTA, quelle que soit l'issue de l'upload.
+      setIsUploadingOnSelect(false);
+    }
 
     // Ignorer si un autre fichier a été sélectionné entre-temps
     if (generation !== uploadGenerationRef.current) return;

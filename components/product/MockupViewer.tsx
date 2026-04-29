@@ -135,8 +135,7 @@ export default function MockupViewer({ colorId, placement, logoFile, badge, onLo
         initialized = true;
         initCanvas(w);
       } else if (fabricRef.current && Math.abs(w - canvasSizeRef.current) > 4) {
-        fabricRef.current.setWidth(w);
-        fabricRef.current.setHeight(w);
+        fabricRef.current.setDimensions({ width: w, height: w });
         canvasSizeRef.current = w;
         setCanvasSize(w);
         fabricRef.current.requestRenderAll();
