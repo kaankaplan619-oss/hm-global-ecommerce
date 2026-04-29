@@ -128,7 +128,7 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
     "bleu-royal":     "https://cdn.toptex.com/packshots/PS_IB321_IDEALROYALBLUE.png",
     "vert-foret":     "https://cdn.toptex.com/packshots/PS_IB321_IDEALFORESTGREEN.png",
     "vert-bouteille": "https://cdn.toptex.com/packshots/PS_IB321_IDEALFORESTGREEN.png",
-    "bordeaux":       "https://cdn.toptex.com/packshots/PS_IB321_IDEALBURGUNDY.png",
+    // "bordeaux" omis — PS_IB321_IDEALBURGUNDY.png est un placeholder TopTex (1900×2848)
     "orange":         "https://cdn.toptex.com/packshots/PS_IB321_IDEALORANGE.png",
     "jaune":          "https://cdn.toptex.com/packshots/PS_IB321_IDEALGOLD.png",
   },
