@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Upload, X, CheckCircle, AlertCircle, Minus, Plus, ShoppingBag, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
-import { uploadLogoToSupabase, getUploadErrorMessage } from "@/lib/uploadLogo";
+import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
 import { colorHasImages, colorHasSpecificImage } from "@/components/product/ProductGallery";
 import type { Product, Technique, Placement, ProductColor } from "@/types";
 
@@ -54,6 +54,13 @@ export default function ProductConfigurator({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // Upload immédiat dès sélection fichier
+  const [logoUploadResult, setLogoUploadResult] = useState<LogoUploadResult | null>(null);
+  const [isUploadingOnSelect, setIsUploadingOnSelect] = useState(false);
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
+  // Ref pour éviter les race conditions si l'utilisateur change de fichier rapidement
+  const uploadGenerationRef = useRef(0);
+
   // Stable browser-session ID for storage path — generated once per session
   const sessionId = useMemo(() => {
     if (typeof window === "undefined") return "ssr";
@@ -99,22 +106,51 @@ export default function ProductConfigurator({
     onPlacementChange?.(p);
   }, [onPlacementChange]);
 
-  // File handling
-  const handleFileChange = useCallback((file: File | null) => {
+  // File handling — upload immédiat dès la sélection (utilisateur authentifié)
+  const handleFileChange = useCallback(async (file: File | null) => {
+    // Réinitialiser tous les états upload avant tout
     setFileError("");
+    setUploadError(null);
+    setUploadNotice(null);
+    setLogoUploadResult(null);
+
     if (!file) {
       setLogoFile(null);
       onLogoChange?.(null);
       return;
     }
+
     const validation = validateLogoFile(file);
     if (!validation.valid) {
       setFileError(validation.error!);
       return;
     }
+
+    // Mettre à jour le fichier immédiatement pour l'aperçu local
     setLogoFile(file);
     onLogoChange?.(file);
-  }, [onLogoChange]);
+
+    // Marquer la génération courante pour ignorer les résultats périmés
+    const generation = ++uploadGenerationRef.current;
+
+    // Tenter l'upload immédiatement (utilisateur authentifié uniquement)
+    setIsUploadingOnSelect(true);
+    const { data, error } = await uploadLogoToSupabase(file, sessionId);
+    setIsUploadingOnSelect(false);
+
+    // Ignorer si un autre fichier a été sélectionné entre-temps
+    if (generation !== uploadGenerationRef.current) return;
+
+    if (data) {
+      setLogoUploadResult(data);
+    } else if (error === "NOT_AUTHENTICATED") {
+      // Message informatif non-bloquant — le logo sera demandé à l'envoi de la commande
+      setUploadNotice(getUploadErrorMessage(error));
+    } else if (error) {
+      // Erreur technique non-bloquante — tentative de renvoi au clic "Ajouter au panier"
+      setUploadNotice(getUploadErrorMessage(error));
+    }
+  }, [onLogoChange, sessionId]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -122,7 +158,7 @@ export default function ProductConfigurator({
     if (file) handleFileChange(file);
   }, [handleFileChange]);
 
-  // Add to cart — upload logo to Supabase first (authenticated users only)
+  // Add to cart — utilise logoUploadResult si déjà uploadé au moment de la sélection
   const handleAddToCart = async () => {
     if (!size || !color) return;
     setUploadError(null);
@@ -130,26 +166,40 @@ export default function ProductConfigurator({
     let logoCartFile: { name: string; size: number; type: string; url?: string; path?: string } | undefined;
 
     if (logoFile) {
-      setIsUploading(true);
-      const { data, error } = await uploadLogoToSupabase(logoFile, sessionId);
-      setIsUploading(false);
-
-      if (error === "NOT_AUTHENTICATED") {
-        // Guest flow: add to cart without URL — user can upload post-order
-        logoCartFile = { name: logoFile.name, size: logoFile.size, type: logoFile.type };
-        setUploadError(getUploadErrorMessage(error));
-        // Don't block — continue to addItem below
-      } else if (error) {
-        setUploadError(getUploadErrorMessage(error));
-        return; // Block add-to-cart for genuine errors
-      } else if (data) {
+      if (logoUploadResult) {
+        // Chemin nominal : upload déjà effectué à la sélection du fichier ✅
         logoCartFile = {
           name: logoFile.name,
           size: logoFile.size,
           type: logoFile.type,
-          url:  data.logoFileUrl,
-          path: data.logoPath,
+          url:  logoUploadResult.logoFileUrl,
+          path: logoUploadResult.logoPath,
         };
+      } else {
+        // Fallback : l'upload initial a échoué (non authentifié ou erreur réseau) —
+        // on retente une fois ici avant d'ajouter au panier
+        setIsUploading(true);
+        const { data, error } = await uploadLogoToSupabase(logoFile, sessionId);
+        setIsUploading(false);
+
+        if (error === "NOT_AUTHENTICATED") {
+          // Flux invité : ajout sans URL — le logo sera finalisé à la demande de devis
+          logoCartFile = { name: logoFile.name, size: logoFile.size, type: logoFile.type };
+          setUploadError(getUploadErrorMessage(error));
+          // Ne pas bloquer — continuer jusqu'à addItem
+        } else if (error) {
+          setUploadError(getUploadErrorMessage(error));
+          return; // Bloquer uniquement sur les erreurs techniques réelles
+        } else if (data) {
+          setLogoUploadResult(data);
+          logoCartFile = {
+            name: logoFile.name,
+            size: logoFile.size,
+            type: logoFile.type,
+            url:  data.logoFileUrl,
+            path: data.logoPath,
+          };
+        }
       }
     }
 
@@ -167,7 +217,7 @@ export default function ProductConfigurator({
     setTimeout(() => setAddedToCart(false), 3000);
   };
 
-  const canAdd = !!size && !!color && color.available;
+  const canAdd = !!size && !!color && color.available && !isUploadingOnSelect;
   const shippingPiecesLeft = Math.max(0, PRICING_CONFIG.freeShippingThreshold - quantity);
 
   return (
@@ -462,15 +512,36 @@ export default function ProductConfigurator({
             />
           </div>
         ) : (
-          <div className="flex items-center gap-3 rounded-[1.25rem] border border-[#86efac] bg-[#ecfdf5] p-4">
-            <CheckCircle size={16} className="shrink-0 text-[#166534]" />
+          <div className={`flex items-center gap-3 rounded-[1.25rem] border p-4 ${
+            logoUploadResult
+              ? "border-[#86efac] bg-[#ecfdf5]"
+              : "border-[var(--hm-line)] bg-[var(--hm-surface)]"
+          }`}>
+            {isUploadingOnSelect ? (
+              <Loader2 size={16} className="animate-spin shrink-0 text-[var(--hm-primary)]" />
+            ) : (
+              <CheckCircle size={16} className={`shrink-0 ${logoUploadResult ? "text-[#166534]" : "text-[var(--hm-text-muted)]"}`} />
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[var(--hm-text)]">{logoFile.name}</p>
-              <p className="text-[11px] text-[var(--hm-text-soft)]">{formatFileSize(logoFile.size)}</p>
+              <p className="text-[11px] text-[var(--hm-text-soft)]">
+                {isUploadingOnSelect
+                  ? "Envoi en cours…"
+                  : logoUploadResult
+                  ? `${formatFileSize(logoFile.size)} · Enregistré ✓`
+                  : formatFileSize(logoFile.size)}
+              </p>
             </div>
             <button
-              onClick={() => { setLogoFile(null); onLogoChange?.(null); }}
-              className="text-[var(--hm-text-muted)] transition-colors hover:text-[#b91c1c]"
+              onClick={() => {
+                setLogoFile(null);
+                setLogoUploadResult(null);
+                setUploadNotice(null);
+                setUploadError(null);
+                onLogoChange?.(null);
+              }}
+              disabled={isUploadingOnSelect}
+              className="text-[var(--hm-text-muted)] transition-colors hover:text-[#b91c1c] disabled:pointer-events-none disabled:opacity-40"
             >
               <X size={14} />
             </button>
@@ -484,6 +555,15 @@ export default function ProductConfigurator({
           </div>
         )}
 
+        {/* Notice non-bloquante : non authentifié ou erreur au moment de la sélection */}
+        {uploadNotice && !uploadError && (
+          <div className="mt-2 flex items-start gap-2 rounded-xl border border-[#bfdbfe] bg-[#eff6ff] p-3 text-xs text-[#1e40af]">
+            <AlertCircle size={12} className="mt-0.5 shrink-0" />
+            <span>{uploadNotice}</span>
+          </div>
+        )}
+
+        {/* Erreur bloquante : uniquement lors du fallback dans handleAddToCart */}
         {uploadError && (
           <div className="mt-2 flex items-start gap-2 rounded-xl border border-[#fde68a] bg-[#fffbeb] p-3 text-xs text-[#92400e]">
             <AlertCircle size={12} className="mt-0.5 shrink-0" />
@@ -580,14 +660,19 @@ export default function ProductConfigurator({
       {/* ── CTA ───────────────────────────────────────────────── */}
       <button
         onClick={handleAddToCart}
-        disabled={!canAdd || isUploading}
+        disabled={!canAdd || isUploading || isUploadingOnSelect}
         className={`btn-primary w-full gap-3 py-4 text-sm
-          ${!canAdd || isUploading ? "cursor-not-allowed opacity-50" : ""}`}
+          ${!canAdd || isUploading || isUploadingOnSelect ? "cursor-not-allowed opacity-50" : ""}`}
       >
         {addedToCart ? (
           <>
             <CheckCircle size={16} />
             Ajouté au panier !
+          </>
+        ) : isUploadingOnSelect ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Envoi du logo…
           </>
         ) : isUploading ? (
           <>
