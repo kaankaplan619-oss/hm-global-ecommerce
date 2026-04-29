@@ -1,4 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HM Global Agence — Textile personnalisé
+
+Site e-commerce B2B de textile personnalisé : catalogue, configurateur logo, BAT, panier, paiement Stripe, admin.
+
+---
+
+## Workflow agentique obligatoire
+
+> Cette règle s'applique à tout agent IA (Claude Code, ChatGPT, Cursor, etc.) intervenant sur ce projet.
+
+À la fin de **chaque tâche**, l'agent doit :
+
+1. **Lire `AGENT_CONTEXT.md`** — objectif du site, règles invariantes, fichiers critiques
+2. **Respecter `PROTECTED_FEATURES.md`** — ne jamais casser une fonctionnalité protégée
+3. **Exécuter `TEST_CHECKLIST.md`** autant que possible — au minimum `npm run type-check` et `npm run build`
+4. **Remplir `AGENT_REPORT.md`** — rapport structuré avec résultats de tests, risques, prochaine action
+5. **Ne jamais déclarer une tâche terminée sans preuve de test**
+
+```bash
+npm run agent:report   # résumé git + rappel commandes de validation
+npm run type-check     # TypeScript — obligatoire
+npm run build          # Next.js build — obligatoire
+```
+
+---
+
+## Getting Started
 
 ## Getting Started
 
