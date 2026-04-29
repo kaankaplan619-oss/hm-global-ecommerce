@@ -317,16 +317,16 @@ export default function ProductConfigurator({
                 aria-pressed={active}
                 className={`relative flex h-10 min-w-[50px] items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all
                   ${active
-                    ? "ring-2 ring-[rgba(76,47,111,0.08)] shadow-[0_10px_24px_rgba(76,47,111,0.18)]"
+                    ? "ring-2 ring-[rgba(177,63,116,0.12)] shadow-[0_10px_24px_rgba(177,63,116,0.18)]"
                     : s.soldOut || !s.available
                     ? "cursor-not-allowed border-[var(--hm-line)] bg-[var(--hm-surface)] text-[var(--hm-text-muted)]"
-                    : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-purple)]/35 hover:text-[var(--hm-text)]"
+                    : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]/40 hover:text-[var(--hm-text)]"
                   }`}
                 style={
                   active
                     ? {
-                        backgroundColor: "var(--hm-purple)",
-                        borderColor: "var(--hm-purple)",
+                        backgroundColor: "var(--hm-primary)",
+                        borderColor: "var(--hm-primary)",
                         color: "#ffffff",
                       }
                     : undefined
@@ -679,7 +679,7 @@ export default function ProductConfigurator({
         onClick={handleAddToCart}
         disabled={!canAdd || isUploading || isUploadingOnSelect}
         className={`btn-primary w-full gap-3 py-4 text-sm
-          ${!canAdd || isUploading || isUploadingOnSelect ? "cursor-not-allowed opacity-50" : ""}`}
+          ${!canAdd || isUploading || isUploadingOnSelect ? "cursor-not-allowed" : ""}`}
       >
         {addedToCart ? (
           <>

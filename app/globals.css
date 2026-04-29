@@ -40,6 +40,8 @@
   --hm-purple-dark: #3f2d58;
   --hm-rose: #b13f74;
   --hm-rose-dark: #973761;
+  /* Alias principal — utilisé dans la majorité des composants */
+  --hm-primary: #b13f74;
 
   --hm-accent-soft-blue: #ebf7fc;
   --hm-accent-soft-purple: #f2eef7;
@@ -246,8 +248,15 @@ body {
   box-shadow: 0 12px 32px rgba(177, 63, 116, 0.28);
 }
 .btn-primary:active { transform: translateY(0); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.btn-primary:disabled::before { display: none; }
+.btn-primary:disabled {
+  background-color: var(--hm-surface-2);
+  color: var(--hm-text-muted);
+  opacity: 1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btn-primary:disabled::before { display: none; animation: none; }
 
 /* Variante nav COMMANDER — glow pulse permanent */
 .btn-primary-pulse {

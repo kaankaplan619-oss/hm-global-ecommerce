@@ -44,13 +44,18 @@ const DOS_STYLE: React.CSSProperties = {
   width: "28%",
 };
 
-// ── CSS filter pour "Contour blanc" ──────────────────────────────────────────
-// drop-shadow suit les pixels opaques du PNG → bien meilleur qu'un box-shadow
-// pour les logos avec fond transparent.
+// ── CSS filters logo ─────────────────────────────────────────────────────────
+// "Contour blanc" : drop-shadow suit les pixels opaques → idéal pour PNG transparents.
 const WHITE_OUTLINE_FILTER =
   "drop-shadow(0 0 3px rgba(255,255,255,0.95)) " +
   "drop-shadow(0 0 5px rgba(255,255,255,0.85)) " +
   "drop-shadow(0 0 8px rgba(255,255,255,0.7))";
+
+// "Normal" : ombre portée discrète pour ancrer le logo sur le textile
+// (simule un dépôt d'encre / broderie avec légère profondeur).
+const NORMAL_FILTER =
+  "drop-shadow(0 1px 2px rgba(0,0,0,0.14)) " +
+  "drop-shadow(0 0px 1px rgba(0,0,0,0.06))";
 
 interface Props {
   /** URL de l'image produit à utiliser comme fond (packshot couleur actuelle). */
@@ -116,7 +121,7 @@ export default function LightMockupPreview({
       ? { filter: WHITE_OUTLINE_FILTER }
       : logoEffect === "white-bg"
         ? { backgroundColor: "white", borderRadius: "4px", padding: "6px", boxSizing: "border-box" }
-        : {};
+        : { filter: NORMAL_FILTER };
 
   return (
     <div className="flex flex-col gap-3">
@@ -140,8 +145,8 @@ export default function LightMockupPreview({
             <div
               className="absolute inset-0 rounded"
               style={{
-                border:     "1.5px dashed rgba(123,79,166,0.65)",
-                background: "rgba(123,79,166,0.04)",
+                border:     "1.5px dashed rgba(177,63,116,0.38)",
+                background: "rgba(177,63,116,0.04)",
                 pointerEvents: "none",
               }}
             />
@@ -161,8 +166,8 @@ export default function LightMockupPreview({
             <div
               className="absolute inset-0 rounded"
               style={{
-                border:     "1.5px dashed rgba(123,79,166,0.65)",
-                background: "rgba(123,79,166,0.04)",
+                border:     "1.5px dashed rgba(177,63,116,0.38)",
+                background: "rgba(177,63,116,0.04)",
                 pointerEvents: "none",
               }}
             />

@@ -38,14 +38,18 @@ const WHITE_OUTLINE_FILTER =
   "drop-shadow(0 0 5px rgba(255,255,255,0.85)) " +
   "drop-shadow(0 0 8px rgba(255,255,255,0.7))";
 
+const NORMAL_FILTER =
+  "drop-shadow(0 1px 2px rgba(0,0,0,0.14)) " +
+  "drop-shadow(0 0px 1px rgba(0,0,0,0.06))";
+
 // ── Zone overlay (pointillés) ─────────────────────────────────────────────────
 function ZoneOverlay() {
   return (
     <div
       className="absolute inset-0 rounded"
       style={{
-        border:        "1.5px dashed rgba(123,79,166,0.65)",
-        background:    "rgba(123,79,166,0.04)",
+        border:        "1.5px dashed rgba(177,63,116,0.38)",
+        background:    "rgba(177,63,116,0.04)",
         pointerEvents: "none",
       }}
     />
@@ -84,12 +88,12 @@ export default function BATPreviewCard({
       ? { filter: WHITE_OUTLINE_FILTER }
       : logoEffect === "white-bg"
         ? { backgroundColor: "white", borderRadius: "4px", padding: "6px", boxSizing: "border-box" }
-        : {};
+        : { filter: NORMAL_FILTER };
 
   const containerClass =
     size === "compact"
-      ? "relative overflow-hidden rounded-xl border border-gray-200 bg-white"
-      : "relative overflow-hidden rounded-[20px] border border-gray-200 bg-white shadow-md";
+      ? "relative overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white"
+      : "relative overflow-hidden rounded-[20px] border border-[var(--hm-line)] bg-white shadow-[0_8px_24px_rgba(63,45,88,0.08)]";
 
   return (
     <div className={containerClass}>
@@ -134,7 +138,7 @@ export default function BATPreviewCard({
       )}
 
       {/* Bandeau disclaimer (masqué à l'impression via .no-print) */}
-      <div className="no-print pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-gray-200 bg-white/90 px-3 py-0.5 text-[9px] font-semibold text-gray-400">
+      <div className="no-print pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-[var(--hm-line)] bg-white/90 px-3 py-0.5 text-[9px] font-semibold text-[var(--hm-text-muted)]">
         Position indicative
       </div>
     </div>
