@@ -37,8 +37,8 @@ const COLOR_TO_MOCKUP: Record<string, string> = {
 // ── Zone de marquage (fraction of canvas) calibrated for B&C Exact 190 ───────
 // [left, top, width, height] as fraction of canvas size
 const ZONES: Record<string, [number, number, number, number]> = {
-  coeur: [0.62, 0.26, 0.11, 0.11],  // left chest (wearer's left = viewer's right)
-  dos:   [0.24, 0.10, 0.52, 0.34],  // full back — remonté pour zone entre-omoplates
+  coeur: [0.60, 0.25, 0.14, 0.14],  // left chest — légèrement agrandi (was 0.11×0.11)
+  dos:   [0.26, 0.13, 0.48, 0.29],  // full back — resserré pour rester dans la silhouette (was [0.24,0.10,0.52,0.34])
 };
 
 type View = "front" | "back";
@@ -179,6 +179,8 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
 
     canvas.off("object:moving");
     canvas.off("object:modified");
+    canvas.off("selection:created");
+    canvas.off("selection:cleared");
     canvas.clear();
 
     // Capture logoEffect in closure so it stays stable for this render cycle
@@ -207,6 +209,7 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
         canvas.add(shirt);
 
         // ── Zone de marquage ─────────────────────────────────────────────
+        // Zone très discrète : guide visuel léger, jamais dominant
         if (zone) {
           const [lf, tf, wf, hf] = zone;
           const rect = new Rect({
@@ -214,10 +217,10 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
             top:             tf * canvasSize,
             width:           wf * canvasSize,
             height:          hf * canvasSize,
-            fill:            "rgba(177,63,116,0.07)",
-            stroke:          "#b13f74",
-            strokeWidth:     1.5,
-            strokeDashArray: [6, 4],
+            fill:            "rgba(177,63,116,0.04)",   // quasi transparent (was 0.07)
+            stroke:          "rgba(177,63,116,0.35)",   // trait atténué (was full #b13f74)
+            strokeWidth:     1,                          // plus fin (was 1.5)
+            strokeDashArray: [4, 5],
             rx: 6, ry: 6,
             selectable:  false,
             evented:     false,
@@ -252,9 +255,10 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
           if (zone) {
             const [lf, tf, wf, hf] = zone;
             logoScale = Math.min(
-              (wf * canvasSize * 0.70) / nw,
-              (hf * canvasSize * 0.70) / nh,
+              (wf * canvasSize * 0.80) / nw,  // 80% de la zone (was 70%) — logo plus présent
+              (hf * canvasSize * 0.80) / nh,
             );
+            // Centrage précis au centre de la zone
             logoLeft = (lf + wf / 2) * canvasSize;
             logoTop  = (tf + hf / 2) * canvasSize;
           } else {
@@ -274,17 +278,19 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
             originX:            "center",
             originY:            "center",
             selectable:         true,
-            hasControls:        true,
-            hasBorders:         true,
-            // Contrôles visuels premium
+            // Contrôles masqués par défaut — apparaissent uniquement au clic
+            // (évite l'apparence "éditeur" au chargement)
+            hasControls:        false,
+            hasBorders:         false,
+            // Style des contrôles quand ils apparaissent
             cornerStyle:        "circle",
             cornerColor:        "#b13f74",
-            borderColor:        "#b13f74",
-            cornerSize:         9,
-            padding:            6,
+            borderColor:        "rgba(177,63,116,0.6)",
+            cornerSize:         8,
+            padding:            5,
             transparentCorners: false,
             lockUniScaling:     true,
-            lockRotation:       true,   // pas de rotation accidentelle
+            lockRotation:       true,
           });
 
           // ── Apply logo effect for dark-textile readability ──────────────
@@ -298,15 +304,22 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
             });
           } else if (currentEffect === "white-bg") {
             // Halo blanc fort (remplace le rectangle blanc pur qui était trop visible)
-            // Même principe que white-outline mais plus intense pour les logos complexes
             logo.shadow = new Shadow({
               color:   "rgba(255,255,255,1)",
               blur:    26,
               offsetX: 0,
               offsetY: 0,
             });
+          } else {
+            // "none" — ombre textile subtile pour intégration naturelle
+            // Donne l'impression que le logo est imprimé sur le tissu
+            logo.shadow = new Shadow({
+              color:   "rgba(0,0,0,0.10)",
+              blur:    5,
+              offsetX: 0,
+              offsetY: 2,
+            });
           }
-          // "none" → nothing applied
 
           // Helper: build a LogoPlacementTransform from the current logo state
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -349,8 +362,24 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
             onLogoPositionChangeRef.current?.(captureTransform(e.target));
           });
 
+          // ── Gestion de la sélection — contrôles cachés par défaut ────────
+          // Le logo démarre sans handles : apparence aperçu propre.
+          // Au clic sur le logo → handles apparaissent pour redimensionner/déplacer.
+          // Au clic ailleurs  → handles disparaissent → retour mode aperçu.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          canvas.on("selection:created", (e: any) => {
+            if (e.selected?.includes(logo)) {
+              logo.set({ hasControls: true, hasBorders: true });
+              canvas.requestRenderAll();
+            }
+          });
+          canvas.on("selection:cleared", () => {
+            logo.set({ hasControls: false, hasBorders: false });
+            canvas.requestRenderAll();
+          });
+
           canvas.add(logo);
-          canvas.setActiveObject(logo);
+          canvas.discardActiveObject(); // Pas de sélection au chargement
           canvas.requestRenderAll();
 
           // Emit initial placement position
