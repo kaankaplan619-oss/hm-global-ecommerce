@@ -258,16 +258,17 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
               (wf * canvasSize * 0.80) / nw,  // 80% de la zone (was 70%) — logo plus présent
               (hf * canvasSize * 0.80) / nh,
             );
-            // Centrage précis au centre de la zone
-            logoLeft = (lf + wf / 2) * canvasSize;
-            logoTop  = (tf + hf / 2) * canvasSize;
+            // Positionnement top-left explicite (plus fiable que originX="center")
+            // Centrage = milieu de zone - moitié de la taille du logo rendu
+            logoLeft = (lf + wf / 2) * canvasSize - (logoScale * nw / 2);
+            logoTop  = (tf + hf / 2) * canvasSize - (logoScale * nh / 2);
           } else {
             logoScale = Math.min(
               (canvasSize * 0.25) / nw,
               (canvasSize * 0.25) / nh,
             );
-            logoLeft = canvasSize / 2;
-            logoTop  = canvasSize / 2;
+            logoLeft = canvasSize / 2 - (logoScale * nw / 2);
+            logoTop  = canvasSize / 2 - (logoScale * nh / 2);
           }
 
           const logo = new FabricImage(logoEl, {
@@ -275,8 +276,8 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
             scaleY:             logoScale,
             left:               logoLeft,
             top:                logoTop,
-            originX:            "center",
-            originY:            "center",
+            originX:            "left",   // position top-left explicite (plus fiable)
+            originY:            "top",
             selectable:         true,
             // Contrôles masqués par défaut — apparaissent uniquement au clic
             // (évite l'apparence "éditeur" au chargement)
@@ -335,22 +336,23 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
             source:     "fabric-canvas",
           });
 
-          // Constrain drag inside zone — le centre du logo reste dans la zone
-          // (le logo peut déborder visuellement mais son ancre reste contrainte)
+          // Constrain drag inside zone (origine top-left)
+          // Le coin supérieur gauche du logo reste dans la zone.
           if (zone) {
             const [lf, tf, wf, hf] = zone;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             canvas.on("object:moving", (e: any) => {
               if (e.target !== logo) return;
-              const obj = e.target;
-              const zL  = lf * canvasSize;
-              const zR  = (lf + wf) * canvasSize;
-              const zT  = tf * canvasSize;
-              const zB  = (tf + hf) * canvasSize;
-              // Contrainte simple : le centre (origin="center") reste dans la zone
+              const obj    = e.target;
+              const logoW  = (obj.width  ?? nw)  * (obj.scaleX ?? logoScale);
+              const logoH  = (obj.height ?? nh)  * (obj.scaleY ?? logoScale);
+              const zL     = lf * canvasSize;
+              const zR     = (lf + wf) * canvasSize - logoW;
+              const zT     = tf * canvasSize;
+              const zB     = (tf + hf) * canvasSize - logoH;
               obj.set({
-                left: Math.min(zR, Math.max(zL, obj.left ?? 0)),
-                top:  Math.min(zB, Math.max(zT, obj.top  ?? 0)),
+                left: Math.min(Math.max(zL, obj.left ?? 0), zR),
+                top:  Math.min(Math.max(zT, obj.top  ?? 0), zB),
               });
             });
           }
@@ -379,7 +381,8 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
           });
 
           canvas.add(logo);
-          canvas.discardActiveObject(); // Pas de sélection au chargement
+          logo.setCoords();
+          canvas.discardActiveObject();
           canvas.requestRenderAll();
 
           // Emit initial placement position
