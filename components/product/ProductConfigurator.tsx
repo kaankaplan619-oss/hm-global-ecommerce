@@ -7,6 +7,7 @@ import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
 import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { colorHasImages, colorHasSpecificImage } from "@/components/product/ProductGallery";
 import type { Product, Technique, Placement, ProductColor } from "@/types";
 
@@ -152,6 +153,21 @@ export default function ProductConfigurator({
     // Mettre à jour le fichier immédiatement pour l'aperçu local
     setLogoFile(file);
     onLogoChange?.(file);
+
+    // Flux invité : vérifier l'auth avant tout appel Supabase Storage.
+    // Si non connecté (ou client indisponible), rester en local uniquement —
+    // preview mockup + BAT via blob URL, upload différé au checkout.
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setUploadNotice("Logo chargé pour la prévisualisation. Il sera enregistré au moment de la commande.");
+        return;
+      }
+    } catch {
+      setUploadNotice("Logo chargé pour la prévisualisation. Il sera enregistré au moment de la commande.");
+      return;
+    }
 
     // Marquer la génération courante pour ignorer les résultats périmés
     const generation = ++uploadGenerationRef.current;
