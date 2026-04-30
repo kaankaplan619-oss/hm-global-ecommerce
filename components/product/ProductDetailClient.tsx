@@ -385,6 +385,10 @@ export default function ProductDetailClient({ product }: Props) {
           onQuantityChange={setQuantity}
           hidePreview={showMockup || !!logoFile}
           colorImages={colorImages}
+          technique={technique}
+          placement={placement}
+          size={size}
+          quantity={quantity}
         />
 
         {/* ── Bouton Prévisualiser le BAT ─────────────────────────────────── */}

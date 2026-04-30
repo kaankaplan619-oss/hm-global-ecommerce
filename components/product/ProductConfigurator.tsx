@@ -22,6 +22,15 @@ interface Props {
   onTechniqueChange?: (t: Technique) => void;
   onSizeChange?: (s: string) => void;
   onQuantityChange?: (q: number) => void;
+  /**
+   * Valeurs contrôlées depuis ProductDetailClient (restaurées depuis sessionStorage).
+   * Quand fournies, elles pilotent l'UI ; sinon l'état interne prend le relais
+   * (compatibilité ascendante pour tout usage non-contrôlé).
+   */
+  technique?: Technique;
+  placement?: Placement;
+  size?: string;
+  quantity?: number;
   hidePreview?: boolean;
   /** Map colorId → imageUrls chargée depuis l'API TopTex — pour indiquer quelle couleur a des photos */
   colorImages?: Record<string, string[]>;
@@ -37,19 +46,29 @@ export default function ProductConfigurator({
   onTechniqueChange,
   onSizeChange,
   onQuantityChange,
+  technique:  controlledTechnique,
+  placement:  controlledPlacement,
+  size:       controlledSize,
+  quantity:   controlledQuantity,
   hidePreview,
   colorImages,
 }: Props) {
   const { addItem } = useCartStore();
 
-  // Config state
-  const [technique, setTechnique] = useState<Technique>(product.techniques[0]);
-  const [placement, setPlacement] = useState<Placement>(product.placements[0]);
-  const [size, setSize] = useState<string>("");
-  const [internalColor, setInternalColor] = useState<ProductColor | null>(
+  // Config state — états internes (utilisés quand le parent ne passe pas de valeur contrôlée)
+  const [internalTechnique, setInternalTechnique] = useState<Technique>(product.techniques[0]);
+  const [internalPlacement, setInternalPlacement] = useState<Placement>(product.placements[0]);
+  const [internalSize,      setInternalSize]      = useState<string>("");
+  const [internalColor,     setInternalColor]      = useState<ProductColor | null>(
     product.colors.find((c) => c.available) ?? null
   );
-  const [quantity, setQuantity] = useState(1);
+  const [internalQuantity,  setInternalQuantity]  = useState(1);
+
+  // Valeurs effectives : prop contrôlée prioritaire, état interne en fallback
+  const technique = controlledTechnique ?? internalTechnique;
+  const placement = controlledPlacement ?? internalPlacement;
+  const size      = controlledSize      ?? internalSize;
+  const quantity  = controlledQuantity  ?? internalQuantity;
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string>("");
   const [addedToCart, setAddedToCart] = useState(false);
@@ -103,9 +122,9 @@ export default function ProductConfigurator({
   const availableTechniques = TECHNIQUES.filter((t) => product.techniques.includes(t.id));
   const availablePlacements = PLACEMENTS.filter((p) => product.placements.includes(p.id));
 
-  // Placement change — notifies parent when callback provided
+  // Placement change — met à jour l'état interne ET notifie le parent
   const handlePlacementChange = useCallback((p: Placement) => {
-    setPlacement(p);
+    setInternalPlacement(p);
     onPlacementChange?.(p);
   }, [onPlacementChange]);
 
@@ -312,7 +331,7 @@ export default function ProductConfigurator({
               <button
                 type="button"
                 key={s.label}
-                onClick={() => { if (s.available && !s.soldOut) { setSize(s.label); onSizeChange?.(s.label); } }}
+                onClick={() => { if (s.available && !s.soldOut) { setInternalSize(s.label); onSizeChange?.(s.label); } }}
                 disabled={!s.available || s.soldOut}
                 aria-pressed={active}
                 className={`relative flex h-10 min-w-[50px] items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all
@@ -364,7 +383,7 @@ export default function ProductConfigurator({
             return (
               <button
                 key={tech.id}
-                onClick={() => { setTechnique(tech.id); onTechniqueChange?.(tech.id); }}
+                onClick={() => { setInternalTechnique(tech.id); onTechniqueChange?.(tech.id); }}
                 className={`w-full rounded-[1rem] border p-3 text-left transition-all
                   ${active
                     ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] shadow-[0_10px_24px_rgba(177,63,116,0.08)]"
@@ -463,7 +482,7 @@ export default function ProductConfigurator({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => { const nq = Math.max(1, quantity - 1); setQuantity(nq); onQuantityChange?.(nq); }}
+                onClick={() => { const nq = Math.max(1, quantity - 1); setInternalQuantity(nq); onQuantityChange?.(nq); }}
                 className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/30 hover:text-[var(--hm-text)]"
               >
                 <Minus size={14} />
@@ -472,7 +491,7 @@ export default function ProductConfigurator({
                 {quantity}
               </span>
               <button
-                onClick={() => { const nq = quantity + 1; setQuantity(nq); onQuantityChange?.(nq); }}
+                onClick={() => { const nq = quantity + 1; setInternalQuantity(nq); onQuantityChange?.(nq); }}
                 className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/30 hover:text-[var(--hm-text)]"
               >
                 <Plus size={14} />
