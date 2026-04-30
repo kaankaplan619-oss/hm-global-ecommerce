@@ -28,6 +28,14 @@ export async function GET(
     return NextResponse.json({ error: "Référence invalide" }, { status: 400 });
   }
 
+  // Credentials non configurés → retour silencieux, pas de 502 en console
+  if (!process.env.TOPTEX_API_KEY) {
+    return NextResponse.json(
+      { sku, colorImages: {} },
+      { headers: { "Cache-Control": "public, s-maxage=60" } }
+    );
+  }
+
   try {
     const headers = await getAuthHeaders();
 
