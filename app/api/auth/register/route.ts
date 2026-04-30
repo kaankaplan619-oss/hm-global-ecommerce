@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { User } from "@/types";
 
@@ -76,27 +77,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Erreur lors de la création du compte" }, { status: 500 });
     }
 
-    if (authData.session) {
-      await supabase.auth.signOut();
+    // ── Auto-confirm email via service role (pas de confirmation email requise) ─
+    const adminClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { error: confirmError } = await adminClient.auth.admin.updateUserById(
+      authData.user.id,
+      { email_confirm: true }
+    );
+    if (confirmError) {
+      console.error("[Register] Auto-confirm failed:", confirmError.message);
     }
 
-    // ── Fetch the profile created by the trigger ──────────────────────────────
-    // Small retry loop: trigger is async and may take a moment on cold starts
-    let profile = null;
-    for (let i = 0; i < 3; i++) {
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", authData.user.id)
-        .single();
-      if (data) { profile = data; break; }
-      await new Promise((r) => setTimeout(r, 200));
-    }
-
-    if (!profile) {
-      // Fallback: profile will exist next time they log in; not a blocking error
-      console.warn("[Register] Profile not found after signup for", authData.user.id);
-    }
+    // ── Signer la session pour que les cookies soient posés ───────────────────
+    await supabase.auth.signInWithPassword({ email, password });
 
     const user: User = {
       id: authData.user.id,
@@ -116,8 +112,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         user,
-        requiresEmailConfirmation: true,
-        message: "Votre compte a été créé. Vérifiez votre boîte mail pour confirmer votre adresse email avant de vous connecter.",
+        requiresEmailConfirmation: false,
+        message: "Votre compte a été créé avec succès.",
       },
       { status: 201 }
     );

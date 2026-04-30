@@ -55,13 +55,36 @@ export async function POST(req: NextRequest) {
       .eq("id", authData.user.id)
       .single();
 
-    const profile = profileData as ProfileRow | null;
+    let profile = profileData as ProfileRow | null;
 
     if (profileError || !profile) {
-      return NextResponse.json(
-        { message: "Profil introuvable. Contactez le support." },
-        { status: 500 }
-      );
+      // Trigger may have failed — create profile from user metadata as fallback
+      const meta = authData.user.user_metadata ?? {};
+      const { data: createdProfile, error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          id: authData.user.id,
+          email: authData.user.email,
+          first_name: meta.first_name ?? "",
+          last_name: meta.last_name ?? "",
+          phone: meta.phone ?? null,
+          role: "client",
+          type: meta.type ?? "particulier",
+          company: meta.company ?? null,
+          siret: meta.siret ?? null,
+          tva_intracom: meta.tva_intracom ?? null,
+        })
+        .select("*")
+        .single();
+
+      if (insertError || !createdProfile) {
+        console.error("[Login] Profile creation fallback failed:", insertError?.message);
+        return NextResponse.json(
+          { message: "Profil introuvable. Contactez le support." },
+          { status: 500 }
+        );
+      }
+      profile = createdProfile as ProfileRow;
     }
 
     // Build the User object matching our frontend type

@@ -5,9 +5,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
+import { useAuthStore } from "@/store/auth";
 
 export default function InscriptionPage() {
   const router = useRouter();
+  const setUser = useAuthStore((s) => s.setUser);
 
   const [type, setType] = useState<"particulier" | "entreprise">("particulier");
   const [form, setForm] = useState({
@@ -47,6 +49,11 @@ export default function InscriptionPage() {
       }
 
       const data = await res.json();
+      if (!data.requiresEmailConfirmation && data.user) {
+        setUser(data.user);
+        router.push("/mon-compte");
+        return;
+      }
       setSuccessMessage(
         data.message ??
           "Votre compte a été créé. Vérifiez votre boîte mail pour confirmer votre adresse email avant de vous connecter."
