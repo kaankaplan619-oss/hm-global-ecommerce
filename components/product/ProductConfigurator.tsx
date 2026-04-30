@@ -219,21 +219,26 @@ export default function ProductConfigurator({
           url:  logoUploadResult.logoFileUrl,
           path: logoUploadResult.logoPath,
         };
+      } else if (!isAuthenticated) {
+        // Flux invité : pas d'upload — le logo sera finalisé à la demande de devis
+        logoCartFile = { name: logoFile.name, size: logoFile.size, type: logoFile.type };
       } else {
-        // Fallback : l'upload initial a échoué (non authentifié ou erreur réseau) —
-        // on retente une fois ici avant d'ajouter au panier
+        // Authentifié mais upload initial raté — on retente une fois avant d'ajouter au panier
         setIsUploading(true);
-        const { data, error } = await uploadLogoToSupabase(logoFile, sessionId);
-        setIsUploading(false);
+        let data: import("@/lib/uploadLogo").LogoUploadResult | null = null;
+        let error: import("@/lib/uploadLogo").LogoUploadError | null = null;
+        try {
+          ({ data, error } = await uploadLogoToSupabase(logoFile, sessionId));
+        } catch (e) {
+          console.error("[handleAddToCart] uploadLogoToSupabase threw:", e);
+          error = "SUPABASE_UPLOAD_ERROR";
+        } finally {
+          setIsUploading(false);
+        }
 
-        if (error === "NOT_AUTHENTICATED") {
-          // Flux invité : ajout sans URL — le logo sera finalisé à la demande de devis
-          logoCartFile = { name: logoFile.name, size: logoFile.size, type: logoFile.type };
+        if (error) {
           setUploadError(getUploadErrorMessage(error));
-          // Ne pas bloquer — continuer jusqu'à addItem
-        } else if (error) {
-          setUploadError(getUploadErrorMessage(error));
-          return; // Bloquer uniquement sur les erreurs techniques réelles
+          return;
         } else if (data) {
           setLogoUploadResult(data);
           logoCartFile = {
