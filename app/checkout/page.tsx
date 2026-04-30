@@ -1,22 +1,363 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CreditCard, Lock, ChevronDown, ChevronUp, UserCheck } from "lucide-react";
+import {
+  CreditCard,
+  Lock,
+  ChevronDown,
+  ChevronUp,
+  Upload,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
 import { formatPrice } from "@/data/pricing";
 import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
+import { uploadLogoToSupabase } from "@/lib/uploadLogo";
+
+// ─── Auth gate ────────────────────────────────────────────────────────────────
+
+function CheckoutAuthGate({
+  onLoginSuccess,
+}: {
+  onLoginSuccess: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { setUser } = useAuthStore();
+  const { getTotals, items } = useCartStore();
+  const totals = getTotals();
+  const [showItems, setShowItems] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? "Erreur de connexion");
+      setUser(data.user);
+      onLoginSuccess();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="pb-20 pt-24">
+      <div className="container max-w-5xl">
+        <h1 className="mb-8 text-2xl font-black text-[var(--hm-text)]">
+          Finaliser ma commande
+        </h1>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+
+          {/* ── Connexion ──────────────────────────────────────── */}
+          <div className="flex flex-col gap-4 lg:col-span-2">
+            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-6">
+              <h2 className="mb-1 text-sm font-bold text-[var(--hm-text)]">
+                Connectez-vous pour finaliser
+              </h2>
+              <p className="mb-5 text-xs text-[var(--hm-text-soft)]">
+                Votre panier est conservé. La connexion est requise pour valider votre commande et enregistrer votre logo.
+              </p>
+
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="label">Email *</label>
+                  <input
+                    type="email"
+                    className="input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="vous@exemple.fr"
+                    autoComplete="email"
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  />
+                </div>
+                <div>
+                  <label className="label">Mot de passe *</label>
+                  <input
+                    type="password"
+                    className="input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  />
+                </div>
+
+                {error && (
+                  <div className="flex items-center gap-2 rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-xs text-[#b91c1c]">
+                    <AlertCircle size={12} className="shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  onClick={handleLogin}
+                  disabled={loading || !email || !password}
+                  className="btn-primary gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Connexion…
+                    </>
+                  ) : (
+                    "Se connecter et continuer"
+                  )}
+                </button>
+
+                <div className="flex flex-col gap-2 text-center">
+                  <p className="text-xs text-[var(--hm-text-muted)]">
+                    Pas encore de compte ?{" "}
+                    <Link
+                      href="/inscription?redirect=/checkout"
+                      className="font-semibold text-[var(--hm-primary)] hover:underline"
+                    >
+                      Créer un compte
+                    </Link>{" "}
+                    — revenez ensuite sur cette page.
+                  </p>
+                  <Link
+                    href="/mot-de-passe-oublie"
+                    className="text-xs text-[var(--hm-text-muted)] hover:text-[var(--hm-primary)]"
+                  >
+                    Mot de passe oublié ?
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Récap panier ───────────────────────────────────── */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+              <button
+                className="mb-4 flex w-full items-center justify-between"
+                onClick={() => setShowItems(!showItems)}
+              >
+                <span className="text-sm font-bold text-[var(--hm-text)]">
+                  Votre panier ({totals.totalItems} article{totals.totalItems > 1 ? "s" : ""})
+                </span>
+                {showItems
+                  ? <ChevronUp size={14} className="text-[var(--hm-text-muted)]" />
+                  : <ChevronDown size={14} className="text-[var(--hm-text-muted)]" />
+                }
+              </button>
+
+              {showItems && (
+                <div className="mb-4 flex flex-col gap-3">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex justify-between gap-2 text-xs">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[var(--hm-text-soft)]">
+                          {item.product.shortName} × {item.quantity}
+                        </p>
+                        <p className="text-[10px] text-[var(--hm-text-muted)]">
+                          {TECHNIQUE_LABELS[item.technique]} · {PLACEMENT_LABELS[item.placement]} · {item.size}
+                        </p>
+                      </div>
+                      <span className="shrink-0 font-semibold text-[var(--hm-text)]">
+                        {formatPrice(item.totalPrice)}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="divider-brand" />
+                </div>
+              )}
+
+              <div className="mb-4 flex flex-col gap-2">
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
+                  <span>Sous-total HT</span>
+                  <span>{formatPrice(totals.subtotalHT)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
+                  <span>TVA (20%)</span>
+                  <span>{formatPrice(totals.tva)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
+                  <span>Livraison</span>
+                  <span className={totals.freeShipping ? "text-[#4ade80]" : ""}>
+                    {totals.freeShipping ? "Offerte" : formatPrice(totals.shipping)}
+                  </span>
+                </div>
+              </div>
+              <div className="divider-brand mb-4" />
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-[var(--hm-text)]">Total TTC</span>
+                <span className="text-xl font-black text-[var(--hm-primary)]">
+                  {formatPrice(totals.totalTTC)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Logo confirmation ────────────────────────────────────────────────────────
+
+function LogoConfirmationSection({
+  sessionId,
+}: {
+  sessionId: string;
+}) {
+  const { items, updateLogoFile } = useCartStore();
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const itemsNeedingLogo = items.filter(
+    (item) => item.logoFile?.name && !item.logoFile?.url
+  );
+
+  if (itemsNeedingLogo.length === 0) return null;
+
+  const handleReUpload = async (itemId: string, file: File) => {
+    setUploading((prev) => ({ ...prev, [itemId]: true }));
+    setErrors((prev) => ({ ...prev, [itemId]: "" }));
+    try {
+      const { data, error } = await uploadLogoToSupabase(file, sessionId);
+      if (data) {
+        updateLogoFile(itemId, {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          url: data.logoFileUrl,
+          path: data.logoPath,
+          uploadedAt: new Date().toISOString(),
+        });
+      } else if (error) {
+        setErrors((prev) => ({
+          ...prev,
+          [itemId]: "Erreur lors de l'envoi. Veuillez réessayer.",
+        }));
+      }
+    } catch {
+      setErrors((prev) => ({
+        ...prev,
+        [itemId]: "Erreur lors de l'envoi. Veuillez réessayer.",
+      }));
+    } finally {
+      setUploading((prev) => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-[#fde68a] bg-[#fffbeb] p-6">
+      <h2 className="mb-1 flex items-center gap-2 text-sm font-bold text-[var(--hm-text)]">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#f59e0b] text-[10px] font-black text-white">
+          !
+        </span>
+        {itemsNeedingLogo.length === 1 ? "Logo à enregistrer" : "Logos à enregistrer"}
+      </h2>
+      <p className="mb-4 text-xs text-[#92400e]">
+        {itemsNeedingLogo.length === 1
+          ? "Un logo a été sélectionné localement mais n'a pas encore été envoyé vers le serveur. Sélectionnez à nouveau le fichier pour finaliser votre commande."
+          : `${itemsNeedingLogo.length} logos doivent être confirmés avant de finaliser votre commande.`}
+      </p>
+
+      <div className="flex flex-col gap-3">
+        {items.map((item) => {
+          if (!item.logoFile?.name) return null;
+
+          const done = !!item.logoFile?.url;
+          const isUploading = uploading[item.id];
+
+          return (
+            <div
+              key={item.id}
+              className={`rounded-xl border p-4 ${
+                done
+                  ? "border-[#86efac] bg-[#ecfdf5]"
+                  : "border-[#fde68a] bg-white"
+              }`}
+            >
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">
+                {item.product.shortName} · {item.color.label} · Taille {item.size}
+              </p>
+              <p className="mb-3 text-[11px] text-[var(--hm-text-soft)]">
+                Fichier : <span className="font-mono">{item.logoFile.name}</span>
+              </p>
+
+              {done ? (
+                <div className="flex items-center gap-2 text-xs text-[#166534]">
+                  <CheckCircle size={13} />
+                  Logo enregistré
+                </div>
+              ) : (
+                <>
+                  <label
+                    className={`flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-[var(--hm-primary)]/50 bg-[var(--hm-surface)] px-4 py-3 text-xs font-medium text-[var(--hm-primary)] transition-colors hover:bg-[var(--hm-accent-soft-rose)]/30 ${
+                      isUploading ? "pointer-events-none opacity-60" : ""
+                    }`}
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" />
+                        Envoi en cours…
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={13} />
+                        Sélectionner {item.logoFile.name}
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.png,.jpg,.jpeg,.webp,.svg"
+                      disabled={isUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleReUpload(item.id, file);
+                      }}
+                    />
+                  </label>
+                  {errors[item.id] && (
+                    <p className="mt-2 flex items-center gap-1 text-[11px] text-[#b91c1c]">
+                      <AlertCircle size={11} />
+                      {errors[item.id]}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main checkout ────────────────────────────────────────────────────────────
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, getTotals, clearCart } = useCartStore();
+  const { items, getTotals } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
   const totals = getTotals();
 
   const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Forces re-render after login to re-check logo states
+  const [loginDone, setLoginDone] = useState(false);
 
   const [billingAddress, setBillingAddress] = useState({
     email:      user?.email ?? "",
@@ -31,20 +372,54 @@ export default function CheckoutPage() {
   });
   const [sameShipping, setSameShipping] = useState(true);
 
-  // Guard: never call router.push() during render — it accesses `location`
-  // in Node.js during SSR/static generation → ReferenceError.
-  // Zustand cart is always empty on the server, so this would fire on every
-  // server render. Use useEffect to redirect client-side only.
+  // Stable session ID for Supabase Storage paths
+  const sessionId = useMemo(() => {
+    if (typeof window === "undefined") return "ssr";
+    const stored = sessionStorage.getItem("hm_session_id");
+    if (stored) return stored;
+    const id = crypto.randomUUID();
+    sessionStorage.setItem("hm_session_id", id);
+    return id;
+  }, []);
+
+  // Pre-fill billing address when user logs in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setBillingAddress((prev) => ({
+        ...prev,
+        email:     user.email      || prev.email,
+        firstName: user.firstName  || prev.firstName,
+        lastName:  user.lastName   || prev.lastName,
+        phone:     user.phone      || prev.phone,
+        company:   user.company    || prev.company,
+      }));
+    }
+  }, [isAuthenticated, user, loginDone]);
+
   useEffect(() => {
     if (items.length === 0) {
       router.push("/panier");
     }
   }, [items.length, router]);
 
-  if (items.length === 0) {
-    return null;
+  if (items.length === 0) return null;
+
+  // ── Auth gate ──────────────────────────────────────────────────────────────
+  if (!isAuthenticated) {
+    return (
+      <CheckoutAuthGate
+        onLoginSuccess={() => setLoginDone(true)}
+      />
+    );
   }
 
+  // ── Items needing logo confirmation ────────────────────────────────────────
+  const itemsNeedingLogo = items.filter(
+    (item) => item.logoFile?.name && !item.logoFile?.url
+  );
+  const allLogosReady = itemsNeedingLogo.length === 0;
+
+  // ── Place order ────────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
     setLoading(true);
     try {
@@ -53,24 +428,22 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((i) => ({
-            productId:     i.productId,
-            quantity:      i.quantity,
-            size:          i.size,
-            colorId:       i.color.id,
-            colorLabel:    i.color.label,
-            colorHex:      i.color.hex,
-            technique:     i.technique,
-            placement:     i.placement,
-            // Logo — transmis depuis le panier si disponible (upload immédiat Mission 2)
-            logoFileName:  i.logoFile?.name  ?? null,
-            logoFileUrl:   i.logoFile?.url   ?? null,
-            logoFilePath:  i.logoFile?.path  ?? null,
-            logoFileType:  i.logoFile?.type  ?? null,
-            logoFileSize:  i.logoFile?.size  ?? null,
+            productId:    i.productId,
+            quantity:     i.quantity,
+            size:         i.size,
+            colorId:      i.color.id,
+            colorLabel:   i.color.label,
+            colorHex:     i.color.hex,
+            technique:    i.technique,
+            placement:    i.placement,
+            logoFileName: i.logoFile?.name  ?? null,
+            logoFileUrl:  i.logoFile?.url   ?? null,
+            logoFilePath: i.logoFile?.path  ?? null,
+            logoFileType: i.logoFile?.type  ?? null,
+            logoFileSize: i.logoFile?.size  ?? null,
           })),
           billingAddress,
           shippingAddress: sameShipping ? billingAddress : undefined,
-          guestEmail: !isAuthenticated ? billingAddress.email : undefined,
         }),
       });
 
@@ -88,6 +461,7 @@ export default function CheckoutPage() {
   };
 
   const canSubmit =
+    allLogosReady &&
     billingAddress.email.includes("@") &&
     billingAddress.firstName.trim().length > 0 &&
     billingAddress.street.trim().length > 0 &&
@@ -104,24 +478,14 @@ export default function CheckoutPage() {
           {/* ── Formulaire ───────────────────────────────────── */}
           <div className="flex flex-col gap-6 lg:col-span-2">
 
-            {/* Bandeau invité si non connecté */}
-            {!isAuthenticated && (
-              <div className="flex items-start gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
-                <UserCheck size={16} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-[var(--hm-text)]">
-                    Commande sans compte
-                  </p>
-                  <p className="mt-0.5 text-xs text-[var(--hm-text-soft)]">
-                    Votre email sera utilisé pour le suivi de commande. Vous pourrez créer un compte après le paiement.
-                  </p>
-                </div>
-                <Link
-                  href="/connexion?redirect=/checkout"
-                  className="shrink-0 rounded-full border border-[var(--hm-line)] px-3 py-1.5 text-[11px] font-semibold text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
-                >
-                  Se connecter
-                </Link>
+            {/* Logo confirmation — si des logos n'ont pas encore d'URL Supabase */}
+            <LogoConfirmationSection sessionId={sessionId} />
+
+            {/* Avertissement logos manquants — bloque le paiement */}
+            {!allLogosReady && (
+              <div className="flex items-start gap-2 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-xs text-[#92400e]">
+                <AlertCircle size={12} className="mt-0.5 shrink-0" />
+                Veuillez enregistrer tous les logos ci-dessus avant de procéder au paiement.
               </div>
             )}
 
@@ -135,7 +499,6 @@ export default function CheckoutPage() {
               </h2>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* Email — toujours visible (pré-rempli si connecté) */}
                 <div className="sm:col-span-2">
                   <label className="label">Email *</label>
                   <input
@@ -376,6 +739,7 @@ export default function CheckoutPage() {
                 onClick={handlePlaceOrder}
                 disabled={loading || !canSubmit}
                 className="btn-primary w-full gap-2"
+                title={!allLogosReady ? "Enregistrez tous les logos avant de payer" : undefined}
               >
                 {loading ? (
                   "Traitement en cours..."
@@ -386,6 +750,12 @@ export default function CheckoutPage() {
                   </>
                 )}
               </button>
+
+              {!allLogosReady && (
+                <p className="mt-2 text-center text-[10px] text-[#92400e]">
+                  Enregistrez les logos ci-dessus pour continuer.
+                </p>
+              )}
 
               <p className="mt-3 text-center text-[10px] text-[var(--hm-text-muted)]">
                 🔒 Paiement chiffré SSL — Stripe
