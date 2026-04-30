@@ -113,6 +113,55 @@ export default function ProductDetailClient({ product }: Props) {
     setSelectedColor(defaultColor);
   }, [product.id, defaultColor]);
 
+  // ── Restauration sessionStorage au montage ────────────────────────────────
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(`hm_config_${product.id}`);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        colorId?:   string;
+        placement?: string;
+        technique?: string;
+        size?:      string;
+        quantity?:  number;
+      };
+
+      if (saved.colorId) {
+        const color = product.colors.find((c) => c.id === saved.colorId && c.available);
+        if (color) setSelectedColor(color);
+      }
+      if (saved.placement && (product.placements as string[]).includes(saved.placement)) {
+        setPlacement(saved.placement as Placement);
+      }
+      if (saved.technique && (product.techniques as string[]).includes(saved.technique)) {
+        setTechnique(saved.technique as Technique);
+      }
+      if (typeof saved.size === "string") setSize(saved.size);
+      if (typeof saved.quantity === "number" && saved.quantity > 0) setQuantity(saved.quantity);
+    } catch {
+      // sessionStorage indisponible ou JSON invalide
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]); // intentionnellement limité au montage/changement de produit
+
+  // ── Sauvegarde sessionStorage à chaque changement de configuration ────────
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        `hm_config_${product.id}`,
+        JSON.stringify({
+          colorId:   selectedColor?.id ?? null,
+          placement,
+          technique,
+          size,
+          quantity,
+        })
+      );
+    } catch {
+      // sessionStorage indisponible
+    }
+  }, [product.id, selectedColor?.id, placement, technique, size, quantity]);
+
   const handleColorChange = useCallback(
     (nextColor: ProductColor | null) => {
       if (!nextColor) {
@@ -187,6 +236,7 @@ export default function ProductDetailClient({ product }: Props) {
             colorId={selectedColor?.id ?? ""}
             placement={placement}
             logoFile={logoFile}
+            logoUrl={logoSupabaseUrl ?? logoUrl}
             badge={product.badge}
             onLogoPositionChange={handleLogoPositionChange}
           />

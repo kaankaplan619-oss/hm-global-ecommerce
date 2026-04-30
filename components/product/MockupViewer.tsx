@@ -47,11 +47,13 @@ interface Props {
   colorId:                string;
   placement:              Placement;
   logoFile:               File | null;
+  /** URL persistante du logo (Supabase). Utilisée quand logoFile est null. */
+  logoUrl?:               string | null;
   badge?:                 string;
   onLogoPositionChange?:  (t: LogoPlacementTransform) => void;
 }
 
-export default function MockupViewer({ colorId, placement, logoFile, badge, onLogoPositionChange }: Props) {
+export default function MockupViewer({ colorId, placement, logoFile, logoUrl, badge, onLogoPositionChange }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
   const canvasRef     = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -222,14 +224,18 @@ export default function MockupViewer({ colorId, placement, logoFile, badge, onLo
         }
 
         // ── Logo image ───────────────────────────────────────────────────
-        if (!logoFile) {
+        // Priorité : logoFile (blob local) → logoUrl (Supabase) → rien
+        const isBlob  = !!logoFile;
+        const logoSrc = logoFile ? URL.createObjectURL(logoFile) : (logoUrl ?? null);
+
+        if (!logoSrc) {
           canvas.requestRenderAll();
           return;
         }
 
-        const objectUrl = URL.createObjectURL(logoFile);
         const logoEl    = new window.Image();
-        logoEl.src      = objectUrl;
+        logoEl.crossOrigin = "anonymous";
+        logoEl.src      = logoSrc;
 
         logoEl.onload = () => {
           const nw = logoEl.naturalWidth  || 200;
@@ -343,19 +349,19 @@ export default function MockupViewer({ colorId, placement, logoFile, badge, onLo
           // Emit initial placement position
           onLogoPositionChangeRef.current?.(captureTransform(logo));
 
-          URL.revokeObjectURL(objectUrl);
+          if (isBlob) URL.revokeObjectURL(logoSrc);
         };
 
-        logoEl.onerror = () => URL.revokeObjectURL(objectUrl);
+        logoEl.onerror = () => { if (isBlob) URL.revokeObjectURL(logoSrc); };
       };
 
       shirtEl.onerror = () => canvas.requestRenderAll();
     });
-  }, [fabricReady, src, placement, view, logoFile, canvasSize, getZone, logoEffect]);
+  }, [fabricReady, src, placement, view, logoFile, logoUrl, canvasSize, getZone, logoEffect]);
 
   const zoneVisible = !!getZone();
   const hint =
-    !zoneVisible && logoFile
+    !zoneVisible && (logoFile || logoUrl)
       ? placement === "dos"
         ? "Passez en vue Dos pour voir la zone"
         : "Passez en vue Face pour voir la zone"
@@ -434,7 +440,7 @@ export default function MockupViewer({ colorId, placement, logoFile, badge, onLo
           - textile sombre → "Contour blanc" par défaut
           - textile clair  → "Aucun" par défaut
           L'utilisateur peut surcharger manuellement à tout moment.         */}
-      {logoFile && (
+      {(logoFile || logoUrl) && (
         <div className="flex flex-col gap-2">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
             Lisibilité du logo
@@ -459,7 +465,7 @@ export default function MockupViewer({ colorId, placement, logoFile, badge, onLo
       )}
 
       {/* ── Drag hint when logo is loaded ─────────────────────────────────── */}
-      {logoFile && zoneVisible && (
+      {(logoFile || logoUrl) && zoneVisible && (
         <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
           Glissez votre logo pour le repositionner · les coins pour le redimensionner
         </p>
