@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { User } from "@/types";
 
@@ -77,18 +76,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Erreur lors de la création du compte" }, { status: 500 });
     }
 
-    // ── Auto-confirm email via service role (pas de confirmation email requise) ─
-    const adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-    const { error: confirmError } = await adminClient.auth.admin.updateUserById(
-      authData.user.id,
-      { email_confirm: true }
-    );
+    // ── Auto-confirm email via RPC SECURITY DEFINER (pas de confirmation email requise) ─
+    const { error: confirmError } = await supabase.rpc("confirm_user_email", {
+      user_id: authData.user.id,
+    });
     if (confirmError) {
-      console.error("[Register] Auto-confirm failed:", confirmError.message);
+      console.error("[Register] Auto-confirm RPC failed:", confirmError.message);
     }
 
     // ── Signer la session pour que les cookies soient posés ───────────────────
