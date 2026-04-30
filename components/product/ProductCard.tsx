@@ -2,8 +2,9 @@ import Link from "next/link";
 import { Camera, Layers3 } from "lucide-react";
 import { formatPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
+import { getVisualMode } from "@/lib/hm-visual-utils";
 import type { Product } from "@/types";
-import ProductImage from "@/components/product/ProductImage";
+import HMProductVisual from "@/components/product/HMProductVisual";
 
 interface ProductCardProps {
   product: Product;
@@ -29,22 +30,29 @@ export default function ProductCard({ product }: ProductCardProps) {
   ].filter((p) => p > 0);
   const basePrice = prices.length > 0 ? Math.min(...prices) : 0;
 
-  // Image catalogue : packshot isolé prioritaire sur photo mannequin
-  const catalogImage = getProductCatalogImage(product);
+  // Coloris par défaut pour sélectionner le bon mockup / packshot
+  const defaultColor = product.colors.find((c) => c.available);
+
+  // Image catalogue (B2) : mockup HM Global > packshot TopTex > photo mannequin
+  const catalogImage = getProductCatalogImage(product, defaultColor?.id);
+
+  // Mode visuel premium (HM Global) ou standard (fournisseur)
+  const visualMode = getVisualMode(product);
 
   return (
     <Link
       href={`/produits/${product.slug}`}
       className="hm-card-enter group card card-hover block overflow-hidden"
     >
-      <div className="relative aspect-square overflow-hidden rounded-t-xl bg-gray-50">
-        <ProductImage
+      <div className="relative aspect-square overflow-hidden rounded-t-xl">
+        <HMProductVisual
           src={catalogImage}
           alt={product.name}
+          mode={visualMode}
           fill
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-          label="Visuel produit à venir"
+          imageClassName={`object-contain p-4 transition-transform duration-500 group-hover:scale-105${visualMode === "hm" ? " relative z-10" : ""}`}
+          showBadge={false}
         />
 
         {product.badge && (

@@ -1,5 +1,18 @@
 // ─── Product Types ─────────────────────────────────────────────────────────────
 
+/**
+ * Famille visuelle mockup HM Global (B2).
+ * Détermine le backdrop premium et les assets mockup par défaut.
+ */
+export type ProductFamilyVisual =
+  | "tshirt"
+  | "hoodie"
+  | "polo"
+  | "softshell"
+  | "veste"
+  | "casquette"
+  | "sac";
+
 export type ProductCategory =
   | "tshirts"
   | "hoodies"
@@ -103,6 +116,24 @@ export interface Product {
    * clairement la zone de marquage (cœur / dos) sur la photo principale.
    */
   visible?: boolean;
+
+  // ── Direction visuelle HM Global (B2) ──────────────────────────────────────
+  /** Image hero HM Global dédiée par produit (chemin /public/ ou URL externe). */
+  hmHeroImage?: string;
+  /** Mockups HM Global par coloris — colorId → chemin /public/mockups/. */
+  hmMockupImages?: Record<string, string>;
+  /**
+   * Famille visuelle mockup — détermine le backdrop premium et les assets
+   * mockup par défaut quand hmMockupImages n'est pas renseigné.
+   * Inféré automatiquement depuis `category` si absent.
+   */
+  familyVisualType?: ProductFamilyVisual;
+  /**
+   * Images fournisseur (TopTex / Falk&Ross) — galerie secondaire dans la
+   * fiche produit. Ne remplace PAS `images` (rétrocompatibilité).
+   * Utilisé pour distinguer clairement les visuels HM des photos fournisseur.
+   */
+  supplierImages?: string[];
 }
 
 // ─── Cart Types ─────────────────────────────────────────────────────────────────

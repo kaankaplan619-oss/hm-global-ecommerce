@@ -15,6 +15,8 @@ import { hasMockup } from "@/lib/mockup-utils";
 import { isColorDark } from "@/lib/color-utils";
 import { buildBATData } from "@/lib/bat-utils";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
+import { getHMMockupPath, getVisualMode } from "@/lib/hm-visual-utils";
+import HMProductVisual from "@/components/product/HMProductVisual";
 import { formatPrice } from "@/data/pricing";
 import type { Product, ProductColor, Placement, Technique } from "@/types";
 import type { LogoEffect } from "@/lib/color-utils";
@@ -132,13 +134,20 @@ export default function ProductDetailClient({ product }: Props) {
     hasMockup(selectedColor?.id ?? "");
 
   // Image produit actuelle (utilisée par LightMockupPreview + BAT)
-  // Priorité : packshot couleur sélectionnée → packshot catalogue → photo mannequin (dernier recours)
+  // Priorité (B2) : mockup HM → packshot TopTex couleur → packshot catalogue → photo mannequin
   const currentImageUrl = useMemo(() => {
     const cid = selectedColor?.id ?? "";
+    // 0. Mockup HM Global pour le coloris sélectionné
+    const hmMockup = getHMMockupPath(product, cid);
+    if (hmMockup) return hmMockup;
+    // 1. Packshot TopTex par coloris (API enrichissement)
     if (cid && colorImages[cid]?.[0]) return colorImages[cid][0];
-    // Fallback : meilleur packshot disponible pour ce produit (évite la photo mannequin)
-    return getProductCatalogImage(product);
+    // 2. Meilleur packshot disponible (évite la photo mannequin)
+    return getProductCatalogImage(product, cid);
   }, [selectedColor, colorImages, product]);
+
+  // Mode visuel premium HM Global ou fournisseur
+  const visualMode = getVisualMode(product);
 
   // ── Condition BAT visible ─────────────────────────────────────────────────
   // Exige au minimum : couleur sélectionnée + logo uploadé
@@ -173,6 +182,7 @@ export default function ProductDetailClient({ product }: Props) {
     <div className="mb-16 grid grid-cols-1 gap-12 lg:grid-cols-2">
       <div className="flex flex-col gap-4">
         {showMockup ? (
+          /* ── T-shirts B&C : MockupViewer Fabric.js (inchangé) ── */
           <MockupViewer
             colorId={selectedColor?.id ?? ""}
             placement={placement}
@@ -182,16 +192,23 @@ export default function ProductDetailClient({ product }: Props) {
           />
         ) : (
           <>
-            <ProductGallery
-              name={product.name}
-              images={product.images}
-              colors={product.colors}
-              selectedColor={selectedColor}
-              badge={product.badge}
-              colorImages={colorImages}
-              mediasLoading={mediasStatus === "loading"}
-              productId={product.id}
-            />
+            {/* ── Hero visuel (B2) : mockup HM Global prioritaire ── */}
+            <div className="relative overflow-hidden rounded-[28px] shadow-[0_20px_56px_rgba(12,14,20,0.18)]">
+              <HMProductVisual
+                src={currentImageUrl}
+                alt={product.name}
+                mode={visualMode}
+                fill={false}
+                width={720}
+                height={720}
+                priority
+                showBadge
+                className="w-full"
+                imageClassName={`object-contain w-full transition-opacity duration-300${visualMode === "hm" ? " p-4 relative z-10" : " p-6"}`}
+              />
+            </div>
+
+            {/* ── Aperçu logo (LightMockupPreview) ── */}
             {logoFile && (
               <LightMockupPreview
                 imageUrl={currentImageUrl}
@@ -203,6 +220,33 @@ export default function ProductDetailClient({ product }: Props) {
                 onLogoEffectChange={setLogoEffect}
               />
             )}
+
+            {/* ── Galerie fournisseur (TopTex) — section secondaire ── */}
+            <details className="group rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)]">
+              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--hm-text-soft)]">
+                  Photos fournisseur
+                </span>
+                <svg
+                  className="h-3 w-3 shrink-0 text-[var(--hm-text-muted)] transition-transform group-open:rotate-180"
+                  viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2"
+                >
+                  <path d="M2 4l4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </summary>
+              <div className="border-t border-[var(--hm-line)] px-3 pb-3 pt-2">
+                <ProductGallery
+                  name={product.name}
+                  images={product.images}
+                  colors={product.colors}
+                  selectedColor={selectedColor}
+                  badge={product.badge}
+                  colorImages={colorImages}
+                  mediasLoading={mediasStatus === "loading"}
+                  productId={product.id}
+                />
+              </div>
+            </details>
           </>
         )}
 
