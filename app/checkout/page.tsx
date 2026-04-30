@@ -354,6 +354,7 @@ export default function CheckoutPage() {
   const { isAuthenticated, user } = useAuthStore();
   const totals = getTotals();
 
+  const [hydrated, setHydrated] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(false);
   // Forces re-render after login to re-check logo states
@@ -396,13 +397,25 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, user, loginDone]);
 
+  // Trigger rehydration and mark when done — prevents premature empty-cart redirect
   useEffect(() => {
+    const unsub = useCartStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useCartStore.persist.hasHydrated()) {
+      setHydrated(true);
+    } else {
+      useCartStore.persist.rehydrate();
+    }
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     if (items.length === 0) {
       router.push("/panier");
     }
-  }, [items.length, router]);
+  }, [hydrated, items.length, router]);
 
-  if (items.length === 0) return null;
+  if (!hydrated || items.length === 0) return null;
 
   // ── Auth gate ──────────────────────────────────────────────────────────────
   if (!isAuthenticated) {
