@@ -1,22 +1,22 @@
 # 09 — Prompt de Démarrage de Session
 
-Copier ce prompt au début de chaque nouvelle session Claude Code pour initialiser correctement le contexte projet.
+Copier ce prompt au début de chaque nouvelle session Claude Code.
 
 ---
 
 ## Prompt à copier
 
 ```
-Avant de coder, lis CLAUDE.md puis tous les fichiers dans /docs/agent-memory/.
+Avant de coder :
+1. Lis CLAUDE.md
+2. Lis docs/agent-memory/00_START_HERE.md uniquement
+3. Ne lis les autres fichiers mémoire que si la tâche le nécessite
 
-Résume-moi ce que tu as compris avec ces sections :
-1. Contexte projet
-2. Règles design
-3. Règles images produits
-4. Règles catalogue
-5. Règles mockup / upload logo
-6. Zones interdites
-7. Tâche active
+Résume en 5-10 lignes :
+- contexte projet
+- règles interdites
+- tâche active
+- fichiers que tu dois lire pour cette tâche
 
 Ne modifie aucun fichier avant ce résumé.
 ```
@@ -25,23 +25,24 @@ Ne modifie aucun fichier avant ce résumé.
 
 ## Pourquoi ce prompt ?
 
-Claude Code ne conserve pas de mémoire entre les sessions. Sans ce prompt :
-- Le contexte projet est perdu
-- Les zones interdites ne sont pas connues
-- La tâche active n'est pas lue
-- Des modifications destructrices peuvent être faites par erreur
-
-Ce prompt force Claude à lire la mémoire projet avant d'agir.
+Claude Code ne conserve pas de mémoire entre les sessions. Ce prompt force la lecture du contexte minimal avant toute action, sans consommer inutilement des tokens sur les fichiers détaillés.
 
 ---
 
-## Checklist session
+## Quand lire les fichiers détaillés ?
 
-Avant de donner une tâche à Claude, vérifier :
+Uniquement si la tâche porte sur :
 
-- [ ] `07_ACTIVE_TASK.md` est à jour avec la tâche en cours
-- [ ] `06_FORBIDDEN_ZONES.md` liste bien tout ce qu'on ne veut pas toucher
-- [ ] Le prompt de démarrage a été copié en début de session
+| Tâche | Fichier |
+|---|---|
+| Design / UI | `01_DESIGN_RULES.md` |
+| Images produits | `02_PRODUCT_IMAGES_RULES.md` |
+| Catalogue | `03_CATALOGUE_RULES.md` |
+| Mockup / Fabric.js | `04_MOCKUP_VIEWER_RULES.md` |
+| Supabase / upload | `05_SUPABASE_UPLOAD_RULES.md` |
+| Zones interdites | `06_FORBIDDEN_ZONES.md` |
+| Tâche active / B4 | `07_ACTIVE_TASK.md` |
+| Tests | `08_TESTING_PROTOCOL.md` |
 
 ---
 
@@ -49,14 +50,14 @@ Avant de donner une tâche à Claude, vérifier :
 
 ```
 /docs/agent-memory/
-├── 00_PROJECT_CONTEXT.md     — Stack, parcours client, produits
-├── 01_DESIGN_RULES.md        — DA premium, tokens, couleur accent
-├── 02_PRODUCT_IMAGES_RULES.md — Champs image, règles fournisseur
-├── 03_CATALOGUE_RULES.md      — Catégories, tiers, visible
-├── 04_MOCKUP_VIEWER_RULES.md  — Fabric.js, zones calibrées
-├── 05_SUPABASE_UPLOAD_RULES.md — Bucket, RLS, variables Vercel
-├── 06_FORBIDDEN_ZONES.md      — Liste des zones interdites
-├── 07_ACTIVE_TASK.md          — État actuel, prochaine action
-├── 08_TESTING_PROTOCOL.md     — Protocole de test et vérification
-└── 09_PROMPT_STARTER.md       — Ce fichier, prompt de démarrage
+├── 00_START_HERE.md           ← LIRE EN PREMIER (quick start, 60 lignes)
+├── 01_DESIGN_RULES.md
+├── 02_PRODUCT_IMAGES_RULES.md
+├── 03_CATALOGUE_RULES.md
+├── 04_MOCKUP_VIEWER_RULES.md
+├── 05_SUPABASE_UPLOAD_RULES.md
+├── 06_FORBIDDEN_ZONES.md
+├── 07_ACTIVE_TASK.md
+├── 08_TESTING_PROTOCOL.md
+└── 09_PROMPT_STARTER.md       ← ce fichier
 ```
