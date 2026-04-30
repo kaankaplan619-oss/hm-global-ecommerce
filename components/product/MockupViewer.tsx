@@ -38,7 +38,7 @@ const COLOR_TO_MOCKUP: Record<string, string> = {
 // [left, top, width, height] as fraction of canvas size
 const ZONES: Record<string, [number, number, number, number]> = {
   coeur: [0.62, 0.26, 0.11, 0.11],  // left chest (wearer's left = viewer's right)
-  dos:   [0.24, 0.16, 0.52, 0.40],  // full back
+  dos:   [0.24, 0.10, 0.52, 0.34],  // full back — remonté pour zone entre-omoplates
 };
 
 type View = "front" | "back";
@@ -51,9 +51,12 @@ interface Props {
   logoUrl?:               string | null;
   badge?:                 string;
   onLogoPositionChange?:  (t: LogoPlacementTransform) => void;
+  /** Notifie le parent quand l'utilisateur change de vue (Face/Dos) afin de
+   *  maintenir placement et vue cohérents dans les deux sens. */
+  onPlacementChange?:     (p: Placement) => void;
 }
 
-export default function MockupViewer({ colorId, placement, logoFile, logoUrl, badge, onLogoPositionChange }: Props) {
+export default function MockupViewer({ colorId, placement, logoFile, logoUrl, badge, onLogoPositionChange, onPlacementChange }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
   const canvasRef     = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -114,7 +117,8 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
           width: w,
           height: w,
           selection: false,
-          backgroundColor: "#ffffff",
+          // Pas de fond blanc Fabric.js — le fond CSS du wrapper prend le relais.
+          // Évite les blocs blancs parasites sur les PNG dos avec transparence.
           renderOnAddRemove: false,
           allowTouchScrolling: false,
         });
@@ -272,15 +276,20 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
             selectable:         true,
             hasControls:        true,
             hasBorders:         true,
+            // Contrôles visuels premium
+            cornerStyle:        "circle",
             cornerColor:        "#b13f74",
-            cornerSize:         10,
+            borderColor:        "#b13f74",
+            cornerSize:         9,
+            padding:            6,
             transparentCorners: false,
             lockUniScaling:     true,
+            lockRotation:       true,   // pas de rotation accidentelle
           });
 
           // ── Apply logo effect for dark-textile readability ──────────────
           if (currentEffect === "white-outline") {
-            // White glow/halo around the logo shape — no layout shift
+            // Halo blanc léger autour du logo — pas de rectangle parasite
             logo.shadow = new Shadow({
               color:   "rgba(255,255,255,0.95)",
               blur:    14,
@@ -288,11 +297,13 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
               offsetY: 0,
             });
           } else if (currentEffect === "white-bg") {
-            // Solid white rectangle behind the logo bounding-box
-            // padding (in canvas px) adds breathing room
-            logo.set({
-              backgroundColor: "white",
-              padding:         8,
+            // Halo blanc fort (remplace le rectangle blanc pur qui était trop visible)
+            // Même principe que white-outline mais plus intense pour les logos complexes
+            logo.shadow = new Shadow({
+              color:   "rgba(255,255,255,1)",
+              blur:    26,
+              offsetX: 0,
+              offsetY: 0,
             });
           }
           // "none" → nothing applied
@@ -311,27 +322,23 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
             source:     "fabric-canvas",
           });
 
-          // Constrain drag inside zone
+          // Constrain drag inside zone — le centre du logo reste dans la zone
+          // (le logo peut déborder visuellement mais son ancre reste contrainte)
           if (zone) {
             const [lf, tf, wf, hf] = zone;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             canvas.on("object:moving", (e: any) => {
               if (e.target !== logo) return;
               const obj = e.target;
-              const hw  = ((obj.width  ?? 0) * (obj.scaleX ?? 1)) / 2;
-              const hh  = ((obj.height ?? 0) * (obj.scaleY ?? 1)) / 2;
               const zL  = lf * canvasSize;
               const zR  = (lf + wf) * canvasSize;
               const zT  = tf * canvasSize;
               const zB  = (tf + hf) * canvasSize;
-              const zW  = zR - zL;
-              const zH  = zB - zT;
-              const minX = hw < zW / 2 ? zL + hw : zL + zW / 2;
-              const maxX = hw < zW / 2 ? zR - hw : zL + zW / 2;
-              const minY = hh < zH / 2 ? zT + hh : zT + zH / 2;
-              const maxY = hh < zH / 2 ? zB - hh : zT + zH / 2;
-              obj.set({ left: Math.min(maxX, Math.max(minX, obj.left ?? 0)) });
-              obj.set({ top:  Math.min(maxY, Math.max(minY, obj.top  ?? 0)) });
+              // Contrainte simple : le centre (origin="center") reste dans la zone
+              obj.set({
+                left: Math.min(zR, Math.max(zL, obj.left ?? 0)),
+                top:  Math.min(zB, Math.max(zT, obj.top  ?? 0)),
+              });
             });
           }
 
@@ -419,7 +426,14 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
           <button
             key={v}
             type="button"
-            onClick={() => setView(v)}
+            onClick={() => {
+              setView(v);
+              // Synchronise le placement parent (coeur-dos préservé — les deux côtés sont actifs)
+              if (placement !== "coeur-dos") {
+                if (v === "back")  onPlacementChange?.("dos");
+                if (v === "front") onPlacementChange?.("coeur");
+              }
+            }}
             className={`rounded-xl border py-2.5 text-xs font-semibold transition-all
               ${view === v
                 ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)] shadow-[0_4px_12px_rgba(177,63,116,0.12)]"

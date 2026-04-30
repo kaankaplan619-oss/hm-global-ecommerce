@@ -239,6 +239,7 @@ export default function ProductDetailClient({ product }: Props) {
             logoUrl={logoSupabaseUrl ?? logoUrl}
             badge={product.badge}
             onLogoPositionChange={handleLogoPositionChange}
+            onPlacementChange={setPlacement}
           />
         ) : (
           <>
