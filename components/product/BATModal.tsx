@@ -45,7 +45,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         {title}
       </p>
       <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-1">
-        <table className="w-full">{children}</table>
+        <table className="w-full"><tbody>{children}</tbody></table>
       </div>
     </div>
   );
