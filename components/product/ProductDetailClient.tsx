@@ -28,6 +28,11 @@ const MockupViewer = dynamic(
   { ssr: false }
 );
 
+const BatPreviewStudio = dynamic(
+  () => import("@/components/product/BatPreviewStudio"),
+  { ssr: false }
+);
+
 type Props = {
   product: Product;
 };
@@ -91,7 +96,8 @@ export default function ProductDetailClient({ product }: Props) {
   }, [logoFile]);
 
   // ── BAT modal ────────────────────────────────────────────────────────────
-  const [showBAT, setShowBAT] = useState(false);
+  const [showBAT,    setShowBAT]    = useState(false);
+  const [showStudio, setShowStudio] = useState(false);
 
   // ── TopTex media enrichment ───────────────────────────────────────────────
   const { colorImages, status: mediasStatus } = useTopTexMedias(
@@ -397,7 +403,7 @@ export default function ProductDetailClient({ product }: Props) {
           <div className="mt-4">
             <button
               type="button"
-              onClick={() => setShowBAT(true)}
+              onClick={() => setShowStudio(true)}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] px-5 py-3.5 text-sm font-bold text-[var(--hm-primary)] transition-all hover:bg-[var(--hm-primary)] hover:text-white active:scale-[0.98]"
             >
               <FileCheck size={16} />
@@ -411,6 +417,24 @@ export default function ProductDetailClient({ product }: Props) {
           </div>
         )}
       </div>
+
+      {/* ── BAT Preview Studio (portal body) — t-shirts B&C uniquement ── */}
+      {showStudio && showMockup && (
+        <BatPreviewStudio
+          colorId={selectedColor?.id ?? ""}
+          placement={placement}
+          logoFile={logoFile}
+          logoUrl={logoSupabaseUrl ?? logoUrl}
+          product={product}
+          selectedColor={selectedColor}
+          size={size}
+          technique={technique}
+          quantity={quantity}
+          onClose={() => setShowStudio(false)}
+          onShowBAT={() => { setShowStudio(false); setShowBAT(true); }}
+          onLogoTransformChange={handleLogoPositionChange}
+        />
+      )}
 
       {/* ── Modal BAT (portal body) ──────────────────────────────────────── */}
       {showBAT && batData && (
