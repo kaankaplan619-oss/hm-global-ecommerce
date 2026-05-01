@@ -118,10 +118,10 @@ export default function HMProductVisual({
         {/* Ombre réaliste en bas */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-2/5"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-1/4"
           style={{
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.12) 55%, transparent 100%)",
+              "linear-gradient(to top, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.08) 60%, transparent 100%)",
           }}
         />
 

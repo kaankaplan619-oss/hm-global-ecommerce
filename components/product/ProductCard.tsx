@@ -51,7 +51,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           mode={visualMode}
           fill
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          imageClassName={`object-contain p-4 transition-transform duration-500 group-hover:scale-105${visualMode === "hm" ? " relative z-10" : ""}`}
+          imageClassName={`object-contain transition-transform duration-500 group-hover:scale-105${visualMode === "hm" ? " p-5 relative z-10" : " p-2"}`}
           showBadge={false}
         />
 
