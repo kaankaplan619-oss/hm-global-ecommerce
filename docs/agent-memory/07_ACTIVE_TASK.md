@@ -16,7 +16,7 @@
 | Suppression `test-ci@hmga.fr` | ⏳ À faire | User Supabase ID: `2510b913` — depuis Dashboard Auth |
 | Mémoire projet `/docs/agent-memory/` | ✅ Créée | 10 fichiers (00→09) |
 | `CLAUDE.md` mis à jour | ✅ Fait | Section lecture obligatoire ajoutée |
-| **B4 / BAT (Bon À Tirer)** | 🟡 Prêt à démarrer | Flux V1 validé, plus aucun bloquant |
+| **B4 / BAT Preview Studio** | ✅ Validé production | Commit `1afa1e9` — studio Fabric.js full-screen |
 
 ## Détail validation flux V1 (2026-05-01)
 
@@ -39,13 +39,18 @@ Testé sur `https://hm-global.vercel.app` — 14 étapes validées :
 
 Aucune erreur console. Aucun bug bloquant.
 
+## B4 BAT Preview Studio — Validé 2026-05-01
+
+Commit `1afa1e9` — Testé localement sur `http://localhost:3000/produits/tshirt-bc-exact-190-homme` :
+- Studio ouvre via bouton "Prévisualiser le BAT" ✅
+- Canvas Fabric.js présent, logo test-logo.png chargé ✅
+- Boutons Face/Dos, zoom+/-, recentrer, sélecteur d'effet ✅
+- Panel info : Blanc / L / DTF / Cœur / test-logo.png ✅
+- "Voir le BAT complet" → studio fermé, BATModal ouvert (z-9999) ✅
+- "← Retour au configurateur" → ferme le studio ✅
+- Zéro erreur console ✅
+
 ## Prochaine action
 
-→ Démarrer **B4 — Validation BAT (Bon À Tirer)** :
-- Interface de validation BAT côté admin (visualiser logo uploadé, approuver/rejeter)
-- Email de demande de validation envoyé au client
-- Statut commande `en_attente_client` → `validee` selon retour client
-
-## Contexte B4
-
-Le BAT est l'étape où l'admin HM Global valide visuellement le fichier logo uploadé par le client, puis envoie un email de demande de confirmation. Le client reçoit l'email, consulte l'aperçu, et confirme ou demande une correction avant que la production ne démarre.
+→ **B5 — Flux de commande complet** (Stripe, création commande Supabase, email confirmation)
+→ Ou **Pages légales** (CGV, Politique de confidentialité, Mentions légales) — déjà en todo
