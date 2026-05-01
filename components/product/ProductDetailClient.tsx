@@ -403,7 +403,7 @@ export default function ProductDetailClient({ product }: Props) {
           <div className="mt-4">
             <button
               type="button"
-              onClick={() => setShowStudio(true)}
+              onClick={() => showMockup ? setShowStudio(true) : setShowBAT(true)}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] px-5 py-3.5 text-sm font-bold text-[var(--hm-primary)] transition-all hover:bg-[var(--hm-primary)] hover:text-white active:scale-[0.98]"
             >
               <FileCheck size={16} />
