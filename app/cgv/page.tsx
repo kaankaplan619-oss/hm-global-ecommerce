@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Conditions Générales de Vente | HM Global Agence",
+  title: "Conditions Générales de Vente",
   description: "Conditions générales de vente de HM Global Agence — textile personnalisé, impression et communication visuelle.",
 };
 

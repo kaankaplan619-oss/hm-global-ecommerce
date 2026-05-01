@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité | HM Global Agence",
+  title: "Politique de confidentialité",
   description: "Politique de confidentialité et protection des données personnelles — HM Global Agence, conformité RGPD.",
 };
 

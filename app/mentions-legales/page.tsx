@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mentions légales | HM Global Agence",
+  title: "Mentions légales",
   description: "Mentions légales du site HM Global Agence — éditeur, hébergeur, propriété intellectuelle.",
 };
 
