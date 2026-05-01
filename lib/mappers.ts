@@ -130,6 +130,7 @@ export function mapDbOrderToOrder(row: any): Order {
             id:              item.id,
             name:            item.logo_file_name      ?? "",
             url:             item.logo_file_url,
+            path:            item.logo_file_path      ?? undefined,
             type:            item.logo_file_type      ?? "",
             size:            item.logo_file_size      ?? 0,
             status:          item.logo_file_status    ?? "en_attente",
@@ -137,6 +138,10 @@ export function mapDbOrderToOrder(row: any): Order {
             rejectionReason: item.logo_rejection_reason ?? undefined,
           }
         : undefined,
+
+      logoEffect:             item.logo_effect              ?? undefined,
+      batRef:                 item.bat_ref                  ?? undefined,
+      logoPlacementTransform: item.logo_placement_transform ?? undefined,
     })),
   };
 }

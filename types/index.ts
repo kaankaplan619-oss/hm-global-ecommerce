@@ -244,6 +244,7 @@ export interface OrderFile {
   id: string;
   name: string;
   url: string;
+  path?: string;
   type: string;
   size: number;
   status: "en_attente" | "valide" | "invalide";
@@ -260,6 +261,9 @@ export interface OrderItem {
   technique: Technique;
   placement: Placement;
   logoFile?: OrderFile;
+  logoEffect?: LogoEffect;
+  batRef?: string;
+  logoPlacementTransform?: LogoPlacementTransform;
   unitPriceHT: number;
   unitPriceTTC: number;
   totalHT: number;

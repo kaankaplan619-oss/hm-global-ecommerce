@@ -226,21 +226,54 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                         <span className="badge badge-neutral text-[9px]">{item.placement}</span>
                       </div>
 
-                      {/* Logo file */}
-                      {item.logoFile && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className={`badge ${item.logoFile.status === "valide" ? "badge-success" : item.logoFile.status === "invalide" ? "badge-error" : "badge-warning"} text-[9px]`}>
-                            {item.logoFile.status === "valide" ? "Fichier ✓" : item.logoFile.status === "invalide" ? "Fichier ✗" : "À vérifier"}
-                          </span>
-                          <a
-                            href={item.logoFile.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[10px] text-[#c9a96e] hover:underline flex items-center gap-1"
-                          >
-                            {item.logoFile.name}
-                            <ExternalLink size={9} />
-                          </a>
+                      {/* Logo & BAT */}
+                      {(item.logoFile || item.batRef || item.logoEffect) && (
+                        <div className="mt-3 p-3 bg-[#0a0a0a] border border-[#1e1e1e] rounded-lg">
+                          <p className="text-[9px] font-bold text-[#8a8a8a] uppercase tracking-wider mb-2">Logo & BAT</p>
+
+                          {item.logoFile && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className={`badge ${item.logoFile.status === "valide" ? "badge-success" : item.logoFile.status === "invalide" ? "badge-error" : "badge-warning"} text-[9px]`}>
+                                {item.logoFile.status === "valide" ? "Fichier ✓" : item.logoFile.status === "invalide" ? "Fichier ✗" : "À vérifier"}
+                              </span>
+                              <a
+                                href={item.logoFile.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[10px] text-[#c9a96e] hover:underline flex items-center gap-1"
+                              >
+                                {item.logoFile.name}
+                                <ExternalLink size={9} />
+                              </a>
+                            </div>
+                          )}
+
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between text-[10px]">
+                              <span className="text-[#555555]">Effet logo</span>
+                              <span className="text-[#f5f5f5]">
+                                {item.logoEffect === "white-outline"
+                                  ? "Contour blanc"
+                                  : item.logoEffect === "white-bg"
+                                  ? "Fond blanc"
+                                  : "Aucun"}
+                              </span>
+                            </div>
+
+                            {item.batRef && (
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-[#555555]">Réf. BAT</span>
+                                <span className="font-mono text-[#c9a96e]">{item.batRef}</span>
+                              </div>
+                            )}
+
+                            <div className="flex justify-between text-[10px]">
+                              <span className="text-[#555555]">Position</span>
+                              <span className={item.logoPlacementTransform ? "text-[#4ade80]" : "text-[#8a8a8a]"}>
+                                {item.logoPlacementTransform ? "Personnalisée enregistrée ✓" : "Non enregistrée"}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
