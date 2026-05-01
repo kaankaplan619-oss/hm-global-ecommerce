@@ -28,17 +28,16 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ""
 );
 
-// ─── Stripe Elements appearance (dark premium) ────────────────────────────────
+// ─── Stripe Elements appearance (cohérent avec le design HM Global) ───────────
 const STRIPE_APPEARANCE = {
-  theme: "night" as const,
+  theme: "stripe" as const,
   variables: {
-    colorPrimary:         "#c9a96e",
-    colorBackground:      "#111111",
-    colorText:            "#f5f5f5",
-    colorTextSecondary:   "#8a8a8a",
-    colorTextPlaceholder: "#555555",
-    colorDanger:          "#f87171",
-    colorSuccess:         "#4ade80",
+    colorPrimary:         "#b13f74",
+    colorBackground:      "#ffffff",
+    colorText:            "#3f2d58",
+    colorTextSecondary:   "#6e6280",
+    colorTextPlaceholder: "#8a8198",
+    colorDanger:          "#dc2626",
     fontFamily:           "Arial, Helvetica, sans-serif",
     fontSizeBase:         "14px",
     borderRadius:         "8px",
@@ -46,26 +45,26 @@ const STRIPE_APPEARANCE = {
   },
   rules: {
     ".Input": {
-      border:     "1px solid #2a2a2a",
+      border:     "1px solid #e6e8ee",
       boxShadow:  "none",
       outline:    "none",
       padding:    "12px",
-      color:      "#f5f5f5",
-      background: "#1a1a1a",
+      color:      "#3f2d58",
+      background: "#ffffff",
     },
     ".Input:focus": {
-      border:    "1px solid #c9a96e",
-      boxShadow: "0 0 0 2px #c9a96e22",
+      border:    "1px solid #b13f74",
+      boxShadow: "0 0 0 3px rgba(177,63,116,0.12)",
     },
     ".Label": {
-      color:         "#8a8a8a",
+      color:         "#6e6280",
       fontSize:      "11px",
       fontWeight:    "600",
       letterSpacing: "0.05em",
       textTransform: "uppercase",
     },
     ".Error": {
-      color: "#f87171",
+      color: "#dc2626",
     },
   },
 };
@@ -138,11 +137,11 @@ function PaymentForm({
   if (succeeded) {
     return (
       <div className="flex flex-col items-center gap-4 py-12 text-center">
-        <div className="w-16 h-16 rounded-full bg-[#4ade8022] border border-[#4ade8033] flex items-center justify-center">
-          <CheckCircle size={32} className="text-[#4ade80]" />
+        <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
+          <CheckCircle size={32} className="text-green-600" />
         </div>
-        <h2 className="text-xl font-black text-[#f5f5f5]">Paiement accepté !</h2>
-        <p className="text-sm text-[#555555]">
+        <h2 className="text-xl font-black text-[var(--hm-text)]">Paiement accepté !</h2>
+        <p className="text-sm text-[var(--hm-text-soft)]">
           Vous allez être redirigé vers votre commande…
         </p>
       </div>
@@ -159,7 +158,7 @@ function PaymentForm({
       />
 
       {error && (
-        <div className="flex items-start gap-2 p-3 bg-[#f8717111] border border-[#f8717133] rounded-lg text-sm text-[#f87171]">
+        <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
           <AlertCircle size={14} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -179,7 +178,7 @@ function PaymentForm({
           : "Payer"}
       </button>
 
-      <p className="text-center text-[10px] text-[#3a3a3a]">
+      <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
         🔒 Paiement chiffré SSL — propulsé par Stripe
       </p>
     </form>
@@ -213,21 +212,21 @@ export default function StripePayment() {
         <div className="mb-8">
           <Link
             href="/checkout"
-            className="flex items-center gap-1 text-xs text-[#555555] hover:text-[#f5f5f5] transition-colors mb-4"
+            className="flex items-center gap-1 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-primary)] transition-colors mb-4"
           >
             <ArrowLeft size={12} />
             Retour
           </Link>
-          <h1 className="text-2xl font-black text-[#f5f5f5]">Paiement sécurisé</h1>
-          <p className="text-sm text-[#555555] mt-1">
+          <h1 className="text-2xl font-black text-[var(--hm-text)]">Paiement sécurisé</h1>
+          <p className="text-sm text-[var(--hm-text-soft)] mt-1">
             Vos données de paiement sont chiffrées et traitées par Stripe.
           </p>
         </div>
 
-        <div className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-          <div className="flex items-center gap-2 mb-6 pb-5 border-b border-[#1e1e1e]">
-            <Lock size={12} className="text-[#4ade80]" />
-            <span className="text-[11px] text-[#555555]">
+        <div className="p-6 bg-white border border-[var(--hm-line)] rounded-xl shadow-[var(--hm-shadow-sm)]">
+          <div className="flex items-center gap-2 mb-6 pb-5 border-b border-[var(--hm-line)]">
+            <Lock size={12} className="text-green-500" />
+            <span className="text-[11px] text-[var(--hm-text-muted)]">
               Connexion sécurisée — TLS 1.3 — Stripe PCI-DSS niveau 1
             </span>
           </div>
@@ -249,7 +248,7 @@ export default function StripePayment() {
         </div>
 
         {orderId && (
-          <p className="text-center text-[10px] text-[#3a3a3a] mt-4">
+          <p className="text-center text-[10px] text-[var(--hm-text-muted)] mt-4">
             Référence commande : {orderId}
           </p>
         )}

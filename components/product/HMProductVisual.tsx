@@ -81,11 +81,15 @@ export default function HMProductVisual({
 
   const imgClass = imageClassName ?? defaultImgClass;
 
+  // fill=true → le wrapper doit remplir le parent positionné (absolute inset-0)
+  // fill=false → wrapper normal en flux (relative, se dimensionne sur son contenu)
+  const wrapperPositionClass = fill ? "absolute inset-0" : "relative";
+
   // ── Mode HM Global — fond sombre premium ────────────────────────────────────
   if (mode === "hm") {
     return (
       <div
-        className={`relative overflow-hidden ${className}`}
+        className={`${wrapperPositionClass} overflow-hidden ${className}`}
         style={{
           background:
             "linear-gradient(145deg, #0c0e14 0%, #131720 45%, #1a1f2c 100%)",
@@ -174,7 +178,7 @@ export default function HMProductVisual({
   // ── Mode Supplier — fond clair fournisseur ────────────────────────────────────
   return (
     <div
-      className={`relative overflow-hidden ${className}`}
+      className={`${wrapperPositionClass} overflow-hidden ${className}`}
       style={{ background: "#f7f6f4" }}
     >
       {isEmpty ? (

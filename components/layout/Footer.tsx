@@ -209,28 +209,32 @@ export default function Footer() {
       {/* ── Divider brand ────────────────────────────────────────────────── */}
       <div className="divider-brand relative z-10" />
 
-      {/* ── Barre du bas — copyright + paiements ─────────────────────────── */}
+      {/* ── Barre du bas — copyright + légal + paiements ─────────────────── */}
       <div className="container relative z-10 py-5">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[var(--hm-text-soft)]">
-            © {new Date().getFullYear()} HM Global Agence — Tous droits réservés
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+          {/* Copyright */}
+          <p className="text-xs text-[var(--hm-text-soft)] whitespace-nowrap">
+            © {new Date().getFullYear()} HM Global Agence
           </p>
 
-          {/* Liens légaux */}
-          <div className="flex items-center gap-4">
+          {/* Liens légaux — centrés */}
+          <div className="flex items-center gap-4 sm:gap-5">
             <Link href="/cgv" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
               CGV
             </Link>
+            <span className="text-[var(--hm-line)] select-none">·</span>
             <Link href="/confidentialite" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
               Confidentialité
             </Link>
+            <span className="text-[var(--hm-line)] select-none">·</span>
             <Link href="/mentions-legales" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
               Mentions légales
             </Link>
           </div>
 
           {/* Badges de paiement */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {PAYMENT_METHODS.map((m) => (
               <span
                 key={m}
@@ -241,14 +245,6 @@ export default function Footer() {
             ))}
           </div>
 
-          <a
-            href="https://www.hm-global.fr"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-          >
-            hm-global.fr
-          </a>
         </div>
       </div>
 

@@ -22,7 +22,7 @@ const StripePayment = dynamic(
     ssr: false,
     loading: () => (
       <div className="pt-24 pb-20 flex items-center justify-center min-h-[50vh]">
-        <div className="w-6 h-6 border-2 border-[#c9a96e] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[var(--hm-primary)] border-t-transparent rounded-full animate-spin" />
       </div>
     ),
   }
@@ -33,7 +33,7 @@ export default function PaiementPage() {
     <Suspense
       fallback={
         <div className="pt-24 pb-20 flex items-center justify-center min-h-[50vh]">
-          <div className="w-6 h-6 border-2 border-[#c9a96e] border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-[var(--hm-primary)] border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
