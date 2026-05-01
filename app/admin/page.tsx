@@ -63,15 +63,15 @@ const QUICK_STATS = [
 
 export default function AdminPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== "admin") {
+    if (_hasHydrated && (!isAuthenticated || user?.role !== "admin")) {
       router.push("/connexion");
     }
-  }, [isAuthenticated, user, router]);
+  }, [_hasHydrated, isAuthenticated, user, router]);
 
-  if (!isAuthenticated || user?.role !== "admin") return null;
+  if (!_hasHydrated || !isAuthenticated || user?.role !== "admin") return null;
 
   return (
     <div className="pt-24 pb-20">

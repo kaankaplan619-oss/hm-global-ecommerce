@@ -90,7 +90,7 @@ function AddressCard({
 
 export default function AdressesPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   const [billing, setBilling]   = useState<AddressForm | null>(null);
   const [shipping, setShipping] = useState<AddressForm | null>(null);
@@ -104,6 +104,7 @@ export default function AdressesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (!isAuthenticated) { router.push("/connexion"); return; }
 
     // Fetch most recent order to pre-fill addresses
@@ -146,7 +147,7 @@ export default function AdressesPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [isAuthenticated, router]);
+  }, [_hasHydrated, isAuthenticated, router]);
 
   const openEdit = (type: AddressType) => {
     setEditType(type);
@@ -173,7 +174,7 @@ export default function AdressesPage() {
     }
   };
 
-  if (!isAuthenticated) return null;
+  if (!_hasHydrated || !isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-[#f8f9fb] pt-24 pb-20">

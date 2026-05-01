@@ -25,19 +25,20 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
 
 export default function CommandesPage() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, _hasHydrated, user } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (!isAuthenticated) { router.push("/connexion"); return; }
     fetch(`/api/orders`)
       .then((r) => r.json())
       .then((data) => { setOrders(data.orders ?? []); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [isAuthenticated, router, user]);
+  }, [_hasHydrated, isAuthenticated, router, user]);
 
-  if (!isAuthenticated) return null;
+  if (!_hasHydrated || !isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-[#f8f9fb] pt-24 pb-20">

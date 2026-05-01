@@ -61,13 +61,13 @@ const STATS = [
 
 export default function MonComptePage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, _hasHydrated, logout } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated) router.push("/connexion");
-  }, [isAuthenticated, router]);
+    if (_hasHydrated && !isAuthenticated) router.push("/connexion");
+  }, [_hasHydrated, isAuthenticated, router]);
 
-  if (!user) return null;
+  if (!_hasHydrated || !user) return null;
 
   const initials = getInitials(user.firstName, user.lastName);
 

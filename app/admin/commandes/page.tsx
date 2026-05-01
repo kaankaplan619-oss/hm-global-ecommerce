@@ -31,16 +31,17 @@ const STATUS_PRIORITY: OrderStatus[] = [
 
 export default function AdminCommandesPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, _hasHydrated } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (!isAuthenticated || user?.role !== "admin") { router.push("/connexion"); return; }
     loadOrders();
-  }, [isAuthenticated, user, router]);
+  }, [_hasHydrated, isAuthenticated, user, router]);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -53,7 +54,7 @@ export default function AdminCommandesPage() {
     }
   };
 
-  if (!isAuthenticated || user?.role !== "admin") return null;
+  if (!_hasHydrated || !isAuthenticated || user?.role !== "admin") return null;
 
   const filtered = orders.filter((o) => {
     if (filter !== "all" && o.status !== filter) return false;

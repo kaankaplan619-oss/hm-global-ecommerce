@@ -22,7 +22,7 @@ type Props = { params: Promise<{ id: string }> };
 
 export default function AdminCommandeDetailPage({ params }: Props) {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, _hasHydrated } = useAuthStore();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [newStatus, setNewStatus] = useState<OrderStatus>("paiement_recu");
@@ -35,6 +35,7 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const [fileRejectionReason, setFileRejectionReason] = useState("");
 
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (!isAuthenticated || user?.role !== "admin") { router.push("/connexion"); return; }
     params.then(({ id }) => {
       fetch(`/api/orders/${id}?admin=true`)
@@ -52,9 +53,9 @@ export default function AdminCommandeDetailPage({ params }: Props) {
         })
         .catch(() => setLoading(false));
     });
-  }, [isAuthenticated, user, router, params]);
+  }, [_hasHydrated, isAuthenticated, user, router, params]);
 
-  if (!isAuthenticated || user?.role !== "admin") return null;
+  if (!_hasHydrated || !isAuthenticated || user?.role !== "admin") return null;
 
   const handleSave = async () => {
     if (!order) return;

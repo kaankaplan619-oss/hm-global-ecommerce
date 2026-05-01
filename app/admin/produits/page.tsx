@@ -55,7 +55,7 @@ const PAGE_SIZE = 50;
 
 export default function AdminProduitsPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, _hasHydrated } = useAuthStore();
 
   const [products, setProducts]   = useState<TopTexProduct[]>([]);
   const [filtered, setFiltered]   = useState<TopTexProduct[]>([]);
@@ -72,10 +72,10 @@ export default function AdminProduitsPage() {
 
   // ── Auth guard ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== "admin") {
+    if (_hasHydrated && (!isAuthenticated || user?.role !== "admin")) {
       router.push("/connexion");
     }
-  }, [isAuthenticated, user, router]);
+  }, [_hasHydrated, isAuthenticated, user, router]);
 
   // ── Load catalogue ──────────────────────────────────────────────────────────
   const loadProducts = useCallback(async () => {
@@ -131,7 +131,7 @@ export default function AdminProduitsPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  if (!isAuthenticated || user?.role !== "admin") return null;
+  if (!_hasHydrated || !isAuthenticated || user?.role !== "admin") return null;
 
   return (
     <div className="min-h-screen bg-[#f8f9fb] pt-24 pb-20">

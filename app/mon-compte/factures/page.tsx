@@ -23,11 +23,12 @@ interface InvoiceOrder {
 
 export default function FacturesPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
   const [orders, setOrders] = useState<InvoiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (!isAuthenticated) { router.push("/connexion"); return; }
 
     fetch("/api/orders")
@@ -49,9 +50,9 @@ export default function FacturesPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [isAuthenticated, router]);
+  }, [_hasHydrated, isAuthenticated, router]);
 
-  if (!isAuthenticated) return null;
+  if (!_hasHydrated || !isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-[#f8f9fb] pt-24 pb-20">

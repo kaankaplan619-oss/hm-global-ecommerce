@@ -21,7 +21,7 @@ type ProfileForm = {
 
 export default function ParametresPage() {
   const router = useRouter();
-  const { user, isAuthenticated, setUser } = useAuthStore();
+  const { user, isAuthenticated, _hasHydrated, setUser } = useAuthStore();
 
   // ── Profile form ──────────────────────────────────────────────────────────────
   const [form, setForm] = useState<ProfileForm>({
@@ -47,11 +47,11 @@ export default function ParametresPage() {
   const [emailError, setEmailError] = useState("");
 
   useEffect(() => {
-    if (!isAuthenticated) router.push("/connexion");
-  }, [isAuthenticated, router]);
+    if (_hasHydrated && !isAuthenticated) router.push("/connexion");
+  }, [_hasHydrated, isAuthenticated, router]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!_hasHydrated || !isAuthenticated) return;
     fetch("/api/profile")
       .then((r) => r.json())
       .then(({ user: fresh }) => {
@@ -81,7 +81,7 @@ export default function ParametresPage() {
       })
       .finally(() => setProfileLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+  }, [_hasHydrated, isAuthenticated]);
 
   // ── Profile submit ────────────────────────────────────────────────────────────
   const handleProfileSubmit = async (e: React.FormEvent) => {
@@ -162,7 +162,7 @@ export default function ParametresPage() {
     }
   };
 
-  if (!user) return null;
+  if (!_hasHydrated || !user) return null;
 
   const isEntreprise = user.type === "entreprise";
 

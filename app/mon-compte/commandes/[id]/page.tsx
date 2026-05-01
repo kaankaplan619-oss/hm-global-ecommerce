@@ -33,7 +33,7 @@ type Props = { params: Promise<{ id: string }> };
 
 export default function CommandeDetailPage({ params }: Props) {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
   const [orderId, setOrderId] = useState<string>("");
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +44,7 @@ export default function CommandeDetailPage({ params }: Props) {
   const [remainingTime, setRemainingTime] = useState(0);
 
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (!isAuthenticated) { router.push("/connexion"); return; }
     params.then(({ id }) => {
       setOrderId(id);
@@ -58,7 +59,7 @@ export default function CommandeDetailPage({ params }: Props) {
         })
         .catch(() => setLoading(false));
     });
-  }, [isAuthenticated, router, params]);
+  }, [_hasHydrated, isAuthenticated, router, params]);
 
   // Countdown
   useEffect(() => {
@@ -101,7 +102,7 @@ export default function CommandeDetailPage({ params }: Props) {
     }
   };
 
-  if (!isAuthenticated) return null;
+  if (!_hasHydrated || !isAuthenticated) return null;
 
   if (loading) {
     return (
