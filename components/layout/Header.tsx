@@ -17,6 +17,10 @@ const NAV_ITEMS = [
       { label: "Polos", href: "/catalogue/polos" },
       { label: "Hoodies & Sweats", href: "/catalogue/hoodies" },
       { label: "Softshells & Vestes", href: "/catalogue/softshells" },
+      { label: "Polaires & Doudounes", href: "/catalogue/polaires" },
+      { label: "Casquettes & Bonnets", href: "/catalogue/casquettes" },
+      { label: "Sacs & Goodies", href: "/catalogue/sacs" },
+      { label: "Enfants", href: "/catalogue/enfants" },
       { label: "Voir tout le catalogue →", href: "/catalogue" },
     ],
   },
@@ -75,7 +79,7 @@ export default function Header() {
             />
           </Link>
 
-          <nav className="hidden flex-1 items-center justify-center px-2 xl:flex">
+          <nav className="hidden flex-1 items-center justify-center px-2 lg:flex">
             <div className="flex max-w-[700px] items-center rounded-full border border-[var(--hm-line)] bg-white/88 px-1 py-0.5 shadow-[0_6px_18px_rgba(63,45,88,0.03)] backdrop-blur-sm">
             {NAV_ITEMS.map((item) => (
               <div
@@ -152,14 +156,14 @@ export default function Header() {
 
             <Link
               href="/catalogue"
-              className="btn-primary btn-primary-pulse hidden px-3 py-2 text-[10px] xl:inline-flex"
+              className="btn-primary btn-primary-pulse hidden px-3 py-2 text-[10px] lg:inline-flex"
             >
               Commander
             </Link>
 
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="btn-ghost px-2.5 xl:hidden"
+              className="btn-ghost px-2.5 lg:hidden"
               aria-label="Menu"
             >
               {isMobileOpen ? <X size={18} /> : <Menu size={18} />}

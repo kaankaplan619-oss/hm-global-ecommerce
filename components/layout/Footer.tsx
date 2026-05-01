@@ -29,6 +29,7 @@ const LINKS_CATALOGUE = [
   { label: "Polaires & Doudounes",     href: "/catalogue/polaires" },
   { label: "Casquettes & Bonnets",     href: "/catalogue/casquettes" },
   { label: "Sacs & Goodies",           href: "/catalogue/sacs" },
+  { label: "Enfants",                   href: "/catalogue/enfants" },
   { label: "Voir tout le catalogue →", href: "/catalogue" },
 ];
 
