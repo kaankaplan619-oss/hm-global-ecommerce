@@ -52,6 +52,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "HM Global Agence — Textile personnalisé professionnel",
+    description: "Commandez votre textile personnalisé en quelques clics avec HM Global Agence.",
+    images: ["/logo/hm-global-logo.png"],
+  },
   robots: { index: true, follow: true },
 };
 

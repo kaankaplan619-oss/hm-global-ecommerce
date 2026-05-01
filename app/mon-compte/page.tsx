@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Package,
   FileText,
@@ -53,19 +53,45 @@ const ACCOUNT_LINKS = [
   },
 ];
 
-const STATS = [
-  { label: "Commandes", value: "—" },
-  { label: "En cours",  value: "—" },
-  { label: "Terminées", value: "—" },
-];
+const IN_PROGRESS_STATUSES = new Set([
+  "paiement_recu",
+  "fichier_a_verifier",
+  "en_attente_client",
+  "validee",
+  "en_traitement",
+  "expediee",
+]);
+
+interface StatsData {
+  total: number;
+  enCours: number;
+  terminees: number;
+}
 
 export default function MonComptePage() {
   const router = useRouter();
   const { user, isAuthenticated, _hasHydrated, logout } = useAuthStore();
+  const [stats, setStats] = useState<StatsData>({ total: 0, enCours: 0, terminees: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) router.push("/connexion");
   }, [_hasHydrated, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (!_hasHydrated || !isAuthenticated) return;
+    fetch("/api/orders")
+      .then((r) => r.json())
+      .then((data) => {
+        const orders: Array<{ status: string }> = data.orders ?? [];
+        const active = orders.filter((o) => o.status !== "annulee");
+        const terminees = active.filter((o) => o.status === "terminee").length;
+        const enCours = active.filter((o) => IN_PROGRESS_STATUSES.has(o.status)).length;
+        setStats({ total: active.length, enCours, terminees });
+      })
+      .catch(() => setStats({ total: 0, enCours: 0, terminees: 0 }))
+      .finally(() => setLoadingStats(false));
+  }, [_hasHydrated, isAuthenticated]);
 
   if (!_hasHydrated || !user) return null;
 
@@ -111,7 +137,11 @@ export default function MonComptePage() {
 
         {/* ── Stats ──────────────────────────────────────────────────────── */}
         <div className="mb-8 grid grid-cols-3 gap-4">
-          {STATS.map(({ label, value }) => (
+          {([
+            { label: "Commandes", value: stats.total },
+            { label: "En cours",  value: stats.enCours },
+            { label: "Terminées", value: stats.terminees },
+          ] as const).map(({ label, value }) => (
             <div
               key={label}
               className="rounded-2xl border border-[#e6e8ee] bg-white p-4 text-center shadow-[0_4px_12px_rgba(63,45,88,0.04)]"
@@ -125,7 +155,7 @@ export default function MonComptePage() {
                   backgroundClip: "text",
                 }}
               >
-                {value}
+                {loadingStats ? "…" : value}
               </div>
               <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-[#6e6280]">
                 {label}
@@ -133,6 +163,14 @@ export default function MonComptePage() {
             </div>
           ))}
         </div>
+        {!loadingStats && stats.total === 0 && (
+          <p className="mb-6 text-center text-sm text-[#6e6280]">
+            Aucune commande pour le moment —{" "}
+            <Link href="/catalogue" className="font-semibold text-[#b13f74] hover:underline">
+              découvrir le catalogue
+            </Link>
+          </p>
+        )}
 
         {/* ── Navigation ─────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-3">
