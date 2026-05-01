@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Camera, Layers3 } from "lucide-react";
+import { Layers3 } from "lucide-react";
 import { formatPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getVisualMode } from "@/lib/hm-visual-utils";
@@ -67,11 +67,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        <div className="absolute top-3 right-3 rounded-full bg-white/90 border border-[var(--hm-line)] px-2.5 py-1 text-[10px] font-semibold text-[var(--hm-text-soft)] flex items-center gap-1.5">
-          <Camera size={12} className="text-[var(--hm-rose)]" />
-          {product.images.length} vue{product.images.length > 1 ? "s" : ""}
-        </div>
-
         <div className="absolute bottom-3 left-3 flex gap-1.5">
           {product.colors.slice(0, 5).map((color) => (
             <div
@@ -102,8 +97,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           {product.shortName}
         </h3>
 
-        <p className="text-[11px] text-[var(--hm-text-soft)] leading-relaxed mb-3">
-          {product.description.slice(0, 90)}...
+        <p className="line-clamp-2 text-[11px] text-[var(--hm-text-soft)] leading-relaxed mb-3">
+          {product.description}
         </p>
 
         <div className="flex gap-1.5 flex-wrap mb-3">

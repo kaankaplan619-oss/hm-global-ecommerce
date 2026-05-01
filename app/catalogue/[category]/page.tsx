@@ -55,7 +55,7 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
   },
 };
 
-const PUBLIC_CATEGORY_IDS = ["tshirts", "polos", "hoodies", "softshells"] as const;
+const PUBLIC_CATEGORY_IDS = ["tshirts", "polos", "hoodies", "softshells", "polaires", "casquettes", "sacs", "enfants"] as const;
 
 type Props = {
   params: Promise<{ category: string }>;

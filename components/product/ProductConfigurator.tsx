@@ -316,8 +316,22 @@ export default function ProductConfigurator({
                     <span className="absolute h-[1px] w-4 -rotate-45 bg-white/70" />
                   </span>
                 )}
+                {/* Coche sur le coloris actif — visible sur toutes les couleurs */}
+                {color?.id === c.id && (
+                  <span
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      width="10" height="8" viewBox="0 0 10 8" fill="none"
+                      style={{ filter: "drop-shadow(0 0 2px rgba(0,0,0,0.5))" }}
+                    >
+                      <path d="M1 4l2.5 2.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                )}
                 {/* Petit indicateur photo manquante (point) — commandable mais sans visuel */}
-                {photoMissing && (
+                {photoMissing && color?.id !== c.id && (
                   <span
                     className="pointer-events-none absolute bottom-0 right-0 h-2 w-2 rounded-full border border-white bg-[var(--hm-text-muted)]"
                     aria-hidden="true"
