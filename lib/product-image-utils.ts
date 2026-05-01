@@ -16,6 +16,20 @@ import { getHMMockupPath } from "@/lib/hm-visual-utils";
 import type { Product } from "@/types";
 
 /**
+ * Produits dont product.images[0] est une photo éditoriale avec mannequin.
+ * On préfère un placeholder HM Global propre à une photo mannequin en catalogue.
+ * Les images restent disponibles dans les données pour une galerie secondaire future.
+ */
+const NO_CATALOG_EDITORIAL = new Set([
+  "ib900",   // Polaire iDéal — photo mannequin groupe
+  "ib6175",  // Doudoune Homme iDéal — photo mannequin
+  "ib6176",  // Doudoune Femme iDéal — photo mannequin
+  "wk904",   // Micropolaire Éco — photo mannequin
+  "kp157",   // Casquette 5P K-up — photo CDN 404 + évite requête inutile
+  "kp162",   // Casquette Coton K-up — photo mannequin avec personne
+]);
+
+/**
  * Retourne l'URL d'image à afficher sur la carte catalogue.
  *
  * @param product  Produit à afficher.
@@ -48,6 +62,9 @@ export function getProductCatalogImage(product: Product, colorId?: string): stri
     if (firstPackshot) return firstPackshot;
   }
 
-  // 4. Dernier recours : photo mannequin (product.images[0])
+  // 4. Dernier recours : photo éditoriale/mannequin
+  // Si le produit est dans la liste de blocage, on retourne "" pour afficher
+  // le placeholder "Visuel à venir" plutôt qu'une photo mannequin.
+  if (NO_CATALOG_EDITORIAL.has(product.id)) return "";
   return product.images[0] ?? "";
 }

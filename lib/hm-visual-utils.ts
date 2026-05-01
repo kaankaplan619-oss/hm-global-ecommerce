@@ -39,15 +39,14 @@ const TSHIRT_MOCKUP_DEFAULT = "/mockups/tshirt/blanc-front.jpg";
  * Familles pour lesquelles des assets mockup HM Global sont disponibles
  * dans /public/mockups/.
  * Mettre à true au fur et à mesure que les photos HM arrivent.
+ *
+ * ⚠️ tshirt retiré : les mockups blanc HM rendaient tous les t-shirts identiques.
+ *    Tous les t-shirts utilisent désormais les packshots TopTex (supplier mode),
+ *    cohérents avec les sweats iDeal et Native Spirit approuvés.
+ *    Remettre tshirt: true quand des photos HM individuelles par produit existent.
  */
 const FAMILY_HAS_HM_ASSETS: Partial<Record<ProductFamilyVisual, boolean>> = {
-  tshirt:    true,
-  // hoodie:    false, // en attente de visuels HM
-  // polo:      false,
-  // softshell: false,
-  // veste:     false,
-  // casquette: false,
-  // sac:       false,
+  // tshirt: true,  // désactivé — tous t-shirts → packshots TopTex en supplier mode
 };
 
 // ── Résolution de la famille visuelle ────────────────────────────────────────

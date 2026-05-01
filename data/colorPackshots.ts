@@ -72,6 +72,23 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
     // vert-foret, kaki, beige : pas de packshot CDN pour WG004
   },
 
+  // ── Softshell homme B&C JUI62 ───────────────────────────────────────────────
+  // Packshots bicolores (veste extérieure + doublure) — couleur principale en premier.
+  "jui62": {
+    "noir":      "https://cdn.toptex.com/packshots/PS_CGJUI62_BLACK-BLACK.png",
+    "marine":    "https://cdn.toptex.com/packshots/PS_CGJUI62_NAVY-NEONGREEN.png",
+    "gris-acier":"https://cdn.toptex.com/packshots/PS_CGJUI62_DARKGREY-NEONORANGE.png",
+    "rouge":     "https://cdn.toptex.com/packshots/PS_CGJUI62_RED-WARMGREY.png",
+  },
+
+  // ── Softshell femme B&C JWI63 ───────────────────────────────────────────────
+  "jwi63": {
+    "noir":      "https://cdn.toptex.com/packshots/PS_CGJWI63_BLACK-BLACK.png",
+    "marine":    "https://cdn.toptex.com/packshots/PS_CGJWI63_NAVY-NEONGREEN.png",
+    "gris-acier":"https://cdn.toptex.com/packshots/PS_CGJWI63_DARKGREY-NEONORANGE.png",
+    "rouge":     "https://cdn.toptex.com/packshots/PS_CGJWI63_RED-WARMGREY.png",
+  },
+
   // ── Hoodie B&C WU620 ─────────────────────────────────────────────────────────
   "wu620": {
     "noir":          "https://cdn.toptex.com/packshots/PS_CGWU620_BLACK.png",
