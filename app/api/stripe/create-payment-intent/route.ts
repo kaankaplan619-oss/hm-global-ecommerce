@@ -21,6 +21,10 @@ interface CartItemInput {
   logoFilePath: string | null;
   logoFileType: string | null;
   logoFileSize: number | null;
+  // BAT config — effet visuel, position Fabric.js, référence BAT
+  logoEffect:             string | null;
+  logoPlacementTransform: Record<string, unknown> | null;
+  batRef:                 string | null;
 }
 
 /**
@@ -115,11 +119,15 @@ export async function POST(req: NextRequest) {
         unitPriceTTC,
         totalHT,
         totalTTC,
-        // Propagate logo fields — never recomputed, passed through as-is
-        logoFileName:  item.logoFileName  ?? null,
-        logoFileUrl:   item.logoFileUrl   ?? null,
-        logoFileType:  item.logoFileType  ?? null,
-        logoFileSize:  item.logoFileSize  ?? null,
+        // Propagate logo + BAT fields — never recomputed, passed through as-is
+        logoFileName:            item.logoFileName            ?? null,
+        logoFileUrl:             item.logoFileUrl             ?? null,
+        logoFilePath:            item.logoFilePath            ?? null,
+        logoFileType:            item.logoFileType            ?? null,
+        logoFileSize:            item.logoFileSize            ?? null,
+        logoEffect:              item.logoEffect              ?? null,
+        logoPlacementTransform:  item.logoPlacementTransform  ?? null,
+        batRef:                  item.batRef                  ?? null,
       };
     });
 
@@ -188,13 +196,17 @@ export async function POST(req: NextRequest) {
       unit_price_ttc:    item.unitPriceTTC,
       total_ht:          item.totalHT,
       total_ttc:         item.totalTTC,
-      // Logo — transmis depuis le panier (path cart/{sessionId}/..., uploadé lors de la sélection)
-      logo_file_name:    item.logoFileName   ?? null,
-      logo_file_url:     item.logoFileUrl    ?? null,
-      logo_file_type:    item.logoFileType   ?? null,
-      logo_file_size:    item.logoFileSize   ?? null,
-      logo_file_status:  item.logoFileUrl    ? "en_attente" : null,
-      logo_uploaded_at:  item.logoFileUrl    ? new Date().toISOString() : null,
+      // Logo + BAT config — transmis depuis le panier
+      logo_file_name:             item.logoFileName            ?? null,
+      logo_file_url:              item.logoFileUrl             ?? null,
+      logo_file_path:             item.logoFilePath            ?? null,
+      logo_file_type:             item.logoFileType            ?? null,
+      logo_file_size:             item.logoFileSize            ?? null,
+      logo_file_status:           item.logoFileUrl             ? "en_attente" : null,
+      logo_uploaded_at:           item.logoFileUrl             ? new Date().toISOString() : null,
+      logo_effect:                item.logoEffect              ?? null,
+      logo_placement_transform:   item.logoPlacementTransform  ?? null,
+      bat_ref:                    item.batRef                  ?? null,
     }));
 
     const { error: itemsError } = await supabase.from("order_items").insert(itemRows);

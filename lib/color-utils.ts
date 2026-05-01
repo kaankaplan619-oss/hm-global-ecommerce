@@ -25,7 +25,8 @@ export function isColorDark(colorId: string): boolean {
 }
 
 /** Effets de lisibilité du logo disponibles. */
-export type LogoEffect = "none" | "white-outline" | "white-bg";
+import type { LogoEffect } from "@/types";
+export type { LogoEffect };
 
 /** Options d'effet pour les sélecteurs UI. */
 export const EFFECT_OPTIONS: { value: LogoEffect; label: string }[] = [

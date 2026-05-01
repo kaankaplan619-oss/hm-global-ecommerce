@@ -396,6 +396,9 @@ export default function ProductDetailClient({ product }: Props) {
           placement={placement}
           size={size}
           quantity={quantity}
+          logoEffect={logoEffect}
+          logoPlacementTransform={logoPlacementTransform}
+          batRef={batData?.batRef}
         />
 
         {/* ── Bouton Prévisualiser le BAT ─────────────────────────────────── */}

@@ -5,33 +5,10 @@
  * Le rendu et l'impression sont gérés côté client dans BATModal.tsx.
  */
 
-import type { Technique, Placement, ProductColor, ProductCategory, Product } from "@/types";
-import type { LogoEffect } from "@/lib/color-utils";
+import type { Technique, Placement, ProductColor, ProductCategory, Product, LogoEffect, LogoPlacementTransform } from "@/types";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-
-/**
- * Transform snapshot of the Fabric.js logo object at the time of BAT generation.
- * All coordinates are in canvas pixels; `canvasSize` allows normalisation to [0,1].
- * originX / originY of the Fabric object are both "center".
- */
-export interface LogoPlacementTransform {
-  /** Canvas-px position of the logo center (originX/Y = "center") */
-  left:       number;
-  top:        number;
-  /** Scale factors applied to the natural image dimensions */
-  scaleX:     number;
-  scaleY:     number;
-  /** Natural pixel dimensions of the image (before scale) */
-  width:      number;
-  height:     number;
-  /** Rotation in degrees — default 0 (canvas UI does not expose a rotation handle) */
-  angle:      number;
-  /** Square canvas side length in px — required for coordinate normalisation */
-  canvasSize: number;
-  /** Coordinate-system tag for future conversion logic */
-  source:     "fabric-canvas";
-}
+// ── Re-export for backward compatibility ───────────────────────────────────────
+export type { LogoPlacementTransform } from "@/types";
 
 export interface BATData {
   // Produit

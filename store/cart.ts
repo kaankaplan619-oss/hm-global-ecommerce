@@ -15,6 +15,9 @@ interface AddToCartParams {
   technique: Technique;
   placement: Placement;
   logoFile?: CartItem["logoFile"];
+  logoEffect?: CartItem["logoEffect"];
+  logoPlacementTransform?: CartItem["logoPlacementTransform"];
+  batRef?: CartItem["batRef"];
 }
 
 interface CartState {
@@ -61,7 +64,7 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
 
       addItem: (params) => {
-        const { product, quantity, size, color, technique, placement, logoFile } = params;
+        const { product, quantity, size, color, technique, placement, logoFile, logoEffect, logoPlacementTransform, batRef } = params;
 
         // Récupérer le prix de base selon la technique
         const basePrice = product.pricing[technique as keyof typeof product.pricing] as number;
@@ -104,6 +107,9 @@ export const useCartStore = create<CartState>()(
             technique,
             placement,
             logoFile,
+            logoEffect,
+            logoPlacementTransform,
+            batRef,
             unitPrice,
             totalPrice,
           };

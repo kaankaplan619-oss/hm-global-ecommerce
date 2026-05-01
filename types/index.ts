@@ -27,6 +27,20 @@ export type Technique = "dtf" | "flex" | "broderie";
 
 export type Placement = "coeur" | "dos" | "coeur-dos";
 
+export type LogoEffect = "none" | "white-outline" | "white-bg";
+
+export interface LogoPlacementTransform {
+  left:       number;
+  top:        number;
+  scaleX:     number;
+  scaleY:     number;
+  width:      number;
+  height:     number;
+  angle:      number;
+  canvasSize: number;
+  source:     "fabric-canvas";
+}
+
 export type ProductGender = "unisex" | "homme" | "femme" | "enfant";
 
 export type ProductTier = "appel" | "standard" | "premium";
@@ -148,6 +162,9 @@ export interface CartItem {
   technique: Technique;
   placement: Placement;
   logoFile?: CartFile;
+  logoEffect?: LogoEffect;
+  logoPlacementTransform?: LogoPlacementTransform;
+  batRef?: string;
   unitPrice: number;
   totalPrice: number;
 }

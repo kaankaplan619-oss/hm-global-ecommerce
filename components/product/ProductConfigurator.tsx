@@ -9,7 +9,7 @@ import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib
 import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
 import { useAuthStore } from "@/store/auth";
 import { colorHasImages, colorHasSpecificImage } from "@/components/product/ProductGallery";
-import type { Product, Technique, Placement, ProductColor } from "@/types";
+import type { Product, Technique, Placement, ProductColor, LogoEffect, LogoPlacementTransform } from "@/types";
 
 interface Props {
   product: Product;
@@ -35,6 +35,10 @@ interface Props {
   hidePreview?: boolean;
   /** Map colorId → imageUrls chargée depuis l'API TopTex — pour indiquer quelle couleur a des photos */
   colorImages?: Record<string, string[]>;
+  /** Données BAT remontées depuis ProductDetailClient pour être persistées dans le panier */
+  logoEffect?: LogoEffect;
+  logoPlacementTransform?: LogoPlacementTransform | null;
+  batRef?: string;
 }
 
 export default function ProductConfigurator({
@@ -53,6 +57,9 @@ export default function ProductConfigurator({
   quantity:   controlledQuantity,
   hidePreview,
   colorImages,
+  logoEffect,
+  logoPlacementTransform,
+  batRef,
 }: Props) {
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -260,6 +267,9 @@ export default function ProductConfigurator({
       technique,
       placement,
       logoFile: logoCartFile,
+      logoEffect,
+      logoPlacementTransform: logoPlacementTransform ?? undefined,
+      batRef,
     });
 
     setAddedToCart(true);
