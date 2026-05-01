@@ -215,6 +215,19 @@ export default function Footer() {
             © {new Date().getFullYear()} HM Global Agence — Tous droits réservés
           </p>
 
+          {/* Liens légaux */}
+          <div className="flex items-center gap-4">
+            <Link href="/cgv" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+              CGV
+            </Link>
+            <Link href="/confidentialite" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+              Confidentialité
+            </Link>
+            <Link href="/mentions-legales" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+              Mentions légales
+            </Link>
+          </div>
+
           {/* Badges de paiement */}
           <div className="flex items-center gap-2">
             {PAYMENT_METHODS.map((m) => (
