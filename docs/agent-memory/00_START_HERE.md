@@ -22,17 +22,15 @@ Couleur accent : `#b13f74`. Design tokens : `--hm-*`.
 
 ## Tâche active
 
-**Flux V1 Auth / Upload / Checkout validé en production** (`hm-global.vercel.app`) — 2026-05-01.
+**B4 BAT Preview Studio validé en production** (`hm-global.vercel.app`) — 2026-05-01.
 
-- Auth register/login Supabase : ✅ OK
-- Upload logo invité : local preview uniquement (pas d'upload Supabase sans session)
-- Checkout : exige connexion (middleware 307 → `/connexion?redirect=/checkout`)
-- Logo sélectionné localement → doit être re-sélectionné/uploadé au checkout (bloc "Logo à enregistrer")
-- Upload Supabase Storage après connexion : ✅ URL publique `customer-logos/cart/…` confirmée
-- Bouton paiement débloqué après adresse facturation + logo uploadé : ✅
-- Aucun bug bloquant sur ce flux V1
+- T-shirts B&C (MockupViewer) : "Prévisualiser le BAT" → Studio interactif full-screen
+- Studio : drag logo contraint à la zone, zoom +/-, recentrer, info panel, "Voir BAT complet" → BATModal
+- Produits non-MockupViewer (hoodies, softshells…) : fallback direct vers BATModal
+- Commits : `1afa1e9` (studio) + `a6574af` (fix fallback hoodie) — tous deux READY
+- Aucun bug bloquant restant sur B4
 
-**Prochaine étape : B4 — Validation BAT (Bon À Tirer)**
+**Prochaine étape : B5 — Flux de commande complet (Stripe + création commande Supabase)**
 
 ## Protocole de session
 

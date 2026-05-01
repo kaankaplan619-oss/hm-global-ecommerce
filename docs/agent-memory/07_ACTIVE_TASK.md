@@ -16,7 +16,7 @@
 | Suppression `test-ci@hmga.fr` | ⏳ À faire | User Supabase ID: `2510b913` — depuis Dashboard Auth |
 | Mémoire projet `/docs/agent-memory/` | ✅ Créée | 10 fichiers (00→09) |
 | `CLAUDE.md` mis à jour | ✅ Fait | Section lecture obligatoire ajoutée |
-| **B4 / BAT Preview Studio** | ✅ Validé production | Commit `1afa1e9` — studio Fabric.js full-screen |
+| **B4 / BAT Preview Studio** | ✅ Validé production | Commits `1afa1e9` + `a6574af` — studio + fix fallback |
 
 ## Détail validation flux V1 (2026-05-01)
 
@@ -39,18 +39,25 @@ Testé sur `https://hm-global.vercel.app` — 14 étapes validées :
 
 Aucune erreur console. Aucun bug bloquant.
 
-## B4 BAT Preview Studio — Validé 2026-05-01
+## B4 BAT Preview Studio — Validé en production 2026-05-01
 
-Commit `1afa1e9` — Testé localement sur `http://localhost:3000/produits/tshirt-bc-exact-190-homme` :
-- Studio ouvre via bouton "Prévisualiser le BAT" ✅
-- Canvas Fabric.js présent, logo test-logo.png chargé ✅
-- Boutons Face/Dos, zoom+/-, recentrer, sélecteur d'effet ✅
-- Panel info : Blanc / L / DTF / Cœur / test-logo.png ✅
-- "Voir le BAT complet" → studio fermé, BATModal ouvert (z-9999) ✅
-- "← Retour au configurateur" → ferme le studio ✅
+Commits : `1afa1e9` (studio) + `a6574af` (fix fallback hoodie).
+
+Testé sur `https://hm-global.vercel.app` — 5/5 ✅ :
+- T-shirt B&C : "Prévisualiser le BAT" → Studio interactif full-screen ✅
+- Studio : canvas Fabric.js, logo chargé, Face/Dos, zoom+/-, recentrer, info panel ✅
+- "Voir le BAT complet" → studio fermé, BATModal ouvert ✅
+- Hoodie (non-MockupViewer) : "Prévisualiser le BAT" → BATModal direct (fallback) ✅
+- Ajouter au panier après fermeture studio/BAT → cart mis à jour ✅
 - Zéro erreur console ✅
+
+### Architecture B4
+
+- `components/product/BatPreviewStudio.tsx` — nouveau composant portal full-screen
+- `components/product/ProductDetailClient.tsx` — `showMockup ? setShowStudio(true) : setShowBAT(true)`
+- `MockupViewer.tsx` — **non modifié**, zones calibrées intactes
+- `BATModal.tsx` — **non modifié**
 
 ## Prochaine action
 
 → **B5 — Flux de commande complet** (Stripe, création commande Supabase, email confirmation)
-→ Ou **Pages légales** (CGV, Politique de confidentialité, Mentions légales) — déjà en todo
