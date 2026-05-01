@@ -22,12 +22,17 @@ Couleur accent : `#b13f74`. Design tokens : `--hm-*`.
 
 ## Tâche active
 
-Upload logo Supabase en production échoue :
-- logo visible localement dans le mockup (blob URL locale — indépendant de Supabase)
-- BAT prévisualisable
-- mais erreur "Erreur lors de l'envoi du fichier. Veuillez réessayer." (`SUPABASE_UPLOAD_ERROR`)
-- hypothèse principale : `NEXT_PUBLIC_SUPABASE_*` absentes du bundle client (variables injectées au build, pas au runtime) ou utilisateur non authentifié + throw Supabase client
-- prochaine action : récupérer logs console + Network DevTools avant toute modification
+**Flux V1 Auth / Upload / Checkout validé en production** (`hm-global.vercel.app`) — 2026-05-01.
+
+- Auth register/login Supabase : ✅ OK
+- Upload logo invité : local preview uniquement (pas d'upload Supabase sans session)
+- Checkout : exige connexion (middleware 307 → `/connexion?redirect=/checkout`)
+- Logo sélectionné localement → doit être re-sélectionné/uploadé au checkout (bloc "Logo à enregistrer")
+- Upload Supabase Storage après connexion : ✅ URL publique `customer-logos/cart/…` confirmée
+- Bouton paiement débloqué après adresse facturation + logo uploadé : ✅
+- Aucun bug bloquant sur ce flux V1
+
+**Prochaine étape : B4 — Validation BAT (Bon À Tirer)**
 
 ## Protocole de session
 

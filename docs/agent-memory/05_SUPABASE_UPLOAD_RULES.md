@@ -2,7 +2,11 @@
 
 ## Statut
 
-Infrastructure Supabase validée. Variables Vercel Production configurées. **Validation manuelle de l'upload logo en attente côté utilisateur (navigateur).**
+✅ **Validé en production le 2026-05-01** sur `hm-global.vercel.app`.
+
+- Upload invité (non connecté) : logo conservé localement (File object), **pas d'upload Supabase** — normal, RLS bloque INSERT sans `auth.uid()`
+- Upload connecté depuis checkout : ✅ URL publique `customer-logos/cart/{sessionId}/{timestamp}-{filename}` confirmée
+- `logoFile.url` et `logoFile.path` présents dans le cart store après upload réussi
 
 ## Bucket
 
