@@ -39,6 +39,8 @@ interface Props {
   logoEffect?: LogoEffect;
   logoPlacementTransform?: LogoPlacementTransform | null;
   batRef?: string;
+  /** Logo pré-uploadé depuis le Studio — remplace le fichier local dans le panier */
+  studioLogoPreset?: { url: string; path: string; name: string; size: number; type: string };
 }
 
 export default function ProductConfigurator({
@@ -60,6 +62,7 @@ export default function ProductConfigurator({
   logoEffect,
   logoPlacementTransform,
   batRef,
+  studioLogoPreset,
 }: Props) {
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -216,7 +219,16 @@ export default function ProductConfigurator({
 
     let logoCartFile: { name: string; size: number; type: string; url?: string; path?: string } | undefined;
 
-    if (logoFile) {
+    // Logo exporté depuis le Studio (pré-uploadé sur Supabase)
+    if (!logoFile && studioLogoPreset?.url) {
+      logoCartFile = {
+        name: studioLogoPreset.name,
+        size: studioLogoPreset.size,
+        type: studioLogoPreset.type,
+        url:  studioLogoPreset.url,
+        path: studioLogoPreset.path,
+      };
+    } else if (logoFile) {
       if (logoUploadResult) {
         // Chemin nominal : upload déjà effectué à la sélection du fichier ✅
         logoCartFile = {

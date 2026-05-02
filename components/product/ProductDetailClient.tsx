@@ -71,6 +71,10 @@ export default function ProductDetailClient({ product }: Props) {
     setLogoSupabaseUrl(result?.logoFileUrl ?? null);
   }, []);
 
+  // ── Logo pré-uploadé depuis le Studio (restauré via sessionStorage) ────────
+  type StudioLogoPreset = { url: string; path: string; name: string; size: number; type: string };
+  const [studioLogoPreset, setStudioLogoPreset] = useState<StudioLogoPreset | null>(null);
+
   // ── Blob URL du logo pour l'aperçu (créé/révoqué ici) ────────────────────
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -129,11 +133,16 @@ export default function ProductDetailClient({ product }: Props) {
       const raw = sessionStorage.getItem("hm-studio-result");
       if (!raw) return;
       const result = JSON.parse(raw) as {
-        colorId?:   string;
-        size?:      string;
-        technique?: string;
-        quantity?:  number;
-        placement?: string;
+        colorId?:      string;
+        size?:         string;
+        technique?:    string;
+        quantity?:     number;
+        placement?:    string;
+        logoFileUrl?:  string;
+        logoFileName?: string;
+        logoFilePath?: string;
+        logoFileSize?: number;
+        logoFileType?: string;
       };
       if (result.colorId) {
         const color = product.colors.find((c) => c.id === result.colorId && c.available);
@@ -146,6 +155,16 @@ export default function ProductDetailClient({ product }: Props) {
       if (typeof result.quantity === "number" && result.quantity > 0) setQuantity(result.quantity);
       if (result.placement && (product.placements as string[]).includes(result.placement as string)) {
         setPlacement(result.placement as Placement);
+      }
+      if (result.logoFileUrl && result.logoFileName) {
+        setStudioLogoPreset({
+          url:  result.logoFileUrl,
+          path: result.logoFilePath ?? "",
+          name: result.logoFileName,
+          size: result.logoFileSize ?? 0,
+          type: result.logoFileType ?? "image/png",
+        });
+        setLogoSupabaseUrl(result.logoFileUrl);
       }
       sessionStorage.removeItem("hm-studio-result");
     } catch {
@@ -432,6 +451,7 @@ export default function ProductDetailClient({ product }: Props) {
           logoEffect={logoEffect}
           logoPlacementTransform={logoPlacementTransform}
           batRef={batData?.batRef}
+          studioLogoPreset={studioLogoPreset ?? undefined}
         />
 
         {/* ── Bouton Studio personnalisation ──────────────────────────────── */}

@@ -98,6 +98,7 @@ export default function StudioSummaryPanel({
         size:      selectedSize,
         technique,
         quantity,
+        placement,
       };
       sessionStorage.setItem("hm-studio-result", JSON.stringify(studioResult));
 
