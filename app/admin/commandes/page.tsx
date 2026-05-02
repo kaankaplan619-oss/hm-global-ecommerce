@@ -150,7 +150,9 @@ export default function AdminCommandesPage() {
                     <div>
                       <p className="text-xs font-mono font-bold text-[#f5f5f5]">#{order.orderNumber}</p>
                       <p className="text-[10px] text-[#555555]">
-                        {new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" }).format(new Date(order.createdAt))}
+                        {order.createdAt && !isNaN(new Date(order.createdAt).getTime())
+                          ? new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" }).format(new Date(order.createdAt))
+                          : "—"}
                       </p>
                     </div>
                     <div>

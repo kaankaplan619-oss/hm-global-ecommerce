@@ -147,6 +147,14 @@ body {
 .section { padding: 80px 0; }
 .section-sm { padding: 48px 0; }
 
+/*
+ * ─── Components ─────────────────────────────────────────────────────────────
+ * @layer components garantit que les utilitaires Tailwind (hidden, flex…)
+ * peuvent surcharger ces classes sans !important.
+ * Cascade order: utilities > components > base.
+ */
+@layer components {
+
 /* ─── Section tag ───────────────────────────────────────────────── */
 .section-tag {
   display: inline-flex;
@@ -185,6 +193,8 @@ body {
   );
 }
 
+} /* end @layer components — keyframes must stay outside */
+
 /* ─── Keyframes ─────────────────────────────────────────────────── */
 
 /* Shimmer sweep sur les CTA primaires */
@@ -210,6 +220,8 @@ body {
   0%, 100% { box-shadow: 0 4px 14px rgba(177, 63, 116, 0.15); }
   50%       { box-shadow: 0 6px 22px rgba(177, 63, 116, 0.38); }
 }
+
+@layer components {
 
 /* ─── Buttons ───────────────────────────────────────────────────── */
 .btn-primary {
@@ -390,6 +402,8 @@ body {
 .badge-error   { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
 .badge-info    { background: rgba(76,47,111,0.1); color: var(--hm-purple); border: 1px solid rgba(76,47,111,0.2); }
 .badge-neutral { background: rgba(242,244,247,1); color: var(--hm-text-soft); border: 1px solid var(--hm-line); }
+
+} /* end @layer components */
 
 /* ─── BAT Print ─────────────────────────────────────────────────────── */
 /*

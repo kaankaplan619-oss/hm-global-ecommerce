@@ -40,7 +40,10 @@ interface Props {
   logoPlacementTransform?: LogoPlacementTransform | null;
   batRef?: string;
   /** Logo pré-uploadé depuis le Studio — remplace le fichier local dans le panier */
-  studioLogoPreset?: { url: string; path: string; name: string; size: number; type: string };
+  studioLogoPreset?: {
+    url: string; path: string; name: string; size: number; type: string;
+    logoPlacementTransform?: LogoPlacementTransform | null;
+  };
 }
 
 export default function ProductConfigurator({
@@ -271,6 +274,9 @@ export default function ProductConfigurator({
       }
     }
 
+    // Depuis le studio : utiliser la position Fabric.js enregistrée si pas de transform BAT
+    const effectiveTransform = logoPlacementTransform ?? studioLogoPreset?.logoPlacementTransform ?? undefined;
+
     addItem({
       product,
       quantity,
@@ -280,7 +286,7 @@ export default function ProductConfigurator({
       placement,
       logoFile: logoCartFile,
       logoEffect,
-      logoPlacementTransform: logoPlacementTransform ?? undefined,
+      logoPlacementTransform: effectiveTransform,
       batRef,
     });
 

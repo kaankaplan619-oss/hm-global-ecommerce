@@ -210,7 +210,7 @@ export default function Footer() {
       <div className="divider-brand relative z-10" />
 
       {/* ── Barre du bas — copyright + légal + paiements ─────────────────── */}
-      <div className="container relative z-10 py-5">
+      <div className="container relative z-10 pt-5 pb-24 sm:pb-5">
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-between">
 
           {/* Copyright */}

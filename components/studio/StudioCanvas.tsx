@@ -380,6 +380,8 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
               fabricState: {
                 left: target.left, top: target.top,
                 scaleX: target.scaleX, scaleY: target.scaleY,
+                width: target.width ?? 0, height: target.height ?? 0,
+                angle: target.angle ?? 0,
               },
             };
           });
@@ -463,7 +465,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     updateToolbar(target);
     const updated = objects.map((o) => {
       if (o.id !== selectedId) return o;
-      return { ...o, fabricState: { left: target.left, top: target.top, scaleX: target.scaleX, scaleY: target.scaleY } };
+      return { ...o, fabricState: { left: target.left, top: target.top, scaleX: target.scaleX, scaleY: target.scaleY, width: target.width ?? 0, height: target.height ?? 0, angle: target.angle ?? 0 } };
     });
     onObjectsChangeRef.current(updated);
   };

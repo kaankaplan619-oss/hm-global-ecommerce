@@ -85,7 +85,23 @@ export default function StudioSummaryPanel({
 
       const logoFileUrl = urlData?.publicUrl ?? "";
 
-      // 5. Save in sessionStorage
+      // 5. Extraire la position Fabric.js du premier objet logo/design
+      const firstObj = objects.find(o => o.type === "logo") ?? objects[0];
+      const logoPlacementTransform = firstObj?.fabricState
+        ? {
+            left:       firstObj.fabricState.left   ?? 0,
+            top:        firstObj.fabricState.top    ?? 0,
+            scaleX:     firstObj.fabricState.scaleX ?? 1,
+            scaleY:     firstObj.fabricState.scaleY ?? 1,
+            width:      firstObj.fabricState.width  ?? 0,
+            height:     firstObj.fabricState.height ?? 0,
+            angle:      firstObj.fabricState.angle  ?? 0,
+            canvasSize: 544,
+            source:     "fabric-canvas" as const,
+          }
+        : null;
+
+      // 6. Save in sessionStorage
       const studioResult = {
         logoFileUrl,
         logoFileName: filename,
@@ -93,7 +109,7 @@ export default function StudioSummaryPanel({
         logoFileType: "image/png",
         logoFileSize: file.size,
         batRef:       null,
-        logoPlacementTransform: null,
+        logoPlacementTransform,
         colorId:   selectedColor?.id ?? "",
         size:      selectedSize,
         technique,

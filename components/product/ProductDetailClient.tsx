@@ -72,7 +72,10 @@ export default function ProductDetailClient({ product }: Props) {
   }, []);
 
   // ── Logo pré-uploadé depuis le Studio (restauré via sessionStorage) ────────
-  type StudioLogoPreset = { url: string; path: string; name: string; size: number; type: string };
+  type StudioLogoPreset = {
+    url: string; path: string; name: string; size: number; type: string;
+    logoPlacementTransform?: LogoPlacementTransform | null;
+  };
   const [studioLogoPreset, setStudioLogoPreset] = useState<StudioLogoPreset | null>(null);
 
   // ── Blob URL du logo pour l'aperçu (créé/révoqué ici) ────────────────────
@@ -143,6 +146,7 @@ export default function ProductDetailClient({ product }: Props) {
         logoFilePath?: string;
         logoFileSize?: number;
         logoFileType?: string;
+        logoPlacementTransform?: LogoPlacementTransform | null;
       };
       if (result.colorId) {
         const color = product.colors.find((c) => c.id === result.colorId && c.available);
@@ -163,6 +167,7 @@ export default function ProductDetailClient({ product }: Props) {
           name: result.logoFileName,
           size: result.logoFileSize ?? 0,
           type: result.logoFileType ?? "image/png",
+          logoPlacementTransform: result.logoPlacementTransform ?? null,
         });
         setLogoSupabaseUrl(result.logoFileUrl);
       }

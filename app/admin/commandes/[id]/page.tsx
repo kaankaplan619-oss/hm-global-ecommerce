@@ -465,7 +465,7 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                     </span>
                   </div>
                 )}
-                {order.paidAt && (
+                {order.paidAt && !isNaN(new Date(order.paidAt).getTime()) && (
                   <div className="flex justify-between text-xs">
                     <span className="text-[#555555]">Payé le</span>
                     <span className="text-[#8a8a8a]">
