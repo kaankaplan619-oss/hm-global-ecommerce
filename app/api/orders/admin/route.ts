@@ -3,8 +3,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/orders/admin
- * Returns all orders with customer info, sorted by date desc.
- * Supports ?status=xxx filter.
+ * Retourne toutes les commandes avec infos client et articles (vue production).
+ * Supporte ?status=xxx pour filtrer par statut.
  */
 export async function GET(req: NextRequest) {
   try {
@@ -35,21 +35,36 @@ export async function GET(req: NextRequest) {
         order_number,
         status,
         total_ttc,
-        free_shipping,
+        subtotal_ht,
         shipping,
+        free_shipping,
+        stripe_payment_status,
+        paid_at,
         created_at,
         tracking_number,
         invoice_url,
         admin_note,
+        supplier_mode,
         profiles (
-          id, first_name, last_name, phone, type, company
+          id, first_name, last_name, email, phone, type, company
         ),
         order_items (
           id,
           product_name,
+          product_reference,
           quantity,
+          size,
+          color_label,
+          color_hex,
           technique,
-          logo_file_status
+          placement,
+          unit_price_ttc,
+          total_ttc,
+          logo_file_url,
+          logo_file_status,
+          logo_effect,
+          bat_ref,
+          product_snapshot
         )
       `)
       .order("created_at", { ascending: false });

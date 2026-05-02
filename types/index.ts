@@ -229,6 +229,7 @@ export interface User {
 // ─── Order Types ─────────────────────────────────────────────────────────────────
 
 export type OrderStatus =
+  // ─ Statuts legacy (DB existante — rétrocompatibles) ──────────────────────────
   | "paiement_recu"
   | "fichier_a_verifier"
   | "en_attente_client"
@@ -236,9 +237,32 @@ export type OrderStatus =
   | "en_traitement"
   | "expediee"
   | "terminee"
-  | "annulee";
+  | "annulee"
+  // ─ Nouveaux statuts workflow production ──────────────────────────────────────
+  | "commande_a_valider"
+  | "bat_a_preparer"
+  | "attente_validation_client"
+  | "a_commander_fournisseur"
+  | "commande_fournisseur_passee"
+  | "attente_reception_textile"
+  | "en_production"
+  | "prete_a_expedier";
 
 export type SupplierMode = "fournisseur" | "secours_interne";
+
+// ─── Supplier Types ───────────────────────────────────────────────────────────
+
+export type SupplierName = "toptex" | "falkross" | "newwave" | "pixartprint" | "interne" | "autre";
+
+export interface SupplierInfo {
+  supplier: SupplierName;
+  supplierLabel: string;
+  supplierReference: string;
+  supplierUrl?: string;
+  estimatedPurchasePrice?: number;
+  estimatedDelayDays?: number;
+  stockStatus: "unknown" | "available" | "low" | "unavailable";
+}
 
 export interface OrderFile {
   id: string;
