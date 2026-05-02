@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   ChevronRight,
   FileImage,
-  PanelsTopLeft,
   Shirt,
   Signpost,
 } from "lucide-react";
@@ -146,13 +145,11 @@ export default function RealisationsPage() {
             <div>
               <p className="section-tag">Réalisations HM Global</p>
               <h1 className="mb-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[var(--hm-text)] md:text-5xl">
-                Une base visuelle crédible pour montrer ce que HM Global peut produire.
+                Ce que HM Global produit pour les entreprises, associations et équipes.
               </h1>
               <p className="max-w-2xl text-base leading-8 text-[var(--hm-text-soft)]">
-                Cette page présente des exemples représentatifs de travaux textiles et de
-                communication visuelle. Elle est pensée pour être utile dès maintenant, tout en
-                restant prête à accueillir plus tard de vraies réalisations clients, des visuels
-                terrain et des cas avant / après plus précis.
+                Textile personnalisé, habillage véhicule, signalétique et print : des réalisations
+                concrètes pour des structures qui veulent une image cohérente, visible et bien produite.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3.5">
@@ -183,12 +180,11 @@ export default function RealisationsPage() {
           <div className="mb-8 max-w-2xl">
             <p className="section-tag">Mises en situation</p>
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Des exemples représentatifs pour aider à se projeter.
+              Textile et communication visuelle pour les professionnels.
             </h2>
             <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-              Même si tous les cas clients finaux ne sont pas encore publiés, la page montre déjà
-              le type de réalisations que HM Global peut traiter et la manière dont elles
-              pourront être présentées à terme.
+              Des réalisations adaptées à chaque besoin — équipe terrain, staff événementiel,
+              corporate ou association. Du support choisi à la production, avec un accompagnement clair.
             </p>
           </div>
 
@@ -238,12 +234,11 @@ export default function RealisationsPage() {
           <div className="mb-8 max-w-2xl">
             <p className="section-tag">Autres réalisations</p>
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Textile, véhicule, signalétique, print : une structure déjà prête à évoluer.
+              Habillage véhicule, signalétique, print et préparation visuelle.
             </h2>
             <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-              Les blocs ci-dessous servent dès maintenant de base crédible pour présenter
-              différents types de réalisations. Ils pourront être enrichis ensuite avec des
-              photos réelles, noms de projets, détails techniques ou galeries complémentaires.
+              HM Global intervient au-delà du textile : marquage mobile, repérage, supports imprimés
+              et mise au propre de fichiers avant production.
             </p>
           </div>
 
@@ -266,13 +261,7 @@ export default function RealisationsPage() {
                 </div>
 
                 <div className="mt-5 rounded-[1.25rem] border border-[var(--hm-line)] bg-white p-5">
-                  <div className="flex items-center gap-3">
-                    <PanelsTopLeft className="h-4 w-4 text-[var(--hm-primary)]" />
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
-                      Emplacement visuel prêt à recevoir un cas réel
-                    </p>
-                  </div>
-                  <p className="mt-4 text-sm leading-7 text-[var(--hm-text-soft)]">{text}</p>
+                  <p className="text-sm leading-7 text-[var(--hm-text-soft)]">{text}</p>
                 </div>
 
                 <div className="mt-5 space-y-3">

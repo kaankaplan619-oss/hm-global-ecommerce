@@ -34,10 +34,15 @@ const COLOR_TO_MOCKUP: Record<string, string> = {
   "bordeaux": "bordeaux", "bourgogne": "bordeaux",
 };
 
-// ── Zones calibrées — identiques à MockupViewer, NE PAS MODIFIER ─────────────
-const ZONES: Record<string, [number, number, number, number]> = {
-  coeur: [0.60, 0.25, 0.14, 0.14],
-  dos:   [0.26, 0.13, 0.48, 0.29],
+// ── Zones par catégorie (packshots TopTex) — identiques à MockupViewer ────────
+const ZONES_BY_CATEGORY: Record<string, { coeur: [number,number,number,number]; dos: [number,number,number,number] }> = {
+  tshirts:    { coeur: [0.38, 0.28, 0.18, 0.18], dos: [0.25, 0.20, 0.50, 0.45] },
+  hoodies:    { coeur: [0.40, 0.32, 0.16, 0.16], dos: [0.25, 0.22, 0.50, 0.42] },
+  softshells: { coeur: [0.42, 0.30, 0.15, 0.15], dos: [0.26, 0.22, 0.48, 0.40] },
+};
+const ZONES_STATIC = {
+  coeur: [0.60, 0.25, 0.14, 0.14] as [number,number,number,number],
+  dos:   [0.26, 0.13, 0.48, 0.29] as [number,number,number,number],
 };
 
 type View = "front" | "back";
@@ -55,12 +60,15 @@ interface Props {
   onClose:                () => void;
   onShowBAT:              () => void;
   onLogoTransformChange?: (t: LogoPlacementTransform) => void;
+  packshot?:              string | null;
+  productCategory?:       string;
 }
 
 export default function BatPreviewStudio({
   colorId, placement, logoFile, logoUrl,
   product, selectedColor, size, technique, quantity,
   onClose, onShowBAT, onLogoTransformChange,
+  packshot, productCategory,
 }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -97,14 +105,22 @@ export default function BatPreviewStudio({
   }, []);
 
   const getZone = useCallback((): [number, number, number, number] | null => {
-    if (placement === "coeur" && view === "front") return ZONES.coeur;
-    if (placement === "dos"   && view === "back")  return ZONES.dos;
-    if (placement === "coeur-dos") return view === "front" ? ZONES.coeur : ZONES.dos;
+    const zones = packshot
+      ? (ZONES_BY_CATEGORY[productCategory ?? ""] ?? ZONES_BY_CATEGORY.tshirts)
+      : ZONES_STATIC;
+    if (placement === "coeur" && view === "front") return zones.coeur;
+    if (placement === "dos"   && view === "back")  return zones.dos;
+    if (placement === "coeur-dos") return view === "front" ? zones.coeur : zones.dos;
     return null;
-  }, [placement, view]);
+  }, [placement, view, packshot, productCategory]);
 
-  const slug = COLOR_TO_MOCKUP[colorId] ?? "blanc";
-  const src  = MOCKUP_FILES[slug]?.[view] ?? MOCKUP_FILES.blanc[view];
+  const slug = COLOR_TO_MOCKUP[colorId] ?? null;
+  const mockups = slug ? MOCKUP_FILES[slug] : null;
+  const src = view === "front"
+    ? (packshot ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
+    : (productCategory === "tshirts"
+        ? (mockups?.back ?? packshot ?? "/mockups/tshirt/blanc-back.png")
+        : (packshot ?? "/mockups/tshirt/blanc-back.png"));
 
   // ── Init canvas (mount only) ───────────────────────────────────────────────
   useEffect(() => {

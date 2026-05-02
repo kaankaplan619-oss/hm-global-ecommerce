@@ -5,7 +5,7 @@ import TechniqueComparison from "@/components/home/TechniqueComparison";
 import ProcessSection from "@/components/home/ProcessSection";
 import TrustSection from "@/components/home/TrustSection";
 import OtherServices from "@/components/home/OtherServices";
-import ReviewsSection from "@/components/home/ReviewsSection";
+import TrustBand from "@/components/home/TrustBand";
 import CTASection from "@/components/home/CTASection";
 
 export default function HomePage() {
@@ -18,7 +18,7 @@ export default function HomePage() {
       <ProcessSection />
       <TrustSection />
       <OtherServices />
-      <ReviewsSection />
+      <TrustBand />
       <CTASection />
     </>
   );

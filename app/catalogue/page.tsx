@@ -14,6 +14,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   polos: "Polos",
   hoodies: "Hoodies & Sweats",
   softshells: "Softshells & Vestes",
+  polaires: "Polaires & Doudounes",
+  casquettes: "Casquettes & Bonnets",
+  sacs: "Sacs & Goodies",
+  enfants: "Enfants",
 };
 
 export default function CataloguePage() {

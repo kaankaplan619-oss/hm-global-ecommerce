@@ -56,6 +56,12 @@
 
   --hm-rose-border-hover: rgba(177,63,116,0.22);
   --hm-rose-border-focus: rgba(177,63,116,0.40);
+
+  /* ── Alias de compatibilité (utilisés dans Hero, BestSellers, CategorySection…) */
+  --hm-border:      #e6e8ee;
+  --hm-ink:         #3f2d58;
+  --hm-muted:       #6e6280;
+  --hm-shadow-soft: 0 4px 16px rgba(63,45,88,0.07);
 }
 
 /* ─── Base ──────────────────────────────────────────────────────── */

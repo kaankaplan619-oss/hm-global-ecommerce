@@ -34,11 +34,17 @@ const COLOR_TO_MOCKUP: Record<string, string> = {
   "bordeaux": "bordeaux", "bourgogne": "bordeaux",
 };
 
-// ── Zone de marquage (fraction of canvas) calibrated for B&C Exact 190 ───────
-// [left, top, width, height] as fraction of canvas size
-const ZONES: Record<string, [number, number, number, number]> = {
-  coeur: [0.60, 0.25, 0.14, 0.14],  // left chest — légèrement agrandi (was 0.11×0.11)
-  dos:   [0.26, 0.13, 0.48, 0.29],  // full back — resserré pour rester dans la silhouette (was [0.24,0.10,0.52,0.34])
+// ── Zones calibrées par catégorie (packshots TopTex) ─────────────────────────
+// [left, top, width, height] as fraction of canvas
+const ZONES_BY_CATEGORY: Record<string, { coeur: [number,number,number,number]; dos: [number,number,number,number] }> = {
+  tshirts:    { coeur: [0.38, 0.28, 0.18, 0.18], dos: [0.25, 0.20, 0.50, 0.45] },
+  hoodies:    { coeur: [0.40, 0.32, 0.16, 0.16], dos: [0.25, 0.22, 0.50, 0.42] },
+  softshells: { coeur: [0.42, 0.30, 0.15, 0.15], dos: [0.26, 0.22, 0.48, 0.40] },
+};
+// Fallback pour les mockups statiques B&C Exact 190 (B3.2-A2 validé)
+const ZONES_STATIC = {
+  coeur: [0.60, 0.25, 0.14, 0.14] as [number,number,number,number],
+  dos:   [0.26, 0.13, 0.48, 0.29] as [number,number,number,number],
 };
 
 type View = "front" | "back";
@@ -54,9 +60,12 @@ interface Props {
   /** Notifie le parent quand l'utilisateur change de vue (Face/Dos) afin de
    *  maintenir placement et vue cohérents dans les deux sens. */
   onPlacementChange?:     (p: Placement) => void;
+  /** Packshot TopTex ou mockup HM pour le coloris courant. */
+  packshot?:              string | null;
+  productCategory?:       string;
 }
 
-export default function MockupViewer({ colorId, placement, logoFile, logoUrl, badge, onLogoPositionChange, onPlacementChange }: Props) {
+export default function MockupViewer({ colorId, placement, logoFile, logoUrl, badge, onLogoPositionChange, onPlacementChange, packshot, productCategory }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
   const canvasRef     = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,11 +95,14 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
 
   // ── Active zone for current view/placement ────────────────────────────────
   const getZone = useCallback((): [number, number, number, number] | null => {
-    if (placement === "coeur" && view === "front") return ZONES.coeur;
-    if (placement === "dos"   && view === "back")  return ZONES.dos;
-    if (placement === "coeur-dos") return view === "front" ? ZONES.coeur : ZONES.dos;
+    const zones = packshot
+      ? (ZONES_BY_CATEGORY[productCategory ?? ""] ?? ZONES_BY_CATEGORY.tshirts)
+      : ZONES_STATIC;
+    if (placement === "coeur" && view === "front") return zones.coeur;
+    if (placement === "dos"   && view === "back")  return zones.dos;
+    if (placement === "coeur-dos") return view === "front" ? zones.coeur : zones.dos;
     return null;
-  }, [placement, view]);
+  }, [placement, view, packshot, productCategory]);
 
   // ── Auto-switch view when placement changes ───────────────────────────────
   useEffect(() => {
@@ -99,9 +111,13 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
   }, [placement]);
 
   // ── Current mockup image src ──────────────────────────────────────────────
-  const slug    = COLOR_TO_MOCKUP[colorId] ?? "blanc";
-  const mockups = MOCKUP_FILES[slug];
-  const src     = mockups[view];
+  const slug    = COLOR_TO_MOCKUP[colorId] ?? null;
+  const mockups = slug ? MOCKUP_FILES[slug] : null;
+  const src = view === "front"
+    ? (packshot ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
+    : (productCategory === "tshirts"
+        ? (mockups?.back ?? packshot ?? "/mockups/tshirt/blanc-back.png")
+        : (packshot ?? "/mockups/tshirt/blanc-back.png"));
 
   // ── Init Fabric.js canvas (mount only, with ResizeObserver) ──────────────
   useEffect(() => {

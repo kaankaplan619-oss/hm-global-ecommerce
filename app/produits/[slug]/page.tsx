@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
@@ -96,7 +97,9 @@ export default async function ProductPage({ params }: Props) {
           <span className="text-[var(--hm-text)]">{product.shortName}</span>
         </nav>
 
-        <ProductDetailClient product={product} />
+        <Suspense>
+          <ProductDetailClient product={product} />
+        </Suspense>
 
         <div className="mb-16 border-t border-[var(--hm-line)] pt-8 md:pt-10" />
 

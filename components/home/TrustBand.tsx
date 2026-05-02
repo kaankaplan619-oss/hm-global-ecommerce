@@ -82,7 +82,7 @@ const COMMITMENTS = [
 
 // ─── Composant ────────────────────────────────────────────────────────────────
 
-export default function ReviewsSection() {
+export default function TrustBand() {
   return (
     <section className="section bg-[var(--hm-surface)]">
       <div className="container">

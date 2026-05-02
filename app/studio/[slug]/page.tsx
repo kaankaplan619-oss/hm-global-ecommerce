@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { getProductBySlug } from "@/data/products";
 import StudioClient from "./_studio-client";
 import type { Metadata } from "next";
@@ -22,5 +23,9 @@ export default async function StudioPage({ params }: Props) {
   const product = getProductBySlug(slug);
   if (!product) notFound();
 
-  return <StudioClient product={product} />;
+  return (
+    <Suspense>
+      <StudioClient product={product} />
+    </Suspense>
+  );
 }
