@@ -121,26 +121,26 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   }
 
   if (!order) return (
-    <div className="pt-24 text-center">
-      <p className="text-[#555555]">Commande introuvable</p>
+    <div className="min-h-screen bg-[var(--hm-bg)] pt-24 text-center">
+      <p className="text-[var(--hm-text-soft)]">Commande introuvable</p>
       <Link href="/admin/commandes" className="btn-ghost mt-4">Retour</Link>
     </div>
   );
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--hm-bg)] pt-24 pb-20">
       <div className="container max-w-5xl">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-[#555555] mb-6">
-          <Link href="/admin" className="hover:text-[#f5f5f5]">Admin</Link>
+        <nav className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] mb-6">
+          <Link href="/admin" className="hover:text-[var(--hm-text)]">Admin</Link>
           <span>/</span>
-          <Link href="/admin/commandes" className="hover:text-[#f5f5f5]">Commandes</Link>
+          <Link href="/admin/commandes" className="hover:text-[var(--hm-text)]">Commandes</Link>
           <span>/</span>
-          <span className="text-[#f5f5f5]">#{order.orderNumber}</span>
+          <span className="text-[var(--hm-text)]">#{order.orderNumber}</span>
         </nav>
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-black text-[#f5f5f5]">Commande #{order.orderNumber}</h1>
+          <h1 className="text-xl font-black text-[var(--hm-text)]">Commande #{order.orderNumber}</h1>
           <div className="flex gap-2">
             {order.invoiceUrl && (
               <a href={order.invoiceUrl} target="_blank" rel="noopener noreferrer" className="btn-outline text-xs gap-2">
@@ -155,51 +155,51 @@ export default function AdminCommandeDetailPage({ params }: Props) {
           {/* Left — Order info */}
           <div className="lg:col-span-2 flex flex-col gap-5">
             {/* Client info */}
-            <div className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-              <h2 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-4">Client</h2>
+            <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+              <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-4">Client</h2>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-[10px] text-[#555555] mb-0.5">Nom</p>
-                  <p className="text-sm font-semibold text-[#f5f5f5]">
+                  <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Nom</p>
+                  <p className="text-sm font-semibold text-[var(--hm-text)]">
                     {order.user.firstName} {order.user.lastName}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#555555] mb-0.5">Email</p>
-                  <p className="text-sm text-[#f5f5f5]">{order.user.email}</p>
+                  <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Email</p>
+                  <p className="text-sm text-[var(--hm-text)]">{order.user.email}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#555555] mb-0.5">Téléphone</p>
-                  <p className="text-sm text-[#f5f5f5]">{order.user.phone}</p>
+                  <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Téléphone</p>
+                  <p className="text-sm text-[var(--hm-text)]">{order.user.phone}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#555555] mb-0.5">Type</p>
-                  <p className="text-sm text-[#f5f5f5] capitalize">{order.user.type}</p>
+                  <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Type</p>
+                  <p className="text-sm text-[var(--hm-text)] capitalize">{order.user.type}</p>
                 </div>
                 {order.user.company && (
                   <div className="col-span-2">
-                    <p className="text-[10px] text-[#555555] mb-0.5">Société</p>
-                    <p className="text-sm text-[#f5f5f5]">{order.user.company}</p>
+                    <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Société</p>
+                    <p className="text-sm text-[var(--hm-text)]">{order.user.company}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
+            <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-2">Facturation</h2>
+                  <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-2">Facturation</h2>
                   {order.invoiceUrl ? (
-                    <p className="text-sm text-[#4ade80]">
+                    <p className="text-sm text-green-500">
                       Facture enregistrée sur la commande.
                     </p>
                   ) : (
-                    <p className="text-sm text-[#f5f5f5]">
+                    <p className="text-sm text-[var(--hm-text)]">
                       Facture à créer manuellement dans Pennylane.
                     </p>
                   )}
                   {!order.invoiceUrl && (
-                    <p className="text-xs text-[#8a8a8a] mt-1">
+                    <p className="text-xs text-[var(--hm-text-soft)] mt-1">
                       L&apos;automatisation API Pennylane est suspendue pour la V1.
                     </p>
                   )}
@@ -211,14 +211,14 @@ export default function AdminCommandeDetailPage({ params }: Props) {
             </div>
 
             {/* Order items */}
-            <div className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-              <h2 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-4">Articles</h2>
+            <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+              <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-4">Articles</h2>
               <div className="flex flex-col gap-4">
                 {order.items.map((item) => (
-                  <div key={item.id} className="flex items-start gap-3 pb-4 border-b border-[#1e1e1e] last:border-0 last:pb-0">
+                  <div key={item.id} className="flex items-start gap-3 pb-4 border-b border-[var(--hm-line)] last:border-0 last:pb-0">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#f5f5f5]">{item.product.shortName}</p>
-                      <p className="text-[10px] font-mono text-[#555555]">{item.product.reference}</p>
+                      <p className="text-sm font-semibold text-[var(--hm-text)]">{item.product.shortName}</p>
+                      <p className="text-[10px] font-mono text-[var(--hm-text-soft)]">{item.product.reference}</p>
                       <div className="flex flex-wrap gap-2 mt-1">
                         <span className="badge badge-neutral text-[9px]">Taille {item.size}</span>
                         <span className="badge badge-neutral text-[9px]">{item.color.label}</span>
@@ -228,8 +228,8 @@ export default function AdminCommandeDetailPage({ params }: Props) {
 
                       {/* Logo & BAT */}
                       {(item.logoFile || item.batRef || item.logoEffect) && (
-                        <div className="mt-3 p-3 bg-[#0a0a0a] border border-[#1e1e1e] rounded-lg">
-                          <p className="text-[9px] font-bold text-[#8a8a8a] uppercase tracking-wider mb-2">Logo & BAT</p>
+                        <div className="mt-3 p-3 bg-[var(--hm-surface)] border border-[var(--hm-line)] rounded-lg">
+                          <p className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-2">Logo & BAT</p>
 
                           {item.logoFile && (
                             <div className="flex items-center gap-2 mb-2">
@@ -240,7 +240,7 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                 href={item.logoFile.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[10px] text-[#c9a96e] hover:underline flex items-center gap-1"
+                                className="text-[10px] text-[var(--hm-primary)] hover:underline flex items-center gap-1"
                               >
                                 {item.logoFile.name}
                                 <ExternalLink size={9} />
@@ -250,8 +250,8 @@ export default function AdminCommandeDetailPage({ params }: Props) {
 
                           <div className="flex flex-col gap-1">
                             <div className="flex justify-between text-[10px]">
-                              <span className="text-[#555555]">Effet logo</span>
-                              <span className="text-[#f5f5f5]">
+                              <span className="text-[var(--hm-text-soft)]">Effet logo</span>
+                              <span className="text-[var(--hm-text)]">
                                 {item.logoEffect === "white-outline"
                                   ? "Contour blanc"
                                   : item.logoEffect === "white-bg"
@@ -262,14 +262,14 @@ export default function AdminCommandeDetailPage({ params }: Props) {
 
                             {item.batRef && (
                               <div className="flex justify-between text-[10px]">
-                                <span className="text-[#555555]">Réf. BAT</span>
-                                <span className="font-mono text-[#c9a96e]">{item.batRef}</span>
+                                <span className="text-[var(--hm-text-soft)]">Réf. BAT</span>
+                                <span className="font-mono text-[var(--hm-primary)]">{item.batRef}</span>
                               </div>
                             )}
 
                             <div className="flex justify-between text-[10px]">
-                              <span className="text-[#555555]">Position</span>
-                              <span className={item.logoPlacementTransform ? "text-[#4ade80]" : "text-[#8a8a8a]"}>
+                              <span className="text-[var(--hm-text-soft)]">Position</span>
+                              <span className={item.logoPlacementTransform ? "text-green-500" : "text-[var(--hm-text-soft)]"}>
                                 {item.logoPlacementTransform ? "Personnalisée enregistrée ✓" : "Non enregistrée"}
                               </span>
                             </div>
@@ -278,8 +278,8 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-xs text-[#555555]">×{item.quantity}</p>
-                      <p className="text-sm font-bold text-[#c9a96e]">
+                      <p className="text-xs text-[var(--hm-text-soft)]">×{item.quantity}</p>
+                      <p className="text-sm font-bold text-[var(--hm-primary)]">
                         {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(item.totalTTC)}
                       </p>
                     </div>
@@ -287,22 +287,22 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                 ))}
               </div>
 
-              <div className="mt-4 pt-4 border-t border-[#1e1e1e] flex flex-col gap-1.5">
-                <div className="flex justify-between text-xs text-[#555555]">
+              <div className="mt-4 pt-4 border-t border-[var(--hm-line)] flex flex-col gap-1.5">
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
                   <span>Sous-total HT</span>
                   <span>{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(order.subtotalHT)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-[#555555]">
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
                   <span>TVA (20%)</span>
                   <span>{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(order.tva)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-[#555555]">
+                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
                   <span>Livraison</span>
                   <span>{order.freeShipping ? "Offerte" : new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(order.shipping)}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-[#f5f5f5] pt-2">
+                <div className="flex justify-between text-sm font-bold text-[var(--hm-text)] pt-2">
                   <span>Total TTC</span>
-                  <span className="text-[#c9a96e]">
+                  <span className="text-[var(--hm-primary)]">
                     {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(order.totalTTC)}
                   </span>
                 </div>
@@ -311,8 +311,8 @@ export default function AdminCommandeDetailPage({ params }: Props) {
 
             {/* File rejection form */}
             {(order.status === "paiement_recu" || order.status === "fichier_a_verifier") && (
-              <div className="p-5 bg-[#facc1508] border border-[#facc1522] rounded-xl">
-                <h2 className="text-xs font-bold text-[#facc15] uppercase tracking-wider mb-4 flex items-center gap-2">
+              <div className="p-5 bg-[var(--hm-accent-soft-rose)] border border-[var(--hm-rose)]/20 rounded-2xl">
+                <h2 className="text-xs font-bold text-[var(--hm-rose)] uppercase tracking-wider mb-4 flex items-center gap-2">
                   <AlertTriangle size={12} />
                   Rejeter le fichier
                 </h2>
@@ -339,8 +339,8 @@ export default function AdminCommandeDetailPage({ params }: Props) {
           {/* Right — Admin actions */}
           <div className="flex flex-col gap-4">
             {/* Status update */}
-            <div className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-              <h2 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-4">
+            <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+              <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-4">
                 Statut de la commande
               </h2>
               <select
@@ -406,13 +406,13 @@ export default function AdminCommandeDetailPage({ params }: Props) {
             </div>
 
             {/* Quick actions */}
-            <div className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-              <h2 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-4">
+            <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+              <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-4">
                 Actions rapides
               </h2>
               <div className="flex flex-col gap-2">
                 {!order.invoiceUrl && order.status === "validee" && (
-                  <div className="rounded-lg border border-[#c9a96e33] bg-[#c9a96e0f] px-3 py-2 text-xs text-[#c9a96e]">
+                  <div className="rounded-lg border border-[var(--hm-primary)]/20 bg-[var(--hm-accent-soft-rose)] px-3 py-2 text-xs text-[var(--hm-primary)]">
                     Facture à créer manuellement dans Pennylane avant envoi au client.
                   </div>
                 )}
@@ -446,29 +446,29 @@ export default function AdminCommandeDetailPage({ params }: Props) {
             </div>
 
             {/* Payment info */}
-            <div className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-              <h2 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-3">
+            <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+              <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-3">
                 Paiement Stripe
               </h2>
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#555555]">Statut</span>
-                  <span className={`font-semibold ${order.stripePaymentStatus === "succeeded" ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+                  <span className="text-[var(--hm-text-soft)]">Statut</span>
+                  <span className={`font-semibold ${order.stripePaymentStatus === "succeeded" ? "text-green-500" : "text-[#f87171]"}`}>
                     {order.stripePaymentStatus === "succeeded" ? "Payé ✓" : order.stripePaymentStatus ?? "—"}
                   </span>
                 </div>
                 {order.stripePaymentIntentId && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-[#555555]">ID Stripe</span>
-                    <span className="font-mono text-[10px] text-[#8a8a8a] truncate max-w-[120px]">
+                    <span className="text-[var(--hm-text-soft)]">ID Stripe</span>
+                    <span className="font-mono text-[10px] text-[var(--hm-text-soft)] truncate max-w-[120px]">
                       {order.stripePaymentIntentId}
                     </span>
                   </div>
                 )}
                 {order.paidAt && !isNaN(new Date(order.paidAt).getTime()) && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-[#555555]">Payé le</span>
-                    <span className="text-[#8a8a8a]">
+                    <span className="text-[var(--hm-text-soft)]">Payé le</span>
+                    <span className="text-[var(--hm-text-soft)]">
                       {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(order.paidAt))}
                     </span>
                   </div>

@@ -11,6 +11,7 @@ import {
   LogOut,
   ChevronRight,
   ShoppingBag,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { getInitials } from "@/lib/utils";
@@ -207,6 +208,30 @@ export default function MonComptePage() {
               />
             </Link>
           ))}
+
+          {/* Administration — visible uniquement pour les admins */}
+          {user?.role === "admin" && (
+            <div className="mt-8">
+              <p className="mb-4 text-xs font-bold uppercase tracking-widest text-[var(--hm-text-soft)]">
+                Administration
+              </p>
+              <Link
+                href="/admin/commandes"
+                className="group flex items-start gap-4 rounded-2xl border border-[var(--hm-line)] bg-white p-5 shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-all duration-200 hover:border-[var(--hm-primary)]/30 hover:shadow-[0_8px_24px_rgba(63,45,88,0.08)] hover:-translate-y-0.5"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--hm-accent-soft-rose)]">
+                  <ShieldCheck size={20} className="text-[var(--hm-primary)]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-[var(--hm-text)]">Commandes admin</p>
+                  <p className="mt-0.5 text-sm text-[var(--hm-text-soft)]">
+                    Gérer les commandes, fichiers clients, BAT et statuts de production.
+                  </p>
+                </div>
+                <ChevronRight size={18} className="mt-1 shrink-0 text-[var(--hm-text-soft)] group-hover:text-[var(--hm-primary)] transition-colors" />
+              </Link>
+            </div>
+          )}
 
           {/* Déconnexion */}
           <button

@@ -65,17 +65,17 @@ export default function AdminCommandesPage() {
   });
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--hm-bg)] pt-24 pb-20">
       <div className="container max-w-5xl">
         {/* Header */}
-        <nav className="flex items-center gap-2 text-xs text-[#555555] mb-6">
-          <Link href="/admin" className="hover:text-[#f5f5f5]">Admin</Link>
+        <nav className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] mb-6">
+          <Link href="/admin" className="hover:text-[var(--hm-text)]">Admin</Link>
           <span>/</span>
-          <span className="text-[#f5f5f5]">Commandes</span>
+          <span className="text-[var(--hm-text)]">Commandes</span>
         </nav>
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-black text-[#f5f5f5]">Commandes</h1>
+          <h1 className="text-2xl font-black text-[var(--hm-text)]">Commandes</h1>
           <button onClick={loadOrders} className="btn-ghost gap-2 text-xs">
             <RefreshCw size={12} />
             Actualiser
@@ -86,7 +86,7 @@ export default function AdminCommandesPage() {
         <div className="flex flex-wrap gap-2 mb-4">
           {/* Search */}
           <div className="relative flex-1 min-w-48">
-            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555555]" />
+            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--hm-text-soft)]" />
             <input
               type="text"
               placeholder="N° commande, email, nom..."
@@ -101,7 +101,7 @@ export default function AdminCommandesPage() {
             <button
               onClick={() => setFilter("all")}
               className={`px-3 py-1.5 text-[10px] font-semibold rounded-full border transition-colors
-                ${filter === "all" ? "border-[#c9a96e] text-[#c9a96e]" : "border-[#2a2a2a] text-[#555555] hover:border-[#3a3a3a]"}`}
+                ${filter === "all" ? "border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
             >
               Tous ({orders.length})
             </button>
@@ -110,7 +110,7 @@ export default function AdminCommandesPage() {
                 key={s}
                 onClick={() => setFilter(s as OrderStatus)}
                 className={`px-3 py-1.5 text-[10px] font-semibold rounded-full border transition-colors
-                  ${filter === s ? "border-[#c9a96e] text-[#c9a96e]" : "border-[#2a2a2a] text-[#555555] hover:border-[#3a3a3a]"}`}
+                  ${filter === s ? "border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
               >
                 {STATUS_LABELS[s as OrderStatus].label} ({orders.filter((o) => o.status === s).length})
               </button>
@@ -125,7 +125,7 @@ export default function AdminCommandesPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-[#555555] text-sm">Aucune commande{filter !== "all" ? " pour ce statut" : ""}</p>
+            <p className="text-[var(--hm-text-soft)] text-sm">Aucune commande{filter !== "all" ? " pour ce statut" : ""}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -137,39 +137,39 @@ export default function AdminCommandesPage() {
                 <Link
                   key={order.id}
                   href={`/admin/commandes/${order.id}`}
-                  className={`flex items-center gap-4 p-4 rounded-xl border transition-colors group
+                  className={`flex items-center gap-4 p-4 rounded-2xl border transition-all group shadow-[0_2px_8px_rgba(63,45,88,0.04)] hover:shadow-[0_8px_24px_rgba(63,45,88,0.08)]
                     ${isUrgent
-                      ? "bg-[#facc1508] border-[#facc1522] hover:border-[#facc1544]"
-                      : "bg-[#111111] border-[#1e1e1e] hover:border-[#2a2a2a]"
+                      ? "bg-[var(--hm-accent-soft-rose)] border-[var(--hm-rose)]/20 hover:border-[var(--hm-rose)]/40"
+                      : "bg-white border-[var(--hm-line)] hover:border-[var(--hm-text-soft)]/40"
                     }`}
                 >
                   {isUrgent && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#facc15] animate-pulse shrink-0" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--hm-rose)] animate-pulse shrink-0" />
                   )}
                   <div className="flex-1 min-w-0 grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
-                      <p className="text-xs font-mono font-bold text-[#f5f5f5]">#{order.orderNumber}</p>
-                      <p className="text-[10px] text-[#555555]">
+                      <p className="text-xs font-mono font-bold text-[var(--hm-text)]">#{order.orderNumber}</p>
+                      <p className="text-[10px] text-[var(--hm-text-soft)]">
                         {order.createdAt && !isNaN(new Date(order.createdAt).getTime())
                           ? new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" }).format(new Date(order.createdAt))
                           : "—"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-[#f5f5f5] truncate">{order.user.firstName} {order.user.lastName}</p>
-                      <p className="text-[10px] text-[#555555] truncate">{order.user.email}</p>
+                      <p className="text-xs text-[var(--hm-text)] truncate">{order.user.firstName} {order.user.lastName}</p>
+                      <p className="text-[10px] text-[var(--hm-text-soft)] truncate">{order.user.email}</p>
                     </div>
                     <div>
                       <span className={`badge ${statusInfo.badge} text-[9px]`}>{statusInfo.label}</span>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-[#c9a96e]">
+                      <p className="text-sm font-bold text-[var(--hm-primary)]">
                         {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(order.totalTTC)}
                       </p>
-                      <p className="text-[10px] text-[#555555]">{order.items.length} article{order.items.length > 1 ? "s" : ""}</p>
+                      <p className="text-[10px] text-[var(--hm-text-soft)]">{order.items.length} article{order.items.length > 1 ? "s" : ""}</p>
                     </div>
                   </div>
-                  <ChevronRight size={14} className="text-[#555555] shrink-0 group-hover:text-[#f5f5f5]" />
+                  <ChevronRight size={14} className="text-[var(--hm-text-soft)] shrink-0 group-hover:text-[var(--hm-text)]" />
                 </Link>
               );
             })}

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
+import { ShoppingBag, User, Menu, X, ChevronDown, ShieldCheck } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
 import { cn } from "@/lib/utils";
@@ -141,6 +141,16 @@ export default function Header() {
               </span>
             </Link>
 
+            {isAuthenticated && user?.role === "admin" && (
+              <Link
+                href="/admin/commandes"
+                className="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-[var(--hm-line)] px-3 py-1.5 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+              >
+                <ShieldCheck size={13} />
+                Admin
+              </Link>
+            )}
+
             <button
               onClick={toggleCart}
               className="btn-ghost relative px-2.5"
@@ -208,6 +218,16 @@ export default function Header() {
               >
                 {isAuthenticated ? "Mon compte" : "Connexion"}
               </Link>
+              {isAuthenticated && user?.role === "admin" && (
+                <Link
+                  href="/admin/commandes"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-[var(--hm-line)] px-4 py-3 text-sm font-semibold text-[var(--hm-text)] hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)] transition-colors"
+                >
+                  <ShieldCheck size={16} />
+                  Commandes admin
+                </Link>
+              )}
               <Link
                 href="/catalogue"
                 onClick={() => setIsMobileOpen(false)}

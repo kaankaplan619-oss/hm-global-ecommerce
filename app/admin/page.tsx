@@ -55,10 +55,10 @@ const ADMIN_SECTIONS = [
 ];
 
 const QUICK_STATS = [
-  { icon: AlertTriangle, label: "Commandes à valider", value: "—", color: "#facc15" },
-  { icon: FileText, label: "Fichiers à vérifier", value: "—", color: "#c9a96e" },
-  { icon: Clock, label: "En attente client", value: "—", color: "#60a5fa" },
-  { icon: TrendingUp, label: "CA ce mois (TTC)", value: "—", color: "#4ade80" },
+  { icon: AlertTriangle, label: "Commandes à valider", value: "—", color: "#f59e0b" },
+  { icon: FileText,      label: "Fichiers à vérifier", value: "—", color: "var(--hm-primary)" },
+  { icon: Clock,         label: "En attente client",   value: "—", color: "#60a5fa" },
+  { icon: TrendingUp,    label: "CA ce mois (TTC)",    value: "—", color: "#22c55e" },
 ];
 
 export default function AdminPage() {
@@ -74,15 +74,15 @@ export default function AdminPage() {
   if (!_hasHydrated || !isAuthenticated || user?.role !== "admin") return null;
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--hm-bg)] pt-24 pb-20">
       <div className="container max-w-5xl">
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-2">
             <span className="badge badge-gold">Admin</span>
           </div>
-          <h1 className="text-2xl font-black text-[#f5f5f5]">Back-Office HM Global</h1>
-          <p className="text-sm text-[#555555] mt-1">
+          <h1 className="text-2xl font-black text-[var(--hm-text)]">Back-Office HM Global</h1>
+          <p className="text-sm text-[var(--hm-text-soft)] mt-1">
             Bienvenue, {user.firstName}. Gérez vos commandes, clients et factures.
           </p>
         </div>
@@ -92,11 +92,11 @@ export default function AdminPage() {
           {QUICK_STATS.map(({ icon: Icon, label, value, color }) => (
             <div
               key={label}
-              className="p-4 bg-[#111111] border border-[#1e1e1e] rounded-xl"
+              className="p-4 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]"
             >
               <div className="flex items-center gap-2 mb-3">
                 <Icon size={14} style={{ color }} />
-                <span className="text-[10px] text-[#555555] uppercase tracking-wider font-semibold">
+                <span className="text-[10px] text-[var(--hm-text-soft)] uppercase tracking-wider font-semibold">
                   {label}
                 </span>
               </div>
@@ -109,42 +109,42 @@ export default function AdminPage() {
 
         {/* Admin sections */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {ADMIN_SECTIONS.map(({ href, icon: Icon, title, description, count, countLabel, accent }) => (
+          {ADMIN_SECTIONS.map(({ href, icon: Icon, title, description, count, countLabel }) => (
             <Link
               key={href}
               href={href}
-              className="p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl hover:border-[#2a2a2a] transition-colors group"
+              className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)] hover:border-[var(--hm-text-soft)]/40 hover:shadow-[0_8px_24px_rgba(63,45,88,0.08)] transition-all group"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center group-hover:bg-[#c9a96e11] transition-colors">
-                  <Icon size={18} className="text-[#555555] group-hover:text-[#c9a96e] transition-colors" />
+                <div className="w-10 h-10 rounded-lg bg-[var(--hm-surface)] flex items-center justify-center group-hover:bg-[var(--hm-accent-soft-rose)] transition-colors">
+                  <Icon size={18} className="text-[var(--hm-text-soft)] group-hover:text-[var(--hm-primary)] transition-colors" />
                 </div>
                 <div className="text-right">
-                  <span className="text-xl font-black text-[#f5f5f5]">{count}</span>
-                  <p className="text-[10px] text-[#555555]">{countLabel}</p>
+                  <span className="text-xl font-black text-[var(--hm-text)]">{count}</span>
+                  <p className="text-[10px] text-[var(--hm-text-soft)]">{countLabel}</p>
                 </div>
               </div>
-              <h2 className="text-sm font-bold text-[#f5f5f5] mb-1">{title}</h2>
-              <p className="text-xs text-[#555555]">{description}</p>
+              <h2 className="text-sm font-bold text-[var(--hm-text)] mb-1">{title}</h2>
+              <p className="text-xs text-[var(--hm-text-soft)]">{description}</p>
             </Link>
           ))}
         </div>
 
         {/* Status legend */}
-        <div className="mt-10 p-5 bg-[#111111] border border-[#1e1e1e] rounded-xl">
-          <h3 className="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-4">
+        <div className="mt-10 p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+          <h3 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-4">
             Statuts des commandes
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Paiement reçu", badge: "badge-info" },
+              { label: "Paiement reçu",      badge: "badge-info" },
               { label: "Fichier à vérifier", badge: "badge-warning" },
-              { label: "En attente client", badge: "badge-warning" },
-              { label: "Validée", badge: "badge-success" },
-              { label: "En traitement", badge: "badge-info" },
-              { label: "Expédiée", badge: "badge-success" },
-              { label: "Terminée", badge: "badge-neutral" },
-              { label: "Annulée", badge: "badge-error" },
+              { label: "En attente client",  badge: "badge-warning" },
+              { label: "Validée",            badge: "badge-success" },
+              { label: "En traitement",      badge: "badge-info" },
+              { label: "Expédiée",           badge: "badge-success" },
+              { label: "Terminée",           badge: "badge-neutral" },
+              { label: "Annulée",            badge: "badge-error" },
             ].map(({ label, badge }) => (
               <div key={label} className="flex items-center gap-2">
                 <span className={`badge ${badge} text-[9px]`}>{label}</span>
