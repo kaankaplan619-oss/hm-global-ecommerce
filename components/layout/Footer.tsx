@@ -211,7 +211,8 @@ export default function Footer() {
 
       {/* ── Barre du bas — copyright + légal + paiements ─────────────────── */}
       <div className="container relative z-10 pt-5 pb-24 sm:pb-5">
-        <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* pr-[72px] sm:pr-0 : bouton chat fixe (56px) + marge (16px) = 72px à réserver à droite en mobile */}
+        <div className="flex flex-col items-center gap-3 pr-[72px] sm:flex-row sm:items-center sm:justify-between sm:pr-0">
 
           {/* Copyright */}
           <p className="text-xs text-[var(--hm-text-soft)] whitespace-nowrap">
@@ -219,7 +220,7 @@ export default function Footer() {
           </p>
 
           {/* Liens légaux — centrés */}
-          <div className="flex items-center gap-4 sm:gap-5">
+          <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1 sm:gap-x-5">
             <Link href="/cgv" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
               CGV
             </Link>
