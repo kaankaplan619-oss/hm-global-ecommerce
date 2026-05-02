@@ -32,6 +32,36 @@ const ALL_STATUSES: { value: OrderStatus; label: string }[] = [
   { value: "annulee",                    label: "Annulée" },
 ];
 
+// ─── Statuts où le rejet de fichier est pertinent ────────────────────────────
+
+const FILE_CHECK_STATUSES: OrderStatus[] = [
+  "paiement_recu",
+  "commande_a_valider",
+  "fichier_a_verifier",
+  "bat_a_preparer",
+  "attente_validation_client",
+  "en_attente_client",
+];
+
+// ─── Workflow linéaire — étape suivante par statut ────────────────────────────
+
+const WORKFLOW_STEPS: Partial<Record<OrderStatus, { label: string; nextStatus: OrderStatus }>> = {
+  commande_a_valider:          { label: "Paiement confirmé → Fichier à vérifier",  nextStatus: "fichier_a_verifier" },
+  paiement_recu:               { label: "Paiement confirmé → Fichier à vérifier",  nextStatus: "fichier_a_verifier" },
+  fichier_a_verifier:          { label: "Fichier validé → BAT à préparer",          nextStatus: "bat_a_preparer" },
+  bat_a_preparer:              { label: "BAT envoyé au client",                      nextStatus: "attente_validation_client" },
+  attente_validation_client:   { label: "Client valide → Commander fournisseur",     nextStatus: "a_commander_fournisseur" },
+  en_attente_client:           { label: "Client valide → Commander fournisseur",     nextStatus: "a_commander_fournisseur" },
+  a_commander_fournisseur:     { label: "Commande fournisseur passée",               nextStatus: "commande_fournisseur_passee" },
+  validee:                     { label: "Commande fournisseur passée",               nextStatus: "commande_fournisseur_passee" },
+  commande_fournisseur_passee: { label: "Textile reçu → Lancer production",         nextStatus: "en_production" },
+  attente_reception_textile:   { label: "Textile reçu → Lancer production",         nextStatus: "en_production" },
+  en_production:               { label: "Production terminée → Prête à expédier",   nextStatus: "prete_a_expedier" },
+  en_traitement:               { label: "Production terminée → Prête à expédier",   nextStatus: "prete_a_expedier" },
+  prete_a_expedier:            { label: "Expédier la commande",                      nextStatus: "expediee" },
+  expediee:                    { label: "Livraison confirmée → Terminer",            nextStatus: "terminee" },
+};
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function getNextAction(status: OrderStatus): {
@@ -117,13 +147,15 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const [refundLoading, setRefundLoading] = useState(false);
   const [fileRejectionReason, setFileRejectionReason] = useState("");
   const [validatingFile, setValidatingFile] = useState(false);
+  const [validateError, setValidateError] = useState<string | null>(null);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
+  const [advancing, setAdvancing] = useState(false);
 
   useEffect(() => {
     if (!_hasHydrated) return;
     if (!isAuthenticated || user?.role !== "admin") { router.push("/connexion"); return; }
     params.then(({ id }) => {
-      fetch(`/api/orders/${id}?admin=true`)
+      fetch(`/api/orders/${id}`)
         .then((r) => r.json())
         .then((data) => {
           setOrder(data.order);
@@ -190,16 +222,24 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const handleValidateFile = async () => {
     if (!order) return;
     setValidatingFile(true);
+    setValidateError(null);
     try {
-      await fetch(`/api/orders/${order.id}/validate-file`, { method: "POST" });
+      const res = await fetch(`/api/orders/${order.id}/validate-file`, { method: "POST" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setValidateError(body.error ?? "Erreur lors de la validation — réessayez.");
+        return;
+      }
+      // Mise à jour locale : uniquement les fichiers en_attente → valide
       const updatedItems = (order.items ?? []).map((item) =>
-        item.logoFile
+        item.logoFile?.status === "en_attente"
           ? { ...item, logoFile: { ...item.logoFile, status: "valide" as const } }
           : item
       );
       setOrder({ ...order, items: updatedItems, status: "bat_a_preparer" });
       setNewStatus("bat_a_preparer");
     } catch (err) {
+      setValidateError("Erreur réseau. Veuillez réessayer.");
       console.error(err);
     } finally {
       setValidatingFile(false);
@@ -211,6 +251,26 @@ export default function AdminCommandeDetailPage({ params }: Props) {
       setCopiedItemId(itemId);
       setTimeout(() => setCopiedItemId(null), 2000);
     });
+  };
+
+  const handleQuickAdvance = async (nextStatus: OrderStatus) => {
+    if (!order) return;
+    setAdvancing(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}/admin-update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus, adminNote, trackingNumber, supplierMode, supplierNote }),
+      });
+      if (res.ok) {
+        setOrder({ ...order, status: nextStatus });
+        setNewStatus(nextStatus);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAdvancing(false);
+    }
   };
 
   // ─── Loading / not found ─────────────────────────────────────────────────────
@@ -373,6 +433,28 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                 </span>
               </div>
 
+              {/* Bandeau global validation fichiers — affiché une seule fois si fichiers en attente */}
+              {hasFileToVerify && (
+                <div className="mb-4 flex items-center justify-between gap-3 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-amber-700">
+                      {(order.items ?? []).filter((i) => i.logoFile?.status === "en_attente").length} fichier(s) en attente de validation
+                    </p>
+                    {validateError && (
+                      <p className="text-[10px] text-red-500 mt-0.5">{validateError}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleValidateFile}
+                    disabled={validatingFile}
+                    className="btn-outline text-[10px] gap-1.5 shrink-0 border-green-400/50 text-green-700 hover:border-green-500"
+                  >
+                    <CheckCircle size={11} />
+                    {validatingFile ? "Validation..." : "Valider tous les fichiers"}
+                  </button>
+                </div>
+              )}
+
               <div className="flex flex-col gap-6">
                 {(order.items ?? []).map((item) => {
                   const supplierInfo = getSupplierInfo(item.product);
@@ -427,16 +509,6 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                        : "À vérifier"}
                                     </span>
                                   </div>
-                                  {item.logoFile.status === "en_attente" && (
-                                    <button
-                                      onClick={handleValidateFile}
-                                      disabled={validatingFile}
-                                      className="btn-outline text-[10px] gap-1 py-1 px-2 border-green-400/40 text-green-600 hover:border-green-500"
-                                    >
-                                      <CheckCircle size={10} />
-                                      {validatingFile ? "Validation..." : "Valider le fichier"}
-                                    </button>
-                                  )}
                                 </div>
                               )}
 
@@ -597,11 +669,8 @@ export default function AdminCommandeDetailPage({ params }: Props) {
               </div>
             )}
 
-            {/* File rejection form */}
-            {(order.status === "paiement_recu"
-              || order.status === "fichier_a_verifier"
-              || order.status === "commande_a_valider"
-              || hasFileToVerify) && (
+            {/* File rejection form — visible uniquement sur les statuts pré-production */}
+            {FILE_CHECK_STATUSES.includes(order.status) && (
               <div className="p-5 bg-[var(--hm-accent-soft-rose)] border border-[var(--hm-rose)]/20 rounded-2xl">
                 <h2 className="text-xs font-bold text-[var(--hm-rose)] uppercase tracking-wider mb-4 flex items-center gap-2">
                   <AlertTriangle size={12} />
@@ -696,38 +765,55 @@ export default function AdminCommandeDetailPage({ params }: Props) {
               </button>
             </div>
 
-            {/* Quick actions */}
-            <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
-              <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-4">
-                Actions rapides
-              </h2>
-              <div className="flex flex-col gap-2">
+            {/* Workflow — étape suivante */}
+            {WORKFLOW_STEPS[order.status] && (
+              <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)] mb-2">
+                  Étape suivante
+                </p>
+                <button
+                  onClick={() => handleQuickAdvance(WORKFLOW_STEPS[order.status]!.nextStatus)}
+                  disabled={advancing}
+                  className="btn-primary w-full text-xs gap-2"
+                >
+                  <CheckCircle size={12} />
+                  {advancing ? "Avancement..." : WORKFLOW_STEPS[order.status]!.label}
+                </button>
                 {!order.invoiceUrl
                   && (order.status === "validee" || order.status === "a_commander_fournisseur") && (
-                  <div className="rounded-lg border border-[var(--hm-primary)]/20 bg-[var(--hm-accent-soft-rose)] px-3 py-2 text-xs text-[var(--hm-primary)]">
-                    Facture à créer dans Pennylane avant envoi.
-                  </div>
+                  <p className="mt-2 text-[10px] text-[var(--hm-primary)]">
+                    ⚠ Facture à créer dans Pennylane avant envoi.
+                  </p>
                 )}
+              </div>
+            )}
+
+            {/* Actions génériques */}
+            <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+              <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-3">
+                Actions
+              </h2>
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={() => setNewStatus("prete_a_expedier")}
                   className="btn-outline text-xs gap-2 w-full"
                 >
                   <Package size={12} />
-                  Marquer prête à expédier
+                  Prête à expédier
                 </button>
                 <button
                   onClick={() => setNewStatus("expediee")}
                   className="btn-outline text-xs gap-2 w-full"
                 >
                   <Truck size={12} />
-                  Marquer comme expédiée
+                  Expédiée
                 </button>
                 <button
                   onClick={() => setNewStatus("terminee")}
                   className="btn-outline text-xs gap-2 w-full"
                 >
                   <CheckCircle size={12} />
-                  Marquer comme terminée
+                  Terminée
                 </button>
                 {order.stripePaymentIntentId && (
                   <button

@@ -291,6 +291,22 @@ export default function AdminCommandesPage() {
             ))}
           </div>
 
+          {/* Filtre multi-statuts actif (vient d'un lien dashboard) */}
+          {filter.includes(",") && (
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[10px] font-semibold">
+                <Filter size={9} />
+                Filtre dashboard actif
+              </span>
+              <button
+                onClick={() => setFilter("all")}
+                className="text-[10px] text-[var(--hm-text-soft)] hover:text-[var(--hm-text)] underline"
+              >
+                Voir tout
+              </button>
+            </div>
+          )}
+
           {/* Filtres secondaires */}
           <div className="flex flex-wrap gap-2 items-center">
             <Filter size={11} className="text-[var(--hm-text-soft)]" />

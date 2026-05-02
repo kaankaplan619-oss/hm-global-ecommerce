@@ -58,6 +58,26 @@ Testé sur `https://hm-global.vercel.app` — 5/5 ✅ :
 - `MockupViewer.tsx` — **non modifié**, zones calibrées intactes
 - `BATModal.tsx` — **non modifié**
 
+## B-Studio — Studio de personnalisation Canva-style — Déployé en production 2026-05-02
+
+Commits : `2827ce2` (studio) + `0b88a52` (fix Suspense + MockupViewer zones).
+
+Fonctionnalités :
+- Route `/studio/[slug]` — layout 3 colonnes : outils | canvas Fabric.js | résumé + config
+- Outils : logo (PNG/SVG), texte (police/taille/couleur), 12 designs SVG
+- Canvas : packshot dynamique par couleur, zones par catégorie, front/dos toggle, toolbar flottante
+- Résumé : liste objets, récap commande, export PNG → Supabase → sessionStorage → redirect fiche produit
+- Bouton "Personnaliser" conditionnel : actif uniquement si taille sélectionnée
+- MockupViewer + BatPreviewStudio : ZONES_BY_CATEGORY par catégorie (tshirts/hoodies/softshells)
+- showMockup étendu aux hoodies et softshells
+
+Zones calibrées (packshot TopTex) :
+- tshirts : coeur [0.38, 0.28, 0.18, 0.18], dos [0.25, 0.20, 0.50, 0.45]
+- hoodies : coeur [0.40, 0.32, 0.16, 0.16], dos [0.25, 0.22, 0.50, 0.42]
+- softshells : coeur [0.42, 0.30, 0.15, 0.15], dos [0.26, 0.22, 0.48, 0.40]
+- ZONES_STATIC fallback B&C Exact 190 : coeur [0.60, 0.25, 0.14, 0.14], dos [0.26, 0.13, 0.48, 0.29]
+
 ## Prochaine action
 
-→ **B5 — Flux de commande complet** (Stripe, création commande Supabase, email confirmation)
+→ **Test commande réelle** — Kaan commande lui-même un vêtement HM Global pour valider le tunnel complet (studio → panier → checkout → Stripe → confirmation + email).
+→ Ensuite : **Agent Jean-Yves** (vérification stock TopTex + commande vierges + fiche production)

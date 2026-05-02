@@ -22,15 +22,17 @@ Couleur accent : `#b13f74`. Design tokens : `--hm-*`.
 
 ## Tâche active
 
-**B4 BAT Preview Studio validé en production** (`hm-global.vercel.app`) — 2026-05-01.
+**B-Studio validé en production** (`hm-global.vercel.app`) — 2026-05-02.
 
-- T-shirts B&C (MockupViewer) : "Prévisualiser le BAT" → Studio interactif full-screen
-- Studio : drag logo contraint à la zone, zoom +/-, recentrer, info panel, "Voir BAT complet" → BATModal
-- Produits non-MockupViewer (hoodies, softshells…) : fallback direct vers BATModal
-- Commits : `1afa1e9` (studio) + `a6574af` (fix fallback hoodie) — tous deux READY
-- Aucun bug bloquant restant sur B4
+- Studio Canva-style `/studio/[slug]` : 3 colonnes (outils | canvas Fabric.js | résumé)
+- Outils : logo PNG/SVG, texte, 12 designs SVG
+- Canvas : packshot dynamique par couleur, zones par catégorie (tshirts/hoodies/softshells)
+- Export PNG → Supabase → sessionStorage → redirect fiche produit
+- MockupViewer + BatPreviewStudio : ZONES_BY_CATEGORY + showMockup étendu hoodies/softshells
+- Bouton "Personnaliser" conditionnel si taille sélectionnée
+- Commits : `2827ce2` (studio) + `0b88a52` (fix Suspense + zones)
 
-**Prochaine étape : B5 — Flux de commande complet (Stripe + création commande Supabase)**
+**Prochaine étape : Test commande réelle + Agent Jean-Yves**
 
 ## Protocole de session
 

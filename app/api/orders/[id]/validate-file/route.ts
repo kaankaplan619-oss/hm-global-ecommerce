@@ -28,13 +28,18 @@ export async function POST(_req: NextRequest, { params }: Params) {
     }
 
     // Mark all pending logo files on this order as valid
-    await supabase
+    const { error: itemsError } = await supabase
       .from("order_items")
       .update({ logo_file_status: "valide" })
       .eq("order_id", id)
       .eq("logo_file_status", "en_attente");
 
-    // Advance order status to bat_a_preparer
+    if (itemsError) {
+      console.error("[ValidateFile] order_items update failed:", itemsError);
+      return NextResponse.json({ error: "Impossible de valider les fichiers" }, { status: 500 });
+    }
+
+    // Advance order status to bat_a_preparer only if items update succeeded
     const { error } = await supabase
       .from("orders")
       .update({ status: "bat_a_preparer" })

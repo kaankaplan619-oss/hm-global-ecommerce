@@ -24,7 +24,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       .select(`
         *,
         profiles (
-          id, first_name, last_name, phone, email:id, type, company, siret
+          id, first_name, last_name, email, phone, type, company, siret
         ),
         order_items (*)
       `)
