@@ -580,7 +580,7 @@ export default function ProductConfigurator({
               id="logo-input"
               type="file"
               className="sr-only"
-              accept=".pdf,.png,.jpg,.jpeg,.webp,.svg"
+              accept=".png,.svg"
               onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
             />
           </div>

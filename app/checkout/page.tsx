@@ -322,7 +322,7 @@ function LogoConfirmationSection({
                     <input
                       type="file"
                       className="sr-only"
-                      accept=".pdf,.png,.jpg,.jpeg,.webp,.svg"
+                      accept=".png,.svg"
                       disabled={isUploading}
                       onChange={(e) => {
                         const file = e.target.files?.[0];

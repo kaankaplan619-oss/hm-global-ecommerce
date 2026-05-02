@@ -9,7 +9,7 @@
  * du module, ce qui crashait toutes les serverless functions Next.js.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js/pure";
 import {
@@ -22,6 +22,7 @@ import { Lock, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/data/pricing";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 // ─── Stripe singleton — jamais appelé server-side ─────────────────────────────
 const stripePromise = loadStripe(
@@ -75,10 +76,14 @@ function PaymentForm({
   orderId,
   orderNumber,
   totalTTC,
+  userName,
+  userEmail,
 }: {
-  orderId: string;
+  orderId:    string;
   orderNumber: string;
-  totalTTC: number | null;
+  totalTTC:   number | null;
+  userName:   string;
+  userEmail:  string;
 }) {
   const stripe        = useStripe();
   const elements      = useElements();
@@ -153,7 +158,17 @@ function PaymentForm({
       <PaymentElement
         options={{
           layout: "tabs",
-          wallets: { applePay: "auto", googlePay: "auto" },
+          wallets: {
+            applePay: "auto",
+            googlePay: "auto",
+            link: "never",        // désactive Stripe Link (sauvegarde infos)
+          },
+          defaultValues: {
+            billingDetails: {
+              name:  userName  || undefined,
+              email: userEmail || undefined,
+            },
+          },
         }}
       />
 
@@ -194,6 +209,24 @@ export default function StripePayment() {
   const orderNumber   = searchParams.get("orderNumber") ?? "";
   const totalParam    = searchParams.get("total");
   const totalTTC      = totalParam ? parseFloat(totalParam) : null;
+
+  // Récupère les infos du compte connecté (Google OAuth) pour pré-remplir Stripe
+  const [userName,  setUserName]  = useState("");
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      // user_metadata contient full_name (Google) ou name (autres providers)
+      setUserName(
+        user.user_metadata?.full_name ??
+        user.user_metadata?.name       ??
+        ""
+      );
+      setUserEmail(user.email ?? "");
+    });
+  }, []);
 
   if (!clientSecret) {
     return (
@@ -243,6 +276,8 @@ export default function StripePayment() {
               orderId={orderId}
               orderNumber={orderNumber}
               totalTTC={totalTTC}
+              userName={userName}
+              userEmail={userEmail}
             />
           </Elements>
         </div>

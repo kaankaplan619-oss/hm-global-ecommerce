@@ -75,10 +75,10 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
   // ── Softshell homme B&C JUI62 ───────────────────────────────────────────────
   // Packshots bicolores (veste extérieure + doublure) — couleur principale en premier.
   "jui62": {
-    "noir":      "https://cdn.toptex.com/packshots/PS_CGJUI62_BLACK-BLACK.png",
-    "marine":    "https://cdn.toptex.com/packshots/PS_CGJUI62_NAVY-NEONGREEN.png",
-    "gris-acier":"https://cdn.toptex.com/packshots/PS_CGJUI62_DARKGREY-NEONORANGE.png",
-    "rouge":     "https://cdn.toptex.com/packshots/PS_CGJUI62_RED-WARMGREY.png",
+    "noir":      "/images/products/jui62/PS_CGJUI62_BLACK-BLACK.avif",
+    "marine":    "/images/products/jui62/PS_CGJUI62_NAVY-NEONGREEN.avif",
+    "gris-acier":"/images/products/jui62/PS_CGJUI62_DARKGREY-NEONORANGE.avif",
+    "rouge":     "/images/products/jui62/PS_CGJUI62_RED-WARMGREY.avif",
   },
 
   // ── Softshell femme B&C JWI63 ───────────────────────────────────────────────
@@ -91,14 +91,14 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
 
   // ── Hoodie B&C WU620 ─────────────────────────────────────────────────────────
   "wu620": {
-    "noir":          "https://cdn.toptex.com/packshots/PS_CGWU620_BLACK.png",
+    "noir":          "/images/products/wu620/PS_CGWU620_BLACK.avif",
     "blanc":         "https://cdn.toptex.com/packshots/PS_CGWU620_WHITE.png",
-    "gris-melange":  "https://cdn.toptex.com/packshots/PS_CGWU620_HEATHERGREY.png",
-    "anthracite":    "https://cdn.toptex.com/packshots/PS_CGWU620_STEELGREY.png",
-    "marine":        "https://cdn.toptex.com/packshots/PS_CGWU620_NAVY.png",
-    "bleu-royal":    "https://cdn.toptex.com/packshots/PS_CGWU620_ROYALBLUE.png",
+    "gris-melange":  "/images/products/wu620/PS_CGWU620_HEATHERGREY.avif",
+    "anthracite":    "/images/products/wu620/PS_CGWU620_STEELGREY.avif",
+    "marine":        "/images/products/wu620/PS_CGWU620_NAVY.avif",
+    "bleu-royal":    "/images/products/wu620/PS_CGWU620_ROYALBLUE.avif",
     "bordeaux":      "https://cdn.toptex.com/packshots/PS_CGWU620_BURGUNDY.png",
-    "rouge":         "https://cdn.toptex.com/packshots/PS_CGWU620_RED.png",
+    "rouge":         "/images/products/wu620/PS_CGWU620_RED.avif",
     "kaki":          "https://cdn.toptex.com/packshots/PS_CGWU620_KHAKI.png",
     // vert-foret, vert-bouteille, beige : pas de packshot CDN pour WU620
   },

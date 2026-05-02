@@ -32,21 +32,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "file et orderId requis" }, { status: 400 });
     }
 
-    // Validate file type — must match bucket allowed_mime_types:
-    // ["image/png","image/jpeg","image/webp","image/svg+xml","application/pdf"]
+    // PNG et SVG uniquement — qualité d'impression garantie
     const ALLOWED_TYPES = [
-      "application/pdf",
       "image/png",
-      "image/jpeg",
-      "image/webp",
       "image/svg+xml",
     ];
-    const ALLOWED_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".svg"];
+    const ALLOWED_EXTENSIONS = [".png", ".svg"];
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
 
     if (!ALLOWED_EXTENSIONS.includes(ext) && !ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: "Format non supporté. Utilisez PDF, PNG, JPG, WEBP ou SVG." },
+        { error: "Format non supporté. Utilisez PNG ou SVG uniquement." },
         { status: 400 }
       );
     }

@@ -1,17 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { LogoUploadResult } from "@/lib/uploadLogo";
 import type { LogoPlacementTransform } from "@/lib/bat-utils";
 import dynamic from "next/dynamic";
-import { Info, FileCheck } from "lucide-react";
+import Link from "next/link";
+import { Info } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
 import LightMockupPreview from "@/components/product/LightMockupPreview";
 import BATModal from "@/components/product/BATModal";
 import TopTexStockBadge from "@/components/product/TopTexStockBadge";
 import { useTopTexMedias } from "@/hooks/useTopTexMedias";
-import { hasMockup } from "@/lib/mockup-utils";
 import { isColorDark } from "@/lib/color-utils";
 import { buildBATData } from "@/lib/bat-utils";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
@@ -38,6 +39,8 @@ type Props = {
 };
 
 export default function ProductDetailClient({ product }: Props) {
+  const searchParams = useSearchParams();
+
   const defaultColor = useMemo(
     () => product.colors.find((c) => c.available) ?? null,
     [product]
@@ -119,6 +122,38 @@ export default function ProductDetailClient({ product }: Props) {
     setSelectedColor(defaultColor);
   }, [product.id, defaultColor]);
 
+  // ── Lecture résultat studio (paramètre studio=1) ──────────────────────────
+  useEffect(() => {
+    if (searchParams.get("studio") !== "1") return;
+    try {
+      const raw = sessionStorage.getItem("hm-studio-result");
+      if (!raw) return;
+      const result = JSON.parse(raw) as {
+        colorId?:   string;
+        size?:      string;
+        technique?: string;
+        quantity?:  number;
+        placement?: string;
+      };
+      if (result.colorId) {
+        const color = product.colors.find((c) => c.id === result.colorId && c.available);
+        if (color) setSelectedColor(color);
+      }
+      if (result.size)      setSize(result.size);
+      if (result.technique && (product.techniques as string[]).includes(result.technique)) {
+        setTechnique(result.technique as Technique);
+      }
+      if (typeof result.quantity === "number" && result.quantity > 0) setQuantity(result.quantity);
+      if (result.placement && (product.placements as string[]).includes(result.placement as string)) {
+        setPlacement(result.placement as Placement);
+      }
+      sessionStorage.removeItem("hm-studio-result");
+    } catch {
+      // sessionStorage indisponible ou JSON invalide
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
+
   // ── Restauration sessionStorage au montage ────────────────────────────────
   useEffect(() => {
     try {
@@ -182,24 +217,20 @@ export default function ProductDetailClient({ product }: Props) {
     [defaultColor, product.colors]
   );
 
-  // MockupViewer uniquement pour les t-shirts B&C (supplierName: "falk-ross").
-  const showMockup =
-    product.category === "tshirts" &&
-    product.supplierName === "falk-ross" &&
-    hasMockup(selectedColor?.id ?? "");
-
-  // Image produit actuelle (utilisée par LightMockupPreview + BAT)
+  // Image produit actuelle (utilisée par MockupViewer, LightMockupPreview + BAT)
   // Priorité (B2) : mockup HM → packshot TopTex couleur → packshot catalogue → photo mannequin
   const currentImageUrl = useMemo(() => {
     const cid = selectedColor?.id ?? "";
-    // 0. Mockup HM Global pour le coloris sélectionné
     const hmMockup = getHMMockupPath(product, cid);
     if (hmMockup) return hmMockup;
-    // 1. Packshot TopTex par coloris (API enrichissement)
     if (cid && colorImages[cid]?.[0]) return colorImages[cid][0];
-    // 2. Meilleur packshot disponible (évite la photo mannequin)
     return getProductCatalogImage(product, cid);
   }, [selectedColor, colorImages, product]);
+
+  // MockupViewer actif pour t-shirts, hoodies et softshells dès qu'on a une image.
+  const showMockup =
+    (product.category === "tshirts" || product.category === "hoodies" || product.category === "softshells") &&
+    !!currentImageUrl;
 
   // Mode visuel premium HM Global ou fournisseur
   const visualMode = getVisualMode(product);
@@ -246,6 +277,8 @@ export default function ProductDetailClient({ product }: Props) {
             badge={product.badge}
             onLogoPositionChange={handleLogoPositionChange}
             onPlacementChange={setPlacement}
+            packshot={currentImageUrl}
+            productCategory={product.category}
           />
         ) : (
           <>
@@ -401,24 +434,29 @@ export default function ProductDetailClient({ product }: Props) {
           batRef={batData?.batRef}
         />
 
-        {/* ── Bouton Prévisualiser le BAT ─────────────────────────────────── */}
-        {batReady && (
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={() => showMockup ? setShowStudio(true) : setShowBAT(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] px-5 py-3.5 text-sm font-bold text-[var(--hm-primary)] transition-all hover:bg-[var(--hm-primary)] hover:text-white active:scale-[0.98]"
+        {/* ── Bouton Studio personnalisation ──────────────────────────────── */}
+        <div className="mt-4">
+          {size ? (
+            <Link
+              href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.30)] transition-all hover:bg-[var(--hm-primary)]/90 hover:shadow-[0_6px_20px_rgba(177,63,116,0.40)] active:scale-[0.98]"
             >
-              <FileCheck size={16} />
-              Prévisualiser le BAT
-            </button>
-            {!size && (
+              🎨 Personnaliser mon article →
+            </Link>
+          ) : (
+            <div title="Sélectionnez d'abord une taille">
+              <span
+                aria-disabled="true"
+                className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)]/40 px-5 py-3.5 text-sm font-bold text-white/70 select-none"
+              >
+                🎨 Personnaliser mon article →
+              </span>
               <p className="mt-1.5 text-center text-[11px] text-[var(--hm-text-soft)]">
-                💡 Sélectionnez une taille pour un BAT complet
+                Sélectionnez d&apos;abord une taille
               </p>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── BAT Preview Studio (portal body) — t-shirts B&C uniquement ── */}
@@ -436,6 +474,8 @@ export default function ProductDetailClient({ product }: Props) {
           onClose={() => setShowStudio(false)}
           onShowBAT={() => { setShowStudio(false); setShowBAT(true); }}
           onLogoTransformChange={handleLogoPositionChange}
+          packshot={currentImageUrl}
+          productCategory={product.category}
         />
       )}
 

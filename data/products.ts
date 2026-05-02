@@ -143,6 +143,7 @@ export const PRODUCT_TU01T: Product = {
   supplierName: "falk-ross",
   supplierRef: "TU01T",
   toptexRef: "CGTU01T",
+  hmHeroImage: "/mockups/tshirt/noir-front.jpg",
 };
 
 export const PRODUCT_TW02T: Product = {
@@ -190,6 +191,7 @@ export const PRODUCT_TW02T: Product = {
   supplierName: "falk-ross",
   supplierRef: "TW02T",
   toptexRef: "CGTW02T",
+  hmHeroImage: "/mockups/tshirt/blanc-front.jpg",
 };
 
 export const PRODUCT_TU03T: Product = {
@@ -235,6 +237,7 @@ export const PRODUCT_TU03T: Product = {
   supplierName: "falk-ross",
   supplierRef: "TU03T",
   toptexRef: "CGTU03T",
+  hmHeroImage: "/mockups/tshirt/bordeaux-front.png",
 };
 
 // ─── HOODIES / SWEATS ────────────────────────────────────────────────────────

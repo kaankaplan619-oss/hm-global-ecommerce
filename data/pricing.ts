@@ -33,9 +33,9 @@ export function formatPrice(price: number): string {
 export const TSHIRT_PRICES = {
   // B&C TU01T / TW02T — produit d'appel
   appel: {
-    dtf:      19.90,
-    flex:     19.90,
-    broderie: 25.90, // +6€ vs dtf
+    dtf:      16.99,
+    flex:     17.49,
+    broderie: 22.99,
   },
   // B&C TU03T — meilleur rapport qualité/prix
   standard: {

@@ -23,10 +23,7 @@ export type LogoUploadError =
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB — matches bucket file_size_limit
 
 const ALLOWED_MIME_TYPES = [
-  "application/pdf",
   "image/png",
-  "image/jpeg",
-  "image/webp",
   "image/svg+xml",
 ];
 

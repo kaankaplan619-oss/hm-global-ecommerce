@@ -69,15 +69,13 @@ export function formatFileSize(bytes: number): string {
 }
 
 // Matches bucket "customer-logos" allowed_mime_types + file_size_limit
+// PNG et SVG uniquement — évite les fichiers JPEG/WebP de mauvaise qualité et les PDF
 export const ALLOWED_FILE_TYPES = [
-  "application/pdf",
   "image/png",
-  "image/jpeg",
-  "image/webp",
   "image/svg+xml",
 ];
 
-export const ALLOWED_FILE_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".svg"];
+export const ALLOWED_FILE_EXTENSIONS = [".png", ".svg"];
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB — matches bucket file_size_limit
 
