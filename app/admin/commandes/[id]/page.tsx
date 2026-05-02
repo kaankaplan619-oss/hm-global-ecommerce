@@ -161,22 +161,22 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                 <div>
                   <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Nom</p>
                   <p className="text-sm font-semibold text-[var(--hm-text)]">
-                    {order.user.firstName} {order.user.lastName}
+                    {order.user?.firstName ?? "—"} {order.user?.lastName ?? ""}
                   </p>
                 </div>
                 <div>
                   <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Email</p>
-                  <p className="text-sm text-[var(--hm-text)]">{order.user.email}</p>
+                  <p className="text-sm text-[var(--hm-text)]">{order.user?.email ?? "—"}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Téléphone</p>
-                  <p className="text-sm text-[var(--hm-text)]">{order.user.phone}</p>
+                  <p className="text-sm text-[var(--hm-text)]">{order.user?.phone ?? "—"}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Type</p>
-                  <p className="text-sm text-[var(--hm-text)] capitalize">{order.user.type}</p>
+                  <p className="text-sm text-[var(--hm-text)] capitalize">{order.user?.type ?? "—"}</p>
                 </div>
-                {order.user.company && (
+                {order.user?.company && (
                   <div className="col-span-2">
                     <p className="text-[10px] text-[var(--hm-text-soft)] mb-0.5">Société</p>
                     <p className="text-sm text-[var(--hm-text)]">{order.user.company}</p>

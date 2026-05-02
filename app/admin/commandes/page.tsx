@@ -59,8 +59,8 @@ export default function AdminCommandesPage() {
   const filtered = orders.filter((o) => {
     if (filter !== "all" && o.status !== filter) return false;
     if (search && !o.orderNumber.toLowerCase().includes(search.toLowerCase()) &&
-        !o.user.email.toLowerCase().includes(search.toLowerCase()) &&
-        !`${o.user.firstName} ${o.user.lastName}`.toLowerCase().includes(search.toLowerCase())) return false;
+        !(o.user?.email ?? "").toLowerCase().includes(search.toLowerCase()) &&
+        !`${o.user?.firstName ?? ""} ${o.user?.lastName ?? ""}`.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
@@ -156,8 +156,8 @@ export default function AdminCommandesPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-[var(--hm-text)] truncate">{order.user.firstName} {order.user.lastName}</p>
-                      <p className="text-[10px] text-[var(--hm-text-soft)] truncate">{order.user.email}</p>
+                      <p className="text-xs text-[var(--hm-text)] truncate">{order.user?.firstName ?? "—"} {order.user?.lastName ?? ""}</p>
+                      <p className="text-[10px] text-[var(--hm-text-soft)] truncate">{order.user?.email ?? "—"}</p>
                     </div>
                     <div>
                       <span className={`badge ${statusInfo.badge} text-[9px]`}>{statusInfo.label}</span>
