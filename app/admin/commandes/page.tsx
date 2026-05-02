@@ -130,8 +130,9 @@ export default function AdminCommandesPage() {
         ) : (
           <div className="flex flex-col gap-2">
             {filtered.map((order) => {
-              const statusInfo = STATUS_LABELS[order.status];
+              const statusInfo = STATUS_LABELS[order.status] ?? { label: order.status, badge: "badge-neutral" };
               const isUrgent = order.status === "fichier_a_verifier" || order.status === "en_attente_client";
+              const itemCount = order.items?.length ?? 0;
 
               return (
                 <Link
@@ -164,9 +165,9 @@ export default function AdminCommandesPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-[var(--hm-primary)]">
-                        {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(order.totalTTC)}
+                        {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(order.totalTTC ?? 0)}
                       </p>
-                      <p className="text-[10px] text-[var(--hm-text-soft)]">{order.items.length} article{order.items.length > 1 ? "s" : ""}</p>
+                      <p className="text-[10px] text-[var(--hm-text-soft)]">{itemCount} article{itemCount > 1 ? "s" : ""}</p>
                     </div>
                   </div>
                   <ChevronRight size={14} className="text-[var(--hm-text-soft)] shrink-0 group-hover:text-[var(--hm-text)]" />

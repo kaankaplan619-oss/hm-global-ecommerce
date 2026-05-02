@@ -214,11 +214,11 @@ export default function AdminCommandeDetailPage({ params }: Props) {
             <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
               <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-4">Articles</h2>
               <div className="flex flex-col gap-4">
-                {order.items.map((item) => (
+                {(order.items ?? []).map((item) => (
                   <div key={item.id} className="flex items-start gap-3 pb-4 border-b border-[var(--hm-line)] last:border-0 last:pb-0">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[var(--hm-text)]">{item.product.shortName}</p>
-                      <p className="text-[10px] font-mono text-[var(--hm-text-soft)]">{item.product.reference}</p>
+                      <p className="text-sm font-semibold text-[var(--hm-text)]">{item.product?.shortName ?? "—"}</p>
+                      <p className="text-[10px] font-mono text-[var(--hm-text-soft)]">{item.product?.reference ?? "—"}</p>
                       <div className="flex flex-wrap gap-2 mt-1">
                         <span className="badge badge-neutral text-[9px]">Taille {item.size}</span>
                         <span className="badge badge-neutral text-[9px]">{item.color.label}</span>
