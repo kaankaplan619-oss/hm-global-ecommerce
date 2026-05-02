@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { refundPayment } from "@/lib/stripe";
 import { canCancelOrder } from "@/lib/utils";
 
@@ -64,8 +64,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
-    // Update order in DB
-    const { error: updateError } = await supabase
+    // Update order in DB — service role bypasses RLS (orders_update_self supprimée).
+    // La propriété est déjà vérifiée ci-dessus : user authentifié + order.user_id = user.id.
+    const supabaseService = await createSupabaseServiceClient();
+    const { error: updateError } = await supabaseService
       .from("orders")
       .update({
         status:              "annulee",
