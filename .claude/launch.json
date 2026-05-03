@@ -1,9 +1,9 @@
 {
   "version": "0.0.1",
-  "autoPort": true,
+  "autoPort": false,
   "configurations": [
     {
-      "name": "hm-global-dev",
+      "name": "hm-global",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
