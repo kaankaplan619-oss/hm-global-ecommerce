@@ -60,7 +60,12 @@ export default function StudioClient({ product }: Props) {
   const canvasRef = useRef<StudioCanvasHandle>(null);
 
   const packshot = useMemo(
-    () => getProductCatalogImage(product, selectedColor?.id ?? ""),
+    // In the studio, Printful products use local flat HM mockups (1254×1254 square)
+    // instead of ghost-mannequin CDN images — passing null lets StudioCanvas pick
+    // up its own MOCKUP_FILES mapping.
+    () => product.supplierName === "printful"
+      ? null
+      : getProductCatalogImage(product, selectedColor?.id ?? ""),
     [product, selectedColor]
   );
 

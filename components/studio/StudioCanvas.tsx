@@ -94,9 +94,13 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
 
   // ── Zone helper ──────────────────────────────────────────────────────────
   const getZone = useCallback((): [number, number, number, number] | null => {
-    const zones = packshot
-      ? (ZONES_BY_CATEGORY[productCategory ?? ""] ?? ZONES_BY_CATEGORY.tshirts)
-      : ZONES_STATIC;
+    // Prefer ZONES_BY_CATEGORY when productCategory is known (local square mockups).
+    // Fall back to ZONES_STATIC only when neither category nor packshot is available.
+    const categoryZones = productCategory ? ZONES_BY_CATEGORY[productCategory] : undefined;
+    const zones = categoryZones
+      ?? (packshot
+          ? (ZONES_BY_CATEGORY[productCategory ?? ""] ?? ZONES_BY_CATEGORY.tshirts)
+          : ZONES_STATIC);
     if (placement === "coeur" && view === "front") return zones.coeur;
     if (placement === "dos"   && view === "back")  return zones.dos;
     if (placement === "coeur-dos") return view === "front" ? zones.coeur : zones.dos;
@@ -224,20 +228,9 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     const faceObjects = objects.filter((o) => o.face === view);
 
     import("fabric").then(({ FabricImage, Rect, IText, Shadow }) => {
-      // ── Shirt image ───────────────────────────────────────────────────────
-      const shirtEl = new window.Image();
-      shirtEl.crossOrigin = "anonymous";
-      shirtEl.src = proxyCdnUrl(src) ?? src;
-
-      shirtEl.onload = async () => {
-        const scale = canvasSize / Math.max(shirtEl.naturalWidth || canvasSize, shirtEl.naturalHeight || canvasSize);
-        const shirt = new FabricImage(shirtEl, {
-          selectable: false, evented: false, hasBorders: false, hasControls: false,
-          scaleX: scale, scaleY: scale, left: 0, top: 0, originX: "left", originY: "top",
-        });
-        canvas.add(shirt);
-
-        // ── Zone rectangle ────────────────────────────────────────────────
+      // ── buildCanvas — zone + objects + events (called after shirt is placed) ─
+      const buildCanvas = async () => {
+        // ── Zone rectangle ──────────────────────────────────────────────────
         if (zone) {
           const [lf, tf, wf, hf] = zone;
           const rect = new Rect({
@@ -250,13 +243,13 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
           canvas.add(rect);
         }
 
-        // ── Add each studio object ────────────────────────────────────────
+        // ── Add each studio object ──────────────────────────────────────────
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fabricObjectMap = new Map<string, any>();
 
         for (const obj of faceObjects) {
           if (obj.type === "text" && obj.text) {
-            // ── IText ──────────────────────────────────────────────────────
+            // ── IText ────────────────────────────────────────────────────────
             let textLeft = canvasSize / 2;
             let textTop  = canvasSize / 2;
             if (zone) {
@@ -289,7 +282,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
             canvas.add(textObj);
             canvas.discardActiveObject();
           } else if ((obj.type === "logo" || obj.type === "design") && (obj.src || obj.file)) {
-            // ── FabricImage ───────────────────────────────────────────────
+            // ── FabricImage ──────────────────────────────────────────────────
             const imgSrc = obj.file ? URL.createObjectURL(obj.file) : (obj.src ?? "");
             const isBlob = !!obj.file;
 
@@ -346,7 +339,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
           }
         }
 
-        // ── Zone drag constraint ──────────────────────────────────────────
+        // ── Zone drag constraint ────────────────────────────────────────────
         if (zone) {
           const [lf, tf, wf, hf] = zone;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -366,7 +359,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
           });
         }
 
-        // ── Toolbar update on object:modified ────────────────────────────
+        // ── Toolbar update on object:modified ──────────────────────────────
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         canvas.on("object:modified", (e: any) => {
           const target = e.target;
@@ -395,7 +388,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
           if (e.target) updateToolbar(e.target);
         });
 
-        // ── Selection events ──────────────────────────────────────────────
+        // ── Selection events ────────────────────────────────────────────────
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         canvas.on("selection:created", (e: any) => {
           const target = e.selected?.[0];
@@ -419,9 +412,51 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
         });
 
         canvas.requestRenderAll();
+      }; // ── end buildCanvas ────────────────────────────────────────────────
+
+      // ── Helper: add a shirt FabricImage from an HTMLImageElement ─────────
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const addShirtFromEl = (el: HTMLImageElement) => {
+        const scale = canvasSize / Math.max(el.naturalWidth || canvasSize, el.naturalHeight || canvasSize);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const shirt = new FabricImage(el as any, {
+          selectable: false, evented: false, hasBorders: false, hasControls: false,
+          scaleX: scale, scaleY: scale, left: 0, top: 0, originX: "left", originY: "top",
+        });
+        canvas.add(shirt);
       };
 
-      shirtEl.onerror = () => canvas.requestRenderAll();
+      // ── Shirt image ───────────────────────────────────────────────────────
+      const shirtEl = new window.Image();
+      shirtEl.crossOrigin = "anonymous";
+      shirtEl.src = proxyCdnUrl(src) ?? src;
+
+      shirtEl.onload = async () => {
+        addShirtFromEl(shirtEl);
+        await buildCanvas();
+      };
+
+      // On error: try a local fallback mockup so logos still appear
+      shirtEl.onerror = async () => {
+        const fallbackSrc = view === "front"
+          ? (mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
+          : (mockups?.back  ?? "/mockups/tshirt/blanc-back.png");
+
+        if (src !== fallbackSrc) {
+          const fallEl = new window.Image();
+          fallEl.src = fallbackSrc;
+          fallEl.onload = async () => {
+            addShirtFromEl(fallEl);
+            await buildCanvas();
+          };
+          fallEl.onerror = async () => {
+            // No shirt at all — still build zone + logos so the user isn't blocked
+            await buildCanvas();
+          };
+        } else {
+          await buildCanvas();
+        }
+      };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fabricReady, src, canvasSize, view, placement, getZone, objects]);
