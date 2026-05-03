@@ -49,7 +49,7 @@ const ZONES_STATIC = {
 
 type View = "front" | "back";
 
-interface Props {
+export interface MockupViewerProps {
   colorId:                string;
   placement:              Placement;
   logoFile:               File | null;
@@ -64,6 +64,9 @@ interface Props {
   packshot?:              string | null;
   productCategory?:       string;
 }
+
+// Alias interne
+type Props = MockupViewerProps;
 
 export default function MockupViewer({ colorId, placement, logoFile, logoUrl, badge, onLogoPositionChange, onPlacementChange, packshot, productCategory }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);

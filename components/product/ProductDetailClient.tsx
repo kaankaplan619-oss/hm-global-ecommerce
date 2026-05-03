@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import type { LogoUploadResult } from "@/lib/uploadLogo";
 import type { LogoPlacementTransform } from "@/lib/bat-utils";
 import dynamic from "next/dynamic";
+import type { MockupViewerProps } from "@/components/product/MockupViewer";
 import Link from "next/link";
 import { Info } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
@@ -24,7 +25,7 @@ import type { LogoEffect } from "@/lib/color-utils";
 
 // Chargé uniquement côté client — Fabric.js accède à `window.location`
 // et ne peut pas s'exécuter dans le contexte SSR de Next.js.
-const MockupViewer = dynamic(
+const MockupViewer = dynamic<MockupViewerProps>(
   () => import("@/components/product/MockupViewer"),
   { ssr: false }
 );
