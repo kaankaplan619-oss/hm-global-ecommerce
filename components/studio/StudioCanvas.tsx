@@ -134,10 +134,8 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
   const slug = COLOR_TO_MOCKUP[colorId] ?? null;
   const mockups = slug ? MOCKUP_FILES[slug] : null;
   const src = view === "front"
-    ? (packshot ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
-    : (productCategory === "tshirts"
-        ? (mockups?.back ?? packshot ?? "/mockups/tshirt/blanc-back.png")
-        : (packshot ?? "/mockups/tshirt/blanc-back.png"));
+    ? (packshot ?? mockups?.front  ?? "/mockups/tshirt/blanc-front.jpg")
+    : (mockups?.back  ?? packshot  ?? "/mockups/tshirt/blanc-back.png");
 
   // ── Auto-switch view when placement changes ───────────────────────────────
   useEffect(() => {
@@ -288,7 +286,12 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
 
             await new Promise<void>((resolve) => {
               const imgEl = new window.Image();
-              imgEl.crossOrigin = "anonymous";
+              // Blob URLs (uploaded logos) are same-origin — crossOrigin causes
+              // errors in Safari. Local /designs/ paths also need no CORS header.
+              // Only set crossOrigin for external http(s) URLs.
+              if (!isBlob && imgSrc.startsWith("http")) {
+                imgEl.crossOrigin = "anonymous";
+              }
               imgEl.src = imgSrc;
 
               imgEl.onload = () => {

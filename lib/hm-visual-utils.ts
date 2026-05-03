@@ -4,7 +4,8 @@
  * Gère la sélection d'image mockup premium et le mode d'affichage
  * pour chaque produit du catalogue.
  *
- * Priorité d'image (avant TopTex) :
+ * Priorité d'image :
+ *   P0. Produits Printful → mockup local HM Global (JAMAIS images CDN ghost-mannequin)
  *   0a. product.hmMockupImages[colorId]  — override par coloris (per-product)
  *   0b. product.hmHeroImage              — hero HM Global par produit
  *   0c. TSHIRT_MOCKUP_BY_COLOR[colorId] — mockup famille t-shirt par coloris
@@ -18,6 +19,29 @@
  */
 
 import type { Product, ProductFamilyVisual } from "@/types";
+
+// ── Mockups locaux pour produits Printful ─────────────────────────────────────
+// Direction visuelle HM Global : produit seul, sans mannequin, sans fond CDN.
+// Ces mockups 1254×1254 px (fond plat) sont utilisés dans le catalogue,
+// les fiches produits ET le studio/personnalisateur.
+//
+// ⚠️  Sweatshirts (18000) et hoodies (18500) Printful n'ont pas encore de mockup
+//     dédié → on utilise les mockups t-shirt comme visuels temporaires.
+//     À remplacer par de vraies photos HM sweat/hoodie quand disponibles.
+const PRINTFUL_LOCAL_BY_COLOR: Record<string, string> = {
+  "blanc":        "/mockups/tshirt/blanc-front.jpg",
+  "noir":         "/mockups/tshirt/noir-front.jpg",
+  "gris-sport":   "/mockups/tshirt/gris-front.jpg",     // Gildan 5000 / 18000 / 18500
+  "dark-heather": "/mockups/tshirt/gris-front.jpg",     // Gildan 5000
+  "marine":       "/mockups/tshirt/marine-front.jpg",
+  // Extensions futures :
+  "rouge":        "/mockups/tshirt/rouge-front.jpg",
+  "bleu":         "/mockups/tshirt/bleu-front.jpg",
+  "vert":         "/mockups/tshirt/vert-front.jpg",
+  "bordeaux":     "/mockups/tshirt/bordeaux-front.png",
+  "gris":         "/mockups/tshirt/gris-front.jpg",
+};
+const PRINTFUL_LOCAL_DEFAULT = "/mockups/tshirt/blanc-front.jpg";
 
 // ── Mockups famille T-shirt existants dans /public/mockups/tshirt/ ────────────
 // Les fichiers sont déjà présents — front uniquement pour la carte catalogue.
@@ -77,6 +101,13 @@ export function getHMMockupPath(
   product: Product,
   colorId?: string,
 ): string | null {
+  // P0. Produits Printful → mockups locaux HM Global (jamais images CDN ghost-mannequin)
+  // Les hmMockupImages des produits Printful contiennent des URLs CDN avec mannequin ;
+  // on les court-circuite ici pour respecter la direction visuelle B2 "produit seul".
+  if (product.supplierName === "printful") {
+    return (colorId && PRINTFUL_LOCAL_BY_COLOR[colorId]) || PRINTFUL_LOCAL_DEFAULT;
+  }
+
   // 0a. Override par coloris (per-product, priorité absolue)
   if (colorId && product.hmMockupImages?.[colorId]) {
     return product.hmMockupImages[colorId];
