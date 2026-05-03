@@ -1350,10 +1350,10 @@ export const PRODUCT_GILDAN_5000: Product = {
   weight: "185 g/m²",
   images: [],
   colors: [
-    { id: "blanc",      label: "Blanc",      hex: "#FFFFFF", available: true },
-    { id: "noir",       label: "Noir",       hex: "#1a1a1a", available: true },
-    { id: "gris-sport", label: "Gris Sport", hex: "#8a9090", available: true },
-    { id: "marine",     label: "Marine",     hex: "#1b2a4a", available: true },
+    { id: "blanc",        label: "Blanc",        hex: "#FFFFFF", available: true },
+    { id: "noir",         label: "Noir",         hex: "#1a1a1a", available: true },
+    { id: "marine",       label: "Marine",       hex: "#1b2a4a", available: true },
+    { id: "dark-heather", label: "Dark Heather", hex: "#5c5c5c", available: true },
   ],
   sizes: [
     { label: "S",   available: true },
@@ -1368,7 +1368,7 @@ export const PRODUCT_GILDAN_5000: Product = {
     dtf:      GILDAN_5000_PRICES.dtf,
     flex:     GILDAN_5000_PRICES.flex,
     broderie: GILDAN_5000_PRICES.broderie,
-    placements: GILDAN_5000_PLACEMENT_SURCHARGES,   // cœur 19.90 / cœur+dos 29.90
+    placements: GILDAN_5000_PLACEMENT_SURCHARGES,
     broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
   },
   featured: true,
@@ -1377,13 +1377,11 @@ export const PRODUCT_GILDAN_5000: Product = {
   supplierName: "printful",
   ideaPour: ["Associations", "Événementiel", "Équipes"],
   conseil: "Idéal pour débuter votre communication textile. Le Gildan 5000 est notre best-seller entrée de gamme : coton épais, couleurs intenses, expédition directe depuis l'UE.",
-  // Images catalogue Printful CDN — variant_id par coloris (source : api.printful.com/products/438)
   hmMockupImages: {
-    "blanc":       "https://files.cdn.printful.com/products/438/11580_1693310960.jpg",
-    "noir":        "https://files.cdn.printful.com/products/438/11550_1642678229.jpg",
-    "gris-sport":  "https://files.cdn.printful.com/products/438/11575_1642678405.jpg",
-    "marine":      "https://files.cdn.printful.com/products/438/11565_1642678321.jpg",
-    "dark-heather":"https://files.cdn.printful.com/products/438/15847_1661693946.jpg",
+    "blanc":        "https://files.cdn.printful.com/products/438/11580_1693310960.jpg",
+    "noir":         "https://files.cdn.printful.com/products/438/11550_1642678229.jpg",
+    "marine":       "https://files.cdn.printful.com/products/438/11565_1642678321.jpg",
+    "dark-heather": "https://files.cdn.printful.com/products/438/15847_1661693946.jpg",
   },
 };
 

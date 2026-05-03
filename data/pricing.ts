@@ -30,21 +30,19 @@ export function formatPrice(price: number): string {
 // Tous les prix sont en TTC
 
 // Gildan 5000 — Printful POD (DTF uniquement)
-// V1 lancement : prix d'acquisition marché — marge ~4,72 € HT / cœur seul
-// V2 après test marché : dtf → 22.49 (cœur), surcharge coeur-dos → 7.41 (→ 29.90)
+// Coût Printful ~6,90 € HT + livraison ~4,04 € — marge cœur seul ~9,27 € HT (44,7%)
 export const GILDAN_5000_PRICES = {
-  dtf:      19.90,   // cœur seul TTC — V1 lancement
+  dtf:      24.90,   // cœur seul TTC
   flex:     0,
   broderie: 0,
 } as const;
 
-// Surcharges placement spécifiques Gildan 5000 (différentes de la table globale)
-// cœur seul : +0 → 19.90 TTC
-// cœur + dos : +10.00 → 29.90 TTC  (Printful coût dos ~3.80 € supplémentaire)
+// Surcharges placement Gildan 5000
+// cœur seul : 24.90 — cœur+dos : 34.90 (+10.00)
 export const GILDAN_5000_PLACEMENT_SURCHARGES = {
   coeur:       0,
   dos:         0,
-  "coeur-dos": 10.00,  // 19.90 + 10.00 = 29.90 TTC
+  "coeur-dos": 10.00,  // 24.90 + 10.00 = 34.90 TTC
 } as const;
 
 // T-shirts base prices TTC
