@@ -209,6 +209,10 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
   // ── Rebuild canvas on deps change ─────────────────────────────────────────
   useEffect(() => {
     if (!fabricReady || !fabricRef.current || canvasSize === 0) return;
+    // Cancellation flag — prevents stale async runs from writing to the canvas
+    // after the effect has been superseded by a newer invocation.
+    let cancelled = false;
+
     const canvas = fabricRef.current;
     const zone   = getZone();
 
@@ -226,8 +230,11 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     const faceObjects = objects.filter((o) => o.face === view);
 
     import("fabric").then(({ FabricImage, Rect, IText, Shadow }) => {
+      if (cancelled) return;
+
       // ── buildCanvas — zone + objects + events (called after shirt is placed) ─
       const buildCanvas = async () => {
+        if (cancelled) return;
         // ── Zone rectangle ──────────────────────────────────────────────────
         if (zone) {
           const [lf, tf, wf, hf] = zone;
@@ -435,12 +442,14 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
       shirtEl.src = proxyCdnUrl(src) ?? src;
 
       shirtEl.onload = async () => {
+        if (cancelled) return;
         addShirtFromEl(shirtEl);
         await buildCanvas();
       };
 
       // On error: try a local fallback mockup so logos still appear
       shirtEl.onerror = async () => {
+        if (cancelled) return;
         const fallbackSrc = view === "front"
           ? (mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
           : (mockups?.back  ?? "/mockups/tshirt/blanc-back.png");
@@ -449,10 +458,12 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
           const fallEl = new window.Image();
           fallEl.src = fallbackSrc;
           fallEl.onload = async () => {
+            if (cancelled) return;
             addShirtFromEl(fallEl);
             await buildCanvas();
           };
           fallEl.onerror = async () => {
+            if (cancelled) return;
             // No shirt at all — still build zone + logos so the user isn't blocked
             await buildCanvas();
           };
@@ -461,6 +472,8 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
         }
       };
     });
+
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fabricReady, src, canvasSize, view, placement, getZone, objects]);
 

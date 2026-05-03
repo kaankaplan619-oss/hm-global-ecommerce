@@ -95,7 +95,7 @@ export default function StudioClient({ product }: Props) {
   void setCurrentFace;
 
   return (
-    <div className="min-h-screen bg-[var(--hm-bg)]">
+    <div className="bg-[var(--hm-bg)]">
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-[var(--hm-line)] bg-white/95 backdrop-blur-sm">
         <div className="container flex h-16 items-center gap-4">
@@ -133,7 +133,7 @@ export default function StudioClient({ product }: Props) {
 
       {/* ── Main layout: 3 columns on desktop, stacked on mobile ────────────── */}
       <div className="container py-6">
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr_280px]">
+        <div className="grid gap-6 lg:grid-cols-[280px_1fr_280px] lg:items-start">
 
           {/* ── Col 1: Tools panel ──────────────────────────────────────────── */}
           <aside className="order-2 lg:order-1">

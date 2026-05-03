@@ -114,6 +114,16 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
 
   return (
     <div className="flex h-full flex-col gap-4">
+      {/* ── Input fichier — toujours dans le DOM (sr-only) pour iOS Safari ────── */}
+      <input
+        id="studio-logo-input"
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/svg+xml,image/jpeg,image/jpg"
+        className="sr-only"
+        onChange={handleFileChange}
+      />
+
       {/* ── Tab bar ──────────────────────────────────────────────────────────── */}
       <div className="flex gap-1 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-1">
         {tabs.map((tab) => (
@@ -136,17 +146,10 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
       {/* ── Logo panel ───────────────────────────────────────────────────────── */}
       {activeTab === "logo" && (
         <div className="flex flex-col gap-4">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/png,image/svg+xml,image/jpeg,image/jpg"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[var(--hm-line)] bg-[var(--hm-bg)] px-4 py-8 text-center transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
+          {/* Label native file-input trigger — le plus fiable sur iOS/Android/desktop */}
+          <label
+            htmlFor="studio-logo-input"
+            className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[var(--hm-line)] bg-[var(--hm-bg)] px-4 py-8 text-center transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
           >
             <Upload size={24} className="text-[var(--hm-primary)]" />
             <span className="text-sm font-semibold text-[var(--hm-text)]">
@@ -155,7 +158,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
             <span className="text-xs text-[var(--hm-text-soft)]">
               PNG, SVG ou JPEG · Recommandé : 300px minimum
             </span>
-          </button>
+          </label>
 
           {logoWarning && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
