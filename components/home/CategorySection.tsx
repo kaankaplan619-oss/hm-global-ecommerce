@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, MessageSquare } from "lucide-react";
-import { SEASONAL_ORDER, CURRENT_SEASON } from "@/data/products";
 import ProductImage from "@/components/product/ProductImage";
 
 // ─── Données catégories ───────────────────────────────────────────────────────
@@ -12,10 +11,10 @@ const CATEGORY_DATA = {
     description:
       "Pour équiper rapidement une équipe, un événement ou une opération terrain.",
     href: "/catalogue/tshirts",
-    image: "/images/products/tu01t/PS_CGTU01T_WHITE.avif",
-    imageAlt: "T-shirt personnalisé B&C",
-    count: 3,
-    from: "8,50",
+    image: "https://files.cdn.printful.com/products/438/11580_1693310960.jpg",
+    imageAlt: "T-shirt Gildan Heavy Cotton",
+    count: 2,
+    from: "19,90",
     techniques: ["DTF", "Flex", "Broderie"],
     accent: "border-t-[var(--hm-rose)]",
     dot: "bg-[var(--hm-rose)]",
@@ -29,10 +28,10 @@ const CATEGORY_DATA = {
     description:
       "Pour un rendu plus premium, plus visible et plus durable dans le temps.",
     href: "/catalogue/hoodies",
-    image: "/images/products/wu620/PS_CGWU620_BLACK.avif",
-    imageAlt: "Hoodie personnalisé B&C",
+    image: "https://files.cdn.printful.com/products/146/5530_1750160839.jpg",
+    imageAlt: "Hoodie Gildan Heavy Blend",
     count: 2,
-    from: "18,50",
+    from: "39,90",
     techniques: ["DTF", "Flex", "Broderie"],
     accent: "border-t-[var(--hm-blue)]",
     dot: "bg-[var(--hm-blue)]",
@@ -40,29 +39,31 @@ const CATEGORY_DATA = {
     badgeText: "text-[var(--hm-blue)]",
     ctaText: "Voir les hoodies",
   },
-  softshells: {
-    label: "Softshells & Vestes",
-    tagline: "La version premium pour les équipes terrain",
+  tshirts_premium: {
+    label: "T-shirts Premium",
+    tagline: "Qualité supérieure, toucher doux",
     description:
-      "Pour les projets corporate, les commerciaux et les équipes en extérieur.",
-    href: "/catalogue/softshells",
-    image: "/images/products/jui62/PS_CGJUI62_NAVY-NEONGREEN.avif",
-    imageAlt: "Softshell personnalisé B&C",
-    count: 2,
-    from: "65,00",
-    techniques: ["Broderie", "DTF"],
+      "Bella+Canvas 3001 — coupe modern fit, idéal pour les marques et créateurs.",
+    href: "/catalogue/tshirts",
+    image: "https://files.cdn.printful.com/products/71/4016_1752236278.jpg",
+    imageAlt: "T-shirt Bella+Canvas 3001",
+    count: 1,
+    from: "29,90",
+    techniques: ["DTF", "Broderie"],
     accent: "border-t-[var(--hm-purple)]",
     dot: "bg-[var(--hm-purple)]",
     badgeBg: "bg-[var(--hm-accent-soft-purple)]",
     badgeText: "text-[var(--hm-purple)]",
-    ctaText: "Voir les softshells",
+    ctaText: "Voir le produit",
   },
 } as const;
 
 // ─── Composant ────────────────────────────────────────────────────────────────
 
+const DISPLAY_ORDER: Array<keyof typeof CATEGORY_DATA> = ["tshirts", "hoodies", "tshirts_premium"];
+
 export default function CategorySection() {
-  const order = SEASONAL_ORDER[CURRENT_SEASON] as Array<keyof typeof CATEGORY_DATA>;
+  const order = DISPLAY_ORDER;
 
   return (
     <section className="bg-[var(--hm-surface)] py-20 sm:py-24" id="catalogue">

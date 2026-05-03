@@ -97,8 +97,8 @@ export default function Hero() {
                 {/* Image */}
                 <div className="relative aspect-[3/4] w-full bg-[linear-gradient(180deg,#fbfcfe_0%,var(--hm-surface)_100%)]">
                   <ProductImage
-                    src="/images/products/tu01t/PS_CGTU01T_WHITE.avif"
-                    alt="T-shirt personnalisé"
+                    src="https://files.cdn.printful.com/products/438/11580_1693310960.jpg"
+                    alt="T-shirt Gildan Heavy Cotton"
                     fill
                     priority
                     sizes="(min-width: 1024px) 22vw, 50vw"
@@ -122,7 +122,7 @@ export default function Hero() {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-[var(--hm-primary)]">
-                      Dès 8,50 €
+                      Dès 19,90 €
                     </span>
                     <span className="flex items-center gap-1 text-[10px] font-semibold
                       text-[var(--hm-primary)] transition-all duration-200 group-hover:gap-1.5">
@@ -144,8 +144,8 @@ export default function Hero() {
                 >
                   <div className="relative aspect-[1/0.94] w-full bg-[linear-gradient(180deg,#fbfcfe_0%,var(--hm-surface)_100%)]">
                     <ProductImage
-                      src="/images/products/wu620/PS_CGWU620_BLACK.avif"
-                      alt="Hoodie personnalisé"
+                      src="https://files.cdn.printful.com/products/146/5530_1750160839.jpg"
+                      alt="Hoodie Gildan Heavy Blend"
                       fill
                       sizes="(min-width: 1024px) 14vw, 35vw"
                       className="object-contain"
@@ -153,7 +153,7 @@ export default function Hero() {
                   </div>
                   <div className="border-t border-[var(--hm-border)] p-3.5">
                     <p className="text-[12px] font-semibold text-[var(--hm-text)]">Hoodie</p>
-                    <p className="text-[10px] text-[var(--hm-text-soft)]">Dès 18,50 €</p>
+                    <p className="text-[10px] text-[var(--hm-text-soft)]">Dès 49,90 €</p>
                   </div>
                 </Link>
 
@@ -166,16 +166,16 @@ export default function Hero() {
                 >
                   <div className="relative aspect-[1/0.94] w-full bg-[linear-gradient(180deg,#fbfcfe_0%,var(--hm-surface)_100%)]">
                     <ProductImage
-                      src="/images/products/jui62/PS_CGJUI62_NAVY-NEONGREEN.avif"
-                      alt="Softshell personnalisé"
+                      src="https://files.cdn.printful.com/products/71/4016_1752236278.jpg"
+                      alt="T-shirt Bella+Canvas 3001"
                       fill
                       sizes="(min-width: 1024px) 14vw, 35vw"
                       className="object-contain"
                     />
                   </div>
                   <div className="border-t border-[var(--hm-border)] p-3.5">
-                    <p className="text-[12px] font-semibold text-[var(--hm-text)]">Softshell</p>
-                    <p className="text-[10px] text-[var(--hm-text-soft)]">Broderie premium</p>
+                    <p className="text-[12px] font-semibold text-[var(--hm-text)]">T-shirt Premium</p>
+                    <p className="text-[10px] text-[var(--hm-text-soft)]">Bella+Canvas 3001</p>
                   </div>
                 </Link>
               </div>
