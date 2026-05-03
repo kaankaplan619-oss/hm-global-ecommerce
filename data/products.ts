@@ -40,6 +40,12 @@ export const PRODUCT_GILDAN5000: Product = {
     "/images/products/gildan5000-noir.jpg",
     "/images/products/gildan5000-blanc-detail.jpg",
   ],
+  previewImages: {
+    "blanc":      "/images/products/gildan5000-blanc-coeur.jpg",
+    "noir":       "/images/products/gildan5000-noir-coeur.jpg",
+    "gris-sport": "/images/products/gildan5000-gris-coeur.jpg",
+    "marine":     "/images/products/gildan5000-marine-coeur.jpg",
+  },
   colors: [
     { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
     { id: "noir", label: "Noir", hex: "#111111", available: true },
@@ -210,6 +216,12 @@ export const PRODUCT_GILDAN18500: Product = {
     "/images/products/gildan18500-gris.jpg",
     "/images/products/gildan18500-marine.jpg",
   ],
+  previewImages: {
+    "noir":       "/images/products/gildan18500-noir-coeur.jpg",
+    "blanc":      "/images/products/gildan18500-blanc-coeur.jpg",
+    "gris-sport": "/images/products/gildan18500-gris-coeur.jpg",
+    "marine":     "/images/products/gildan18500-marine-coeur.jpg",
+  },
   colors: HOODIE_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],

@@ -66,6 +66,7 @@ export interface Product {
   composition: string;
   weight: string; // "145 g/m²"
   images: string[]; // paths /images/products/...
+  previewImages?: Record<string, string>; // colorId -> chest close-up for logo preview
   colors: ProductColor[];
   sizes: ProductSize[];
   techniques: Technique[];

@@ -8,6 +8,7 @@ import { useAuthStore } from "@/store/auth";
 import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
+import LogoPreview from "@/components/product/LogoPreview";
 import type { Product, Technique, Placement, ProductColor } from "@/types";
 
 interface Props {
@@ -272,6 +273,14 @@ export default function ProductConfigurator({ product }: Props) {
           )}
         </div>
       </div>
+
+      {/* ── Logo preview ─────────────────────────────────────── */}
+      <LogoPreview
+        product={product}
+        color={color}
+        logoFile={logoFile}
+        placement={placement}
+      />
 
       {/* ── Logo upload ───────────────────────────────────────── */}
       <div>
