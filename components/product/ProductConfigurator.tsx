@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Upload, X, CheckCircle, AlertCircle, Minus, Plus, ShoppingBag, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
@@ -56,6 +56,11 @@ interface Props {
    * Force le passage par "Personnaliser mon article" → studio.
    */
   requirePersonalization?: boolean;
+  /**
+   * Slot optionnel — rendu juste avant le prix récapitulatif.
+   * Utilisé pour injecter le bouton "Personnaliser mon article" depuis le parent.
+   */
+  studioCTA?: React.ReactNode;
 }
 
 export default function ProductConfigurator({
@@ -80,6 +85,7 @@ export default function ProductConfigurator({
   studioLogoPreset,
   hideLogoUpload = false,
   requirePersonalization = false,
+  studioCTA,
 }: Props) {
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -143,8 +149,13 @@ export default function ProductConfigurator({
   );
 
   // Price computation
+  // Utilise les surcharges spécifiques au produit (product.pricing.placements)
+  // et non la table globale PLACEMENT_SURCHARGES — correction bug prix Gildan/Bella.
   const basePrice = product.pricing[technique] as number;
-  const unitPrice = computeUnitPrice({ basePrice, technique, placement });
+  const placementSurcharge = technique === "broderie"
+    ? product.pricing.broDeriePlacementSurcharge[placement]
+    : product.pricing.placements[placement];
+  const unitPrice = Math.round((basePrice + placementSurcharge) * 100) / 100;
   const totalPrice = Math.round(unitPrice * quantity * 100) / 100;
   const freeShipping = quantity >= PRICING_CONFIG.freeShippingThreshold;
 
@@ -732,6 +743,9 @@ export default function ProductConfigurator({
           </p>
         </div>
       )}
+
+      {/* ── Slot studio CTA — injecté depuis ProductDetailClient ─ */}
+      {studioCTA && <div>{studioCTA}</div>}
 
       {/* ── Prix récapitulatif ────────────────────────────────── */}
         <div className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 shadow-[0_14px_34px_rgba(63,45,88,0.05)]">

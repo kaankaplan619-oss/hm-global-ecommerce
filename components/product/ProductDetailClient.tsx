@@ -460,31 +460,29 @@ export default function ProductDetailClient({ product }: Props) {
           studioLogoPreset={studioLogoPreset ?? undefined}
           hideLogoUpload={true}
           requirePersonalization={product.supplierName === "printful"}
-        />
-
-        {/* ── Bouton Studio personnalisation ──────────────────────────────── */}
-        <div className="mt-4">
-          {size ? (
-            <Link
-              href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.30)] transition-all hover:bg-[var(--hm-primary)]/90 hover:shadow-[0_6px_20px_rgba(177,63,116,0.40)] active:scale-[0.98]"
-            >
-              🎨 Personnaliser mon article →
-            </Link>
-          ) : (
-            <div title="Sélectionnez d'abord une taille">
-              <span
-                aria-disabled="true"
-                className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)]/40 px-5 py-3.5 text-sm font-bold text-white/70 select-none"
+          studioCTA={
+            size ? (
+              <Link
+                href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.30)] transition-all hover:bg-[var(--hm-primary)]/90 hover:shadow-[0_6px_20px_rgba(177,63,116,0.40)] active:scale-[0.98]"
               >
                 🎨 Personnaliser mon article →
-              </span>
-              <p className="mt-1.5 text-center text-[11px] text-[var(--hm-text-soft)]">
-                Sélectionnez d&apos;abord une taille
-              </p>
-            </div>
-          )}
-        </div>
+              </Link>
+            ) : (
+              <div title="Sélectionnez d'abord une taille">
+                <span
+                  aria-disabled="true"
+                  className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)]/40 px-5 py-3.5 text-sm font-bold text-white/70 select-none"
+                >
+                  🎨 Personnaliser mon article →
+                </span>
+                <p className="mt-1.5 text-center text-[11px] text-[var(--hm-text-soft)]">
+                  Sélectionnez d&apos;abord une taille
+                </p>
+              </div>
+            )
+          }
+        />
       </div>
 
       {/* ── BAT Preview Studio (portal body) — t-shirts B&C uniquement ── */}

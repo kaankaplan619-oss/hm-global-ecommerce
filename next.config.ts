@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "media.europeancatalog.com",
       },
+      {
+        // Printful CDN — images catalogue produits (variants couleur)
+        protocol: "https",
+        hostname: "files.cdn.printful.com",
+        pathname: "/products/**",
+      },
     ],
   },
 
