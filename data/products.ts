@@ -11,6 +11,7 @@ import {
   SAC_PRICES,
   PLACEMENT_SURCHARGES,
   GILDAN_5000_PRICES,
+  GILDAN_5000_PLACEMENT_SURCHARGES,
 } from "./pricing";
 
 function buildProductImages(productId: string, images: string[]) {
@@ -1729,7 +1730,7 @@ export const PRODUCT_GILDAN_5000: Product = {
     dtf:      GILDAN_5000_PRICES.dtf,
     flex:     GILDAN_5000_PRICES.flex,
     broderie: GILDAN_5000_PRICES.broderie,
-    placements: PLACEMENT_SURCHARGES.dtf,
+    placements: GILDAN_5000_PLACEMENT_SURCHARGES,   // cœur 19.90 / cœur+dos 29.90
     broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
   },
   featured: false,
