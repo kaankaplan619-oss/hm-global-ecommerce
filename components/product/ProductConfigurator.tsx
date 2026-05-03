@@ -44,6 +44,18 @@ interface Props {
     url: string; path: string; name: string; size: number; type: string;
     logoPlacementTransform?: LogoPlacementTransform | null;
   };
+  /**
+   * Masque le bloc upload logo + l'aperçu de zones sur la fiche produit.
+   * L'upload se fait dans le studio (/studio/[slug]), pas ici.
+   * Par défaut : false (ancien comportement conservé).
+   */
+  hideLogoUpload?: boolean;
+  /**
+   * Quand true (produits Printful), le bouton "Ajouter au panier" est désactivé
+   * tant qu'aucun logo n'est fourni (studioLogoPreset absent).
+   * Force le passage par "Personnaliser mon article" → studio.
+   */
+  requirePersonalization?: boolean;
 }
 
 export default function ProductConfigurator({
@@ -66,6 +78,8 @@ export default function ProductConfigurator({
   logoPlacementTransform,
   batRef,
   studioLogoPreset,
+  hideLogoUpload = false,
+  requirePersonalization = false,
 }: Props) {
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -294,7 +308,10 @@ export default function ProductConfigurator({
     setTimeout(() => setAddedToCart(false), 3000);
   };
 
-  const canAdd = !!size && !!color && color.available && !isUploadingOnSelect;
+  // Quand requirePersonalization=true (Printful), un logo est obligatoire via le studio
+  const hasLogo = !!logoFile || !!studioLogoPreset;
+  const canAdd = !!size && !!color && color.available && !isUploadingOnSelect
+    && (!requirePersonalization || hasLogo);
   const shippingPiecesLeft = Math.max(0, PRICING_CONFIG.freeShippingThreshold - quantity);
 
   return (
@@ -574,7 +591,8 @@ export default function ProductConfigurator({
       </div>
 
       {/* ── Logo upload ───────────────────────────────────────── */}
-      <div>
+      {/* Masqué quand hideLogoUpload=true → l'upload se fait dans le studio */}
+      {!hideLogoUpload && <div>
         <label className="label">Votre logo / fichier</label>
         {!logoFile ? (
           <div
@@ -666,10 +684,10 @@ export default function ProductConfigurator({
         <p className="mt-2 text-[11px] text-[var(--hm-text-muted)]">
           Si votre fichier n&apos;est pas finalisé, nous le vérifierons avec vous avant production.
         </p>
-      </div>
+      </div>}
 
       {/* ── Aperçu marquage par zones ─────────────────────────── */}
-      {!hidePreview && logoPreviewUrl && (
+      {!hideLogoUpload && !hidePreview && logoPreviewUrl && (
         <div>
           <label className="label">Aperçu du marquage</label>
           <div className="flex flex-col gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
@@ -776,14 +794,23 @@ export default function ProductConfigurator({
             <ShoppingBag size={16} />
             {!size
               ? "Sélectionnez une taille"
+              : requirePersonalization && !hasLogo
+              ? "Personnalisez d'abord votre article"
               : "Ajouter au panier"}
           </>
         )}
       </button>
 
-      <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
-        Vous pouvez configurer et ajouter au panier librement. La connexion sera demandée au moment du checkout.
-      </p>
+      {/* Message contextuel selon le flux */}
+      {requirePersonalization && !hasLogo ? (
+        <p className="text-center text-[10px] text-[var(--hm-primary)]">
+          Utilisez le bouton <strong>🎨 Personnaliser mon article</strong> pour ajouter votre logo.
+        </p>
+      ) : (
+        <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
+          Vous pouvez configurer et ajouter au panier librement. La connexion sera demandée au moment du checkout.
+        </p>
+      )}
     </div>
   );
 }

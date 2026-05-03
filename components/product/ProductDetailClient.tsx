@@ -458,6 +458,8 @@ export default function ProductDetailClient({ product }: Props) {
           logoPlacementTransform={logoPlacementTransform}
           batRef={batData?.batRef}
           studioLogoPreset={studioLogoPreset ?? undefined}
+          hideLogoUpload={true}
+          requirePersonalization={product.supplierName === "printful"}
         />
 
         {/* ── Bouton Studio personnalisation ──────────────────────────────── */}
