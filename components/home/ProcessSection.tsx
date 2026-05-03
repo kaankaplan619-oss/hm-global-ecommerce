@@ -1,250 +1,176 @@
-import Link from "next/link";
-import {
-  ShoppingBag,
-  Upload,
-  ShieldCheck,
-  Layers3,
-  Truck,
-  ChevronRight,
-  ArrowRight,
-} from "lucide-react";
-
-// ─── Données ──────────────────────────────────────────────────────────────────
+import { ShoppingBag, Upload, Eye, Truck, ShieldCheck, Paintbrush, Zap, Package } from "lucide-react";
 
 const STEPS = [
   {
     number: "01",
-    actor: "vous",
-    actorLabel: "Votre action",
-    icon: ShoppingBag,
-    title: "Choisissez votre produit",
+    Icon: ShoppingBag,
+    title: "Choisissez votre textile",
     description:
-      "Parcourez le catalogue, sélectionnez le modèle, la couleur et la quantité. Devis disponible pour les grands volumes ou les besoins mixtes.",
-    note: "T-shirts, hoodies, softshells",
-    iconBg: "bg-[var(--hm-accent-soft-blue)]",
-    iconColor: "text-[var(--hm-blue)]",
-    actorBg: "bg-[var(--hm-accent-soft-blue)]",
-    actorColor: "text-[var(--hm-blue)]",
-    highlight: false,
+      "Sélectionnez le vêtement qui vous correspond parmi notre large gamme.",
+    color: "#6EC1E4",
   },
   {
     number: "02",
-    actor: "vous",
-    actorLabel: "Votre action",
-    icon: Upload,
-    title: "Envoyez votre logo",
+    Icon: Upload,
+    title: "Ajoutez votre logo ou design",
     description:
-      "Uploadez votre fichier (PNG, SVG, PDF vectoriel). Pas de fichier prêt ? On vous aide à le préparer ou à l'adapter selon la technique choisie.",
-    note: "Formats acceptés : PNG, SVG, PDF, AI",
-    iconBg: "bg-[var(--hm-accent-soft-purple)]",
-    iconColor: "text-[var(--hm-purple)]",
-    actorBg: "bg-[var(--hm-accent-soft-blue)]",
-    actorColor: "text-[var(--hm-blue)]",
-    highlight: false,
+      "Importez votre logo, ajoutez un texte ou créez votre design facilement.",
+    color: "#6A3FA0",
   },
   {
     number: "03",
-    actor: "hm",
-    actorLabel: "HM Global",
-    icon: ShieldCheck,
-    title: "On valide votre fichier",
+    Icon: Eye,
+    title: "Validez l'aperçu",
     description:
-      "Avant toute production, notre équipe vérifie le rendu, les couleurs et le positionnement. Un bon à tirer vous est soumis si nécessaire.",
-    note: "Aucune production sans validation",
-    iconBg: "bg-white",
-    iconColor: "text-[var(--hm-rose)]",
-    actorBg: "bg-[var(--hm-rose)]",
-    actorColor: "text-white",
-    highlight: true,
+      "Visualisez le rendu final et validez votre personnalisation en toute confiance.",
+    color: "#C34A7E",
   },
   {
     number: "04",
-    actor: "hm",
-    actorLabel: "HM Global",
-    icon: Layers3,
-    title: "Production en Alsace",
+    Icon: Truck,
+    title: "Impression et livraison",
     description:
-      "DTF, flex ou broderie selon votre commande. Fabrication locale, délai de 7 à 10 jours ouvrés. Vous êtes notifié à chaque changement de statut.",
-    note: "7 à 10 jours ouvrés",
-    iconBg: "bg-[var(--hm-accent-soft-purple)]",
-    iconColor: "text-[var(--hm-purple)]",
-    actorBg: "bg-[var(--hm-accent-soft-rose)]",
-    actorColor: "text-[var(--hm-rose)]",
-    highlight: false,
+      "Nous imprimons avec soin et livrons rapidement chez vous.",
+    color: "#A8366A",
+  },
+];
+
+const ADVANTAGES = [
+  {
+    Icon: ShieldCheck,
+    title: "Qualité professionnelle",
+    description: "Textiles et impressions haut de gamme.",
+    color: "#6EC1E4",
   },
   {
-    number: "05",
-    actor: "hm",
-    actorLabel: "HM Global",
-    icon: Truck,
-    title: "Livraison ou remise",
-    description:
-      "Expédition Colissimo avec numéro de suivi, ou retrait en atelier en Alsace. Livraison offerte dès 10 pièces.",
-    note: "Livraison offerte dès 10 pièces",
-    iconBg: "bg-[var(--hm-accent-soft-blue)]",
-    iconColor: "text-[var(--hm-blue)]",
-    actorBg: "bg-[var(--hm-accent-soft-rose)]",
-    actorColor: "text-[var(--hm-rose)]",
-    highlight: false,
+    Icon: Paintbrush,
+    title: "100% personnalisable",
+    description: "Votre style, votre logo, votre identité.",
+    color: "#6A3FA0",
   },
-] as const;
-
-// ─── Composant ────────────────────────────────────────────────────────────────
+  {
+    Icon: Zap,
+    title: "Impression textile",
+    description: "Technologie de pointe pour un rendu exceptionnel.",
+    color: "#C34A7E",
+  },
+  {
+    Icon: Package,
+    title: "Livraison gratuite",
+    description: "Dès 10 produits commandés en France métropolitaine.",
+    color: "#A8366A",
+  },
+];
 
 export default function ProcessSection() {
   return (
-    <section className="section bg-white" id="comment-ca-marche">
+    <section
+      id="comment-ca-marche"
+      className="py-20 lg:py-28"
+      style={{ background: "linear-gradient(180deg, #F8FAFC 0%, #EEF2F7 100%)" }}
+    >
       <div className="container">
-
-        {/* ── En-tête ────────────────────────────────────────────────────── */}
-        <div className="mb-12 text-center">
-          <p className="section-tag justify-center">Comment ça marche</p>
-          <h2 className="mb-3 text-3xl font-black leading-tight tracking-tight
-            text-[var(--hm-text)] md:text-4xl">
-            De la commande à la livraison,
-            <br />
-            <span className="text-gradient-gold">on s&rsquo;occupe de tout</span>
+        {/* Header */}
+        <div className="text-center mb-16">
+          <p
+            className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3"
+            style={{ color: "#6A3FA0" }}
+          >
+            Simple, rapide &amp; professionnel
+          </p>
+          <h2 className="text-3xl md:text-5xl font-black text-[#0F1C2E] mb-4">
+            Comment ça marche ?
           </h2>
-          <p className="mx-auto max-w-xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
-            Un process simple, pensé pour les pros. Vous choisissez, vous envoyez votre logo —
-            notre équipe valide, produit et livre.
+          <p className="text-[#64748B] max-w-lg mx-auto text-sm leading-relaxed">
+            De votre idée à votre textile personnalisé,{" "}
+            <span className="font-semibold" style={{ color: "#C34A7E" }}>
+              on s&rsquo;occupe de tout.
+            </span>
           </p>
         </div>
 
-        {/* ── Légende ───────────────────────────────────────────────────── */}
-        <div className="mb-8 flex items-center justify-center gap-5">
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--hm-blue)]" />
-            <span className="text-[11px] text-[var(--hm-text-soft)]">Votre action</span>
-          </div>
-          <div className="h-3 w-[1px] bg-[var(--hm-line)]" />
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--hm-rose)]" />
-            <span className="text-[11px] text-[var(--hm-text-soft)]">HM Global prend le relais</span>
-          </div>
-        </div>
+        {/* Steps */}
+        <div className="relative">
+          {/* Gradient progress line — desktop only */}
+          <div
+            className="hidden lg:block absolute top-5 z-0 h-[2px] rounded-full"
+            style={{
+              left: "12.5%",
+              right: "12.5%",
+              background:
+                "linear-gradient(90deg, #6EC1E4 0%, #6A3FA0 50%, #C34A7E 100%)",
+            }}
+          />
 
-        {/* ── Étapes ────────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {STEPS.map((step, index) => {
-            const Icon = step.icon;
-            const isLast = index === STEPS.length - 1;
-
-            return (
-              <div key={step.number} className="relative">
-
-                {/* ── Connecteur → entre étapes (desktop) ── */}
-                {!isLast && (
-                  <div className="absolute -right-2.5 top-[38px] z-10 hidden
-                    h-5 w-5 items-center justify-center rounded-full
-                    border border-[var(--hm-line)] bg-white
-                    shadow-[0_1px_4px_rgba(63,45,88,0.08)] lg:flex">
-                    <ChevronRight size={9} className="text-[var(--hm-text-muted)]" />
-                  </div>
-                )}
-
-                {/* ── Carte étape ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {STEPS.map((step) => (
+              <div
+                key={step.number}
+                className="flex flex-col items-center text-center group"
+              >
+                {/* Step number bubble */}
                 <div
-                  className={`relative flex h-full flex-col overflow-hidden
-                    rounded-2xl border transition-all duration-300
-                    hover:shadow-[0_8px_24px_rgba(63,45,88,0.09)]
-                    ${step.highlight
-                      ? "border-[var(--hm-rose)] bg-[var(--hm-accent-soft-rose)]"
-                      : "border-[var(--hm-line)] bg-white hover:border-[rgba(177,63,116,0.22)]"
-                    }`}
+                  className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-black mb-5 transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    background: step.color,
+                    boxShadow: `0 4px 18px ${step.color}55`,
+                  }}
                 >
-                  {/* Numéro décoratif en fond */}
-                  <span className="pointer-events-none absolute -right-2 -top-4
-                    select-none text-[88px] font-black leading-none
-                    text-[var(--hm-text)] opacity-[0.04]">
-                    {step.number}
-                  </span>
+                  {step.number}
+                </div>
 
-                  <div className="relative flex flex-1 flex-col p-4">
-
-                    {/* Icône + badge acteur */}
-                    <div className="mb-3 flex items-start justify-between gap-2">
-                      <div className={`flex h-9 w-9 shrink-0 items-center
-                        justify-center rounded-xl
-                        ${step.highlight
-                          ? "bg-white shadow-[0_2px_8px_rgba(177,63,116,0.15)]"
-                          : step.iconBg
-                        }`}>
-                        <Icon size={16} className={step.iconColor} />
-                      </div>
-                      <span className={`rounded-full px-2 py-0.5 text-[9px]
-                        font-bold uppercase tracking-wider
-                        ${step.actorBg} ${step.actorColor}`}>
-                        {step.actorLabel}
-                      </span>
-                    </div>
-
-                    {/* Numéro réel + titre */}
-                    <p className={`mb-0.5 text-[10px] font-bold tabular-nums
-                      ${step.highlight
-                        ? "text-[var(--hm-rose)]"
-                        : "text-[var(--hm-text-muted)]"
-                      }`}>
-                      Étape {step.number}
-                    </p>
-                    <h3 className={`mb-2 text-[13px] font-black leading-snug
-                      ${step.highlight
-                        ? "text-[var(--hm-rose)]"
-                        : "text-[var(--hm-text)]"
-                      }`}>
-                      {step.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="flex-1 text-[11px] leading-relaxed text-[var(--hm-text-soft)]">
-                      {step.description}
-                    </p>
-
-                    {/* Note concrète en bas */}
-                    <div className={`mt-3 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold
-                      ${step.highlight
-                        ? "bg-white/60 text-[var(--hm-rose)]"
-                        : "bg-[var(--hm-surface)] text-[var(--hm-text-muted)]"
-                      }`}>
-                      {step.note}
-                    </div>
+                {/* Card */}
+                <div className="bg-white rounded-2xl p-6 w-full flex flex-col items-center shadow-[0_4px_24px_rgba(15,28,46,0.07)] hover:shadow-[0_8px_40px_rgba(15,28,46,0.13)] transition-shadow duration-300">
+                  {/* Icon circle */}
+                  <div
+                    className="w-14 h-14 rounded-xl flex items-center justify-center mb-4"
+                    style={{ background: `${step.color}18` }}
+                  >
+                    <step.Icon
+                      size={24}
+                      style={{ color: step.color }}
+                      strokeWidth={1.75}
+                    />
                   </div>
+
+                  <h3 className="font-bold text-[#0F1C2E] mb-2 text-sm leading-snug">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs text-[#94A3B8] leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        {/* ── Bande de réassurance bas ──────────────────────────────────── */}
-        <div className="mt-10 rounded-2xl border border-[var(--hm-line)]
-          bg-[var(--hm-surface)] px-6 py-5
-          md:flex md:items-center md:justify-between md:gap-8">
-          <div className="mb-4 md:mb-0">
-            <p className="mb-0.5 text-[15px] font-bold text-[var(--hm-text)]">
-              Prêt à lancer votre commande ?
-            </p>
-            <p className="text-[12px] text-[var(--hm-text-soft)]">
-              Commandez en ligne ou demandez un devis —
-              on vous rappelle dans la journée si besoin.
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-3">
-            <Link
-              href="/catalogue"
-              className="btn-primary gap-2 px-5 py-2.5 text-[0.78rem]"
-            >
-              Voir le catalogue
-              <ArrowRight size={13} />
-            </Link>
-            <Link
-              href="/contact"
-              className="btn-outline gap-2 px-5 py-2.5 text-[0.78rem]"
-            >
-              Demander un devis
-            </Link>
+            ))}
           </div>
         </div>
 
+        {/* Advantages */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
+          {ADVANTAGES.map((adv) => (
+            <div
+              key={adv.title}
+              className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-[0_2px_12px_rgba(15,28,46,0.05)]"
+            >
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: `${adv.color}18` }}
+              >
+                <adv.Icon
+                  size={16}
+                  style={{ color: adv.color }}
+                  strokeWidth={1.75}
+                />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#0F1C2E]">{adv.title}</p>
+                <p className="text-xs text-[#94A3B8] mt-0.5 leading-relaxed">
+                  {adv.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
