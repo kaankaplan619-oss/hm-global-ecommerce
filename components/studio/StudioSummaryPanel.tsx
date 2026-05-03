@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, Loader2, X } from "lucide-react";
-import { formatPrice, computeUnitPrice, PRICING_CONFIG } from "@/data/pricing";
+import { formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { StudioObject } from "./StudioCanvas";
 import type { Product, Placement, Technique, ProductColor } from "@/types";
@@ -48,7 +48,12 @@ export default function StudioSummaryPanel({
   const [error, setError] = useState<string | null>(null);
 
   const basePrice = product.pricing[technique] ?? 0;
-  const unitPrice = computeUnitPrice({ basePrice, technique, placement });
+  // Surcharge placement produit-spécifique (identique au calcul de ProductConfigurator)
+  const placementSurcharge =
+    technique === "broderie"
+      ? (product.pricing.broDeriePlacementSurcharge?.[placement] ?? 0)
+      : (product.pricing.placements?.[placement] ?? 0);
+  const unitPrice = Math.round((basePrice + placementSurcharge) * 100) / 100;
   const totalTTC  = Math.round(unitPrice * quantity * 100) / 100;
   const freeShip  = quantity >= PRICING_CONFIG.freeShippingThreshold;
   const shipping  = freeShip ? 0 : PRICING_CONFIG.shippingCost;

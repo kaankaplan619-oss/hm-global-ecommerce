@@ -65,7 +65,13 @@ export default function StudioClient({ product }: Props) {
   );
 
   const handleAddObject = useCallback((obj: StudioObject) => {
-    setObjects((prev) => [...prev, obj]);
+    setObjects((prev) => {
+      // Logo : remplace le logo existant sur la même face plutôt que d'empiler
+      if (obj.type === "logo") {
+        return [...prev.filter((o) => !(o.type === "logo" && o.face === obj.face)), obj];
+      }
+      return [...prev, obj];
+    });
   }, []);
 
   const handleObjectsChange = useCallback((updated: StudioObject[]) => {
@@ -130,6 +136,7 @@ export default function StudioClient({ product }: Props) {
               <StudioToolsPanel
                 face={activeFace}
                 onAddObject={handleAddObject}
+                hasLogo={objects.some((o) => o.type === "logo" && o.face === activeFace)}
               />
             </div>
           </aside>

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { RotateCcw, Shirt } from "lucide-react";
 import type { Placement } from "@/types";
+import { proxyCdnUrl } from "@/lib/proxy-cdn-url";
 
 // ── Zones calibrées par catégorie (same as MockupViewer) ──────────────────────
 const ZONES_BY_CATEGORY: Record<
@@ -226,7 +227,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
       // ── Shirt image ───────────────────────────────────────────────────────
       const shirtEl = new window.Image();
       shirtEl.crossOrigin = "anonymous";
-      shirtEl.src = src;
+      shirtEl.src = proxyCdnUrl(src) ?? src;
 
       shirtEl.onload = async () => {
         const scale = canvasSize / Math.max(shirtEl.naturalWidth || canvasSize, shirtEl.naturalHeight || canvasSize);

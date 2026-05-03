@@ -33,9 +33,11 @@ type Face = "front" | "back";
 interface Props {
   face: Face;
   onAddObject: (obj: StudioObject) => void;
+  /** True quand un logo existe déjà sur cette face → change le label du bouton */
+  hasLogo?: boolean;
 }
 
-export default function StudioToolsPanel({ face, onAddObject }: Props) {
+export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<"logo" | "text" | "design" | "effects">("logo");
 
@@ -53,8 +55,8 @@ export default function StudioToolsPanel({ face, onAddObject }: Props) {
     if (!file) return;
     setLogoWarning(null);
 
-    // Check PNG dimensions
-    if (file.type === "image/png") {
+    // Check PNG/JPEG dimensions
+    if (file.type === "image/png" || file.type === "image/jpeg") {
       const img = new window.Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
@@ -137,7 +139,7 @@ export default function StudioToolsPanel({ face, onAddObject }: Props) {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/png,image/svg+xml"
+            accept="image/png,image/svg+xml,image/jpeg,image/jpg"
             className="hidden"
             onChange={handleFileChange}
           />
@@ -148,7 +150,7 @@ export default function StudioToolsPanel({ face, onAddObject }: Props) {
           >
             <Upload size={24} className="text-[var(--hm-primary)]" />
             <span className="text-sm font-semibold text-[var(--hm-text)]">
-              Importer votre logo
+              {hasLogo ? "Remplacer le logo" : "Importer votre logo"}
             </span>
             <span className="text-xs text-[var(--hm-text-soft)]">
               PNG, SVG ou JPEG · Recommandé : 300px minimum
