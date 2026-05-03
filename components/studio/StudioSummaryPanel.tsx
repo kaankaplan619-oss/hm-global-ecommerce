@@ -63,34 +63,76 @@ export default function StudioSummaryPanel({
     setError(null);
 
     try {
-      // 1. Export PNG
-      const dataURL = exportPNG();
-      if (!dataURL) throw new Error("Impossible d'exporter le canvas.");
-
-      // 2. Convert to Blob → File
-      const res = await fetch(dataURL);
-      const blob = await res.blob();
       const timestamp = Date.now();
-      const filename = `studio-export-${timestamp}.png`;
-      const file = new File([blob], filename, { type: "image/png" });
 
-      // 3. Upload to Supabase Storage
-      const supabase = getSupabaseBrowserClient();
-      const storagePath = `studio-exports/${timestamp}.png`;
-      const { error: uploadError } = await supabase.storage
-        .from("customer-logos")
-        .upload(storagePath, file, { contentType: "image/png", upsert: false });
+      // ── 1. Résoudre logoFileUrl sans bloquer sur Supabase ────────────────
+      // Priorité : (a) fichier uploadé → FileReader data URL (instantané)
+      //            (b) SVG prédéfini   → chemin /designs/…
+      //            (c) fallback        → export canvas PNG
+      const logoObj = objects.find(o => o.type === "logo") ?? objects.find(o => o.type === "design");
 
-      if (uploadError) throw new Error(`Upload échoué : ${uploadError.message}`);
+      let logoFileUrl  = "";
+      let logoFileName = `studio-export-${timestamp}.png`;
+      let logoFileType = "image/png";
+      let logoFileSize = 0;
+      let storagePath  = `studio-exports/${timestamp}.png`;
 
-      // 4. Get public URL
-      const { data: urlData } = supabase.storage
-        .from("customer-logos")
-        .getPublicUrl(storagePath);
+      if (logoObj?.file) {
+        // Cas (a) : logo uploadé — on lit le fichier en data URL côté navigateur
+        logoFileUrl  = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error("Impossible de lire le fichier logo."));
+          reader.readAsDataURL(logoObj.file!);
+        });
+        logoFileName = logoObj.file.name;
+        logoFileType = logoObj.file.type || "image/png";
+        logoFileSize = logoObj.file.size;
+        storagePath  = `studio-exports/${timestamp}-${logoObj.file.name}`;
 
-      const logoFileUrl = urlData?.publicUrl ?? "";
+        // Upload en arrière-plan — non bloquant, échecs silencieux
+        void (async () => {
+          try {
+            const supabase = getSupabaseBrowserClient();
+            await supabase.storage
+              .from("customer-logos")
+              .upload(storagePath, logoObj.file!, { contentType: logoFileType, upsert: true });
+          } catch {
+            // upload failed — silent, data URL is already in sessionStorage
+          }
+        })();
 
-      // 5. Extraire la position Fabric.js du premier objet logo/design
+      } else if (logoObj?.src) {
+        // Cas (b) : SVG prédéfini
+        logoFileUrl  = logoObj.src;
+        logoFileName = logoObj.src.split("/").pop() ?? "design.svg";
+        logoFileType = "image/svg+xml";
+        storagePath  = logoObj.src;
+
+      } else {
+        // Cas (c) : aucun logo/design — on exporte le canvas (texte seulement, etc.)
+        const dataURL = exportPNG();
+        if (!dataURL) throw new Error("Impossible d'exporter le canvas.");
+        logoFileUrl  = dataURL;
+        logoFileSize = Math.round(dataURL.length * 0.75); // estimation base64
+
+        // Upload en arrière-plan
+        void (async () => {
+          try {
+            const res  = await fetch(dataURL);
+            const blob = await res.blob();
+            const file = new File([blob], logoFileName, { type: "image/png" });
+            const supabase = getSupabaseBrowserClient();
+            await supabase.storage
+              .from("customer-logos")
+              .upload(storagePath, file, { contentType: "image/png", upsert: true });
+          } catch {
+            // silent
+          }
+        })();
+      }
+
+      // ── 2. Extraire la position Fabric.js du premier objet ───────────────
       const firstObj = objects.find(o => o.type === "logo") ?? objects[0];
       const logoPlacementTransform = firstObj?.fabricState
         ? {
@@ -106,13 +148,13 @@ export default function StudioSummaryPanel({
           }
         : null;
 
-      // 6. Save in sessionStorage
+      // ── 3. Sauvegarder dans sessionStorage ──────────────────────────────
       const studioResult = {
         logoFileUrl,
-        logoFileName: filename,
+        logoFileName,
         logoFilePath: storagePath,
-        logoFileType: "image/png",
-        logoFileSize: file.size,
+        logoFileType,
+        logoFileSize,
         batRef:       null,
         logoPlacementTransform,
         colorId:   selectedColor?.id ?? "",
@@ -123,7 +165,7 @@ export default function StudioSummaryPanel({
       };
       sessionStorage.setItem("hm-studio-result", JSON.stringify(studioResult));
 
-      // 6. Redirect
+      // ── 4. Rediriger — toujours, même si Supabase est KO ────────────────
       const params = new URLSearchParams({
         studio:    "1",
         couleur:   selectedColor?.id ?? "",
