@@ -207,6 +207,7 @@ export const PRODUCT_GILDAN18500: Product = {
   images: [
     "/images/products/gildan18500-noir.jpg",
     "/images/products/gildan18500-blanc.jpg",
+    "/images/products/gildan18500-gris.jpg",
     "/images/products/gildan18500-marine.jpg",
   ],
   colors: HOODIE_COLORS,
