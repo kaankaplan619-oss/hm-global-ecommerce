@@ -252,10 +252,17 @@ export default function ProductDetailClient({ product }: Props) {
     return getProductCatalogImage(product, cid);
   }, [selectedColor, colorImages, product]);
 
-  // MockupViewer actif pour t-shirts, hoodies et softshells dès qu'on a une image.
+  // MockupViewer Fabric.js actif pour t-shirts/hoodies/softshells SAUF :
+  // - Produits Printful sans logo → on préfère HMProductVisual (rendu catalogue propre,
+  //   pas de zone de marquage, pas d'image portrait Printful dans canvas carré Fabric.js)
+  // - Dès qu'un logo est uploadé (local) ou revenu du studio (studioLogoPreset), on
+  //   réactive MockupViewer pour montrer l'aperçu logo — mais sans zone de marquage.
+  const isPrintful  = product.supplierName === "printful";
+  const hasLogoReady = !!logoFile || !!studioLogoPreset;
   const showMockup =
     (product.category === "tshirts" || product.category === "hoodies" || product.category === "softshells") &&
-    !!currentImageUrl;
+    !!currentImageUrl &&
+    (!isPrintful || hasLogoReady);
 
   // Mode visuel premium HM Global ou fournisseur
   const visualMode = getVisualMode(product);
@@ -293,7 +300,10 @@ export default function ProductDetailClient({ product }: Props) {
     <div className="mb-16 grid grid-cols-1 gap-12 lg:grid-cols-2">
       <div className="flex flex-col gap-4">
         {showMockup ? (
-          /* ── T-shirts B&C : MockupViewer Fabric.js (inchangé) ── */
+          /* ── T-shirts / hoodies (canvas Fabric.js) ──────────────────────────
+             showZone=false sur les produits Printful : la zone de marquage est
+             réservée au studio (/studio/[slug]). Sur la fiche produit on affiche
+             uniquement le produit + l'aperçu logo sans guide visuel technique. */
           <MockupViewer
             colorId={selectedColor?.id ?? ""}
             placement={placement}
@@ -304,6 +314,7 @@ export default function ProductDetailClient({ product }: Props) {
             onPlacementChange={setPlacement}
             packshot={currentImageUrl}
             productCategory={product.category}
+            showZone={!isPrintful}
           />
         ) : (
           <>
@@ -317,7 +328,7 @@ export default function ProductDetailClient({ product }: Props) {
                 width={720}
                 height={720}
                 priority
-                showBadge
+                showBadge={!isPrintful}
                 className="w-full"
                 imageClassName={`object-contain w-full transition-opacity duration-300${visualMode === "hm" ? " p-4 relative z-10" : " p-6"}`}
               />

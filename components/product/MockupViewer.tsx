@@ -65,12 +65,18 @@ export interface MockupViewerProps {
   /** Packshot TopTex ou mockup HM pour le coloris courant. */
   packshot?:              string | null;
   productCategory?:       string;
+  /**
+   * Afficher la zone de marquage (rectangle pointillé).
+   * true par défaut — passer false sur les fiches produits pour un rendu propre.
+   * Le studio gère sa propre zone via StudioCanvas.
+   */
+  showZone?:              boolean;
 }
 
 // Alias interne
 type Props = MockupViewerProps;
 
-export default function MockupViewer({ colorId, placement, logoFile, logoUrl, badge, onLogoPositionChange, onPlacementChange, packshot, productCategory }: Props) {
+export default function MockupViewer({ colorId, placement, logoFile, logoUrl, badge, onLogoPositionChange, onPlacementChange, packshot, productCategory, showZone = true }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
   const canvasRef     = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -234,17 +240,18 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
         canvas.add(shirt);
 
         // ── Zone de marquage ─────────────────────────────────────────────
-        // Zone très discrète : guide visuel léger, jamais dominant
-        if (zone) {
+        // Visible uniquement si showZone=true (studio/configurateur).
+        // Caché sur les fiches produits Printful pour un rendu catalogue propre.
+        if (zone && showZone) {
           const [lf, tf, wf, hf] = zone;
           const rect = new Rect({
             left:            lf * canvasSize,
             top:             tf * canvasSize,
             width:           wf * canvasSize,
             height:          hf * canvasSize,
-            fill:            "rgba(177,63,116,0.04)",   // quasi transparent (was 0.07)
-            stroke:          "rgba(177,63,116,0.35)",   // trait atténué (was full #b13f74)
-            strokeWidth:     1,                          // plus fin (was 1.5)
+            fill:            "rgba(177,63,116,0.04)",
+            stroke:          "rgba(177,63,116,0.35)",
+            strokeWidth:     1,
             strokeDashArray: [4, 5],
             rx: 6, ry: 6,
             selectable:  false,
@@ -421,7 +428,7 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
 
       shirtEl.onerror = () => canvas.requestRenderAll();
     });
-  }, [fabricReady, src, placement, view, logoFile, logoUrl, canvasSize, getZone, logoEffect]);
+  }, [fabricReady, src, placement, view, logoFile, logoUrl, canvasSize, getZone, logoEffect, showZone]);
 
   const zoneVisible = !!getZone();
   const hint =
