@@ -264,6 +264,51 @@ export const PLACEMENT_SURCHARGES: Record<
   },
 };
 
+// ─── Bella+Canvas 3001 — Printful POD (DTF uniquement) ───────────────────────
+// T-shirt premium tri-blend / jersey 145 g/m²
+// cœur seul : 29.90 TTC — dos seul : 29.90 — cœur+dos : 34.90 (+5.00)
+export const BELLA_3001_PRICES = {
+  dtf:      29.90,
+  flex:     0,      // non disponible via Printful
+  broderie: 0,      // non disponible via Printful
+} as const;
+
+export const BELLA_3001_PLACEMENT_SURCHARGES = {
+  coeur:       0,
+  dos:         0,
+  "coeur-dos": 5.00,  // 29.90 + 5.00 = 34.90 TTC
+} as const;
+
+// ─── Gildan 18000 — Printful POD (DTF uniquement) ────────────────────────────
+// Sweatshirt col rond 270 g/m²
+// cœur seul : 39.90 TTC — cœur+dos : 45.90 (+6.00)
+export const GILDAN_18000_PRICES = {
+  dtf:      39.90,
+  flex:     0,
+  broderie: 0,
+} as const;
+
+export const GILDAN_18000_PLACEMENT_SURCHARGES = {
+  coeur:       0,
+  dos:         0,
+  "coeur-dos": 6.00,  // 39.90 + 6.00 = 45.90 TTC
+} as const;
+
+// ─── Gildan 18500 — Printful POD (DTF uniquement) ────────────────────────────
+// Hoodie à capuche 300 g/m²
+// cœur seul : 49.90 TTC — cœur+dos : 55.90 (+6.00)
+export const GILDAN_18500_PRICES = {
+  dtf:      49.90,
+  flex:     0,
+  broderie: 0,
+} as const;
+
+export const GILDAN_18500_PLACEMENT_SURCHARGES = {
+  coeur:       0,
+  dos:         0,
+  "coeur-dos": 6.00,  // 49.90 + 6.00 = 55.90 TTC
+} as const;
+
 // ─── Compute item price TTC ───────────────────────────────────────────────────
 export function computeUnitPrice(params: {
   basePrice: number;      // base TTC selon technique

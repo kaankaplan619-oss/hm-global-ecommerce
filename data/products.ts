@@ -12,6 +12,12 @@ import {
   PLACEMENT_SURCHARGES,
   GILDAN_5000_PRICES,
   GILDAN_5000_PLACEMENT_SURCHARGES,
+  BELLA_3001_PRICES,
+  BELLA_3001_PLACEMENT_SURCHARGES,
+  GILDAN_18000_PRICES,
+  GILDAN_18000_PLACEMENT_SURCHARGES,
+  GILDAN_18500_PRICES,
+  GILDAN_18500_PLACEMENT_SURCHARGES,
 } from "./pricing";
 
 function buildProductImages(productId: string, images: string[]) {
@@ -1696,7 +1702,7 @@ export const PRODUCT_IB403: Product = {
 };
 
 // ─── Printful POD — Gildan 5000 ───────────────────────────────────────────────
-// visible: false → masqué du catalogue public jusqu'à validation photos
+// visible: true → produit d'appel V1 catalogue Printful (19.90 € TTC)
 // supplierName: "printful" → traitement automatique POD
 export const PRODUCT_GILDAN_5000: Product = {
   id: "gildan-5000",
@@ -1733,17 +1739,154 @@ export const PRODUCT_GILDAN_5000: Product = {
     placements: GILDAN_5000_PLACEMENT_SURCHARGES,   // cœur 19.90 / cœur+dos 29.90
     broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
   },
-  featured: false,
-  visible: false,
+  featured: true,
+  visible: true,
+  badge: "Produit d'appel",
   supplierName: "printful",
   ideaPour: ["Associations", "Événementiel", "Équipes"],
+  conseil: "Idéal pour débuter votre communication textile. Le Gildan 5000 est notre best-seller entrée de gamme : coton épais, couleurs intenses, expédition directe depuis l'UE.",
+};
+
+// ─── Printful POD — Bella+Canvas 3001 ────────────────────────────────────────
+// T-shirt premium jersey / tri-blend 145 g/m²
+// Prix V1 : 29.90 € cœur seul — 34.90 € cœur+dos
+export const PRODUCT_BELLA_3001: Product = {
+  id: "bella-3001",
+  slug: "tshirt-bella-canvas-3001",
+  reference: "Bella+Canvas 3001",
+  name: "T-shirt Bella+Canvas 3001 Unisexe",
+  shortName: "T-shirt Premium",
+  category: "tshirts",
+  gender: "unisex",
+  tier: "premium",
+  description: "T-shirt jersey premium 145 g/m² en coton ring-spun. Coupe unisexe moderne, col rond sans couture, épaule à épaule. Le choix des marques et des projets haut de gamme.",
+  composition: "100% coton ring-spun peigné",
+  weight: "145 g/m²",
+  images: [],
+  colors: [
+    { id: "noir",   label: "Noir",    hex: "#1a1a1a", available: true },
+    { id: "blanc",  label: "Blanc",   hex: "#FAFAF8", available: true },
+    { id: "marine", label: "Marine",  hex: "#1b2a4a", available: true },
+  ],
+  sizes: [
+    { label: "S",   available: true },
+    { label: "M",   available: true },
+    { label: "L",   available: true },
+    { label: "XL",  available: true },
+    { label: "XXL", available: true },
+  ],
+  techniques: ["dtf"],
+  placements: ["coeur", "dos", "coeur-dos"],
+  pricing: {
+    dtf:      BELLA_3001_PRICES.dtf,
+    flex:     BELLA_3001_PRICES.flex,
+    broderie: BELLA_3001_PRICES.broderie,
+    placements: BELLA_3001_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
+  },
+  featured: true,
+  visible: true,
+  badge: "Premium",
+  supplierName: "printful",
+  ideaPour: ["Marques & Streetwear", "Événementiels premium", "Boutiques"],
+  conseil: "Le Bella+Canvas 3001 est la référence des créateurs de marques. Coupe flatteuse, tombé parfait, rendu DTF exceptionnel sur le coton ring-spun.",
+};
+
+// ─── Printful POD — Gildan 18000 Sweatshirt ──────────────────────────────────
+// Sweatshirt col rond 271 g/m²
+// Prix V1 : 39.90 € cœur seul — 45.90 € cœur+dos
+export const PRODUCT_GILDAN_18000: Product = {
+  id: "gildan-18000",
+  slug: "sweat-gildan-18000",
+  reference: "Gildan 18000",
+  name: "Sweatshirt Gildan 18000 Unisexe",
+  shortName: "Sweatshirt",
+  category: "hoodies",
+  gender: "unisex",
+  tier: "standard",
+  description: "Sweatshirt col rond 271 g/m² en coton/polyester. Coupe décontractée, col côtelé double épaisseur, poignets et bas de vêtement côtelés. Le classique intemporel à personnaliser.",
+  composition: "50% coton, 50% polyester",
+  weight: "271 g/m²",
+  images: [],
+  colors: [
+    { id: "noir",       label: "Noir",       hex: "#1a1a1a", available: true },
+    { id: "marine",     label: "Marine",     hex: "#1b2a4a", available: true },
+    { id: "gris-sport", label: "Gris Sport", hex: "#8a9090", available: true },
+  ],
+  sizes: [
+    { label: "S",   available: true },
+    { label: "M",   available: true },
+    { label: "L",   available: true },
+    { label: "XL",  available: true },
+    { label: "XXL", available: true },
+  ],
+  techniques: ["dtf"],
+  placements: ["coeur", "dos", "coeur-dos"],
+  pricing: {
+    dtf:      GILDAN_18000_PRICES.dtf,
+    flex:     GILDAN_18000_PRICES.flex,
+    broderie: GILDAN_18000_PRICES.broderie,
+    placements: GILDAN_18000_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
+  },
+  featured: true,
+  visible: true,
+  supplierName: "printful",
+  ideaPour: ["Associations & Clubs", "BDE & Étudiants", "Corporate & Équipes"],
+  conseil: "Le sweatshirt Gildan 18000 est un incontournable du textile personnalisé. Polyvalent, confortable, idéal pour créer des uniformes ou des collections abordables.",
+};
+
+// ─── Printful POD — Gildan 18500 Hoodie ──────────────────────────────────────
+// Hoodie à capuche 300 g/m²
+// Prix V1 : 49.90 € cœur seul — 55.90 € cœur+dos
+export const PRODUCT_GILDAN_18500: Product = {
+  id: "gildan-18500",
+  slug: "hoodie-gildan-18500",
+  reference: "Gildan 18500",
+  name: "Hoodie Gildan 18500 Unisexe",
+  shortName: "Hoodie",
+  category: "hoodies",
+  gender: "unisex",
+  tier: "standard",
+  description: "Hoodie à capuche 300 g/m² en coton/polyester. Poche kangourou, cordon de serrage assorti, intérieur doux brossé. Le hoodie de référence pour toutes les saisons.",
+  composition: "50% coton, 50% polyester",
+  weight: "300 g/m²",
+  images: [],
+  colors: [
+    { id: "noir",       label: "Noir",       hex: "#1a1a1a", available: true },
+    { id: "blanc",      label: "Blanc",      hex: "#FFFFFF", available: true },
+    { id: "marine",     label: "Marine",     hex: "#1b2a4a", available: true },
+    { id: "gris-sport", label: "Gris Sport", hex: "#8a9090", available: true },
+  ],
+  sizes: [
+    { label: "S",   available: true },
+    { label: "M",   available: true },
+    { label: "L",   available: true },
+    { label: "XL",  available: true },
+    { label: "XXL", available: true },
+  ],
+  techniques: ["dtf"],
+  placements: ["coeur", "dos", "coeur-dos"],
+  pricing: {
+    dtf:      GILDAN_18500_PRICES.dtf,
+    flex:     GILDAN_18500_PRICES.flex,
+    broderie: GILDAN_18500_PRICES.broderie,
+    placements: GILDAN_18500_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
+  },
+  featured: true,
+  visible: true,
+  badge: "Populaire",
+  supplierName: "printful",
+  ideaPour: ["Associations & BDE", "Sport & Clubs", "Streetwear & Marques"],
+  conseil: "Le Gildan 18500 est le hoodie le plus commandé sur Printful. Intérieur doux brossé, poche kangourou spacieuse, rendu DTF premium sur les couleurs unies.",
 };
 
 // ─── All products ─────────────────────────────────────────────────────────────
 // ─── Catalogue complet (toutes catégories) ────────────────────────────────────
-// Pour masquer un produit du catalogue : ajouter visible: false dans sa définition.
-// Règle : ne mettre visible: true (ou laisser absent) que si la photo principale
-// montre clairement la zone de marquage (cœur / dos) sans ambiguïté.
+// Convention V1 Printful : seuls les produits avec visible: true sont exposés.
+// Les anciens produits TopTex/B&C/iDeal/Kariban etc. n'ont pas visible: true
+// → filtrés automatiquement, données conservées pour compatibilité commandes.
 const _ALL_PRODUCTS: Product[] = [
   // ── T-shirts B&C — photos locales complètes ✓
   PRODUCT_TU01T,   // 81 photos couleurs
@@ -1799,15 +1942,22 @@ const _ALL_PRODUCTS: Product[] = [
   PRODUCT_IB401,   // 1 photo CDN
   PRODUCT_IB403,   // 1 photo CDN
 
-  // ── Printful POD — masqué (visible: false) ────────────────────────────────
-  PRODUCT_GILDAN_5000,
+  // ── Printful POD V1 — catalogue public ───────────────────────────────────
+  PRODUCT_GILDAN_5000,    // 19.90 € TTC — produit d'appel
+  PRODUCT_BELLA_3001,     // 29.90 € TTC — premium
+  PRODUCT_GILDAN_18000,   // 39.90 € TTC — sweatshirt
+  PRODUCT_GILDAN_18500,   // 49.90 € TTC — hoodie
 ];
 
-// Seuls les produits visibles (visible !== false) sont exposés au catalogue.
-// Modifier visible: false dans la définition d'un produit pour le masquer partout.
+// V1 Printful : seuls les produits avec visible: true explicite sont exposés.
+// Les anciens produits (visible absent ou visible: false) sont masqués du catalogue.
+// Les données restent intactes pour la compatibilité avec les commandes existantes.
 export const ALL_PRODUCTS: Product[] = _ALL_PRODUCTS.filter(
-  (p) => p.visible !== false
+  (p) => p.visible === true
 );
+
+// Tous les produits (y compris masqués) — pour l'admin et la compatibilité commandes.
+export const ALL_PRODUCTS_ADMIN: Product[] = _ALL_PRODUCTS;
 
 export const PRODUCTS_BY_CATEGORY = {
   tshirts:    ALL_PRODUCTS.filter((p) => p.category === "tshirts"),
