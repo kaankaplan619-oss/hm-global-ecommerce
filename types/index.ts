@@ -342,7 +342,7 @@ export interface Order {
   refundedAt?: string;
   canCancelUntil?: string; // 30 min after creation
   // Printful POD
-  printfulOrderId?: number;
+  printfulOrderId?: string;
   printfulStatus?: string;
   supplierProvider?: string;
 }

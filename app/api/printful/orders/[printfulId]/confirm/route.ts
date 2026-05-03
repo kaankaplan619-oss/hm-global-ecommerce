@@ -41,7 +41,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     await supabaseService
       .from("orders")
       .update({ printful_status: result.status })
-      .eq("printful_order_id", id);
+      .eq("printful_order_id", String(id));
 
     return NextResponse.json({
       success: true,

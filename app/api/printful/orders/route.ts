@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
     const { error: updateError } = await supabaseService
       .from("orders")
       .update({
-        printful_order_id:  printfulOrder.id,
+        printful_order_id:  String(printfulOrder.id),
         printful_status:    printfulOrder.status,
         supplier_provider:  "printful",
         status:             "commande_fournisseur_passee",

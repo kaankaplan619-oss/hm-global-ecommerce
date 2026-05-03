@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
           shipped_at:       shippedAt,
           printful_status:  "shipped",
         })
-        .eq("printful_order_id", printfulOrderId);
+        .eq("printful_order_id", String(printfulOrderId));
 
       console.log(`[Printful webhook] package_shipped → commande Printful #${printfulOrderId} expédiée, tracking: ${tracking}`);
     }
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
             delivered_at:    new Date().toISOString(),
             printful_status: "fulfilled",
           })
-          .eq("printful_order_id", printfulOrderId);
+          .eq("printful_order_id", String(printfulOrderId));
 
         console.log(`[Printful webhook] order_updated fulfilled → commande Printful #${printfulOrderId} terminée`);
       } else if (printfulOrderId && pfStatus) {
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
         await supabase
           .from("orders")
           .update({ printful_status: pfStatus })
-          .eq("printful_order_id", printfulOrderId);
+          .eq("printful_order_id", String(printfulOrderId));
       }
     }
 
