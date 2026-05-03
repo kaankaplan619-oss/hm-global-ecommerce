@@ -10,7 +10,7 @@ const CATEGORIES = {
     from: "19,90 €",
     color: "#c9a96e",
     emoji: "👕",
-    items: ["B&C TU01T", "B&C TW02T", "B&C TU03T"],
+    items: ["Gildan 5000", "Bella+Canvas 3001"],
   },
   hoodies: {
     label: "Hoodies & Sweats",
@@ -19,7 +19,7 @@ const CATEGORIES = {
     from: "42,90 €",
     color: "#60a5fa",
     emoji: "🧥",
-    items: ["B&C WG004", "B&C WU620"],
+    items: ["Gildan 18000", "Gildan 18500"],
   },
   softshells: {
     label: "Softshells & Vestes",

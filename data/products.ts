@@ -8,19 +8,7 @@ import {
 
 // ─── T-SHIRTS ─────────────────────────────────────────────────────────────────
 
-const TSHIRT_COLORS_CLASSIC = [
-  { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
-  { id: "noir", label: "Noir", hex: "#111111", available: true },
-  { id: "gris", label: "Gris chiné", hex: "#9CA3AF", available: true },
-  { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-  { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
-  { id: "bleu-royal", label: "Bleu royal", hex: "#2563EB", available: true },
-  { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true },
-  { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
-];
-
 const TSHIRT_SIZES = [
-  { label: "XS", available: true },
   { label: "S", available: true },
   { label: "M", available: true },
   { label: "L", available: true },
@@ -29,22 +17,40 @@ const TSHIRT_SIZES = [
   { label: "3XL", available: true },
 ];
 
-export const PRODUCT_TU01T: Product = {
-  id: "tu01t",
-  slug: "tshirt-bc-exact-190-homme",
-  reference: "B&C TU01T",
-  name: "T-shirt B&C Exact 190 Homme",
-  shortName: "T-shirt Homme",
+const TSHIRT_SIZES_XS = [
+  { label: "XS", available: true },
+  ...TSHIRT_SIZES,
+];
+
+export const PRODUCT_GILDAN5000: Product = {
+  id: "gildan5000",
+  slug: "tshirt-gildan-heavy-cotton-5000",
+  reference: "Gildan 5000",
+  name: "T-shirt Gildan Heavy Cotton",
+  shortName: "T-shirt Unisexe",
   category: "tshirts",
-  gender: "homme",
+  gender: "unisex",
   tier: "appel",
   description:
-    "Le T-shirt d'appel de HM Global Agence. Coupe moderne, col rond, jersey simple épaule à épaule. Excellent rapport qualité/prix pour les commandes d'entreprise. Idéal pour débuter votre communication textile.",
-  composition: "100% coton semi-peigné",
-  weight: "190 g/m²",
-  images: ["/images/products/tu01t-blanc.jpg", "/images/products/tu01t-noir.jpg"],
-  colors: TSHIRT_COLORS_CLASSIC,
-  sizes: TSHIRT_SIZES,
+    "Le T-shirt incontournable de HM Global Agence. Coton épais 185 g/m², col rond côtelé, double aiguille aux manches et au bas. Coupe classique unisexe, résistant au lavage fréquent. Idéal pour les commandes d'entreprise et la personnalisation textile.",
+  composition: "100% coton (Gris sport : 90% coton, 10% polyester)",
+  weight: "185 g/m²",
+  images: [
+    "/images/products/gildan5000-blanc.jpg",
+    "/images/products/gildan5000-noir.jpg",
+    "/images/products/gildan5000-blanc-detail.jpg",
+  ],
+  colors: [
+    { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
+    { id: "noir", label: "Noir", hex: "#111111", available: true },
+    { id: "gris-sport", label: "Gris sport", hex: "#9CA3AF", available: true },
+    { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
+    { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
+    { id: "bleu-royal", label: "Bleu royal", hex: "#2563EB", available: true },
+    { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true },
+    { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
+  ],
+  sizes: TSHIRT_SIZES_XS,
   techniques: ["dtf", "flex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
   pricing: {
@@ -65,76 +71,39 @@ export const PRODUCT_TU01T: Product = {
   featured: true,
   seasonal: ["printemps", "ete"],
   badge: "Bestseller",
-  supplierName: "falk-ross",
-  supplierRef: "TU01T",
+  supplierName: "toptex",
+  supplierRef: "G5000",
 };
 
-export const PRODUCT_TW02T: Product = {
-  id: "tw02t",
-  slug: "tshirt-bc-exact-190-femme",
-  reference: "B&C TW02T",
-  name: "T-shirt B&C Exact 190 Femme",
-  shortName: "T-shirt Femme",
-  category: "tshirts",
-  gender: "femme",
-  tier: "appel",
-  description:
-    "Version femme du T-shirt d'appel. Coupe ajustée, encolure arrondie. Même qualité que le modèle homme, pensé pour une silhouette féminine moderne.",
-  composition: "100% coton semi-peigné",
-  weight: "190 g/m²",
-  images: ["/images/products/tw02t-blanc.jpg", "/images/products/tw02t-noir.jpg"],
-  colors: TSHIRT_COLORS_CLASSIC,
-  sizes: [
-    { label: "XS", available: true },
-    { label: "S", available: true },
-    { label: "M", available: true },
-    { label: "L", available: true },
-    { label: "XL", available: true },
-    { label: "XXL", available: true },
-  ],
-  techniques: ["dtf", "flex", "broderie"],
-  placements: ["coeur", "dos", "coeur-dos"],
-  pricing: {
-    dtf:      TSHIRT_PRICES.appel.dtf,
-    flex:     TSHIRT_PRICES.appel.flex,
-    broderie: TSHIRT_PRICES.appel.broderie,
-    placements: {
-      coeur:     PLACEMENT_SURCHARGES.dtf.coeur,
-      dos:       PLACEMENT_SURCHARGES.dtf.dos,
-      "coeur-dos": PLACEMENT_SURCHARGES.dtf["coeur-dos"],
-    },
-    broDeriePlacementSurcharge: {
-      coeur:       PLACEMENT_SURCHARGES.broderie.coeur,
-      dos:         PLACEMENT_SURCHARGES.broderie.dos,
-      "coeur-dos": PLACEMENT_SURCHARGES.broderie["coeur-dos"],
-    },
-  },
-  featured: false,
-  seasonal: ["printemps", "ete"],
-  supplierName: "falk-ross",
-  supplierRef: "TW02T",
-};
-
-export const PRODUCT_TU03T: Product = {
-  id: "tu03t",
-  slug: "tshirt-bc-exact-190-premium",
-  reference: "B&C TU03T",
-  name: "T-shirt B&C Exact 190 Premium",
+export const PRODUCT_BC3001: Product = {
+  id: "bc3001",
+  slug: "tshirt-bella-canvas-3001-unisexe",
+  reference: "Bella+Canvas 3001",
+  name: "T-shirt Bella+Canvas 3001 Unisexe",
   shortName: "T-shirt Premium",
   category: "tshirts",
   gender: "unisex",
   tier: "standard",
   description:
-    "Le meilleur rapport qualité/prix de notre gamme. Tissu plus dense, col côtelé renforcé, finitions premium. Idéal pour les marques exigeantes qui veulent un résultat professionnel impeccable.",
-  composition: "100% coton ring-spun peigné",
-  weight: "190 g/m²",
-  images: ["/images/products/tu03t-blanc.jpg", "/images/products/tu03t-noir.jpg"],
-  colors: [
-    ...TSHIRT_COLORS_CLASSIC,
-    { id: "khaki", label: "Kaki", hex: "#65721F", available: true },
-    { id: "orange", label: "Orange", hex: "#EA580C", available: true },
+    "Le t-shirt premium de référence. Coton peigné filé à l'anneau ultra-doux, tombé impeccable, encolure côtelée 1×1. Coupe moderne légèrement ajustée. Résultat d'impression exceptionnel en DTF et flex. Le choix des marques qui veulent se démarquer.",
+  composition: "100% coton peigné filé à l'anneau (certains coloris : mélange)",
+  weight: "145 g/m²",
+  images: [
+    "/images/products/bc3001-blanc.jpg",
+    "/images/products/bc3001-noir.jpg",
+    "/images/products/bc3001-blanc-detail.jpg",
   ],
-  sizes: TSHIRT_SIZES,
+  colors: [
+    { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
+    { id: "noir", label: "Noir", hex: "#111111", available: true },
+    { id: "gris-sport", label: "Gris sport", hex: "#9CA3AF", available: true },
+    { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
+    { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
+    { id: "bleu-royal", label: "Bleu royal", hex: "#2563EB", available: true },
+    { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true },
+    { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
+  ],
+  sizes: TSHIRT_SIZES_XS,
   techniques: ["dtf", "flex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
   pricing: {
@@ -154,17 +123,17 @@ export const PRODUCT_TU03T: Product = {
   },
   featured: true,
   seasonal: ["printemps", "ete"],
-  badge: "Meilleur rapport qualité/prix",
-  supplierName: "falk-ross",
-  supplierRef: "TU03T",
+  badge: "Premium",
+  supplierName: "toptex",
+  supplierRef: "BC3001",
 };
 
 // ─── HOODIES / SWEATS ────────────────────────────────────────────────────────
 
 const HOODIE_COLORS = [
   { id: "noir", label: "Noir", hex: "#111111", available: true },
-  { id: "blanc", label: "Blanc cassé", hex: "#F5F5F5", available: true },
-  { id: "gris-melange", label: "Gris mélangé", hex: "#6B7280", available: true },
+  { id: "blanc", label: "Blanc", hex: "#F5F5F5", available: true },
+  { id: "gris-sport", label: "Gris sport", hex: "#9CA3AF", available: true },
   { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
   { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
   { id: "vert-foret", label: "Vert forêt", hex: "#14532D", available: true },
@@ -179,20 +148,24 @@ const HOODIE_SIZES = [
   { label: "3XL", available: true },
 ];
 
-export const PRODUCT_WG004: Product = {
-  id: "wg004",
-  slug: "sweat-col-rond-bc-set-in-sweat",
-  reference: "B&C WG004",
-  name: "Sweat col rond B&C Set In Sweat",
+export const PRODUCT_GILDAN18000: Product = {
+  id: "gildan18000",
+  slug: "sweat-gildan-heavy-blend-18000",
+  reference: "Gildan 18000",
+  name: "Sweatshirt Gildan Heavy Blend",
   shortName: "Sweat Col Rond",
   category: "hoodies",
   gender: "unisex",
   tier: "appel",
   description:
-    "Sweat col rond classique, coupe droite confortable. Intérieur molletonné doux, idéal pour la communication d'entreprise. Résistant au lavage fréquent.",
-  composition: "80% coton, 20% polyester",
-  weight: "280 g/m²",
-  images: ["/images/products/wg004-noir.jpg", "/images/products/wg004-gris.jpg"],
+    "Sweatshirt col rond Gildan Heavy Blend 271 g/m². Intérieur molletonné ultra-doux, col côtelé, bandes aux poignets et à la ceinture. Coupe droite confortable, résistant au lavage fréquent. Idéal pour la personnalisation d'entreprise.",
+  composition: "50% coton, 50% polyester",
+  weight: "271 g/m²",
+  images: [
+    "/images/products/gildan18000-noir.jpg",
+    "/images/products/gildan18000-marine.jpg",
+    "/images/products/gildan18000-gris.jpg",
+  ],
   colors: HOODIE_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],
@@ -214,24 +187,28 @@ export const PRODUCT_WG004: Product = {
   },
   featured: true,
   seasonal: ["automne", "hiver"],
-  supplierName: "falk-ross",
-  supplierRef: "WG004",
+  supplierName: "toptex",
+  supplierRef: "G18000",
 };
 
-export const PRODUCT_WU620: Product = {
-  id: "wu620",
-  slug: "hoodie-bc-hooded-sweat",
-  reference: "B&C WU620",
-  name: "Hoodie B&C Hooded Sweat",
+export const PRODUCT_GILDAN18500: Product = {
+  id: "gildan18500",
+  slug: "hoodie-gildan-heavy-blend-18500",
+  reference: "Gildan 18500",
+  name: "Hoodie Gildan Heavy Blend",
   shortName: "Hoodie",
   category: "hoodies",
   gender: "unisex",
   tier: "standard",
   description:
-    "Hoodie à capuche double épaisseur, cordon de serrage assorti, poche kangourou. Le classique premium de toute garde-robe corporate. Idéal pour créer une image de marque cohérente.",
-  composition: "80% coton ring-spun, 20% polyester",
-  weight: "300 g/m²",
-  images: ["/images/products/wu620-noir.jpg", "/images/products/wu620-gris.jpg"],
+    "Hoodie à capuche Gildan Heavy Blend 271 g/m². Capuche double épaisseur avec cordon assorti, poche kangourou, bandes aux poignets et ceinture côtelées. Le classique incontournable pour toute garde-robe corporate. Confort premium, résultat d'impression impeccable.",
+  composition: "50% coton, 50% polyester",
+  weight: "271 g/m²",
+  images: [
+    "/images/products/gildan18500-noir.jpg",
+    "/images/products/gildan18500-blanc.jpg",
+    "/images/products/gildan18500-marine.jpg",
+  ],
   colors: HOODIE_COLORS,
   sizes: HOODIE_SIZES,
   techniques: ["dtf", "flex", "broderie"],
@@ -254,8 +231,8 @@ export const PRODUCT_WU620: Product = {
   featured: true,
   seasonal: ["automne", "hiver"],
   badge: "Populaire",
-  supplierName: "falk-ross",
-  supplierRef: "WU620",
+  supplierName: "toptex",
+  supplierRef: "G18500",
 };
 
 // ─── SOFTSHELLS / VESTES ──────────────────────────────────────────────────────
@@ -365,11 +342,10 @@ export const PRODUCT_JWI63: Product = {
 
 // ─── All products ─────────────────────────────────────────────────────────────
 export const ALL_PRODUCTS: Product[] = [
-  PRODUCT_TU01T,
-  PRODUCT_TW02T,
-  PRODUCT_TU03T,
-  PRODUCT_WG004,
-  PRODUCT_WU620,
+  PRODUCT_GILDAN5000,
+  PRODUCT_BC3001,
+  PRODUCT_GILDAN18000,
+  PRODUCT_GILDAN18500,
   PRODUCT_JUI62,
   PRODUCT_JWI63,
 ];
