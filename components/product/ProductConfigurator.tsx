@@ -398,7 +398,7 @@ export default function ProductConfigurator({
             );
           })}
         </div>
-        {color && !colorHasImages(product.images, color, colorImages) && (
+        {color && !colorHasImages(product.images, color, colorImages) && !product.hmMockupImages?.[color.id] && (
           <p className="mt-1.5 text-[11px] text-[var(--hm-text-muted)]">
             Visuel non disponible pour cette couleur — vous pouvez tout de même la commander.
           </p>
