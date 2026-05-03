@@ -10,6 +10,7 @@ import {
   CASQUETTE_PRICES,
   SAC_PRICES,
   PLACEMENT_SURCHARGES,
+  GILDAN_5000_PRICES,
 } from "./pricing";
 
 function buildProductImages(productId: string, images: string[]) {
@@ -1693,6 +1694,50 @@ export const PRODUCT_IB403: Product = {
   supplierRef: "IB403",
 };
 
+// ─── Printful POD — Gildan 5000 ───────────────────────────────────────────────
+// visible: false → masqué du catalogue public jusqu'à validation photos
+// supplierName: "printful" → traitement automatique POD
+export const PRODUCT_GILDAN_5000: Product = {
+  id: "gildan-5000",
+  slug: "tshirt-gildan-heavy-cotton",
+  reference: "Gildan 5000",
+  name: "T-shirt Gildan Heavy Cotton Unisexe",
+  shortName: "T-shirt Gildan",
+  category: "tshirts",
+  gender: "unisex",
+  tier: "standard",
+  description: "T-shirt unisexe 185 g/m² en coton épais. Col rond côtelé, coupe régulière. Impression DTF haute qualité. Expédition directe depuis l'UE (Lettonie / Espagne).",
+  composition: "100% coton épais",
+  weight: "185 g/m²",
+  images: [],
+  colors: [
+    { id: "blanc",      label: "Blanc",      hex: "#FFFFFF", available: true },
+    { id: "noir",       label: "Noir",       hex: "#1a1a1a", available: true },
+    { id: "gris-sport", label: "Gris Sport", hex: "#8a9090", available: true },
+    { id: "marine",     label: "Marine",     hex: "#1b2a4a", available: true },
+  ],
+  sizes: [
+    { label: "S",   available: true },
+    { label: "M",   available: true },
+    { label: "L",   available: true },
+    { label: "XL",  available: true },
+    { label: "XXL", available: true },
+  ],
+  techniques: ["dtf"],
+  placements: ["coeur", "dos", "coeur-dos"],
+  pricing: {
+    dtf:      GILDAN_5000_PRICES.dtf,
+    flex:     GILDAN_5000_PRICES.flex,
+    broderie: GILDAN_5000_PRICES.broderie,
+    placements: PLACEMENT_SURCHARGES.dtf,
+    broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
+  },
+  featured: false,
+  visible: false,
+  supplierName: "printful",
+  ideaPour: ["Associations", "Événementiel", "Équipes"],
+};
+
 // ─── All products ─────────────────────────────────────────────────────────────
 // ─── Catalogue complet (toutes catégories) ────────────────────────────────────
 // Pour masquer un produit du catalogue : ajouter visible: false dans sa définition.
@@ -1752,6 +1797,9 @@ const _ALL_PRODUCTS: Product[] = [
   PRODUCT_IB322,
   PRODUCT_IB401,   // 1 photo CDN
   PRODUCT_IB403,   // 1 photo CDN
+
+  // ── Printful POD — masqué (visible: false) ────────────────────────────────
+  PRODUCT_GILDAN_5000,
 ];
 
 // Seuls les produits visibles (visible !== false) sont exposés au catalogue.

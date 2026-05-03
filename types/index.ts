@@ -119,7 +119,7 @@ export interface Product {
   prixAchatHT?: number;      // prix d'achat Toptex HT
   // Internal
   supplierRef?: string;
-  supplierName?: "falk-ross" | "toptex";
+  supplierName?: "falk-ross" | "toptex" | "printful";
   /**
    * Contrôle la visibilité dans le catalogue public.
    * false  → masqué (photos insuffisantes, produit non validé)
@@ -252,7 +252,7 @@ export type SupplierMode = "fournisseur" | "secours_interne";
 
 // ─── Supplier Types ───────────────────────────────────────────────────────────
 
-export type SupplierName = "toptex" | "falkross" | "newwave" | "pixartprint" | "interne" | "autre";
+export type SupplierName = "toptex" | "falkross" | "newwave" | "pixartprint" | "interne" | "autre" | "printful";
 
 export interface SupplierInfo {
   supplier: SupplierName;
@@ -292,6 +292,8 @@ export interface OrderItem {
   unitPriceTTC: number;
   totalHT: number;
   totalTTC: number;
+  // Printful POD
+  printfulVariantId?: number;
 }
 
 export interface Order {
@@ -339,6 +341,10 @@ export interface Order {
   cancellationReason?: string;
   refundedAt?: string;
   canCancelUntil?: string; // 30 min after creation
+  // Printful POD
+  printfulOrderId?: number;
+  printfulStatus?: string;
+  supplierProvider?: string;
 }
 
 // ─── Review Types ─────────────────────────────────────────────────────────────────

@@ -29,6 +29,13 @@ export function formatPrice(price: number): string {
 // ─── Pricing matrix ───────────────────────────────────────────────────────────
 // Tous les prix sont en TTC
 
+// Gildan 5000 — Printful POD (DTF uniquement, 24.90€ TTC coeur)
+export const GILDAN_5000_PRICES = {
+  dtf:      24.90,
+  flex:     0,
+  broderie: 0,
+} as const;
+
 // T-shirts base prices TTC
 export const TSHIRT_PRICES = {
   // B&C TU01T / TW02T — produit d'appel

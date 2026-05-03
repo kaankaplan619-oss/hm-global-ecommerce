@@ -89,6 +89,11 @@ export function mapDbOrderToOrder(row: any): Order {
     cancellationReason:  row.cancellation_reason  ?? undefined,
     refundedAt:          row.refunded_at          ?? undefined,
 
+    // Printful POD
+    printfulOrderId:  row.printful_order_id  ?? undefined,
+    printfulStatus:   row.printful_status    ?? undefined,
+    supplierProvider: row.supplier_provider  ?? undefined,
+
     createdAt: row.created_at,
     updatedAt: row.updated_at,
 
@@ -142,6 +147,7 @@ export function mapDbOrderToOrder(row: any): Order {
       logoEffect:             item.logo_effect              ?? undefined,
       batRef:                 item.bat_ref                  ?? undefined,
       logoPlacementTransform: item.logo_placement_transform ?? undefined,
+      printfulVariantId:      item.printful_variant_id      ?? undefined,
     })),
   };
 }
