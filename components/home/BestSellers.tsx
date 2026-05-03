@@ -43,10 +43,8 @@ export default function BestSellers() {
         {/* ── Grille produits ────────────────────────────────────────── */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {products.map((product) => {
-            const basePrice = Math.min(
-              product.pricing.dtf,
-              product.pricing.flex
-            );
+            const prices = [product.pricing.dtf, product.pricing.flex, product.pricing.broderie].filter((p) => p > 0);
+            const basePrice = prices.length > 0 ? Math.min(...prices) : 0;
             const shortDesc =
               product.category === "tshirts"
                 ? "Le plus simple pour équiper une équipe ou lancer une opération."
@@ -73,7 +71,7 @@ export default function BestSellers() {
                 {/* ── Zone image ── */}
                 <div className="relative aspect-[4/4.8] overflow-hidden bg-[var(--hm-surface)]">
                   <ProductImage
-                    src={product.images?.[0]}
+                    src={undefined}
                     alt={product.name}
                     fill
                     sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"

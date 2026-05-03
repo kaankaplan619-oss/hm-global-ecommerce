@@ -97,7 +97,7 @@ export default function Hero() {
                 {/* Image */}
                 <div className="relative aspect-[3/4] w-full bg-[linear-gradient(180deg,#fbfcfe_0%,var(--hm-surface)_100%)]">
                   <ProductImage
-                    src="https://files.cdn.printful.com/products/438/11580_1693310960.jpg"
+                    src={undefined}
                     alt="T-shirt Gildan Heavy Cotton"
                     fill
                     priority
@@ -144,7 +144,7 @@ export default function Hero() {
                 >
                   <div className="relative aspect-[1/0.94] w-full bg-[linear-gradient(180deg,#fbfcfe_0%,var(--hm-surface)_100%)]">
                     <ProductImage
-                      src="https://files.cdn.printful.com/products/146/5530_1750160839.jpg"
+                      src={undefined}
                       alt="Hoodie Gildan Heavy Blend"
                       fill
                       sizes="(min-width: 1024px) 14vw, 35vw"
@@ -166,7 +166,7 @@ export default function Hero() {
                 >
                   <div className="relative aspect-[1/0.94] w-full bg-[linear-gradient(180deg,#fbfcfe_0%,var(--hm-surface)_100%)]">
                     <ProductImage
-                      src="https://files.cdn.printful.com/products/71/4016_1752236278.jpg"
+                      src={undefined}
                       alt="T-shirt Bella+Canvas 3001"
                       fill
                       sizes="(min-width: 1024px) 14vw, 35vw"

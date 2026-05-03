@@ -11,7 +11,7 @@ const CATEGORY_DATA = {
     description:
       "Pour équiper rapidement une équipe, un événement ou une opération terrain.",
     href: "/catalogue/tshirts",
-    image: "https://files.cdn.printful.com/products/438/11580_1693310960.jpg",
+    image: "",
     imageAlt: "T-shirt Gildan Heavy Cotton",
     count: 2,
     from: "19,90",
@@ -28,7 +28,7 @@ const CATEGORY_DATA = {
     description:
       "Pour un rendu plus premium, plus visible et plus durable dans le temps.",
     href: "/catalogue/hoodies",
-    image: "https://files.cdn.printful.com/products/146/5530_1750160839.jpg",
+    image: "",
     imageAlt: "Hoodie Gildan Heavy Blend",
     count: 2,
     from: "39,90",
@@ -45,7 +45,7 @@ const CATEGORY_DATA = {
     description:
       "Bella+Canvas 3001 — coupe modern fit, idéal pour les marques et créateurs.",
     href: "/catalogue/tshirts",
-    image: "https://files.cdn.printful.com/products/71/4016_1752236278.jpg",
+    image: "",
     imageAlt: "T-shirt Bella+Canvas 3001",
     count: 1,
     from: "29,90",
