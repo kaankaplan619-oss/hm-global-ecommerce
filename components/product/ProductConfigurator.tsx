@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Upload, X, CheckCircle, AlertCircle, Minus, Plus, ShoppingBag, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
-import { computeUnitPrice, formatPrice, PRICING_CONFIG } from "@/data/pricing";
+import { formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
 import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
@@ -457,11 +457,14 @@ export default function ProductConfigurator({
         <label className="label">Technique de personnalisation</label>
         <div className="flex flex-col gap-2">
           {availableTechniques.map((tech) => {
-            const techPrice = computeUnitPrice({
-              basePrice: product.pricing[tech.id] as number,
-              technique: tech.id,
-              placement,
-            });
+            // Utilise les surcharges spécifiques au produit — cohérent avec le récap prix
+            const techPlacementSurcharge =
+              tech.id === "broderie"
+                ? product.pricing.broDeriePlacementSurcharge[placement]
+                : product.pricing.placements[placement];
+            const techPrice = Math.round(
+              ((product.pricing[tech.id] as number) + techPlacementSurcharge) * 100
+            ) / 100;
             const active = technique === tech.id;
 
             return (

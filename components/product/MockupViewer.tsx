@@ -7,6 +7,8 @@ import { isColorDark, EFFECT_OPTIONS } from "@/lib/color-utils";
 import type { LogoEffect } from "@/lib/color-utils";
 import type { LogoPlacementTransform } from "@/lib/bat-utils";
 
+import { proxyCdnUrl } from "@/lib/proxy-cdn-url";
+
 // ── Mockup image paths ────────────────────────────────────────────────────────
 const MOCKUP_FILES: Record<string, { front: string; back: string }> = {
   blanc:    { front: "/mockups/tshirt/blanc-front.jpg",    back: "/mockups/tshirt/blanc-back.png"    },
@@ -114,13 +116,17 @@ export default function MockupViewer({ colorId, placement, logoFile, logoUrl, ba
   }, [placement]);
 
   // ── Current mockup image src ──────────────────────────────────────────────
+  // proxiedPackshot : les CDN externes (Printful, TopTex) bloquent les requêtes
+  // CORS de Fabric.js (new Image() depuis le navigateur). On passe par le proxy
+  // serveur /api/image-proxy pour contourner ce blocage.
+  const proxiedPackshot = proxyCdnUrl(packshot);
   const slug    = COLOR_TO_MOCKUP[colorId] ?? null;
   const mockups = slug ? MOCKUP_FILES[slug] : null;
   const src = view === "front"
-    ? (packshot ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
+    ? (proxiedPackshot ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
     : (productCategory === "tshirts"
-        ? (mockups?.back ?? packshot ?? "/mockups/tshirt/blanc-back.png")
-        : (packshot ?? "/mockups/tshirt/blanc-back.png"));
+        ? (mockups?.back ?? proxiedPackshot ?? "/mockups/tshirt/blanc-back.png")
+        : (proxiedPackshot ?? "/mockups/tshirt/blanc-back.png"));
 
   // ── Init Fabric.js canvas (mount only, with ResizeObserver) ──────────────
   useEffect(() => {
