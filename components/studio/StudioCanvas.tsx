@@ -59,12 +59,14 @@ interface Props {
   placement: Placement;
   productCategory?: string;
   packshot?: string | null;
+  /** URL du mockup vue dos — si absent, fallback MOCKUP_FILES[colorId].back */
+  packshotBack?: string | null;
   objects: StudioObject[];
   onObjectsChange: (objects: StudioObject[]) => void;
 }
 
 const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas(
-  { colorId, placement, productCategory, packshot, objects, onObjectsChange },
+  { colorId, placement, productCategory, packshot, packshotBack, objects, onObjectsChange },
   ref
 ) {
   const containerRef  = useRef<HTMLDivElement>(null);
@@ -134,8 +136,8 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
   const slug = COLOR_TO_MOCKUP[colorId] ?? null;
   const mockups = slug ? MOCKUP_FILES[slug] : null;
   const src = view === "front"
-    ? (packshot ?? mockups?.front  ?? "/mockups/tshirt/blanc-front.jpg")
-    : (mockups?.back  ?? packshot  ?? "/mockups/tshirt/blanc-back.png");
+    ? (packshot     ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
+    : (packshotBack ?? mockups?.back  ?? packshot ?? "/mockups/tshirt/blanc-back.png");
 
   // ── Auto-switch view when placement changes ───────────────────────────────
   useEffect(() => {

@@ -102,9 +102,12 @@ export function getHMMockupPath(
   colorId?: string,
 ): string | null {
   // P0. Produits Printful → mockups locaux HM Global (jamais images CDN ghost-mannequin)
-  // Les hmMockupImages des produits Printful contiennent des URLs CDN avec mannequin ;
-  // on les court-circuite ici pour respecter la direction visuelle B2 "produit seul".
   if (product.supplierName === "printful") {
+    // P0a. Mockup propre au produit + coloris (priorité absolue)
+    if (colorId && product.hmMockupImages?.[colorId]) {
+      return product.hmMockupImages[colorId];
+    }
+    // P0b. Fallback générique par coloris (anciens produits sans hmMockupImages)
     return (colorId && PRINTFUL_LOCAL_BY_COLOR[colorId]) || PRINTFUL_LOCAL_DEFAULT;
   }
 

@@ -59,15 +59,21 @@ export default function StudioClient({ product }: Props) {
   // ── Canvas ref for exportPNG ──────────────────────────────────────────────
   const canvasRef = useRef<StudioCanvasHandle>(null);
 
-  const packshot = useMemo(
-    // In the studio, Printful products use local flat HM mockups (1254×1254 square)
-    // instead of ghost-mannequin CDN images — passing null lets StudioCanvas pick
-    // up its own MOCKUP_FILES mapping.
-    () => product.supplierName === "printful"
-      ? null
-      : getProductCatalogImage(product, selectedColor?.id ?? ""),
-    [product, selectedColor]
-  );
+  // Packshot face — vraies photos par coloris pour les produits Printful
+  const packshot = useMemo(() => {
+    if (product.supplierName === "printful") {
+      return product.hmMockupImages?.[selectedColor?.id ?? ""] ?? null;
+    }
+    return getProductCatalogImage(product, selectedColor?.id ?? "");
+  }, [product, selectedColor]);
+
+  // Packshot dos — photos dédiées (Printful uniquement)
+  const packshotBack = useMemo(() => {
+    if (product.supplierName === "printful") {
+      return product.hmMockupImagesBack?.[selectedColor?.id ?? ""] ?? null;
+    }
+    return null;
+  }, [product, selectedColor]);
 
   const handleAddObject = useCallback((obj: StudioObject) => {
     setObjects((prev) => {
@@ -154,6 +160,7 @@ export default function StudioClient({ product }: Props) {
               placement={placement}
               productCategory={product.category}
               packshot={packshot || undefined}
+              packshotBack={packshotBack || undefined}
               objects={objects}
               onObjectsChange={handleObjectsChange}
             />
