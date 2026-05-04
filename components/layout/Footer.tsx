@@ -56,12 +56,12 @@ export default function Footer() {
 
       {/* ── Contenu — z-10 pour passer au-dessus des cercles ─────────────── */}
       <div className="container relative z-10 py-16 sm:py-20">
-        {/* Grille 4 colonnes équilibrées */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        {/* ── Layout 2 zones : logo+contact à gauche | 3 colonnes liens à droite ── */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_3fr]">
 
-          {/* Col 1 — Logo + infos contact + réseaux */}
+          {/* Zone gauche — Logo + infos contact + réseaux */}
           <div>
-            <Link href="/" className="mb-7 inline-flex items-center">
+            <Link href="/" className="mb-7 inline-block">
               <Image
                 src="/logo/hm-global-logo.png"
                 alt="HM Global Agence"
@@ -70,8 +70,8 @@ export default function Footer() {
                 className="h-8 w-auto max-w-[150px]"
               />
             </Link>
-            <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-xs">
-              HM Global Agence est une agence créative avec atelier de production, spécialisée en textile personnalisé, communication visuelle et préparation de fichiers pour l&apos;impression.
+            <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-sm">
+              Agence créative avec atelier de production, spécialisée en textile personnalisé, communication visuelle et préparation de fichiers pour l&apos;impression.
             </p>
 
             <div className="mt-6 flex flex-col gap-3">
@@ -126,77 +126,72 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Col 2 — Catalogue */}
-          <div>
-            <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
-              Catalogue
-            </h4>
-            <ul className="flex flex-col gap-3">
-              {LINKS_CATALOGUE.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                  >
-                    {link.label}
+          {/* Zone droite — 3 colonnes de liens parfaitement alignées */}
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+
+            {/* Catalogue */}
+            <div>
+              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
+                Catalogue
+              </h4>
+              <ul className="flex flex-col gap-3">
+                {LINKS_CATALOGUE.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Informations */}
+            <div>
+              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
+                Informations
+              </h4>
+              <ul className="flex flex-col gap-3">
+                {LINKS_INFO.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Espace client */}
+            <div>
+              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
+                Espace client
+              </h4>
+              <ul className="flex flex-col gap-3">
+                <li>
+                  <Link href="/connexion" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+                    Connexion
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Col 3 — Informations */}
-          <div>
-            <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
-              Informations
-            </h4>
-            <ul className="flex flex-col gap-3">
-              {LINKS_INFO.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                  >
-                    {link.label}
+                <li>
+                  <Link href="/mon-compte" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+                    Mon compte
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </div>
+                <li>
+                  <Link href="/mon-compte/commandes" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+                    Mes commandes
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Col 4 — Espace client */}
-          <div>
-            <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
-              Espace client
-            </h4>
-            <ul className="flex flex-col gap-3">
-              <li>
-                <Link
-                  href="/connexion"
-                  className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                >
-                  Connexion
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/mon-compte"
-                  className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                >
-                  Mon compte
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/mon-compte/commandes"
-                  className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                >
-                  Mes commandes
-                </Link>
-              </li>
-            </ul>
           </div>
-
         </div>
       </div>
 
