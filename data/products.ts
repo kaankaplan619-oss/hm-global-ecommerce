@@ -1745,13 +1745,20 @@ export const PRODUCT_GILDAN_5000: Product = {
   supplierName: "printful",
   ideaPour: ["Associations", "Événementiel", "Équipes"],
   conseil: "Idéal pour débuter votre communication textile. Le Gildan 5000 est notre best-seller entrée de gamme : coton épais, couleurs intenses, expédition directe depuis l'UE.",
-  // Mockups locaux HM Global — flat 1254×1254 px, jamais CDN ghost-mannequin
+  // Mockups locaux HM Global — photos Printful flat, par couleur (front + back)
   hmMockupImages: {
-    "blanc":        "/mockups/tshirt/blanc-front.jpg",
-    "noir":         "/mockups/tshirt/noir-front.jpg",
-    "gris-sport":   "/mockups/tshirt/gris-front.jpg",
-    "marine":       "/mockups/tshirt/marine-front.jpg",
-    "dark-heather": "/mockups/tshirt/gris-front.jpg",
+    "blanc":        "/mockups/gildan-5000/blanc-front.png",
+    "noir":         "/mockups/gildan-5000/noir-front.png",
+    "gris-sport":   "/mockups/gildan-5000/gris-front.png",
+    "marine":       "/mockups/gildan-5000/marine-front.png",
+    "dark-heather": "/mockups/gildan-5000/gris-front.png",
+  },
+  hmMockupImagesBack: {
+    "blanc":        "/mockups/gildan-5000/blanc-back.png",
+    "noir":         "/mockups/gildan-5000/noir-back.png",
+    "gris-sport":   "/mockups/gildan-5000/gris-back.png",
+    "marine":       "/mockups/gildan-5000/marine-back.png",
+    "dark-heather": "/mockups/gildan-5000/gris-back.png",
   },
 };
 
@@ -1798,11 +1805,16 @@ export const PRODUCT_BELLA_3001: Product = {
   supplierName: "printful",
   ideaPour: ["Marques & Streetwear", "Événementiels premium", "Boutiques"],
   conseil: "Le Bella+Canvas 3001 est la référence des créateurs de marques. Coupe flatteuse, tombé parfait, rendu DTF exceptionnel sur le coton ring-spun.",
-  // Mockups locaux HM Global — flat 1254×1254 px, jamais CDN ghost-mannequin
+  // Mockups locaux HM Global — photos Printful flat, par couleur (front + back)
   hmMockupImages: {
-    "noir":   "/mockups/tshirt/noir-front.jpg",
-    "blanc":  "/mockups/tshirt/blanc-front.jpg",
-    "marine": "/mockups/tshirt/marine-front.jpg",
+    "noir":   "/mockups/bella-3001/noir-front.png",
+    "blanc":  "/mockups/bella-3001/blanc-front.png",
+    "marine": "/mockups/bella-3001/marine-front.png",
+  },
+  hmMockupImagesBack: {
+    "noir":   "/mockups/bella-3001/noir-back.png",
+    "blanc":  "/mockups/bella-3001/blanc-back.png",
+    "marine": "/mockups/bella-3001/marine-back.png",
   },
 };
 
@@ -1848,11 +1860,16 @@ export const PRODUCT_GILDAN_18000: Product = {
   supplierName: "printful",
   ideaPour: ["Associations & Clubs", "BDE & Étudiants", "Corporate & Équipes"],
   conseil: "Le sweatshirt Gildan 18000 est un incontournable du textile personnalisé. Polyvalent, confortable, idéal pour créer des uniformes ou des collections abordables.",
-  // Mockups locaux HM Global — flat 1254×1254 px, jamais CDN ghost-mannequin
+  // Mockups locaux HM Global — photos Printful flat, par couleur (front + back)
   hmMockupImages: {
-    "noir":       "/mockups/tshirt/noir-front.jpg",
-    "marine":     "/mockups/tshirt/marine-front.jpg",
-    "gris-sport": "/mockups/tshirt/gris-front.jpg",
+    "noir":       "/mockups/gildan-18000/noir-front.png",
+    "marine":     "/mockups/gildan-18000/marine-front.png",
+    "gris-sport": "/mockups/gildan-18000/gris-front.png",
+  },
+  hmMockupImagesBack: {
+    "noir":       "/mockups/gildan-18000/noir-back.png",
+    "marine":     "/mockups/gildan-18000/marine-back.png",
+    "gris-sport": "/mockups/gildan-18000/gris-back.png",
   },
 };
 
@@ -1900,12 +1917,18 @@ export const PRODUCT_GILDAN_18500: Product = {
   supplierName: "printful",
   ideaPour: ["Associations & BDE", "Sport & Clubs", "Streetwear & Marques"],
   conseil: "Le Gildan 18500 est le hoodie le plus commandé sur Printful. Intérieur doux brossé, poche kangourou spacieuse, rendu DTF premium sur les couleurs unies.",
-  // Mockups locaux HM Global — flat 1254×1254 px, jamais CDN ghost-mannequin
+  // Mockups locaux HM Global — photos Printful flat, par couleur (front + back)
   hmMockupImages: {
-    "noir":       "/mockups/tshirt/noir-front.jpg",
-    "blanc":      "/mockups/tshirt/blanc-front.jpg",
-    "marine":     "/mockups/tshirt/marine-front.jpg",
-    "gris-sport": "/mockups/tshirt/gris-front.jpg",
+    "noir":       "/mockups/gildan-18500/noir-front.png",
+    "blanc":      "/mockups/gildan-18500/blanc-front.png",
+    "marine":     "/mockups/gildan-18500/marine-front.png",
+    "gris-sport": "/mockups/gildan-18500/gris-front.png",
+  },
+  hmMockupImagesBack: {
+    "noir":       "/mockups/gildan-18500/noir-back.png",
+    "blanc":      "/mockups/gildan-18500/blanc-back.png",
+    "marine":     "/mockups/gildan-18500/marine-back.png",
+    "gris-sport": "/mockups/gildan-18500/gris-back.png",
   },
 };
 

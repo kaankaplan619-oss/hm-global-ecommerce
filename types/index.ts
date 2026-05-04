@@ -134,8 +134,10 @@ export interface Product {
   // ── Direction visuelle HM Global (B2) ──────────────────────────────────────
   /** Image hero HM Global dédiée par produit (chemin /public/ ou URL externe). */
   hmHeroImage?: string;
-  /** Mockups HM Global par coloris — colorId → chemin /public/mockups/. */
+  /** Mockups HM Global par coloris — colorId → chemin /public/mockups/ (vue face). */
   hmMockupImages?: Record<string, string>;
+  /** Mockups HM Global dos par coloris — colorId → chemin /public/mockups/ (vue dos). */
+  hmMockupImagesBack?: Record<string, string>;
   /**
    * Famille visuelle mockup — détermine le backdrop premium et les assets
    * mockup par défaut quand hmMockupImages n'est pas renseigné.
