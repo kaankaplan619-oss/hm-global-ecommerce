@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Layers3 } from "lucide-react";
 import { formatPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
@@ -36,43 +37,62 @@ export default function ProductCard({ product }: ProductCardProps) {
   // Image catalogue (B2) : mockup HM Global > packshot TopTex > photo mannequin
   const catalogImage = getProductCatalogImage(product, defaultColor?.id);
 
-  // Mode visuel : Printful → toujours "supplier" (fond blanc, photos flat)
-  const isPrintful  = product.supplierName === "printful";
-  const visualMode  = isPrintful ? "supplier" : getVisualMode(product);
+  // Mode visuel : Printful → rendu simple fond blanc (pas HMProductVisual)
+  const isPrintful = product.supplierName === "printful";
+  const visualMode = isPrintful ? "supplier" : getVisualMode(product);
 
   return (
     <Link
       href={`/produits/${product.slug}`}
       className="hm-card-enter group card card-hover block overflow-hidden"
     >
+      {/* ── Zone image ────────────────────────────────────────────────────── */}
       <div className="relative aspect-[4/5] overflow-hidden rounded-t-xl">
-        <HMProductVisual
-          src={catalogImage}
-          alt={product.name}
-          mode={visualMode}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          imageClassName={`object-contain transition-transform duration-500 group-hover:scale-105${isPrintful ? " p-1" : visualMode === "hm" ? " p-5 relative z-10" : " p-2"}`}
-          showBadge={false}
-        />
 
+        {isPrintful ? (
+          /* Produits Printful : fond blanc pur, image sans wrapper intermédiaire */
+          <div className="absolute inset-0 bg-white flex items-center justify-center">
+            <Image
+              src={catalogImage || "/mockups/tshirt/blanc-front.jpg"}
+              alt={product.name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              className="object-contain transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+        ) : (
+          /* Autres produits (TopTex, etc.) : HMProductVisual avec mode hm/supplier */
+          <HMProductVisual
+            src={catalogImage}
+            alt={product.name}
+            mode={visualMode}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            imageClassName={`object-contain transition-transform duration-500 group-hover:scale-105${visualMode === "hm" ? " p-5 relative z-10" : " p-2"}`}
+            showBadge={false}
+          />
+        )}
+
+        {/* Badge produit */}
         {product.badge && (
           <div className="absolute top-3 left-3 max-w-[calc(100%-3.5rem)]">
             <span className="badge badge-gold block truncate" title={product.badge}>{product.badge}</span>
           </div>
         )}
 
+        {/* Rupture de stock */}
         {product.colors.every((c) => !c.available) && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <span className="badge badge-neutral text-base">Rupture de stock</span>
           </div>
         )}
 
+        {/* Pastilles couleurs */}
         <div className="absolute bottom-3 left-3 flex gap-1.5">
           {product.colors.slice(0, 5).map((color) => (
             <div
               key={color.id}
-              className="w-4 h-4 rounded-full border border-black/20"
+              className="w-4 h-4 rounded-full border border-black/20 shadow-sm"
               style={{ backgroundColor: color.hex }}
               title={color.label}
             />
@@ -85,6 +105,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
 
+      {/* ── Infos produit ─────────────────────────────────────────────────── */}
       <div className="p-4">
         <div className="flex items-center justify-between gap-3 mb-1">
           <p className="text-[10px] text-[var(--hm-text-soft)] font-mono">{product.reference}</p>
