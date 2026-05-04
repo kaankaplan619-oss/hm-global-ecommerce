@@ -55,9 +55,9 @@ export default function Footer() {
       </div>
 
       {/* ── Contenu — z-10 pour passer au-dessus des cercles ─────────────── */}
-      <div className="container relative z-10 pt-20 pb-16 sm:pt-24 sm:pb-20">
+      <div className="container relative z-10 pb-16 sm:pb-20">
         {/* ── Layout 2 zones : logo+contact à gauche | 3 colonnes liens à droite ── */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_3fr]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_3fr] pt-20 sm:pt-24">
 
           {/* Zone gauche — Logo + infos contact + réseaux */}
           <div>
@@ -65,9 +65,9 @@ export default function Footer() {
               <Image
                 src="/logo/hm-global-logo.png"
                 alt="HM Global Agence"
-                width={160}
-                height={42}
-                className="h-9 w-auto max-w-[155px]"
+                width={220}
+                height={58}
+                className="h-14 w-auto max-w-[210px]"
               />
             </Link>
             <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-sm">
