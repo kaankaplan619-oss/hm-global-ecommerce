@@ -46,7 +46,7 @@ const TSHIRT_MOCKUP_DEFAULT = "/mockups/tshirt/blanc-front.jpg";
  *    Remettre tshirt: true quand des photos HM individuelles par produit existent.
  */
 const FAMILY_HAS_HM_ASSETS: Partial<Record<ProductFamilyVisual, boolean>> = {
-  // tshirt: true,  // désactivé — tous t-shirts → packshots TopTex en supplier mode
+  tshirt: true,
 };
 
 // ── Résolution de la famille visuelle ────────────────────────────────────────

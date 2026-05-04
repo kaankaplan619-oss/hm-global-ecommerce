@@ -1377,12 +1377,7 @@ export const PRODUCT_GILDAN_5000: Product = {
   supplierName: "printful",
   ideaPour: ["Associations", "Événementiel", "Équipes"],
   conseil: "Idéal pour débuter votre communication textile. Le Gildan 5000 est notre best-seller entrée de gamme : coton épais, couleurs intenses, expédition directe depuis l'UE.",
-  hmMockupImages: {
-    "blanc":        "https://files.cdn.printful.com/products/438/11580_1693310960.jpg",
-    "noir":         "https://files.cdn.printful.com/products/438/11550_1642678229.jpg",
-    "marine":       "https://files.cdn.printful.com/products/438/11565_1642678321.jpg",
-    "dark-heather": "https://files.cdn.printful.com/products/438/15847_1661693946.jpg",
-  },
+  hmMockupImages: {},
 };
 
 // ─── Printful POD — Bella+Canvas 3001 ────────────────────────────────────────
@@ -1429,11 +1424,7 @@ export const PRODUCT_BELLA_3001: Product = {
   ideaPour: ["Marques & Streetwear", "Événementiels premium", "Boutiques"],
   conseil: "Le Bella+Canvas 3001 est la référence des créateurs de marques. Coupe flatteuse, tombé parfait, rendu DTF exceptionnel sur le coton ring-spun.",
   // Images catalogue Printful CDN (source : api.printful.com/products/71)
-  hmMockupImages: {
-    "noir":   "https://files.cdn.printful.com/products/71/4016_1752236278.jpg",
-    "blanc":  "https://files.cdn.printful.com/products/71/24351_1752236285.jpg",
-    "marine": "https://files.cdn.printful.com/products/71/8495_1752236280.jpg",
-  },
+  hmMockupImages: {},
 };
 
 // ─── Printful POD — Gildan 18000 Sweatshirt ──────────────────────────────────
@@ -1479,11 +1470,7 @@ export const PRODUCT_GILDAN_18000: Product = {
   ideaPour: ["Associations & Clubs", "BDE & Étudiants", "Corporate & Équipes"],
   conseil: "Le sweatshirt Gildan 18000 est un incontournable du textile personnalisé. Polyvalent, confortable, idéal pour créer des uniformes ou des collections abordables.",
   // Images catalogue Printful CDN (source : api.printful.com/products/145)
-  hmMockupImages: {
-    "noir":       "https://files.cdn.printful.com/products/145/5434_1753765555.jpg",
-    "marine":     "https://files.cdn.printful.com/products/145/5498_1753765555.jpg",
-    "gris-sport": "https://files.cdn.printful.com/products/145/5514_1753765555.jpg",
-  },
+  hmMockupImages: {},
 };
 
 // ─── Printful POD — Gildan 18500 Hoodie ──────────────────────────────────────
@@ -1531,12 +1518,7 @@ export const PRODUCT_GILDAN_18500: Product = {
   ideaPour: ["Associations & BDE", "Sport & Clubs", "Streetwear & Marques"],
   conseil: "Le Gildan 18500 est le hoodie le plus commandé sur Printful. Intérieur doux brossé, poche kangourou spacieuse, rendu DTF premium sur les couleurs unies.",
   // Images catalogue Printful CDN (source : api.printful.com/products/146)
-  hmMockupImages: {
-    "noir":       "https://files.cdn.printful.com/products/146/5530_1750160839.jpg",
-    "blanc":      "https://files.cdn.printful.com/products/146/5522_1750160842.jpg",
-    "marine":     "https://files.cdn.printful.com/products/146/5594_1750160841.jpg",
-    "gris-sport": "https://files.cdn.printful.com/products/146/5610_1750160841.jpg",
-  },
+  hmMockupImages: {},
 };
 
 // ─── All products ─────────────────────────────────────────────────────────────
