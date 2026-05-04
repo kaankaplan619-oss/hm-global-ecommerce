@@ -242,30 +242,48 @@ export default function ProductDetailClient({ product }: Props) {
     [defaultColor, product.colors]
   );
 
-  // Image produit actuelle (utilisée par MockupViewer, LightMockupPreview + BAT)
-  // Priorité (B2) : mockup HM → packshot TopTex couleur → packshot catalogue → photo mannequin
-  const currentImageUrl = useMemo(() => {
-    const cid = selectedColor?.id ?? "";
-    const hmMockup = getHMMockupPath(product, cid);
-    if (hmMockup) return hmMockup;
-    if (cid && colorImages[cid]?.[0]) return colorImages[cid][0];
-    return getProductCatalogImage(product, cid);
-  }, [selectedColor, colorImages, product]);
-
   // MockupViewer Fabric.js actif pour t-shirts/hoodies/softshells SAUF :
   // - Produits Printful sans logo → on préfère HMProductVisual (rendu catalogue propre,
   //   pas de zone de marquage, pas d'image portrait Printful dans canvas carré Fabric.js)
   // - Dès qu'un logo est uploadé (local) ou revenu du studio (studioLogoPreset), on
   //   réactive MockupViewer pour montrer l'aperçu logo — mais sans zone de marquage.
-  const isPrintful  = product.supplierName === "printful";
+  const isPrintful   = product.supplierName === "printful";
   const hasLogoReady = !!logoFile || !!studioLogoPreset;
+
+  // ── Carousel galerie Printful ─────────────────────────────────────────────
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  // Reset l'index quand la couleur change
+  useEffect(() => { setGalleryIndex(0); }, [selectedColor?.id]);
+  const gallery: string[] = useMemo(() => {
+    if (!isPrintful) return [];
+    const cid = selectedColor?.id ?? "";
+    return product.hmMockupGallery?.[cid] ?? [];
+  }, [isPrintful, selectedColor?.id, product]);
+
+  // Image produit actuelle (utilisée par MockupViewer, LightMockupPreview + BAT)
+  // Priorité (B2) : mockup HM → packshot TopTex couleur → packshot catalogue → photo mannequin
+  // Pour les produits Printful avec galerie : l'image affichée suit galleryIndex.
+  const currentImageUrl = useMemo(() => {
+    const cid = selectedColor?.id ?? "";
+    // Printful + galerie active → l'image de la galerie prime
+    if (isPrintful && gallery.length > 0) {
+      return gallery[galleryIndex] ?? gallery[0];
+    }
+    const hmMockup = getHMMockupPath(product, cid);
+    if (hmMockup) return hmMockup;
+    if (cid && colorImages[cid]?.[0]) return colorImages[cid][0];
+    return getProductCatalogImage(product, cid);
+  }, [selectedColor?.id, colorImages, product, galleryIndex, gallery, isPrintful]);
+
   const showMockup =
     (product.category === "tshirts" || product.category === "hoodies" || product.category === "softshells") &&
     !!currentImageUrl &&
     (!isPrintful || hasLogoReady);
 
   // Mode visuel premium HM Global ou fournisseur
-  const visualMode = getVisualMode(product);
+  // Les produits Printful utilisent toujours le mode "supplier" (fond blanc)
+  // pour que les photos flat sans fond sombre soient propres.
+  const visualMode = isPrintful ? "supplier" : getVisualMode(product);
 
   // ── Condition BAT visible ─────────────────────────────────────────────────
   // Exige au minimum : couleur sélectionnée + logo uploadé
@@ -332,7 +350,71 @@ export default function ProductDetailClient({ product }: Props) {
                 className="w-full"
                 imageClassName={`object-contain w-full transition-opacity duration-300${visualMode === "hm" ? " p-4 relative z-10" : " p-6"}`}
               />
+
+              {/* ── Flèches carousel Printful (galerie front/back/detail) ── */}
+              {isPrintful && gallery.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Image précédente"
+                    onClick={() => setGalleryIndex((i) => (i - 1 + gallery.length) % gallery.length)}
+                    className="absolute left-3 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-md border border-[var(--hm-line)] text-[var(--hm-text)] transition hover:bg-white hover:shadow-lg"
+                  >
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M10 3L5 8l5 5"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Image suivante"
+                    onClick={() => setGalleryIndex((i) => (i + 1) % gallery.length)}
+                    className="absolute right-3 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-md border border-[var(--hm-line)] text-[var(--hm-text)] transition hover:bg-white hover:shadow-lg"
+                  >
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M6 3l5 5-5 5"/>
+                    </svg>
+                  </button>
+                  {/* Dots indicateurs */}
+                  <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5">
+                    {gallery.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        aria-label={`Image ${idx + 1}`}
+                        onClick={() => setGalleryIndex(idx)}
+                        className={`h-1.5 rounded-full transition-all ${idx === galleryIndex ? "w-4 bg-[var(--hm-primary)]" : "w-1.5 bg-[var(--hm-line)]"}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* ── Miniatures carousel Printful ── */}
+            {isPrintful && gallery.length > 1 && (
+              <div className="flex gap-2 px-1">
+                {gallery.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setGalleryIndex(idx)}
+                    className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                      idx === galleryIndex
+                        ? "border-[var(--hm-primary)] shadow-md"
+                        : "border-[var(--hm-line)] opacity-60 hover:opacity-100"
+                    }`}
+                    style={{ backgroundColor: "#f7f6f4" }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img}
+                      alt={`Vue ${idx + 1}`}
+                      className="h-full w-full object-contain p-1"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* ── Aperçu logo (LightMockupPreview) ── */}
             {logoFile && (

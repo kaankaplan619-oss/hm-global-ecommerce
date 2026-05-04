@@ -1760,6 +1760,13 @@ export const PRODUCT_GILDAN_5000: Product = {
     "marine":       "/mockups/gildan-5000/marine-back.png",
     "dark-heather": "/mockups/gildan-5000/gris-back.png",
   },
+  hmMockupGallery: {
+    "blanc":        ["/mockups/gildan-5000/blanc-front.png",  "/mockups/gildan-5000/blanc-back.png",  "/mockups/gildan-5000/blanc-detail.png"],
+    "noir":         ["/mockups/gildan-5000/noir-front.png",   "/mockups/gildan-5000/noir-back.png",   "/mockups/gildan-5000/noir-detail.png"],
+    "gris-sport":   ["/mockups/gildan-5000/gris-front.png",   "/mockups/gildan-5000/gris-back.png",   "/mockups/gildan-5000/gris-detail.png"],
+    "marine":       ["/mockups/gildan-5000/marine-front.png", "/mockups/gildan-5000/marine-back.png", "/mockups/gildan-5000/marine-detail.png"],
+    "dark-heather": ["/mockups/gildan-5000/gris-front.png",   "/mockups/gildan-5000/gris-back.png",   "/mockups/gildan-5000/gris-detail.png"],
+  },
 };
 
 // ─── Printful POD — Bella+Canvas 3001 ────────────────────────────────────────
@@ -1816,6 +1823,11 @@ export const PRODUCT_BELLA_3001: Product = {
     "blanc":  "/mockups/bella-3001/blanc-back.png",
     "marine": "/mockups/bella-3001/marine-back.png",
   },
+  hmMockupGallery: {
+    "noir":   ["/mockups/bella-3001/noir-front.png",   "/mockups/bella-3001/noir-back.png",   "/mockups/bella-3001/noir-detail.png"],
+    "blanc":  ["/mockups/bella-3001/blanc-front.png",  "/mockups/bella-3001/blanc-back.png",  "/mockups/bella-3001/blanc-detail.png"],
+    "marine": ["/mockups/bella-3001/marine-front.png", "/mockups/bella-3001/marine-back.png", "/mockups/bella-3001/marine-detail.png"],
+  },
 };
 
 // ─── Printful POD — Gildan 18000 Sweatshirt ──────────────────────────────────
@@ -1870,6 +1882,11 @@ export const PRODUCT_GILDAN_18000: Product = {
     "noir":       "/mockups/gildan-18000/noir-back.png",
     "marine":     "/mockups/gildan-18000/marine-back.png",
     "gris-sport": "/mockups/gildan-18000/gris-back.png",
+  },
+  hmMockupGallery: {
+    "noir":       ["/mockups/gildan-18000/noir-front.png",   "/mockups/gildan-18000/noir-back.png",   "/mockups/gildan-18000/noir-detail.png"],
+    "marine":     ["/mockups/gildan-18000/marine-front.png", "/mockups/gildan-18000/marine-back.png", "/mockups/gildan-18000/marine-detail.png"],
+    "gris-sport": ["/mockups/gildan-18000/gris-front.png",   "/mockups/gildan-18000/gris-back.png",   "/mockups/gildan-18000/gris-detail.png"],
   },
 };
 
@@ -1929,6 +1946,12 @@ export const PRODUCT_GILDAN_18500: Product = {
     "blanc":      "/mockups/gildan-18500/blanc-back.png",
     "marine":     "/mockups/gildan-18500/marine-back.png",
     "gris-sport": "/mockups/gildan-18500/gris-back.png",
+  },
+  hmMockupGallery: {
+    "noir":       ["/mockups/gildan-18500/noir-front.png",   "/mockups/gildan-18500/noir-back.png",   "/mockups/gildan-18500/noir-detail.png"],
+    "blanc":      ["/mockups/gildan-18500/blanc-front.png",  "/mockups/gildan-18500/blanc-back.png",  "/mockups/gildan-18500/blanc-detail.png"],
+    "marine":     ["/mockups/gildan-18500/marine-front.png", "/mockups/gildan-18500/marine-back.png", "/mockups/gildan-18500/marine-detail.png"],
+    "gris-sport": ["/mockups/gildan-18500/gris-front.png",   "/mockups/gildan-18500/gris-back.png",   "/mockups/gildan-18500/gris-detail.png"],
   },
 };
 

@@ -139,6 +139,11 @@ export interface Product {
   /** Mockups HM Global dos par coloris — colorId → chemin /public/mockups/ (vue dos). */
   hmMockupImagesBack?: Record<string, string>;
   /**
+   * Galerie d'images HM Global par coloris — colorId → [front, back, detail, ...].
+   * Utilisée pour le carousel produit (fiche produit Printful).
+   */
+  hmMockupGallery?: Record<string, string[]>;
+  /**
    * Famille visuelle mockup — détermine le backdrop premium et les assets
    * mockup par défaut quand hmMockupImages n'est pas renseigné.
    * Inféré automatiquement depuis `category` si absent.

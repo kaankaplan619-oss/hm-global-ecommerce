@@ -71,9 +71,9 @@ export default function Footer() {
               <Image
                 src="/logo/hm-global-logo.png"
                 alt="HM Global Agence"
-                width={208}
-                height={54}
-                className="h-9 w-auto max-w-full sm:h-[2.35rem]"
+                width={160}
+                height={42}
+                className="h-8 w-auto max-w-[150px]"
               />
             </Link>
             <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-xs">
