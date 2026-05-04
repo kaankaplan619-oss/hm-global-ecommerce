@@ -111,8 +111,8 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Zone droite — 3 colonnes parfaitement alignées */}
-          <div className="grid grid-cols-3 gap-8">
+          {/* Zone droite — 3 colonnes parfaitement alignées (pt pour aligner avec le logo) */}
+          <div className="grid grid-cols-3 gap-8 pt-[18px]">
 
             {/* Catalogue */}
             <div>
