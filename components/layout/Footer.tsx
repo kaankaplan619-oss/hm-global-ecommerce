@@ -40,7 +40,7 @@ const PAYMENT_METHODS = ["CB", "VISA", "Mastercard", "Stripe"];
 
 export default function Footer() {
   return (
-    <footer className="bg-[var(--hm-surface)] border-t-2 border-[var(--hm-line)] relative overflow-hidden">
+    <footer className="bg-[var(--hm-surface)] border-t-2 border-[var(--hm-line)] relative">
 
       {/* ── Cercles décoratifs isolés ─────────────────────────────────────────
           Wrapper aria-hidden + pointer-events-none + z-0 garantit qu'ils
@@ -55,7 +55,7 @@ export default function Footer() {
       </div>
 
       {/* ── Contenu — z-10 pour passer au-dessus des cercles ─────────────── */}
-      <div className="container relative z-10 pt-14 pb-16 sm:pt-16 sm:pb-20">
+      <div className="container relative z-10 pt-20 pb-16 sm:pt-24 sm:pb-20">
         {/* ── Layout 2 zones : logo+contact à gauche | 3 colonnes liens à droite ── */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_3fr]">
 
