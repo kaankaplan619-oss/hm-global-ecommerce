@@ -55,19 +55,19 @@ export default function Footer() {
       </div>
 
       {/* ── Contenu — z-10 pour passer au-dessus des cercles ─────────────── */}
-      <div className="container relative z-10 py-16 sm:py-20">
+      <div className="container relative z-10 pt-14 pb-16 sm:pt-16 sm:pb-20">
         {/* ── Layout 2 zones : logo+contact à gauche | 3 colonnes liens à droite ── */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_3fr]">
 
           {/* Zone gauche — Logo + infos contact + réseaux */}
           <div>
-            <Link href="/" className="mb-7 inline-block">
+            <Link href="/" className="mb-8 inline-block">
               <Image
                 src="/logo/hm-global-logo.png"
                 alt="HM Global Agence"
                 width={160}
                 height={42}
-                className="h-8 w-auto max-w-[150px]"
+                className="h-9 w-auto max-w-[155px]"
               />
             </Link>
             <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-sm">
@@ -199,32 +199,29 @@ export default function Footer() {
       <div className="divider-brand relative z-10" />
 
       {/* ── Barre du bas — copyright + légal + paiements ─────────────────── */}
-      <div className="container relative z-10 pt-5 pb-24 sm:pb-5">
-        {/* pr-[72px] sm:pr-0 : bouton chat fixe (56px) + marge (16px) = 72px à réserver à droite en mobile */}
-        <div className="flex flex-col items-center gap-3 pr-[72px] sm:flex-row sm:items-center sm:justify-between sm:pr-0">
+      <div className="container relative z-10 py-5 pb-24 sm:pb-6">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
 
           {/* Copyright */}
-          <p className="text-xs text-[var(--hm-text-soft)] whitespace-nowrap">
+          <p className="text-xs text-[var(--hm-text-soft)] whitespace-nowrap shrink-0">
             © {new Date().getFullYear()} HM Global Agence
           </p>
 
-          {/* Liens légaux — centrés */}
-          <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1 sm:gap-x-5">
+          {/* Liens légaux */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <Link href="/cgv" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
               CGV
             </Link>
-            <span className="text-[var(--hm-line)] select-none">·</span>
             <Link href="/confidentialite" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
               Confidentialité
             </Link>
-            <span className="text-[var(--hm-line)] select-none">·</span>
             <Link href="/mentions-legales" className="text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
               Mentions légales
             </Link>
           </div>
 
           {/* Badges de paiement */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             {PAYMENT_METHODS.map((m) => (
               <span
                 key={m}
