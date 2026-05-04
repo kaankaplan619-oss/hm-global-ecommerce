@@ -23,13 +23,7 @@ function IconFacebook() {
 // ─── Mise à jour : toutes les catégories du catalogue ─────────────────────────
 const LINKS_CATALOGUE = [
   { label: "T-shirts personnalisés",   href: "/catalogue/tshirts" },
-  { label: "Polos",                    href: "/catalogue/polos" },
   { label: "Hoodies & Sweats",         href: "/catalogue/hoodies" },
-  { label: "Softshells & Vestes",      href: "/catalogue/softshells" },
-  { label: "Polaires & Doudounes",     href: "/catalogue/polaires" },
-  { label: "Casquettes & Bonnets",     href: "/catalogue/casquettes" },
-  { label: "Sacs & Goodies",           href: "/catalogue/sacs" },
-  { label: "Enfants",                   href: "/catalogue/enfants" },
   { label: "Voir tout le catalogue →", href: "/catalogue" },
 ];
 
