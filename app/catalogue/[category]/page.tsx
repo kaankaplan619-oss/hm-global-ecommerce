@@ -55,7 +55,7 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
   },
 };
 
-const PUBLIC_CATEGORY_IDS = ["tshirts", "polos", "hoodies", "softshells", "polaires", "casquettes", "sacs", "enfants"] as const;
+const PUBLIC_CATEGORY_IDS = ["tshirts", "hoodies"] as const;
 
 type Props = {
   params: Promise<{ category: string }>;
@@ -123,7 +123,7 @@ export default async function CategoryPage({ params }: Props) {
         </div>
 
         {/* Products */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

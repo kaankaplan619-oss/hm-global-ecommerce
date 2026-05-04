@@ -36,22 +36,23 @@ export default function ProductCard({ product }: ProductCardProps) {
   // Image catalogue (B2) : mockup HM Global > packshot TopTex > photo mannequin
   const catalogImage = getProductCatalogImage(product, defaultColor?.id);
 
-  // Mode visuel premium (HM Global) ou standard (fournisseur)
-  const visualMode = getVisualMode(product);
+  // Mode visuel : Printful → toujours "supplier" (fond blanc, photos flat)
+  const isPrintful  = product.supplierName === "printful";
+  const visualMode  = isPrintful ? "supplier" : getVisualMode(product);
 
   return (
     <Link
       href={`/produits/${product.slug}`}
       className="hm-card-enter group card card-hover block overflow-hidden"
     >
-      <div className="relative aspect-square overflow-hidden rounded-t-xl">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-t-xl">
         <HMProductVisual
           src={catalogImage}
           alt={product.name}
           mode={visualMode}
           fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          imageClassName={`object-contain transition-transform duration-500 group-hover:scale-105${visualMode === "hm" ? " p-5 relative z-10" : " p-2"}`}
+          sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          imageClassName={`object-contain transition-transform duration-500 group-hover:scale-105${isPrintful ? " p-1" : visualMode === "hm" ? " p-5 relative z-10" : " p-2"}`}
           showBadge={false}
         />
 

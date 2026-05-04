@@ -11,13 +11,7 @@ export const metadata: Metadata = {
 
 const CATEGORY_LABELS: Record<string, string> = {
   tshirts: "T-shirts",
-  polos: "Polos",
   hoodies: "Hoodies & Sweats",
-  softshells: "Softshells & Vestes",
-  polaires: "Polaires & Doudounes",
-  casquettes: "Casquettes & Bonnets",
-  sacs: "Sacs & Goodies",
-  enfants: "Enfants",
 };
 
 export default function CataloguePage() {
@@ -77,7 +71,7 @@ export default function CataloguePage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
