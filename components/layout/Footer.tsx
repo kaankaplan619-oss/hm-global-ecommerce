@@ -54,93 +54,75 @@ export default function Footer() {
         <div className="absolute bottom-12 right-16 h-28 w-28 rounded-full border-[14px] border-[color:var(--hm-purple)]/18" />
       </div>
 
-      {/* ── Contenu — z-10 pour passer au-dessus des cercles ─────────────── */}
-      <div className="container relative z-10 pb-16 sm:pb-20">
-        {/* ── Layout 2 zones : logo+contact à gauche | 3 colonnes liens à droite ── */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_3fr] pt-20 sm:pt-24">
+      {/* ── Contenu principal — padding égal haut/bas ──────────────────────── */}
+      {/* Padding sur ce div (pas .container) pour éviter l'override CSS container */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-10 xl:px-16" style={{ paddingTop: "80px", paddingBottom: "72px" }}>
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[280px_1fr] items-start">
 
-          {/* Zone gauche — Logo + infos contact + réseaux */}
+          {/* Zone gauche — Logo + infos contact */}
           <div>
-            <Link href="/" className="mb-8 inline-block">
+            <Link href="/" className="mb-5 inline-block">
               <Image
                 src="/logo/hm-global-logo.png"
                 alt="HM Global Agence"
-                width={220}
-                height={58}
-                className="h-14 w-auto max-w-[210px]"
+                width={200}
+                height={52}
+                className="h-12 w-auto max-w-[190px]"
               />
             </Link>
-            <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-sm">
-              Agence créative avec atelier de production, spécialisée en textile personnalisé, communication visuelle et préparation de fichiers pour l&apos;impression.
+
+            <p className="text-xs text-[var(--hm-text-soft)] leading-relaxed mb-5 max-w-[260px]">
+              Textile personnalisé, communication visuelle et préparation de fichiers pour l&apos;impression.
             </p>
 
-            <div className="mt-6 flex flex-col gap-3">
-              <a
-                href="https://maps.google.com/?q=20+Rue+des+Tuileries,+67460+Souffelweyersheim"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-              >
-                <MapPin size={13} className="text-[var(--hm-rose)] shrink-0" />
+            <div className="flex flex-col gap-2.5 mb-5">
+              <a href="https://maps.google.com/?q=20+Rue+des+Tuileries,+67460+Souffelweyersheim" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+                <MapPin size={12} className="text-[var(--hm-rose)] shrink-0" />
                 20 Rue des Tuileries, 67460 Souffelweyersheim
               </a>
-              <a
-                href="tel:+33676161188"
-                className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-              >
-                <Phone size={13} className="text-[var(--hm-rose)] shrink-0" />
+              <a href="tel:+33676161188"
+                className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+                <Phone size={12} className="text-[var(--hm-rose)] shrink-0" />
                 06 76 16 11 88
               </a>
-              <a
-                href="mailto:contact@hmga.fr"
-                className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-              >
-                <Mail size={13} className="text-[var(--hm-rose)] shrink-0" />
+              <a href="mailto:contact@hmga.fr"
+                className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
+                <Mail size={12} className="text-[var(--hm-rose)] shrink-0" />
                 contact@hmga.fr
               </a>
               <div className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)]">
-                <Clock size={13} className="text-[var(--hm-rose)] shrink-0" />
-                Du lundi au vendredi, de 9h à 18h
+                <Clock size={12} className="text-[var(--hm-rose)] shrink-0" />
+                Lun – Ven, 9h – 18h
               </div>
             </div>
 
-            <div className="mt-6 flex items-center gap-3">
-              <a
-                href="https://www.instagram.com/hmglobalagence/"
-                target="_blank"
-                rel="noopener noreferrer"
+            <div className="flex items-center gap-2">
+              <a href="https://www.instagram.com/hmglobalagence/" target="_blank" rel="noopener noreferrer"
                 className="w-8 h-8 rounded border border-[var(--hm-line)] flex items-center justify-center text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] hover:border-[var(--hm-rose)] transition-colors"
-                aria-label="Instagram"
-              >
+                aria-label="Instagram">
                 <IconInstagram />
               </a>
-              <a
-                href="https://www.facebook.com/HmGlobalAgence"
-                target="_blank"
-                rel="noopener noreferrer"
+              <a href="https://www.facebook.com/HmGlobalAgence" target="_blank" rel="noopener noreferrer"
                 className="w-8 h-8 rounded border border-[var(--hm-line)] flex items-center justify-center text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] hover:border-[var(--hm-rose)] transition-colors"
-                aria-label="Facebook"
-              >
+                aria-label="Facebook">
                 <IconFacebook />
               </a>
             </div>
           </div>
 
-          {/* Zone droite — 3 colonnes de liens parfaitement alignées */}
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          {/* Zone droite — 3 colonnes parfaitement alignées */}
+          <div className="grid grid-cols-3 gap-8">
 
             {/* Catalogue */}
             <div>
-              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
+              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-4">
                 Catalogue
               </h4>
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-2.5">
                 {LINKS_CATALOGUE.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                    >
+                    <Link href={link.href} className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -150,16 +132,13 @@ export default function Footer() {
 
             {/* Informations */}
             <div>
-              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
+              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-4">
                 Informations
               </h4>
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-2.5">
                 {LINKS_INFO.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
-                    >
+                    <Link href={link.href} className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -169,25 +148,13 @@ export default function Footer() {
 
             {/* Espace client */}
             <div>
-              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-5">
+              <h4 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--hm-text)] mb-4">
                 Espace client
               </h4>
-              <ul className="flex flex-col gap-3">
-                <li>
-                  <Link href="/connexion" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
-                    Connexion
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/mon-compte" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
-                    Mon compte
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/mon-compte/commandes" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">
-                    Mes commandes
-                  </Link>
-                </li>
+              <ul className="flex flex-col gap-2.5">
+                <li><Link href="/connexion" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">Connexion</Link></li>
+                <li><Link href="/mon-compte" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">Mon compte</Link></li>
+                <li><Link href="/mon-compte/commandes" className="text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors">Mes commandes</Link></li>
               </ul>
             </div>
 
@@ -199,7 +166,7 @@ export default function Footer() {
       <div className="divider-brand relative z-10" />
 
       {/* ── Barre du bas — copyright + légal + paiements ─────────────────── */}
-      <div className="container relative z-10 py-5 pb-24 sm:pb-6">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-10 xl:px-16 py-5 pb-24 sm:pb-6">
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
 
           {/* Copyright */}
