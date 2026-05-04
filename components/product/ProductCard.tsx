@@ -73,13 +73,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
         )}
 
-        {/* Badge produit */}
-        {product.badge && (
-          <div className="absolute top-3 left-3 max-w-[calc(100%-3.5rem)]">
-            <span className="badge badge-gold block truncate" title={product.badge}>{product.badge}</span>
-          </div>
-        )}
-
         {/* Rupture de stock */}
         {product.colors.every((c) => !c.available) && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
