@@ -26,8 +26,6 @@ const CATEGORIES = [
   },
 ] as const;
 
-const DISPLAY_ORDER: Array<keyof typeof CATEGORY_DATA> = ["tshirts", "hoodies", "tshirts_premium"];
-
 export default function CategorySection() {
   return (
     <section className="py-18 sm:py-22" id="catalogue">

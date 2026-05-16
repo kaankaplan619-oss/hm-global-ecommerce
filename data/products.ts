@@ -1,7 +1,10 @@
 import type { Product } from "@/types";
 import {
+  TSHIRT_PRICES,
   TSHIRT_IDEAL_PRICES,
+  HOODIE_PRICES,
   SWEAT_IDEAL_PRICES,
+  SOFTSHELL_PRICES,
   POLO_PRICES,
   POLAIRE_PRICES,
   CASQUETTE_PRICES,
@@ -106,6 +109,17 @@ const PLACEHOLDER_IMAGES = (id: string): string[] =>
 // présentes dans `public/images/products/...` doivent être listées ici.
 
 // ─── T-SHIRTS ─────────────────────────────────────────────────────────────────
+
+const TSHIRT_COLORS_CLASSIC = [
+  { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
+  { id: "noir", label: "Noir", hex: "#111111", available: true },
+  { id: "gris", label: "Gris chiné", hex: "#9CA3AF", available: true },
+  { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
+  { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
+  { id: "bleu-royal", label: "Bleu royal", hex: "#2563EB", available: true },
+  { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true },
+  { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
+];
 
 const TSHIRT_SIZES = [
   { label: "XS", available: true },
@@ -382,6 +396,13 @@ export const PRODUCT_WU620: Product = {
 };
 
 // ─── SOFTSHELLS / VESTES ──────────────────────────────────────────────────────
+
+const SOFTSHELL_COLORS = [
+  { id: "noir", label: "Noir", hex: "#111111", available: true },
+  { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
+  { id: "gris-acier", label: "Gris acier", hex: "#4B5563", available: true },
+  { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
+];
 
 const SOFTSHELL_SIZES = [
   { label: "S", available: true },
