@@ -4,119 +4,152 @@ import { ArrowRight, FolderKanban, ShoppingBag } from "lucide-react";
 const PATHS = [
   {
     icon: ShoppingBag,
-    eyebrow: "Commande simple",
-    title: "Commander du textile personnalisé",
+    title: "Commander directement",
     description:
-      "Si votre besoin est déjà cadré, vous pouvez passer par le catalogue pour choisir le produit, le marquage et transmettre votre logo.",
+      "Pour un besoin textile déjà clair : choisir le support, la technique, la quantité et passer à l’action rapidement.",
     points: [
-      "Parcours adapté aux besoins textiles standards",
-      "Choix du support, du marquage et de l'emplacement",
-      "Commande en ligne avec suivi ensuite",
+      "Parcours simple pour les commandes textiles standards",
+      "Sélection du produit, du marquage et de l’emplacement",
+      "Bon point d’entrée pour convertir sans friction",
     ],
     href: "/catalogue",
-    cta: "Accéder au catalogue",
-    variant: "primary" as const,
+    cta: "Aller au catalogue",
+    primary: true,
   },
   {
     icon: FolderKanban,
-    eyebrow: "Projet sur mesure",
-    title: "Demander un devis et un accompagnement",
+    title: "Cadrer un projet sur mesure",
     description:
-      "Si le besoin est spécifique, multi-supports ou encore à cadrer, HM Global reprend le projet avec vous avant de lancer la bonne solution.",
+      "Pour les besoins plus techniques, mixtes ou stratégiques : HM Global reprend le sujet avec vous avant la production.",
     points: [
-      "Utile pour signalétique, marquage véhicule, print ou besoin mixte",
-      "Échange plus pertinent pour les demandes techniques ou urgentes",
-      "Devis construit selon votre contexte réel",
+      "Volume, timing, design, signalétique ou besoin mixte",
+      "Accompagnement utile si le projet dépasse le textile simple",
+      "Devis construit à partir de votre contexte réel",
     ],
     href: "/contact",
     cta: "Demander un devis",
-    variant: "outline" as const,
+    primary: false,
   },
 ] as const;
 
 export default function CTASection() {
   return (
-    <section className="bg-white py-20 sm:py-24">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 sm:px-6 lg:px-8">
-        <div className="space-y-4 text-center">
-          <span className="inline-flex items-center rounded-full border border-[var(--hm-border)] bg-[var(--hm-surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
-            Passer à l'action
-          </span>
-          <h2 className="mx-auto max-w-3xl text-3xl font-semibold tracking-tight text-[var(--hm-ink)] sm:text-4xl">
-            Deux chemins simples pour avancer selon votre besoin.
-          </h2>
-          <p className="mx-auto max-w-2xl text-base leading-7 text-[var(--hm-muted)] sm:text-lg">
-            Si le besoin est clair, le catalogue vous permet de commander rapidement.
-            Si le projet demande plus d'accompagnement, la demande de devis est le bon point d'entrée.
-          </p>
-        </div>
+    <section className="py-18 sm:py-24">
+      <div className="container">
+        <div
+          className="relative overflow-hidden rounded-[2.2rem] text-white shadow-[0_32px_72px_rgba(0,0,0,0.22)]"
+          style={{ background: "linear-gradient(135deg, #0f2535 0%, #1e0f3a 52%, #30101f 100%)" }}
+        >
+          {/* Lueur cyan — couleur logo en haut à gauche */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(ellipse at 10% 20%, rgba(110,193,223,0.22) 0%, transparent 50%)" }}
+          />
+          {/* Lueur rose — couleur logo en bas à droite */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(ellipse at 88% 88%, rgba(177,63,116,0.28) 0%, transparent 48%)" }}
+          />
+          {/* Lueur violet au centre */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(ellipse at 55% 50%, rgba(76,47,111,0.20) 0%, transparent 60%)" }}
+          />
 
-        <div className="grid gap-5 lg:grid-cols-2">
-          {PATHS.map((path) => {
-            const Icon = path.icon;
-            const isPrimary = path.variant === "primary";
+          {/* En-tête */}
+          <div className="relative border-b border-white/[0.08] px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-rose)]" />
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                Dernière étape
+              </p>
+            </div>
+            <div className="mt-5 grid gap-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-end">
+              <div>
+                <h2 className="max-w-[12ch] text-4xl font-semibold leading-[0.98] tracking-[-0.05em] sm:text-[4.2rem]">
+                  Choisir le bon chemin
+                  <br />
+                  <span style={{ color: "#ffbfd7" }}>pour commander</span>
+                  <br />
+                  sereinement.
+                </h2>
+              </div>
+              <p className="max-w-[37rem] text-[15px] leading-7 text-white/64">
+                Une action directe pour les commandes claires, un accompagnement
+                personnalisé pour les projets qui demandent du recul et de la précision.
+              </p>
+            </div>
+          </div>
 
-            return (
-              <article
-                key={path.title}
-                className={`flex h-full flex-col rounded-[2rem] border p-7 shadow-[var(--hm-shadow-soft)] sm:p-8 ${
-                  isPrimary
-                    ? "border-[var(--hm-primary)]/20 bg-[linear-gradient(180deg,rgba(100,189,228,0.10)_0%,rgba(255,255,255,1)_40%)]"
-                    : "border-[var(--hm-border)] bg-[var(--hm-surface)]"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hm-primary)]">
-                      {path.eyebrow}
-                    </p>
-                    <h3 className="mt-3 text-2xl font-semibold text-[var(--hm-ink)]">
-                      {path.title}
-                    </h3>
-                  </div>
-                  <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[var(--hm-primary)] shadow-sm">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                </div>
-
-                <p className="mt-5 text-sm leading-7 text-[var(--hm-muted)] sm:text-base">
-                  {path.description}
-                </p>
-
-                <div className="mt-6 grid gap-3">
-                  {path.points.map((point) => (
+          {/* Cartes */}
+          <div className="relative grid gap-px bg-white/[0.06] lg:grid-cols-2">
+            {PATHS.map((path) => {
+              const Icon = path.icon;
+              return (
+                <article key={path.title} className="bg-black/30 px-6 py-7 sm:px-8 transition-colors hover:bg-black/[0.16]">
+                  <div className="flex items-start justify-between gap-4">
                     <div
-                      key={point}
-                      className="rounded-2xl border border-[var(--hm-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hm-ink)]"
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                      style={{
+                        background: path.primary
+                          ? "linear-gradient(135deg,rgba(177,63,116,0.25),rgba(177,63,116,0.08))"
+                          : "rgba(255,255,255,0.06)",
+                        border: path.primary ? "1px solid rgba(177,63,116,0.30)" : "1px solid rgba(255,255,255,0.08)",
+                      }}
                     >
-                      {point}
+                      <Icon size={18} className={path.primary ? "text-[#ffbfd7]" : "text-white/60"} />
                     </div>
-                  ))}
-                </div>
+                    <span
+                      className="rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+                      style={{
+                        background: path.primary ? "rgba(177,63,116,0.15)" : "rgba(255,255,255,0.07)",
+                        color: path.primary ? "#ffbfd7" : "rgba(255,255,255,0.55)",
+                        border: path.primary ? "1px solid rgba(177,63,116,0.25)" : "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      {path.primary ? "Commande simple" : "Projet accompagné"}
+                    </span>
+                  </div>
 
-                <div className="mt-8">
-                  <Link
-                    href={path.href}
-                    className={
-                      isPrimary
-                        ? "btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm"
-                        : "btn-outline inline-flex items-center gap-2 px-6 py-3 text-sm"
-                    }
-                  >
-                    {path.cta}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                  <h3 className="mt-5 text-[1.7rem] font-semibold leading-[1.08] tracking-[-0.04em]">
+                    {path.title}
+                  </h3>
+                  <p className="mt-3 max-w-[34rem] text-[14px] leading-7 text-white/58">
+                    {path.description}
+                  </p>
 
-        <div className="rounded-[1.75rem] border border-[var(--hm-border)] bg-[var(--hm-surface)] px-6 py-5 text-center shadow-[var(--hm-shadow-soft)] sm:px-8">
-          <p className="text-sm leading-7 text-[var(--hm-muted)] sm:text-base">
-            Catalogue pour les besoins textiles simples. Demande de devis pour les projets
-            spécifiques, les volumes particuliers ou les supports de communication visuelle.
-          </p>
+                  <div className="mt-5 grid gap-2.5">
+                    {path.points.map((point) => (
+                      <div
+                        key={point}
+                        className="flex items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-3 text-[13px] leading-6 text-white/72"
+                      >
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--hm-rose)] opacity-70" />
+                        {point}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-7">
+                    <Link
+                      href={path.href}
+                      className={
+                        path.primary
+                          ? "btn-primary px-5 py-3 text-[0.78rem]"
+                          : "inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-5 py-3 text-[0.78rem] font-semibold text-white/80 transition hover:bg-white hover:text-[var(--hm-text)]"
+                      }
+                    >
+                      {path.cta}
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

@@ -1,35 +1,128 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { X, ShoppingBag, Plus, Minus, Trash2, Package } from "lucide-react";
+import { X, ShoppingBag, Plus, Minus, Trash2, Package, ZoomIn, Sparkles, ArrowRight } from "lucide-react";
 import { useCartStore } from "@/store/cart";
-import { formatPrice } from "@/data/pricing";
+import { formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
+import { getFeaturedProducts } from "@/data/products";
+import type { Placement, Product, ProductColor, Technique } from "@/types";
 
+function getQuickAddDefaults(product: Product): {
+  color: ProductColor;
+  size: string;
+  technique: Technique;
+  placement: Placement;
+} | null {
+  const color = product.colors.find((entry) => entry.available);
+  const size = product.sizes.find((entry) => entry.available)?.label;
+  const technique = product.techniques[0];
+  const placement = product.placements[0];
+
+  if (!color || !size || !technique || !placement) {
+    return null;
+  }
+
+  return { color, size, technique, placement };
+}
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+function Lightbox({ src, label, onClose }: { src: string; label: string; onClose: () => void }) {
+  // Fermeture clavier
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-[#f7f6f4] shadow-[0_32px_80px_rgba(0,0,0,0.5)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[var(--hm-line)] bg-white px-5 py-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text)]">
+            Aperçu · {label}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--hm-line)] text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={`Aperçu ${label}`}
+          className="max-h-[65vh] w-full object-contain"
+        />
+        <p className="py-2 text-center text-[10px] text-[var(--hm-text-muted)]">
+          Cliquez en dehors pour fermer
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── CartDrawer ─────────────────────────────────────────────────────────────────
 export default function CartDrawer() {
-  const { items, isOpen, closeCart, removeItem, updateQuantity, getTotals } = useCartStore();
+  const {
+    items,
+    isOpen,
+    closeCart,
+    removeItem,
+    updateQuantity,
+    addItem,
+    getTotals,
+    lastAddedItemId,
+    lastAddedAt,
+    lastAddedName,
+  } = useCartStore();
   const totals = getTotals();
+  const [lightbox, setLightbox] = useState<{ src: string; label: string } | null>(null);
+  const [dismissedCelebrationAt, setDismissedCelebrationAt] = useState<number | null>(null);
+
+  const suggestedProducts = useMemo(() => {
+    const cartProductIds = new Set(items.map((item) => item.productId));
+    return getFeaturedProducts()
+      .filter((product) => !cartProductIds.has(product.id))
+      .filter((product) => Boolean(getQuickAddDefaults(product)))
+      .slice(0, 2);
+  }, [items]);
+
+  const piecesToFreeShipping = Math.max(0, PRICING_CONFIG.freeShippingThreshold - totals.totalItems);
 
   // Close on Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeCart();
+      if (e.key === "Escape" && !lightbox) closeCart();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [closeCart]);
+  }, [closeCart, lightbox]);
 
   // Prevent body scroll
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
+
+  const showCelebration = Boolean(isOpen && lastAddedAt && lastAddedAt !== dismissedCelebrationAt);
+
+  useEffect(() => {
+    if (!showCelebration || !lastAddedAt) return;
+    const timer = window.setTimeout(() => setDismissedCelebrationAt(lastAddedAt), 2400);
+    return () => window.clearTimeout(timer);
+  }, [showCelebration, lastAddedAt]);
 
   if (!isOpen) return null;
 
@@ -44,6 +137,7 @@ export default function CartDrawer() {
 
       {/* Drawer */}
       <div className="fixed right-0 top-0 bottom-0 z-50 flex w-full max-w-md flex-col border-l border-[var(--hm-line)] bg-[linear-gradient(180deg,#fbfcfe_0%,#ffffff_100%)] shadow-[0_24px_80px_rgba(63,45,88,0.14)]">
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--hm-line)] px-6 py-5">
           <div className="flex items-center gap-3">
@@ -58,8 +152,30 @@ export default function CartDrawer() {
           </button>
         </div>
 
+        {showCelebration && lastAddedName && (
+          <div className="border-b border-[var(--hm-line)] bg-[linear-gradient(135deg,rgba(177,63,116,0.1),rgba(110,193,223,0.12))] px-5 py-4">
+            <div className="hm-cart-banner rounded-[1.35rem] border border-white/70 bg-white/90 px-4 py-3 shadow-[0_18px_45px_rgba(63,45,88,0.08)]">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]">
+                  <Sparkles size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[var(--hm-text)]">
+                    {lastAddedName} vient d&apos;arriver dans le panier
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--hm-text-soft)]">
+                    {piecesToFreeShipping > 0
+                      ? `Encore ${piecesToFreeShipping} pièce${piecesToFreeShipping > 1 ? "s" : ""} pour débloquer la livraison offerte.`
+                      : "Vous avez débloqué la livraison offerte, c'est le bon moment pour compléter la commande."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Items */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--hm-surface)]">
@@ -72,108 +188,275 @@ export default function CartDrawer() {
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-4 rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4"
-                >
-                  {/* Product image placeholder */}
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white">
-                    {item.product.images?.[0] ? (
-                      <Image
-                        src={item.product.images[0]}
-                        alt={item.product.name}
-                        width={64}
-                        height={64}
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <Package size={20} className="text-[var(--hm-text-muted)]" />
+              {items.map((item) => {
+                const previewImages = [
+                  { src: item.composedPreviewUrl,  label: "Face" },
+                  { src: item.composedPreviewBack, label: "Dos"  },
+                ].filter((v) => !!v.src) as { src: string; label: string }[];
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`overflow-hidden rounded-2xl border bg-[var(--hm-surface)] transition-all ${
+                      showCelebration && item.id === lastAddedItemId
+                        ? "hm-cart-added border-[var(--hm-primary)]/35 shadow-[0_24px_50px_rgba(177,63,116,0.12)]"
+                        : "border-[var(--hm-line)]"
+                    }`}
+                  >
+                    {/* ── Aperçu personnalisation ── */}
+                    {previewImages.length > 0 && (
+                      <div className="border-b border-[var(--hm-line)] bg-[#fafaf9] px-4 py-3">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-2 py-0.5 text-[9px] font-bold text-[var(--hm-primary)]">
+                            ✨ Personnalisé
+                          </span>
+                          <span className="text-[9px] text-[var(--hm-text-muted)]">Cliquez pour agrandir</span>
+                        </div>
+
+                        <div className="flex gap-3">
+                          {previewImages.map(({ src, label }) => (
+                            <button
+                              key={label}
+                              type="button"
+                              onClick={() => setLightbox({ src, label })}
+                              className="group flex flex-col items-center gap-1"
+                            >
+                              <div className="relative h-24 w-24 overflow-hidden rounded-xl border border-[var(--hm-line)] bg-[#f0efed] transition group-hover:border-[var(--hm-primary)] group-hover:shadow-md">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={src}
+                                  alt={`Aperçu ${label}`}
+                                  className="h-full w-full object-contain transition group-hover:scale-105"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/20">
+                                  <ZoomIn size={18} className="text-white opacity-0 drop-shadow transition group-hover:opacity-100" />
+                                </div>
+                              </div>
+                              <span className="text-[9px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)] transition group-hover:text-[var(--hm-primary)]">
+                                {label}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     )}
+
+                    {/* ── Infos produit ── */}
+                    <div className="flex gap-3 p-4">
+                      {/* Miniature produit */}
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white">
+                        {item.product.images?.[0] ? (
+                          <Image
+                            src={item.product.images[0]}
+                            alt={item.product.name}
+                            width={56}
+                            height={56}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : (
+                          <Package size={18} className="text-[var(--hm-text-muted)]" />
+                        )}
+                      </div>
+
+                      {/* Détails */}
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate text-sm font-semibold text-[var(--hm-text)]">
+                          {item.product.shortName}
+                          {item.printConfig && (
+                            <span className="ml-1.5 rounded-full bg-[var(--hm-accent-soft-rose)] px-2 py-0.5 text-[9px] font-bold text-[var(--hm-primary)]">
+                              Impression
+                            </span>
+                          )}
+                        </p>
+
+                        {item.printConfig ? (
+                          /* ── Print : détails lot ── */
+                          <div className="mt-1 flex flex-wrap items-center gap-1">
+                            <span className="text-[10px] font-semibold text-[var(--hm-text)]">
+                              {item.printConfig.quantity} ex.
+                            </span>
+                            <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
+                            <span className="text-[10px] text-[var(--hm-text-soft)]">
+                              {item.printConfig.finish === "mat"
+                                ? "Mat"
+                                : item.printConfig.finish === "brillant"
+                                ? "Brillant"
+                                : "Premium"}
+                            </span>
+                            <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
+                            <span className="text-[10px] text-[var(--hm-text-soft)]">
+                              {item.printConfig.faces === "recto" ? "Recto seul" : "Recto-verso"}
+                            </span>
+                            {item.printConfig.corners === "rounded" && (
+                              <>
+                                <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
+                                <span className="text-[10px] text-[var(--hm-text-soft)]">Coins arrondis</span>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          /* ── Textile : technique · placement · taille · couleur ── */
+                          <div className="mt-1 flex flex-wrap items-center gap-1">
+                            <span className="text-[10px] text-[var(--hm-text-soft)]">{TECHNIQUE_LABELS[item.technique]}</span>
+                            <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
+                            <span className="text-[10px] text-[var(--hm-text-soft)]">{PLACEMENT_LABELS[item.placement]}</span>
+                            <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
+                            <span className="text-[10px] font-bold text-[var(--hm-text)]">{item.size}</span>
+                            <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
+                            <span className="flex items-center gap-1 text-[10px] text-[var(--hm-text-soft)]">
+                              <span
+                                className="inline-block h-2 w-2 rounded-full"
+                                style={{ backgroundColor: item.color.hex }}
+                              />
+                              {item.color.label}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Logo textile uniquement */}
+                        {!item.printConfig && item.logoFile && (
+                          <p className="mt-1 truncate text-[10px] text-[var(--hm-primary)]">
+                            📎 {item.logoFile.name}
+                          </p>
+                        )}
+
+                        {/* Qty + price */}
+                        <div className="mt-3 flex items-center justify-between">
+                          {item.printConfig ? (
+                            /* ── Print : "1 lot" — boutons +/- désactivés pour éviter ×prix ── */
+                            <span className="rounded-lg border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-1 text-[11px] font-semibold text-[var(--hm-text-muted)]">
+                              1 lot
+                            </span>
+                          ) : (
+                            /* ── Textile : boutons +/- normaux ── */
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-text)]"
+                              >
+                                <Minus size={10} />
+                              </button>
+                              <span className="w-6 text-center text-sm font-semibold text-[var(--hm-text)]">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-text)]"
+                              >
+                                <Plus size={10} />
+                              </button>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold text-[var(--hm-text)]">
+                              {formatPrice(item.totalPrice)}
+                            </span>
+                            <button
+                              onClick={() => removeItem(item.id)}
+                              className="text-[var(--hm-text-muted)] transition hover:text-red-500"
+                              aria-label="Supprimer"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {suggestedProducts.length > 0 && (
+                <div className="rounded-[1.7rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,#ffffff_0%,#f9f7fb_100%)] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
+                        Ajouter aussi
+                      </p>
+                      <h3 className="mt-1 text-base font-semibold text-[var(--hm-text)]">
+                        Complétez la commande pendant que le client est chaud
+                      </h3>
+                    </div>
+                    <span className="badge badge-gold">Idées</span>
                   </div>
 
-                  {/* Details */}
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-semibold text-[var(--hm-text)]">
-                      {item.product.shortName}
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      <span className="text-[10px] text-[var(--hm-text-soft)]">
-                        {TECHNIQUE_LABELS[item.technique]}
-                      </span>
-                      <span className="text-[10px] text-[var(--hm-text-soft)]">·</span>
-                      <span className="text-[10px] text-[var(--hm-text-soft)]">
-                        {PLACEMENT_LABELS[item.placement]}
-                      </span>
-                      <span className="text-[10px] text-[var(--hm-text-soft)]">·</span>
-                      <span className="text-[10px] text-[var(--hm-text-soft)]">{item.size}</span>
-                      <span className="text-[10px] text-[var(--hm-text-soft)]">·</span>
-                      <span className="text-[10px] text-[var(--hm-text-soft)]">{item.color.label}</span>
-                    </div>
-                    {item.logoFile && (
-                      <p className="mt-1 truncate text-[10px] text-[var(--hm-primary)]">
-                        📎 {item.logoFile.name}
-                      </p>
-                    )}
+                  <div className="mt-4 grid gap-3">
+                    {suggestedProducts.map((product) => {
+                      const defaults = getQuickAddDefaults(product);
+                      if (!defaults) return null;
 
-                    {/* Qty + price row */}
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/35 hover:text-[var(--hm-text)]"
+                      return (
+                        <div
+                          key={product.id}
+                          className="rounded-[1.3rem] border border-[var(--hm-line)] bg-white p-3 shadow-[0_10px_24px_rgba(63,45,88,0.05)]"
                         >
-                          <Minus size={10} />
-                        </button>
-                        <span className="w-6 text-center text-sm font-semibold text-[var(--hm-text)]">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/35 hover:text-[var(--hm-text)]"
-                        >
-                          <Plus size={10} />
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-[var(--hm-text)]">
-                          {formatPrice(item.totalPrice)}
-                        </span>
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-[var(--hm-text-muted)] transition-colors hover:text-[#f87171]"
-                          aria-label="Supprimer"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)]">
+                              {product.images?.[0] ? (
+                                <Image
+                                  src={product.images[0]}
+                                  alt={product.name}
+                                  width={56}
+                                  height={56}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <Package size={18} className="text-[var(--hm-text-muted)]" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold text-[var(--hm-text)]">
+                                {product.shortName}
+                              </p>
+                              <p className="mt-1 text-[11px] text-[var(--hm-text-soft)]">
+                                Dès {formatPrice((product.pricing[defaults.technique as Exclude<typeof defaults.technique, "print">] as number) ?? 0)} · {TECHNIQUE_LABELS[defaults.technique]}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addItem({
+                                product,
+                                quantity: Math.max(product.minOrderQty ?? 1, 1),
+                                color: defaults.color,
+                                size: defaults.size,
+                                technique: defaults.technique,
+                                placement: defaults.placement,
+                              })
+                            }
+                            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--hm-primary)]/18 bg-[var(--hm-accent-soft-rose)] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--hm-primary)] transition hover:border-[var(--hm-primary)]/35 hover:bg-white"
+                          >
+                            Ajouter aussi
+                            <ArrowRight size={14} />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
 
-        {/* Footer totals */}
+        {/* Footer */}
         {items.length > 0 && (
           <div className="border-t border-[var(--hm-line)] bg-white px-6 py-5">
-            {/* Free shipping banner */}
+            {/* Livraison offerte */}
             {totals.freeShipping ? (
-              <div className="mb-4 flex items-center gap-2 rounded-[1rem] border border-[#4ade8033] bg-[#4ade8011] p-3">
+              <div className="mb-4 flex items-center gap-2 rounded-2xl border border-[#4ade8033] bg-[#4ade8011] p-3">
                 <span className="text-[#4ade80] text-xs font-semibold">✓ Livraison offerte</span>
               </div>
             ) : (
-              <div className="mb-4 rounded-[1rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-3">
+              <div className="mb-4 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-3">
                 <p className="text-xs text-[var(--hm-text-soft)]">
                   Livraison offerte dès <strong className="text-[var(--hm-primary)]">10 pièces</strong>
                 </p>
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-white">
                   <div
                     className="h-full rounded-full bg-[var(--hm-primary)] transition-all"
-                    style={{
-                      width: `${Math.min(100, (totals.totalItems / 10) * 100)}%`,
-                    }}
+                    style={{ width: `${Math.min(100, (totals.totalItems / 10) * 100)}%` }}
                   />
                 </div>
                 <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">
@@ -182,8 +465,8 @@ export default function CartDrawer() {
               </div>
             )}
 
-            {/* Totals */}
-            <div className="mb-4 flex flex-col gap-2 rounded-[1rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+            {/* Totaux */}
+            <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
               <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
                 <span>Sous-total HT</span>
                 <span>{formatPrice(totals.subtotalHT)}</span>
@@ -198,7 +481,7 @@ export default function CartDrawer() {
                   {totals.freeShipping ? "Offerte" : formatPrice(totals.shipping)}
                 </span>
               </div>
-              <div className="divider-gold my-2" />
+              <div className="divider-gold my-1" />
               <div className="flex justify-between font-bold text-[var(--hm-text)]">
                 <span>Total TTC</span>
                 <span className="text-lg text-[var(--hm-primary)]">{formatPrice(totals.totalTTC)}</span>
@@ -221,6 +504,15 @@ export default function CartDrawer() {
           </div>
         )}
       </div>
+
+      {/* Lightbox (au-dessus du drawer) */}
+      {lightbox && (
+        <Lightbox
+          src={lightbox.src}
+          label={lightbox.label}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </>
   );
 }

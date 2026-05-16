@@ -2,6 +2,36 @@
 
 ---
 
+# Contexte iPad Pro — HM Global
+
+Ce projet est géré depuis un iPad Pro M5 via Claude.ai (Safari).
+L'accès au code se fait par copier-coller entre Claude.ai et Claude Code.
+
+## Stack
+- Next.js 14
+- Vercel (déploiement automatique via GitHub)
+- Supabase (storage + auth)
+- Printful API (mockups + commandes)
+- Stripe (paiements)
+
+## Règles importantes
+- Toujours faire un résumé court des fichiers modifiés
+  pour que je puisse le copier sur iPad
+- Quand tu modifies plusieurs fichiers, liste-les clairement
+- Préfère des réponses courtes et structurées
+- Les clés API sont dans .env.local — ne jamais les afficher
+
+## Fournisseurs actifs
+- Printful : branché et testé (commande HM-TEST-PRINTFUL-001)
+- Gelato : clé présente dans .env.local
+- Supabase : actif
+
+## Priorité en cours
+Générer des mockups flat fond blanc via Printful API
+pour : gildan-5000, gildan-18000, gildan-18500, bella-3001
+
+---
+
 # Mémoire projet obligatoire
 
 ## Lecture obligatoire avant toute action

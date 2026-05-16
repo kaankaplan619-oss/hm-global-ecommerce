@@ -4,7 +4,8 @@ import { createPaymentIntent } from "@/lib/stripe";
 import { generateOrderNumber } from "@/lib/utils";
 import { computeUnitPrice, computeCartTotals, ttcToHt, PRICING_CONFIG } from "@/data/pricing";
 import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
-import type { Technique, Placement } from "@/types";
+import { PRINT_PRODUCTS_LOOKUP, getBusinessCardLotPrice } from "@/data/print-products";
+import type { Technique, Placement, PrintConfig } from "@/types";
 
 interface CartItemInput {
   productId:    string;
@@ -25,6 +26,12 @@ interface CartItemInput {
   logoEffect:             string | null;
   logoPlacementTransform: Record<string, unknown> | null;
   batRef:                 string | null;
+  /**
+   * Print — présent uniquement pour les articles impression.
+   * Si renseigné, le prix est lu depuis printConfig.lotPriceTTC (recomputed server-side).
+   * quantity = 1 (1 lot). Ne jamais multiplier par la quantité d'exemplaires.
+   */
+  printConfig: PrintConfig | null;
 }
 
 /**
@@ -92,11 +99,68 @@ export async function POST(req: NextRequest) {
 
     // ── Recompute prices server-side ──────────────────────────────────────────
     const computedItems = items.map((item) => {
+
+      // ── Branche PRINT ────────────────────────────────────────────────────────
+      // Technique "print" : prix = lot TTC recomputed depuis printConfig.
+      // quantity = 1 (1 lot). Ne jamais multiplier par le nombre d'exemplaires.
+      if (item.technique === "print" || item.printConfig) {
+        const cfg = item.printConfig;
+        if (!cfg) throw new Error(`printConfig manquant pour l'item print: ${item.productId}`);
+
+        const printProduct = PRINT_PRODUCTS_LOOKUP[item.productId];
+        if (!printProduct) throw new Error(`Produit print inconnu: ${item.productId}`);
+
+        // Recompute server-side depuis le barème — ne jamais faire confiance au lotPriceTTC client
+        const lotPriceTTC = getBusinessCardLotPrice({
+          finish:   cfg.finish,
+          quantity: cfg.quantity,
+          faces:    cfg.faces,
+          corners:  cfg.corners,
+        });
+        const lotPriceHT = ttcToHt(lotPriceTTC);
+
+        return {
+          productId:        printProduct.id,
+          productReference: printProduct.id,
+          productName:      printProduct.shortName,
+          // printConfig stocké dans product_snapshot (pas de migration schema)
+          productSnapshot:  { id: printProduct.id, shortName: printProduct.shortName, printConfig: cfg },
+          quantity:         1,       // toujours 1 lot en DB
+          size:             "—",     // non applicable pour l'impression
+          colorId:          "print",
+          colorLabel:       "Impression",
+          colorHex:         "#000000",
+          technique:        "print" as Technique,
+          placement:        "coeur" as Placement, // placeholder non affiché pour les print
+          unitPriceHT:      lotPriceHT,
+          unitPriceTTC:     lotPriceTTC,
+          totalHT:          lotPriceHT,
+          totalTTC:         lotPriceTTC,
+          // Fichier print mappé sur les champs logo pour compatibilité avec le
+          // workflow admin (filtre "Fichier en attente", validate-file, reject-file).
+          // Source métier reste printConfig.frontFileUrl dans product_snapshot.
+          logoFileName:            "Fichier recto carte de visite",
+          logoFileUrl:             cfg.frontFileUrl ?? null,
+          logoFilePath:            null,
+          logoFileType:            null,
+          logoFileSize:            null,
+          logoEffect:              null,
+          logoPlacementTransform:  null,
+          batRef:                  null,
+          printConfig:             cfg,
+        };
+      }
+
+      // ── Branche TEXTILE ──────────────────────────────────────────────────────
       const product = PRODUCTS.find((p) => p.id === item.productId);
       if (!product) throw new Error(`Produit inconnu: ${item.productId}`);
 
-      const basePrice    = product.pricing[item.technique] as number;
-      const unitPriceTTC = computeUnitPrice({ basePrice, technique: item.technique, placement: item.placement });
+      const basePrice    = product.pricing[item.technique as keyof typeof product.pricing] as number;
+      const unitPriceTTC = computeUnitPrice({
+        basePrice,
+        technique: item.technique as "dtf" | "dtflex" | "flex" | "broderie" | "broderie_illimitee",
+        placement: item.placement as "coeur" | "dos" | "coeur-dos",
+      });
       const unitPriceHT  = ttcToHt(unitPriceTTC);
       const totalTTC     = Math.round(unitPriceTTC * item.quantity * 100) / 100;
       const totalHT      = Math.round(unitPriceHT  * item.quantity * 100) / 100;
@@ -128,6 +192,7 @@ export async function POST(req: NextRequest) {
         logoEffect:              item.logoEffect              ?? null,
         logoPlacementTransform:  item.logoPlacementTransform  ?? null,
         batRef:                  item.batRef                  ?? null,
+        printConfig:             null,
       };
     });
 
@@ -179,35 +244,43 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Insert order items ────────────────────────────────────────────────────
-    const itemRows = computedItems.map((item) => ({
-      order_id:          orderRow.id,
-      product_id:        item.productId,
-      product_reference: item.productReference,
-      product_name:      item.productName,
-      product_snapshot:  item.productSnapshot,
-      quantity:          item.quantity,
-      size:              item.size,
-      color_id:          item.colorId,
-      color_label:       item.colorLabel,
-      color_hex:         item.colorHex,
-      technique:         item.technique,
-      placement:         item.placement,
-      unit_price_ht:     item.unitPriceHT,
-      unit_price_ttc:    item.unitPriceTTC,
-      total_ht:          item.totalHT,
-      total_ttc:         item.totalTTC,
-      // Logo + BAT config — transmis depuis le panier
-      logo_file_name:             item.logoFileName            ?? null,
-      logo_file_url:              item.logoFileUrl             ?? null,
-      logo_file_path:             item.logoFilePath            ?? null,
-      logo_file_type:             item.logoFileType            ?? null,
-      logo_file_size:             item.logoFileSize            ?? null,
-      logo_file_status:           item.logoFileUrl             ? "en_attente" : null,
-      logo_uploaded_at:           item.logoFileUrl             ? new Date().toISOString() : null,
-      logo_effect:                item.logoEffect              ?? null,
-      logo_placement_transform:   item.logoPlacementTransform  ?? null,
-      bat_ref:                    item.batRef                  ?? null,
-    }));
+    const itemRows = computedItems.map((item) => {
+      // Pour les items print, product_snapshot contient printConfig.
+      // printConfig n'est PAS une colonne séparée — il vit dans le JSONB product_snapshot.
+      const productSnapshot = item.printConfig
+        ? { ...item.productSnapshot, printConfig: item.printConfig }
+        : item.productSnapshot;
+
+      return {
+        order_id:          orderRow.id,
+        product_id:        item.productId,
+        product_reference: item.productReference,
+        product_name:      item.productName,
+        product_snapshot:  productSnapshot,
+        quantity:          item.quantity,
+        size:              item.size,
+        color_id:          item.colorId,
+        color_label:       item.colorLabel,
+        color_hex:         item.colorHex,
+        technique:         item.technique,
+        placement:         item.placement,
+        unit_price_ht:     item.unitPriceHT,
+        unit_price_ttc:    item.unitPriceTTC,
+        total_ht:          item.totalHT,
+        total_ttc:         item.totalTTC,
+        // Logo + BAT config — transmis depuis le panier (null pour les items print)
+        logo_file_name:             item.logoFileName            ?? null,
+        logo_file_url:              item.logoFileUrl             ?? null,
+        logo_file_path:             item.logoFilePath            ?? null,
+        logo_file_type:             item.logoFileType            ?? null,
+        logo_file_size:             item.logoFileSize            ?? null,
+        logo_file_status:           item.logoFileUrl             ? "en_attente" : null,
+        logo_uploaded_at:           item.logoFileUrl             ? new Date().toISOString() : null,
+        logo_effect:                item.logoEffect              ?? null,
+        logo_placement_transform:   item.logoPlacementTransform  ?? null,
+        bat_ref:                    item.batRef                  ?? null,
+      };
+    });
 
     const { error: itemsError } = await supabase.from("order_items").insert(itemRows);
     if (itemsError) {

@@ -167,7 +167,7 @@ export default function ParametresPage() {
   const isEntreprise = user.type === "entreprise";
 
   // Helper: section header with icon + gradient bar
-  const SectionHeader = ({ icon: Icon, title, accent }: { icon: React.ElementType; title: string; accent: string }) => (
+  const SectionHeader = ({ icon: Icon, title, accent }: { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; title: string; accent: string }) => (
     <div className="flex items-center gap-3 border-b border-[#e6e8ee] px-6 py-4">
       <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${accent}18` }}>
         <Icon size={15} style={{ color: accent }} />

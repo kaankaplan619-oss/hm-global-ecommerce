@@ -10,8 +10,15 @@ export const metadata: Metadata = {
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  tshirts: "T-shirts",
-  hoodies: "Hoodies & Sweats",
+  tshirts:    "T-shirts personnalisés",
+  polos:      "Polos",
+  hoodies:    "Hoodies & Sweats",
+  softshells: "Softshells & Vestes",
+  polaires:   "Polaires & Doudounes",
+  casquettes: "Casquettes & Bonnets",
+  sacs:       "Sacs & Tote bags",
+  goodies:    "Mugs & Goodies",
+  enfants:    "Vêtements enfants",
 };
 
 export default function CataloguePage() {

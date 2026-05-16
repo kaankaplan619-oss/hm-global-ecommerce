@@ -22,7 +22,7 @@
  */
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Package } from "lucide-react";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -54,6 +54,8 @@ interface Props {
    * Par défaut : "object-contain transition-transform duration-500"
    */
   imageClassName?: string;
+  /** Couleur de fond override pour le mode supplier (défaut : #f7f6f4) */
+  bgColor?: string;
 }
 
 // ── Composant ─────────────────────────────────────────────────────────────────
@@ -70,8 +72,11 @@ export default function HMProductVisual({
   className = "",
   showBadge = false,
   imageClassName,
+  bgColor,
 }: Props) {
   const [hasError, setHasError] = useState(false);
+  // Reset l'état d'erreur dès que la source change (changement de coloris, galerie…)
+  useEffect(() => { setHasError(false); }, [src]);
   const isEmpty = !src || hasError;
 
   const defaultImgClass =
@@ -179,7 +184,7 @@ export default function HMProductVisual({
   return (
     <div
       className={`${wrapperPositionClass} overflow-hidden ${className}`}
-      style={{ background: "#f7f6f4" }}
+      style={{ background: bgColor ?? "#f7f6f4" }}
     >
       {isEmpty ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">

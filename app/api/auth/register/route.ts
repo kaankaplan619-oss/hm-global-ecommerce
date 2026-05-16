@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { User } from "@/types";
 
 /**
  * POST /api/auth/register
@@ -76,37 +75,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Erreur lors de la création du compte" }, { status: 500 });
     }
 
-    // ── Auto-confirm email via RPC SECURITY DEFINER (pas de confirmation email requise) ─
-    const { error: confirmError } = await supabase.rpc("confirm_user_email", {
-      user_id: authData.user.id,
-    });
-    if (confirmError) {
-      console.error("[Register] Auto-confirm RPC failed:", confirmError.message);
-    }
-
-    // ── Signer la session pour que les cookies soient posés ───────────────────
-    await supabase.auth.signInWithPassword({ email, password });
-
-    const user: User = {
-      id: authData.user.id,
-      email: authData.user.email!,
-      firstName,
-      lastName,
-      phone,
-      role: "client",
-      type: type ?? "particulier",
-      company: company ?? undefined,
-      siret: siret ? siret.replace(/[\s.]/g, "") : undefined,
-      addresses: [],
-      createdAt: authData.user.created_at,
-      updatedAt: new Date().toISOString(),
-    };
+    // Important:
+    // - If email confirmation is enabled in Supabase Auth, signup should NOT
+    //   auto-confirm the user and should NOT create an authenticated session.
+    // - The user must confirm their email first via the Supabase email link.
 
     return NextResponse.json(
       {
-        user,
-        requiresEmailConfirmation: false,
-        message: "Votre compte a été créé avec succès.",
+        user: null,
+        requiresEmailConfirmation: true,
+        message:
+          "Votre compte a été créé. Vérifiez votre boîte mail pour confirmer votre adresse email avant de vous connecter.",
       },
       { status: 201 }
     );

@@ -19,9 +19,20 @@ import { buildBATData } from "@/lib/bat-utils";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getHMMockupPath, getVisualMode } from "@/lib/hm-visual-utils";
 import HMProductVisual from "@/components/product/HMProductVisual";
-import { formatPrice } from "@/data/pricing";
+import { formatPrice, getVolumePricedRate } from "@/data/pricing";
 import type { Product, ProductColor, Placement, Technique } from "@/types";
 import type { LogoEffect } from "@/lib/color-utils";
+
+// Visualiseurs 3D (Three.js — SSR désactivé obligatoire)
+const loadingSpinner = () => (
+  <div className="flex items-center justify-center w-full aspect-square bg-white rounded-[28px]">
+    <div className="h-7 w-7 animate-spin rounded-full border-2 border-[var(--hm-line)] border-t-[var(--hm-primary)]" />
+  </div>
+);
+const TShirt3DViewer = dynamic(() => import("@/components/product/TShirt3DViewer"), {
+  ssr: false,
+  loading: loadingSpinner,
+});
 
 // Chargé uniquement côté client — Fabric.js accède à `window.location`
 // et ne peut pas s'exécuter dans le contexte SSR de Next.js.
@@ -49,6 +60,15 @@ export default function ProductDetailClient({ product }: Props) {
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(defaultColor);
   const [placement, setPlacement]   = useState<Placement>(product.placements[0]);
   const [logoFile, setLogoFile]     = useState<File | null>(null);
+
+  // ── Images composées retournées par le Studio (shirt+logo, face + dos) ──
+  const [studioComposedFront, setStudioComposedFront] = useState<string | null>(null);
+  const [studioComposedBack,  setStudioComposedBack]  = useState<string | null>(null);
+  // Indice actif du mini-carousel studio (0=face, 1=dos)
+  const [studioComposedIdx,   setStudioComposedIdx]   = useState(0);
+  // URL affichée (raccourci utilisé dans le JSX)
+  const studioComposedImages = [studioComposedFront, studioComposedBack].filter(Boolean) as string[];
+  const studioComposedUrl    = studioComposedImages[studioComposedIdx] ?? null;
 
   // ── État remonté depuis ProductConfigurator (pour le BAT) ─────────────────
   const [technique, setTechnique]   = useState<Technique>(product.techniques[0]);
@@ -126,6 +146,32 @@ export default function ProductDetailClient({ product }: Props) {
     return prices.length > 0 ? Math.min(...prices) : 0;
   }, [product]);
 
+  // ── Prix dynamique selon la technique + placement + quantité ────────────
+  const currentPrice = useMemo(() => {
+    // Si le produit a des paliers volume par technique, on les utilise
+    const activeTiers = product.volumePricingByTechnique?.[technique] ?? product.volumePricing ?? null;
+    const basePrice = activeTiers
+      ? getVolumePricedRate(activeTiers, quantity)
+      : (() => {
+          switch (technique) {
+            case "dtf":                return product.pricing.dtf;
+            case "dtflex":             return product.pricing.dtflex;
+            case "flex":               return product.pricing.flex;
+            case "broderie":           return product.pricing.broderie;
+            case "broderie_illimitee": return product.pricing.broderie_illimitee ?? product.pricing.broderie;
+            default:                   return product.pricing.dtf;
+          }
+        })();
+    if (!basePrice || basePrice === 0) return minPrice;
+    // Surcharge placement : broderie → broDeriePlacementSurcharge, autres → placements
+    const isBroderie = technique === "broderie" || technique === "broderie_illimitee";
+    const surchargeMap = isBroderie
+      ? product.pricing.broDeriePlacementSurcharge
+      : product.pricing.placements;
+    const surcharge = surchargeMap[placement] ?? 0;
+    return Math.round((basePrice + surcharge) * 100) / 100;
+  }, [technique, placement, quantity, product, minPrice]);
+
   useEffect(() => {
     setSelectedColor(defaultColor);
   }, [product.id, defaultColor]);
@@ -137,17 +183,22 @@ export default function ProductDetailClient({ product }: Props) {
       const raw = sessionStorage.getItem("hm-studio-result");
       if (!raw) return;
       const result = JSON.parse(raw) as {
-        colorId?:      string;
-        size?:         string;
-        technique?:    string;
-        quantity?:     number;
-        placement?:    string;
-        logoFileUrl?:  string;
-        logoFileName?: string;
-        logoFilePath?: string;
-        logoFileSize?: number;
-        logoFileType?: string;
+        colorId?:            string;
+        size?:               string;
+        technique?:          string;
+        quantity?:           number;
+        placement?:          string;
+        logoFileUrl?:        string;
+        logoFileName?:       string;
+        logoFilePath?:       string;
+        logoFileSize?:       number;
+        logoFileType?:       string;
         logoPlacementTransform?: LogoPlacementTransform | null;
+        /** Images composées (shirt+logo) exportées depuis le Studio */
+        composedFront?: string;
+        composedBack?:  string;
+        /** Ancien champ (compat) */
+        composedPreviewUrl?: string;
       };
       if (result.colorId) {
         const color = product.colors.find((c) => c.id === result.colorId && c.available);
@@ -172,6 +223,9 @@ export default function ProductDetailClient({ product }: Props) {
         });
         setLogoSupabaseUrl(result.logoFileUrl);
       }
+      // NE PAS afficher les images composées sur la page produit normale :
+      // le flux studio ajoute désormais directement au panier (StudioSummaryPanel).
+      // On supprime juste la clé sessionStorage si elle traîne encore.
       sessionStorage.removeItem("hm-studio-result");
     } catch {
       // sessionStorage indisponible ou JSON invalide
@@ -248,7 +302,16 @@ export default function ProductDetailClient({ product }: Props) {
   // - Dès qu'un logo est uploadé (local) ou revenu du studio (studioLogoPreset), on
   //   réactive MockupViewer pour montrer l'aperçu logo — mais sans zone de marquage.
   const isPrintful   = product.supplierName === "printful";
+  const isPOD        = isPrintful || product.supplierName === "spreadshirt";
   const hasLogoReady = !!logoFile || !!studioLogoPreset;
+
+  // Vue 3D — uniquement t-shirts (shirt.glb)
+  // Hoodies : photos Printful utilisées — modèle 3D non disponible pour l'instant
+  const has3DViewer = isPrintful && product.category === "tshirts";
+  const [show3D, setShow3D] = useState(has3DViewer);
+  // Index de vue 3D : 0=face, 1=dos, 2=manche
+  const [view3DIndex, setView3DIndex] = useState(0);
+  const VIEW_3D_COUNT = 3;
 
   // ── Carousel galerie Printful ─────────────────────────────────────────────
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -275,15 +338,26 @@ export default function ProductDetailClient({ product }: Props) {
     return getProductCatalogImage(product, cid);
   }, [selectedColor?.id, colorImages, product, galleryIndex, gallery, isPrintful]);
 
+  const handlePreviewNext = useCallback(() => {
+    if (studioComposedUrl) return;
+    if (show3D) {
+      setView3DIndex((i) => (i + 1) % VIEW_3D_COUNT);
+      return;
+    }
+    if (gallery.length > 1) {
+      setGalleryIndex((i) => (i + 1) % gallery.length);
+    }
+  }, [studioComposedUrl, show3D, gallery.length]);
+
   const showMockup =
     (product.category === "tshirts" || product.category === "hoodies" || product.category === "softshells") &&
     !!currentImageUrl &&
-    (!isPrintful || hasLogoReady);
+    (!isPOD || hasLogoReady);
 
   // Mode visuel premium HM Global ou fournisseur
-  // Les produits Printful utilisent toujours le mode "supplier" (fond blanc)
+  // Les produits POD (Printful, Spreadshirt) utilisent le mode "supplier" (fond blanc)
   // pour que les photos flat sans fond sombre soient propres.
-  const visualMode = isPrintful ? "supplier" : getVisualMode(product);
+  const visualMode = isPOD ? "supplier" : getVisualMode(product);
 
   // ── Condition BAT visible ─────────────────────────────────────────────────
   // Exige au minimum : couleur sélectionnée + logo uploadé
@@ -332,32 +406,126 @@ export default function ProductDetailClient({ product }: Props) {
             onPlacementChange={setPlacement}
             packshot={currentImageUrl}
             productCategory={product.category}
-            showZone={!isPrintful}
+            showZone={!isPOD}
           />
         ) : (
           <>
             {/* ── Hero visuel (B2) : mockup HM Global prioritaire ── */}
-            <div className="relative overflow-hidden rounded-[28px] shadow-[0_20px_56px_rgba(12,14,20,0.18)]">
-              <HMProductVisual
-                src={currentImageUrl}
-                alt={product.name}
-                mode={visualMode}
-                fill={false}
-                width={720}
-                height={720}
-                priority
-                showBadge={!isPrintful}
-                className="w-full"
-                imageClassName={`object-contain w-full transition-opacity duration-300${visualMode === "hm" ? " p-4 relative z-10" : " p-6"}`}
-              />
+            {/* Si le client revient du Studio, on affiche l'image composée (shirt+logo) */}
+            <div
+              className={`relative overflow-hidden rounded-[28px] shadow-[0_20px_56px_rgba(12,14,20,0.18)] ${
+                isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) ? "cursor-pointer" : ""
+              }`}
+              role={isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) ? "button" : undefined}
+              tabIndex={isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) ? 0 : undefined}
+              aria-label={isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) ? "Afficher la vue suivante" : undefined}
+              onClick={handlePreviewNext}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  handlePreviewNext();
+                }
+              }}
+            >
+              {/* ── Vue 3D / Photo ── */}
+              {show3D && isPrintful && !studioComposedUrl ? (
+                <TShirt3DViewer
+                  color={selectedColor?.hex ?? "#111111"}
+                  viewIndex={view3DIndex}
+                  className="w-full aspect-square"
+                />
+              ) : (
+                <HMProductVisual
+                  src={studioComposedUrl ?? currentImageUrl}
+                  alt={product.name}
+                  mode={studioComposedUrl ? "supplier" : visualMode}
+                  fill={false}
+                  width={720}
+                  height={720}
+                  priority
+                  showBadge={!studioComposedUrl && !isPOD}
+                  className="w-full"
+                  bgColor={studioComposedUrl ? "#ffffff" : isPOD ? "#ffffff" : undefined}
+                  imageClassName={
+                    studioComposedUrl
+                      ? "object-contain w-full transition-opacity duration-300"
+                      : `object-contain w-full transition-opacity duration-300${
+                          visualMode === "hm" ? " p-4 relative z-10" : isPOD ? " scale-[1.10] p-3" : " p-6"
+                        }`
+                  }
+                />
+              )}
 
-              {/* ── Flèches carousel Printful (galerie front/back/detail) ── */}
-              {isPrintful && gallery.length > 1 && (
+              {/* ── Bouton bascule 3D / Photos (t-shirts uniquement) ── */}
+              {has3DViewer && !studioComposedUrl && (
+                <button
+                  type="button"
+                  onClick={() => setShow3D((v) => !v)}
+                  className={`absolute right-3 top-3 z-30 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold backdrop-blur-sm transition-all
+                    ${show3D
+                      ? "border-[var(--hm-rose)] bg-[var(--hm-rose)] text-white shadow-[0_4px_14px_rgba(177,63,116,0.35)]"
+                      : "border-[var(--hm-line)] bg-white/90 text-[var(--hm-text-soft)] hover:border-[var(--hm-rose)] hover:text-[var(--hm-rose)]"
+                    }`}
+                >
+                  {show3D ? (
+                    <><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14"/><path d="M5 3v10"/></svg>Photos</>
+                  ) : (
+                    <><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3"><path d="M8 2L2 5.5v5L8 14l6-3.5v-5L8 2z"/><path d="M2 5.5L8 9l6-3.5M8 9v5"/></svg>Vue 3D</>
+                  )}
+                </button>
+              )}
+
+              {/* ── Badge "Votre personnalisation" + reset + navigation face/dos ── */}
+              {studioComposedUrl && (
+                <div className="absolute left-3 top-3 z-30 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[var(--hm-primary)]/40 bg-[var(--hm-primary)] px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-white shadow">
+                    🎨 Votre personnalisation
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => { setStudioComposedFront(null); setStudioComposedBack(null); setStudioComposedIdx(0); }}
+                    className="rounded-full border border-[var(--hm-line)] bg-white/90 px-2 py-1 text-[9px] font-semibold text-[var(--hm-text-soft)] shadow backdrop-blur-sm transition hover:text-[var(--hm-text)]"
+                    title="Voir l'image produit originale"
+                  >
+                    ✕ Réinitialiser
+                  </button>
+                </div>
+              )}
+
+              {/* ── Dots face/dos si les deux faces sont composées ── */}
+              {studioComposedImages.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
+                  {["Face", "Dos"].slice(0, studioComposedImages.length).map((label, idx) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setStudioComposedIdx(idx)}
+                      className={`rounded-full px-2 py-0.5 text-[9px] font-bold transition-all border ${
+                        idx === studioComposedIdx
+                          ? "bg-[var(--hm-primary)] border-[var(--hm-primary)] text-white"
+                          : "bg-white/90 border-[var(--hm-line)] text-[var(--hm-text-soft)]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* ── Flèches carousel : 3D (vues) ou galerie photo ── */}
+              {isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) && (
                 <>
                   <button
                     type="button"
-                    aria-label="Image précédente"
-                    onClick={() => setGalleryIndex((i) => (i - 1 + gallery.length) % gallery.length)}
+                    aria-label="Vue précédente"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (show3D) {
+                        setView3DIndex((i) => (i - 1 + VIEW_3D_COUNT) % VIEW_3D_COUNT);
+                        return;
+                      }
+                      setGalleryIndex((i) => (i - 1 + gallery.length) % gallery.length);
+                    }}
                     className="absolute left-3 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-md border border-[var(--hm-line)] text-[var(--hm-text)] transition hover:bg-white hover:shadow-lg"
                   >
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -366,55 +534,150 @@ export default function ProductDetailClient({ product }: Props) {
                   </button>
                   <button
                     type="button"
-                    aria-label="Image suivante"
-                    onClick={() => setGalleryIndex((i) => (i + 1) % gallery.length)}
+                    aria-label="Vue suivante"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handlePreviewNext();
+                    }}
                     className="absolute right-3 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-md border border-[var(--hm-line)] text-[var(--hm-text)] transition hover:bg-white hover:shadow-lg"
                   >
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                       <path d="M6 3l5 5-5 5"/>
                     </svg>
                   </button>
-                  {/* Dots indicateurs */}
+                  {/* Dots indicateurs — 3 vues en 3D, galerie en photo */}
                   <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5">
-                    {gallery.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        aria-label={`Image ${idx + 1}`}
-                        onClick={() => setGalleryIndex(idx)}
-                        className={`h-1.5 rounded-full transition-all ${idx === galleryIndex ? "w-4 bg-[var(--hm-primary)]" : "w-1.5 bg-[var(--hm-line)]"}`}
-                      />
-                    ))}
+                    {show3D
+                      ? [0, 1, 2].map((idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setView3DIndex(idx);
+                            }}
+                            className={`h-1.5 rounded-full transition-all ${idx === view3DIndex ? "w-4 bg-[var(--hm-primary)]" : "w-1.5 bg-[var(--hm-line)]"}`}
+                          />
+                        ))
+                      : gallery.map((_, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            aria-label={`Image ${idx + 1}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setGalleryIndex(idx);
+                            }}
+                            className={`h-1.5 rounded-full transition-all ${idx === galleryIndex ? "w-4 bg-[var(--hm-primary)]" : "w-1.5 bg-[var(--hm-line)]"}`}
+                          />
+                        ))
+                    }
                   </div>
                 </>
               )}
             </div>
 
-            {/* ── Miniatures carousel Printful ── */}
-            {isPrintful && gallery.length > 1 && (
-              <div className="flex gap-2 px-1">
-                {gallery.map((img, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setGalleryIndex(idx)}
-                    className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                      idx === galleryIndex
-                        ? "border-[var(--hm-primary)] shadow-md"
-                        : "border-[var(--hm-line)] opacity-60 hover:opacity-100"
-                    }`}
-                    style={{ backgroundColor: "#f7f6f4" }}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img}
-                      alt={`Vue ${idx + 1}`}
-                      className="h-full w-full object-contain p-1"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* ── Miniatures SVG colorées — cohérentes avec la vue 3D ── */}
+            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && (() => {
+              const sc   = selectedColor?.hex ?? "#111111";
+              // Contour visible uniquement sur les coloris très clairs
+              const lum  = parseInt(sc.replace("#",""), 16);
+              const outlineOpacity = lum > 0xbbbbbb ? 0.22 : 0.0;
+              const outline = `rgba(0,0,0,${outlineOpacity})`;
+
+              const THUMB_VIEWS = [
+                {
+                  label: "Face",
+                  idx: 0,
+                  // T-shirt vu de face
+                  svg: (
+                    <svg viewBox="0 0 100 112" className="h-11 w-11 drop-shadow-sm">
+                      <path d="M33 3 Q50 20 67 3 L85 13 L100 48 L77 53 L77 108 L23 108 L23 53 L0 48 L15 13 Z" fill={sc} stroke={outline} strokeWidth="2" strokeLinejoin="round"/>
+                      <path d="M33 3 Q50 20 67 3" stroke={lum > 0xbbbbbb ? "rgba(0,0,0,0.25)" : "rgba(255,255,255,0.18)"} strokeWidth="2" fill="none" strokeLinecap="round"/>
+                    </svg>
+                  ),
+                },
+                {
+                  label: "Dos",
+                  idx: 1,
+                  // T-shirt vu de dos (col plat + couture centrale)
+                  svg: (
+                    <svg viewBox="0 0 100 112" className="h-11 w-11 drop-shadow-sm">
+                      <path d="M28 5 Q50 11 72 5 L85 13 L100 48 L77 53 L77 108 L23 108 L23 53 L0 48 L15 13 Z" fill={sc} stroke={outline} strokeWidth="2" strokeLinejoin="round"/>
+                      <path d="M28 5 Q50 11 72 5" stroke={lum > 0xbbbbbb ? "rgba(0,0,0,0.25)" : "rgba(255,255,255,0.18)"} strokeWidth="2" fill="none" strokeLinecap="round"/>
+                      <path d="M50 11 L50 108" stroke={lum > 0xbbbbbb ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)"} strokeWidth="1.5" strokeDasharray="5 4"/>
+                    </svg>
+                  ),
+                },
+                {
+                  label: "Manche",
+                  idx: 2,
+                  // T-shirt vu de profil (corps droit + manche gauche au premier plan)
+                  svg: (
+                    <svg viewBox="0 0 100 112" className="h-11 w-11 drop-shadow-sm">
+                      {/* Silhouette profil : manche + corps */}
+                      <path
+                        d="M80 7 Q62 2 45 7 L45 20 L10 26 L10 54 L45 54 L45 108 L80 108 Z"
+                        fill={sc}
+                        stroke={outline}
+                        strokeWidth="2"
+                        strokeLinejoin="round"
+                      />
+                      {/* Col - arc de détail */}
+                      <path
+                        d="M80 7 Q62 2 45 7"
+                        stroke={lum > 0xbbbbbb ? "rgba(0,0,0,0.25)" : "rgba(255,255,255,0.18)"}
+                        strokeWidth="2"
+                        fill="none"
+                        strokeLinecap="round"
+                      />
+                      {/* Couture épaule */}
+                      <path
+                        d="M45 20 L45 54"
+                        stroke={lum > 0xbbbbbb ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.15)"}
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  ),
+                  only3D: true,
+                },
+              ];
+
+              return (
+                <div className="flex gap-2 px-1">
+                  {THUMB_VIEWS.filter(v => show3D ? true : !v.only3D).map(({ label, idx, svg }) => {
+                    const isActive = show3D ? view3DIndex === idx : galleryIndex === idx;
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        aria-label={`Afficher la vue ${label.toLowerCase()}`}
+                        disabled={!show3D && !gallery[idx]}
+                        onClick={() => {
+                          if (show3D) {
+                            setView3DIndex(idx);
+                            return;
+                          }
+                          if (gallery[idx]) setGalleryIndex(idx);
+                        }}
+                        className={`relative flex h-20 w-20 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border-2 bg-white transition-all ${
+                          isActive
+                            ? "border-[var(--hm-primary)] shadow-[0_4px_12px_rgba(177,63,116,0.2)]"
+                            : "border-[var(--hm-line)] opacity-75 hover:opacity-100 hover:border-[var(--hm-purple)]"
+                        }`}
+                        title={label}
+                      >
+                        {svg}
+                        <span className={`text-[8px] font-bold uppercase tracking-wide ${isActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text-muted)]"}`}>
+                          {label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             {/* ── Aperçu logo (LightMockupPreview) ── */}
             {logoFile && (
@@ -449,6 +712,7 @@ export default function ProductDetailClient({ product }: Props) {
                   colors={product.colors}
                   selectedColor={selectedColor}
                   badge={product.badge}
+                  supplierImages={product.supplierImages}
                   colorImages={colorImages}
                   mediasLoading={mediasStatus === "loading"}
                   productId={product.id}
@@ -520,15 +784,38 @@ export default function ProductDetailClient({ product }: Props) {
               <TopTexStockBadge toptexRef={product.toptexRef} />
             </div>
           )}
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[var(--hm-primary)]">
-              {formatPrice(minPrice)}
-            </span>
-            <span className="text-sm text-[var(--hm-text-soft)]">TTC</span>
-            <span className="text-xs text-[var(--hm-text-soft)]">
-              ({formatPrice(minPrice / 1.2)} HT)
-            </span>
-          </div>
+          {product.volumePricing ? (
+            <div>
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
+                Prix dégressifs dès {product.minOrderQty ?? 10} pièces
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(product.volumePricingByTechnique?.[technique] ?? product.volumePricing).map((tier) => (
+                  <span
+                    key={tier.from}
+                    className="rounded-full border border-[var(--hm-border)] bg-[var(--hm-surface)] px-3 py-1 text-xs font-semibold text-[var(--hm-text)]"
+                  >
+                    {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs → {formatPrice(tier.unitPrice)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-2xl font-black text-[var(--hm-primary)] tabular-nums transition-all duration-200">
+                {formatPrice(currentPrice)}
+              </span>
+              <span className="text-sm text-[var(--hm-text-soft)]">TTC</span>
+              <span className="text-xs text-[var(--hm-text-soft)]">
+                ({formatPrice(Math.round((currentPrice / 1.2) * 100) / 100)} HT)
+              </span>
+              {currentPrice !== minPrice && (
+                <span className="ml-1 text-[10px] text-[var(--hm-text-muted)]">
+                  · dès {formatPrice(minPrice)} en DTF
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <ProductConfigurator
@@ -553,8 +840,23 @@ export default function ProductDetailClient({ product }: Props) {
           studioLogoPreset={studioLogoPreset ?? undefined}
           hideLogoUpload={true}
           requirePersonalization={product.supplierName === "printful"}
+          studioComposedFront={studioComposedFront}
+          studioComposedBack={studioComposedBack}
           studioCTA={
-            size ? (
+            product.category === "goodies" ? (
+              /* Goodies (mugs, objets) — pas de studio Fabric.js, CTA devis */
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/contact"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.30)] transition-all hover:bg-[var(--hm-primary)]/90 hover:shadow-[0_6px_20px_rgba(177,63,116,0.40)] active:scale-[0.98]"
+                >
+                  ✉️ Demander un devis →
+                </Link>
+                <p className="text-center text-[11px] text-[var(--hm-text-soft)] leading-snug">
+                  Pour les mugs personnalisés, notre équipe vérifie votre visuel avant production.
+                </p>
+              </div>
+            ) : size ? (
               <Link
                 href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.30)] transition-all hover:bg-[var(--hm-primary)]/90 hover:shadow-[0_6px_20px_rgba(177,63,116,0.40)] active:scale-[0.98]"

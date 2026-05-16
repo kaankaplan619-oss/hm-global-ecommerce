@@ -18,6 +18,17 @@ const NAV_ITEMS = [
       { label: "Voir tout le catalogue →", href: "/catalogue" },
     ],
   },
+  {
+    label: "Impression",
+    href: "/impression",
+    children: [
+      { label: "Cartes de visite", href: "/impression#business-cards" },
+      { label: "Flyers", href: "/impression#flyer" },
+      { label: "Affiches & Posters", href: "/impression#poster" },
+      { label: "Toiles canvas", href: "/impression#canvas" },
+      { label: "Voir tout l'impression →", href: "/impression" },
+    ],
+  },
   { label: "Techniques", href: "/techniques" },
   { label: "Entreprises", href: "/entreprises" },
   { label: "Réalisations", href: "/realisations" },
@@ -40,7 +51,8 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     useCartStore.persist.rehydrate();
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => setMounted(true));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const totalItems = mounted ? getTotalItems() : 0;
@@ -54,14 +66,14 @@ export default function Header() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        "fixed left-0 right-0 top-0 z-50 transition-all duration-300",
         isScrolled
-          ? "border-b border-[var(--hm-line)] bg-white/92 shadow-[0_6px_20px_rgba(63,45,88,0.05)] backdrop-blur-md"
-          : "border-b border-transparent bg-white/80 backdrop-blur-sm"
+          ? "border-b border-[rgba(63,45,88,0.08)] bg-white/88 shadow-[0_16px_40px_rgba(63,45,88,0.08)] backdrop-blur-xl"
+          : "border-b border-transparent bg-white/64 backdrop-blur-md"
       )}
     >
       <div className="container">
-        <div className="mx-auto flex h-[4rem] max-w-[1140px] items-center justify-between gap-3 md:h-[4.4rem] md:gap-4">
+        <div className="mx-auto flex h-[4.35rem] max-w-[1180px] items-center justify-between gap-3 md:h-[4.9rem] md:gap-5">
           <Link href="/" className="shrink-0">
             <Image
               src="/logo/hm-global-logo.png"
@@ -69,12 +81,12 @@ export default function Header() {
               width={240}
               height={64}
               priority
-              className="h-8.5 w-auto md:h-9"
+              className="h-9 w-auto md:h-10"
             />
           </Link>
 
           <nav className="hidden flex-1 items-center justify-center px-2 lg:flex">
-            <div className="flex max-w-[700px] items-center rounded-full border border-[var(--hm-line)] bg-white/88 px-1 py-0.5 shadow-[0_6px_18px_rgba(63,45,88,0.03)] backdrop-blur-sm">
+            <div className="flex max-w-[760px] items-center rounded-full border border-[rgba(63,45,88,0.08)] bg-white/92 px-2 py-1 shadow-[0_10px_24px_rgba(63,45,88,0.05)] backdrop-blur-md">
             {NAV_ITEMS.map((item) => (
               <div
                 key={item.label}
@@ -84,7 +96,7 @@ export default function Header() {
               >
                 <Link
                   href={item.href}
-                  className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-medium text-[var(--hm-text-soft)] transition-colors hover:bg-[var(--hm-surface)] hover:text-[var(--hm-rose)]"
+                  className="flex items-center gap-1 rounded-full px-3 py-2 text-[11px] font-semibold tracking-[0.04em] text-[var(--hm-text-soft)] transition-colors hover:bg-[rgba(177,63,116,0.08)] hover:text-[var(--hm-rose)]"
                 >
                   {item.label}
                   {item.children && (
@@ -100,17 +112,17 @@ export default function Header() {
 
                 {/* Dropdown */}
                 {item.children && openDropdown === item.label && (
-                  <div className="absolute top-full left-0 pt-2 w-56">
-                    <div className="bg-white border border-[var(--hm-line)] rounded-xl overflow-hidden shadow-[0_18px_40px_rgba(63,45,88,0.12)]">
+                  <div className="absolute left-0 top-full w-60 pt-3">
+                    <div className="overflow-hidden rounded-[1.35rem] border border-[rgba(63,45,88,0.08)] bg-white/98 shadow-[0_24px_50px_rgba(63,45,88,0.13)]">
                       {item.children.map((child, idx, arr) => (
                         <Link
                           key={child.label}
                           href={child.href}
                           className={cn(
-                            "flex items-center px-4 py-3 text-sm transition-colors",
+                            "flex items-center px-5 py-3 text-sm transition-colors",
                             idx === arr.length - 1
-                              ? "border-t border-[var(--hm-line)] font-semibold text-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-purple)]"
-                              : "text-[var(--hm-text-soft)] hover:text-[var(--hm-purple)] hover:bg-[var(--hm-accent-soft-purple)]"
+                              ? "border-t border-[var(--hm-line)] font-semibold text-[var(--hm-primary)] hover:bg-[rgba(177,63,116,0.08)]"
+                              : "text-[var(--hm-text-soft)] hover:text-[var(--hm-purple)] hover:bg-[rgba(76,47,111,0.06)]"
                           )}
                         >
                           {child.label}
@@ -127,7 +139,7 @@ export default function Header() {
           <div className="flex shrink-0 items-center gap-1 md:gap-1.5">
             <Link
               href={isAuthenticated ? "/mon-compte" : "/connexion"}
-              className="btn-ghost hidden rounded-full px-2 lg:flex"
+              className="btn-ghost hidden rounded-full border border-transparent px-3 lg:flex"
             >
               <User size={16} />
               <span className="hidden text-xs xl:block">
@@ -138,7 +150,7 @@ export default function Header() {
             {isAuthenticated && user?.role === "admin" && (
               <Link
                 href="/admin/commandes"
-                className="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-[var(--hm-line)] px-3 py-1.5 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+                className="hidden items-center gap-1.5 rounded-full border border-[var(--hm-line)] bg-white/80 px-3.5 py-2 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)] lg:inline-flex"
               >
                 <ShieldCheck size={13} />
                 Admin
@@ -147,7 +159,7 @@ export default function Header() {
 
             <button
               onClick={toggleCart}
-              className="btn-ghost relative px-2.5"
+              className="btn-ghost relative rounded-full border border-transparent px-2.5"
               aria-label="Panier"
             >
               <ShoppingBag size={16} />
@@ -160,14 +172,14 @@ export default function Header() {
 
             <Link
               href="/catalogue"
-              className="btn-primary btn-primary-pulse hidden px-3 py-2 text-[10px] lg:inline-flex"
+              className="btn-primary btn-primary-pulse hidden px-4 py-2.5 text-[10px] lg:inline-flex"
             >
               Commander
             </Link>
 
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="btn-ghost px-2.5 lg:hidden"
+              className="btn-ghost rounded-full border border-[rgba(63,45,88,0.08)] bg-white/82 px-2.5 lg:hidden"
               aria-label="Menu"
             >
               {isMobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -177,25 +189,35 @@ export default function Header() {
       </div>
 
       {isMobileOpen && (
-        <div className="border-t border-[var(--hm-line)] bg-white xl:hidden">
-          <nav className="container py-4 flex flex-col gap-1">
+        <div className="border-t border-[rgba(63,45,88,0.08)] bg-white/92 backdrop-blur-xl xl:hidden">
+          <nav className="container py-5">
+            <div className="rounded-[2rem] border border-[rgba(63,45,88,0.08)] bg-white p-5 shadow-[0_22px_45px_rgba(63,45,88,0.10)]">
+            <div className="mb-5 rounded-[1.5rem] border border-[var(--hm-line)] bg-[linear-gradient(135deg,rgba(95,168,210,0.10),rgba(255,255,255,0.92),rgba(177,63,116,0.08))] px-4 py-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--hm-primary)]">
+                Commander sans friction
+              </p>
+              <p className="mt-2 max-w-[26ch] text-sm leading-6 text-[var(--hm-text-soft)]">
+                Accès direct au catalogue ou accompagnement sur devis selon votre besoin.
+              </p>
+            </div>
+            <div className="flex flex-col gap-1">
             {NAV_ITEMS.map((item) => (
               <div key={item.label}>
                 <Link
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
-                  className="block px-4 py-3 text-sm text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)] transition-colors"
+                  className="block rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--hm-text-soft)] transition-colors hover:bg-[rgba(177,63,116,0.07)] hover:text-[var(--hm-rose)]"
                 >
                   {item.label}
                 </Link>
                 {item.children && (
-                  <div className="ml-4 border-l border-[var(--hm-line)] pl-4">
+                  <div className="ml-5 border-l border-[var(--hm-line)] pl-4">
                     {item.children.map((child) => (
                       <Link
                         key={child.label}
                         href={child.href}
                         onClick={() => setIsMobileOpen(false)}
-                        className="block px-2 py-2 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-purple)] transition-colors"
+                        className="block px-2 py-2 text-xs font-medium text-[var(--hm-text-soft)] transition-colors hover:text-[var(--hm-purple)]"
                       >
                         {child.label}
                       </Link>
@@ -204,7 +226,14 @@ export default function Header() {
                 )}
               </div>
             ))}
-            <div className="pt-4 border-t border-[var(--hm-line)] flex flex-col gap-2">
+            </div>
+            <div className="mt-5 border-t border-[var(--hm-line)] pt-5">
+              <div className="mb-4 grid grid-cols-3 gap-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--hm-text-muted)]">
+                <span className="rounded-full bg-[var(--hm-surface)] px-2 py-2">Alsace</span>
+                <span className="rounded-full bg-[var(--hm-surface)] px-2 py-2">BAT validé</span>
+                <span className="rounded-full bg-[var(--hm-surface)] px-2 py-2">Dès 10 pcs</span>
+              </div>
+              <div className="flex flex-col gap-2">
               <Link
                 href={isAuthenticated ? "/mon-compte" : "/connexion"}
                 onClick={() => setIsMobileOpen(false)}
@@ -229,6 +258,8 @@ export default function Header() {
               >
                 Commander maintenant
               </Link>
+            </div>
+            </div>
             </div>
           </nav>
         </div>

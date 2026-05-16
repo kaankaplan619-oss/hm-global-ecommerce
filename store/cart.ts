@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { CartItem, Product, ProductColor, Technique, Placement } from "@/types";
+import type { CartItem, Product, ProductColor, Technique, Placement, PrintConfig } from "@/types";
 import { computeUnitPrice, computeCartTotals } from "@/data/pricing";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -18,11 +18,31 @@ interface AddToCartParams {
   logoEffect?: CartItem["logoEffect"];
   logoPlacementTransform?: CartItem["logoPlacementTransform"];
   batRef?: CartItem["batRef"];
+  /** Image composée face (studio export) — stockée en mémoire seulement, non persistée */
+  composedPreviewUrl?: string;
+  /** Image composée dos (studio export) — stockée en mémoire seulement, non persistée */
+  composedPreviewBack?: string;
+  /**
+   * Config impression print — présente uniquement pour les articles print.
+   * Si fournie, le prix est lu depuis printConfig.lotPriceTTC (prix du lot TTC).
+   * quantity dans le cart = 1 (1 lot). printConfig.quantity = nb d'exemplaires.
+   * Non persistée en localStorage.
+   */
+  printConfig?: PrintConfig;
+  /**
+   * Override du prix unitaire TTC — utilisé pour les items print.
+   * Bypasse le calcul computeUnitPrice() basé sur product.pricing.
+   * Textile : ne pas renseigner (calcul normal depuis product.pricing).
+   */
+  overrideUnitPrice?: number;
 }
 
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
+  lastAddedItemId: string | null;
+  lastAddedAt: number | null;
+  lastAddedName: string | null;
   // Actions
   addItem: (params: AddToCartParams) => void;
   removeItem: (itemId: string) => void;
@@ -62,19 +82,36 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      lastAddedItemId: null,
+      lastAddedAt: null,
+      lastAddedName: null,
 
       addItem: (params) => {
-        const { product, quantity, size, color, technique, placement, logoFile, logoEffect, logoPlacementTransform, batRef } = params;
+        const { product, quantity, size, color, technique, placement, logoFile, logoEffect, logoPlacementTransform, batRef, composedPreviewUrl, composedPreviewBack, printConfig, overrideUnitPrice } = params;
 
-        // Récupérer le prix de base selon la technique
-        const basePrice = product.pricing[technique as keyof typeof product.pricing] as number;
-        const unitPrice = computeUnitPrice({ basePrice, technique, placement });
-        const totalPrice = Math.round(unitPrice * quantity * 100) / 100;
+        // ── Prix unitaire ────────────────────────────────────────────────────
+        // Print : le prix est celui du lot entier (overrideUnitPrice = lotPriceTTC).
+        //         quantity dans le cart = 1 (1 lot). printConfig.quantity = exemplaires.
+        // Textile : calcul normal depuis product.pricing + surcharge placement.
+        let unitPrice: number;
+        let effectiveQuantity: number;
 
-        // Vérifier si un item identique existe déjà.
-        // Deux logos différents (clés distinctes) → nouvelles lignes panier séparées.
-        // Sans logo (clé "") → fusionné uniquement avec d'autres articles sans logo.
-        const existingIndex = get().items.findIndex(
+        if (printConfig) {
+          // Prix du lot = prix total de la commande print — ne pas multiplier par quantity.
+          unitPrice       = overrideUnitPrice ?? printConfig.lotPriceTTC;
+          effectiveQuantity = 1; // 1 lot
+        } else {
+          const basePrice = product.pricing[technique as keyof typeof product.pricing] as number;
+          unitPrice       = computeUnitPrice({ basePrice, technique: technique as "dtf" | "dtflex" | "flex" | "broderie" | "broderie_illimitee", placement: placement as "coeur" | "dos" | "coeur-dos" });
+          effectiveQuantity = quantity;
+        }
+
+        const totalPrice = Math.round(unitPrice * effectiveQuantity * 100) / 100;
+
+        // ── Déduplication ────────────────────────────────────────────────────
+        // Print : chaque ajout = nouvelle ligne (un lot est toujours distinct).
+        // Textile : fusion si même produit/taille/couleur/technique/placement/logo.
+        const existingIndex = printConfig ? -1 : get().items.findIndex(
           (item) =>
             item.productId === product.id &&
             item.size === size &&
@@ -88,20 +125,26 @@ export const useCartStore = create<CartState>()(
           set((state) => {
             const updated = [...state.items];
             const existing = updated[existingIndex];
-            const newQty = existing.quantity + quantity;
+            const newQty = existing.quantity + effectiveQuantity;
             updated[existingIndex] = {
               ...existing,
               quantity: newQty,
               totalPrice: Math.round(existing.unitPrice * newQty * 100) / 100,
             };
-            return { items: updated };
+            return {
+              items: updated,
+              lastAddedItemId: existing.id,
+              lastAddedAt: Date.now(),
+              lastAddedName: existing.product.shortName,
+            };
           });
         } else {
+          const newItemId = crypto.randomUUID();
           const newItem: CartItem = {
-            id: crypto.randomUUID(),
+            id: newItemId,
             productId: product.id,
             product,
-            quantity,
+            quantity: effectiveQuantity,
             size,
             color,
             technique,
@@ -112,8 +155,16 @@ export const useCartStore = create<CartState>()(
             batRef,
             unitPrice,
             totalPrice,
+            composedPreviewUrl,
+            composedPreviewBack,
+            printConfig,
           };
-          set((state) => ({ items: [...state.items, newItem] }));
+          set((state) => ({
+            items: [...state.items, newItem],
+            lastAddedItemId: newItemId,
+            lastAddedAt: Date.now(),
+            lastAddedName: product.shortName,
+          }));
         }
 
         set({ isOpen: true });
@@ -170,8 +221,36 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "hm-global-cart",
-      // Ne pas persister isOpen
-      partialize: (state) => ({ items: state.items }),
+      // Ne pas persister isOpen ni les images base64 (composedPreviewUrl/Back — trop lourdes)
+      partialize: (state) => ({
+        items: state.items.map((item) => {
+          // Exclure du localStorage :
+          // - composedPreviewUrl/Back : images base64 volumineuses (studio textile)
+          // - printConfig.frontPreviewUrl/backPreviewUrl : si base64 (data:...), on les retire.
+          //   Si ce sont des URLs Supabase (https://...), on les conserve.
+          //   Tous les autres champs printConfig sont persistés : sans eux, le checkout
+          //   reçoit printConfig=null et plante côté serveur (create-payment-intent).
+          const { composedPreviewUrl, composedPreviewBack, printConfig, ...rest } = item;
+          void composedPreviewUrl;
+          void composedPreviewBack;
+
+          const safePrintConfig = printConfig
+            ? {
+                ...printConfig,
+                // Retirer les previews base64 (data:image/...) — trop lourdes pour localStorage.
+                // Les URLs Supabase (https://...) sont conservées.
+                frontPreviewUrl: printConfig.frontPreviewUrl?.startsWith("data:")
+                  ? null
+                  : printConfig.frontPreviewUrl,
+                backPreviewUrl: printConfig.backPreviewUrl?.startsWith("data:")
+                  ? null
+                  : printConfig.backPreviewUrl,
+              }
+            : undefined;
+
+          return { ...rest, printConfig: safePrintConfig };
+        }),
+      }),
       // Empêche la réhydratation automatique pendant le rendu React (SSR/CSR).
       // Sans cette option, Zustand lit localStorage pendant le render → mismatch
       // HTML server/client → React Hydration Error #418.

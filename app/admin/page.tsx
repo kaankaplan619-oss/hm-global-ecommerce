@@ -33,7 +33,7 @@ function sumStatuses(counts: Record<string, number>, statuses: string[]): number
 
 interface DashCard {
   href: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   title: string;
   description: string;
   count: string | number;

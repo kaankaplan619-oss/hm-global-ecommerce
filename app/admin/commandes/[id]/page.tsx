@@ -480,117 +480,215 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                             <span className="badge badge-neutral text-[9px]">{item.placement ?? "—"}</span>
                           </div>
 
-                          {/* Logo & BAT bloc */}
-                          {(item.logoFile || item.batRef || item.logoEffect) && (
+                          {/* ── PRINT : Fichiers recto / verso ──────────────── */}
+                          {item.printConfig ? (
                             <div className="mt-3 p-3 bg-[var(--hm-surface)] border border-[var(--hm-line)] rounded-xl">
                               <p className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-2">
-                                Logo & BAT
+                                Fichiers impression & BAT
                               </p>
 
-                              {item.logoFile && (
-                                <div className="mb-2">
-                                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                                    <a
-                                      href={item.logoFile.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-[10px] text-[var(--hm-primary)] hover:underline flex items-center gap-1 min-w-0 truncate"
-                                    >
-                                      {item.logoFile.name || "Fichier logo"}
-                                      <ExternalLink size={9} className="shrink-0" />
-                                    </a>
-                                    <span className={`badge text-[9px] shrink-0 ${
-                                      item.logoFile.status === "valide"   ? "badge-success"
-                                      : item.logoFile.status === "invalide" ? "badge-error"
-                                      : "badge-warning"
-                                    }`}>
-                                      {item.logoFile.status === "valide"   ? "Validé ✓"
-                                       : item.logoFile.status === "invalide" ? "Rejeté ✗"
-                                       : "À vérifier"}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className="flex flex-col gap-1">
-                                {item.logoEffect && item.logoEffect !== "none" && (
-                                  <div className="flex justify-between text-[10px]">
-                                    <span className="text-[var(--hm-text-soft)]">Effet logo</span>
-                                    <span className="text-[var(--hm-text)]">
-                                      {item.logoEffect === "white-outline" ? "Contour blanc" : "Fond blanc"}
-                                    </span>
-                                  </div>
-                                )}
-                                {item.batRef && (
-                                  <div className="flex justify-between text-[10px]">
-                                    <span className="text-[var(--hm-text-soft)]">Réf. BAT</span>
-                                    <span className="font-mono text-[var(--hm-primary)]">{item.batRef}</span>
-                                  </div>
-                                )}
-                                {item.logoPlacementTransform && (
-                                  <div className="flex justify-between text-[10px]">
-                                    <span className="text-[var(--hm-text-soft)]">Position</span>
-                                    <span className="text-green-500">Personnalisée enregistrée ✓</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Fournisseur bloc */}
-                          <div className="mt-3 p-3 bg-[var(--hm-surface)] border border-[var(--hm-line)] rounded-xl">
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider">
-                                Fournisseur
-                              </p>
-                              <button
-                                onClick={() => handleCopySupplierLine(item.id, supplierLine)}
-                                className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-lg border transition-colors ${
-                                  isCopied
-                                    ? "border-green-400/40 text-green-600 bg-green-50"
-                                    : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
-                                }`}
-                              >
-                                <Copy size={9} />
-                                {isCopied ? "Copié ✓" : "Copier ligne"}
-                              </button>
-                            </div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="badge badge-info text-[9px]">
-                                {supplierInfo.supplierLabel}
-                              </span>
-                              {supplierInfo.supplierReference && supplierInfo.supplierReference !== "—" && (
-                                <span className="font-mono text-[10px] text-[var(--hm-text)]">
-                                  {supplierInfo.supplierReference}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              {supplierInfo.estimatedPurchasePrice && (
+                              {/* Config lots */}
+                              <div className="flex flex-col gap-1 mb-3">
                                 <div className="flex justify-between text-[10px]">
-                                  <span className="text-[var(--hm-text-soft)]">Prix achat estimé</span>
-                                  <span className="font-semibold text-[var(--hm-text)]">
-                                    {fmtCurrency(supplierInfo.estimatedPurchasePrice)} / u
+                                  <span className="text-[var(--hm-text-soft)]">Exemplaires</span>
+                                  <span className="font-semibold text-[var(--hm-text)]">{item.printConfig.quantity} ex.</span>
+                                </div>
+                                <div className="flex justify-between text-[10px]">
+                                  <span className="text-[var(--hm-text-soft)]">Finition</span>
+                                  <span className="text-[var(--hm-text)]">
+                                    {item.printConfig.finish === "mat" ? "Mat"
+                                      : item.printConfig.finish === "brillant" ? "Brillant"
+                                      : "Premium (satiné velours)"}
                                   </span>
                                 </div>
+                                <div className="flex justify-between text-[10px]">
+                                  <span className="text-[var(--hm-text-soft)]">Faces</span>
+                                  <span className="text-[var(--hm-text)]">
+                                    {item.printConfig.faces === "recto" ? "Recto seul" : "Recto-verso"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-[10px]">
+                                  <span className="text-[var(--hm-text-soft)]">Coins</span>
+                                  <span className="text-[var(--hm-text)]">
+                                    {item.printConfig.corners === "standard" ? "Angles droits" : "Coins arrondis"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-[10px]">
+                                  <span className="text-[var(--hm-text-soft)]">Orientation</span>
+                                  <span className="text-[var(--hm-text)]">
+                                    {item.printConfig.orientation === "landscape" ? "Paysage" : "Portrait"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-[10px]">
+                                  <span className="text-[var(--hm-text-soft)]">Statut BAT</span>
+                                  <span className={`font-semibold ${
+                                    item.printConfig.batStatus === "valide"   ? "text-green-600"
+                                    : item.printConfig.batStatus === "invalide" ? "text-red-500"
+                                    : "text-amber-600"
+                                  }`}>
+                                    {item.printConfig.batStatus === "valide"   ? "Validé ✓"
+                                     : item.printConfig.batStatus === "invalide" ? "Rejeté ✗"
+                                     : "À vérifier"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Fichier recto */}
+                              {item.printConfig.frontFileUrl && (
+                                <div className="mb-1.5">
+                                  <p className="text-[9px] text-[var(--hm-text-soft)] mb-0.5">Fichier Recto</p>
+                                  <a
+                                    href={item.printConfig.frontFileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[10px] text-[var(--hm-primary)] hover:underline flex items-center gap-1 truncate"
+                                  >
+                                    Télécharger le fichier recto
+                                    <ExternalLink size={9} className="shrink-0" />
+                                  </a>
+                                </div>
                               )}
-                              {supplierInfo.supplierUrl && (
-                                <a
-                                  href={supplierInfo.supplierUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[10px] text-[var(--hm-primary)] hover:underline flex items-center gap-1"
-                                >
-                                  Voir sur {supplierInfo.supplierLabel}
-                                  <ExternalLink size={9} />
-                                </a>
+
+                              {/* Fichier verso */}
+                              {item.printConfig.backFileUrl && (
+                                <div className="mb-1.5">
+                                  <p className="text-[9px] text-[var(--hm-text-soft)] mb-0.5">Fichier Verso</p>
+                                  <a
+                                    href={item.printConfig.backFileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[10px] text-[var(--hm-primary)] hover:underline flex items-center gap-1 truncate"
+                                  >
+                                    Télécharger le fichier verso
+                                    <ExternalLink size={9} className="shrink-0" />
+                                  </a>
+                                </div>
                               )}
+
+                              {/* Bloc fournisseur print */}
+                              <div className="mt-3 pt-2 border-t border-[var(--hm-line)]">
+                                <p className="text-[9px] text-[var(--hm-text-soft)] mb-1">Fournisseur impression</p>
+                                <span className="badge badge-info text-[9px]">Gelato (V1 — commande manuelle)</span>
+                                <p className="mt-1 text-[9px] text-[var(--hm-text-muted)]">
+                                  Transmettre les fichiers ci-dessus à gelato.com. La commande Gelato automatique sera activée en V2.
+                                </p>
+                              </div>
                             </div>
-                            {/* Supplier line preview */}
-                            <p className="mt-2 text-[9px] font-mono text-[var(--hm-text-soft)] bg-white border border-[var(--hm-line)] rounded px-2 py-1.5 break-all leading-relaxed">
-                              {supplierLine}
-                            </p>
-                          </div>
+                          ) : (
+                            <>
+                              {/* ── TEXTILE : Logo & BAT bloc ──────────────── */}
+                              {(item.logoFile || item.batRef || item.logoEffect) && (
+                                <div className="mt-3 p-3 bg-[var(--hm-surface)] border border-[var(--hm-line)] rounded-xl">
+                                  <p className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-2">
+                                    Logo & BAT
+                                  </p>
+
+                                  {item.logoFile && (
+                                    <div className="mb-2">
+                                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                                        <a
+                                          href={item.logoFile.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-[10px] text-[var(--hm-primary)] hover:underline flex items-center gap-1 min-w-0 truncate"
+                                        >
+                                          {item.logoFile.name || "Fichier logo"}
+                                          <ExternalLink size={9} className="shrink-0" />
+                                        </a>
+                                        <span className={`badge text-[9px] shrink-0 ${
+                                          item.logoFile.status === "valide"   ? "badge-success"
+                                          : item.logoFile.status === "invalide" ? "badge-error"
+                                          : "badge-warning"
+                                        }`}>
+                                          {item.logoFile.status === "valide"   ? "Validé ✓"
+                                           : item.logoFile.status === "invalide" ? "Rejeté ✗"
+                                           : "À vérifier"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  <div className="flex flex-col gap-1">
+                                    {item.logoEffect && item.logoEffect !== "none" && (
+                                      <div className="flex justify-between text-[10px]">
+                                        <span className="text-[var(--hm-text-soft)]">Effet logo</span>
+                                        <span className="text-[var(--hm-text)]">
+                                          {item.logoEffect === "white-outline" ? "Contour blanc" : "Fond blanc"}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {item.batRef && (
+                                      <div className="flex justify-between text-[10px]">
+                                        <span className="text-[var(--hm-text-soft)]">Réf. BAT</span>
+                                        <span className="font-mono text-[var(--hm-primary)]">{item.batRef}</span>
+                                      </div>
+                                    )}
+                                    {item.logoPlacementTransform && (
+                                      <div className="flex justify-between text-[10px]">
+                                        <span className="text-[var(--hm-text-soft)]">Position</span>
+                                        <span className="text-green-500">Personnalisée enregistrée ✓</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* ── TEXTILE : Fournisseur bloc ─────────────── */}
+                              <div className="mt-3 p-3 bg-[var(--hm-surface)] border border-[var(--hm-line)] rounded-xl">
+                                <div className="flex items-center justify-between mb-2">
+                                  <p className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider">
+                                    Fournisseur
+                                  </p>
+                                  <button
+                                    onClick={() => handleCopySupplierLine(item.id, supplierLine)}
+                                    className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-lg border transition-colors ${
+                                      isCopied
+                                        ? "border-green-400/40 text-green-600 bg-green-50"
+                                        : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+                                    }`}
+                                  >
+                                    <Copy size={9} />
+                                    {isCopied ? "Copié ✓" : "Copier ligne"}
+                                  </button>
+                                </div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="badge badge-info text-[9px]">
+                                    {supplierInfo.supplierLabel}
+                                  </span>
+                                  {supplierInfo.supplierReference && supplierInfo.supplierReference !== "—" && (
+                                    <span className="font-mono text-[10px] text-[var(--hm-text)]">
+                                      {supplierInfo.supplierReference}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  {supplierInfo.estimatedPurchasePrice && (
+                                    <div className="flex justify-between text-[10px]">
+                                      <span className="text-[var(--hm-text-soft)]">Prix achat estimé</span>
+                                      <span className="font-semibold text-[var(--hm-text)]">
+                                        {fmtCurrency(supplierInfo.estimatedPurchasePrice)} / u
+                                      </span>
+                                    </div>
+                                  )}
+                                  {supplierInfo.supplierUrl && (
+                                    <a
+                                      href={supplierInfo.supplierUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[10px] text-[var(--hm-primary)] hover:underline flex items-center gap-1"
+                                    >
+                                      Voir sur {supplierInfo.supplierLabel}
+                                      <ExternalLink size={9} />
+                                    </a>
+                                  )}
+                                </div>
+                                {/* Supplier line preview */}
+                                <p className="mt-2 text-[9px] font-mono text-[var(--hm-text-soft)] bg-white border border-[var(--hm-line)] rounded px-2 py-1.5 break-all leading-relaxed">
+                                  {supplierLine}
+                                </p>
+                              </div>
+                            </>
+                          )}
                         </div>
 
                         {/* Qty + price */}

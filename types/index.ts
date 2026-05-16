@@ -21,9 +21,10 @@ export type ProductCategory =
   | "polaires"
   | "casquettes"
   | "sacs"
+  | "goodies"
   | "enfants";
 
-export type Technique = "dtf" | "flex" | "broderie";
+export type Technique = "dtf" | "dtflex" | "flex" | "broderie" | "broderie_illimitee" | "print";
 
 export type Placement = "coeur" | "dos" | "coeur-dos";
 
@@ -73,8 +74,11 @@ export interface PlacementOption {
 
 export interface ProductPricing {
   dtf: number;
+  dtflex: number;
   flex: number;
   broderie: number;
+  /** Broderie Couleur illimitée (Printful +3.90€) — optionnel, uniquement sur certains produits */
+  broderie_illimitee?: number;
   // Placement surcharges for broderie
   placements: {
     coeur: number;
@@ -86,6 +90,12 @@ export interface ProductPricing {
     dos: number;
     "coeur-dos": number;
   };
+}
+
+export interface VolumePricingTier {
+  from: number;
+  to?: number;
+  unitPrice: number; // TTC
 }
 
 export interface Product {
@@ -119,7 +129,13 @@ export interface Product {
   prixAchatHT?: number;      // prix d'achat Toptex HT
   // Internal
   supplierRef?: string;
-  supplierName?: "falk-ross" | "toptex" | "printful";
+  supplierName?: "falk-ross" | "toptex" | "printful" | "spreadshirt";
+  /** Quantité minimale de commande (ex : 10 pour Spreadshirt). */
+  minOrderQty?: number;
+  /** Tarification dégressive par palier de quantité. Écrase pricing.dtf/flex/broderie si présent. */
+  volumePricing?: VolumePricingTier[];
+  /** Tarification dégressive par technique — prioritaire sur volumePricing si la clé existe. */
+  volumePricingByTechnique?: Partial<Record<Technique, VolumePricingTier[]>>;
   /**
    * Contrôle la visibilité dans le catalogue public.
    * false  → masqué (photos insuffisantes, produit non validé)
@@ -157,6 +173,42 @@ export interface Product {
   supplierImages?: string[];
 }
 
+// ─── Print Types ─────────────────────────────────────────────────────────────────
+
+/**
+ * Config complète d'une commande d'impression print.
+ * Stockée dans product_snapshot.printConfig dans order_items.
+ * Séparée des données textile — ne jamais afficher ces champs avec des labels textile.
+ *
+ * Tarification print :
+ *   Le prix du lot correspond à l'ensemble de la commande, PAS à un prix × copies.
+ *   lotPriceTTC = prix total (ex : 34,90 € pour 250 cartes).
+ *   quantity = nombre d'exemplaires imprimés (ex : 250).
+ *   Dans order_items : quantity=1, unit_price_ttc=lotPriceTTC, total_ttc=lotPriceTTC.
+ */
+export interface PrintConfig {
+  productType:      "business_card";
+  supplier:         "gelato";            // prêt pour envoi Gelato — pas activé en V1
+  format:           "85x55mm";
+  orientation:      "landscape" | "portrait";
+  faces:            "recto" | "recto-verso";
+  finish:           "mat" | "brillant" | "premium";
+  corners:          "standard" | "rounded";
+  /** Nombre d'exemplaires imprimés — ex : 250. Ne pas multiplier par lotPriceTTC. */
+  quantity:         100 | 250 | 500 | 1000;
+  /** Prix du lot TTC — total de la commande pour ce lot. */
+  lotPriceTTC:      number;
+  /** URL Supabase Storage du fichier recto (PDF ou PNG haute résolution). */
+  frontFileUrl:     string | null;
+  /** URL Supabase Storage du fichier verso — null si recto seul. */
+  backFileUrl:      string | null;
+  /** Aperçu PNG recto généré pour affichage admin. */
+  frontPreviewUrl:  string | null;
+  /** Aperçu PNG verso généré pour affichage admin. */
+  backPreviewUrl:   string | null;
+  batStatus:        "a_verifier" | "valide" | "invalide";
+}
+
 // ─── Cart Types ─────────────────────────────────────────────────────────────────
 
 export interface CartItem {
@@ -174,6 +226,16 @@ export interface CartItem {
   batRef?: string;
   unitPrice: number;
   totalPrice: number;
+  /** Aperçu composé face (shirt+logo) exporté depuis le Studio — non persisté en localStorage */
+  composedPreviewUrl?: string;
+  /** Aperçu composé dos (shirt+logo) exporté depuis le Studio — non persisté en localStorage */
+  composedPreviewBack?: string;
+  /**
+   * Config impression print — présente uniquement pour les articles print (cartes de visite, etc.).
+   * Absente pour tous les articles textile. Vérifier sa présence avant tout affichage print.
+   * Non persistée en localStorage (peut contenir des URLs larges).
+   */
+  printConfig?: PrintConfig;
 }
 
 export interface CartFile {
@@ -301,6 +363,12 @@ export interface OrderItem {
   totalTTC: number;
   // Printful POD
   printfulVariantId?: number;
+  /**
+   * Config impression print — présente uniquement pour les commandes print.
+   * Lue depuis product_snapshot.printConfig dans order_items.
+   * Afficher "Fichier recto / verso" côté admin, jamais "Logo".
+   */
+  printConfig?: PrintConfig;
 }
 
 export interface Order {

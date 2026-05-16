@@ -53,10 +53,11 @@ const SERVICES = [
     icon: FileStack,
     title: "Print",
     description:
-      "Cartes, flyers, supports commerciaux et impressions utiles, préparés avec une logique d'usage, de lisibilité et de cohérence graphique.",
-    useCase: "Pour vos besoins terrain, salons, rendez-vous et diffusion locale.",
+      "Cartes de visite, flyers, affiches, toiles — commandez en ligne et recevez vos impressions professionnelles directement chez vous.",
+    useCase: "Cartes de visite dès 50 ex. · Flyers A4/A5 · Affiches grand format.",
     iconBg: "bg-[var(--hm-accent-soft-blue)]",
     iconColor: "text-[var(--hm-blue)]",
+    href: "/impression",
   },
   {
     icon: Palette,
@@ -147,12 +148,12 @@ export default function OtherServices() {
 
                 {/* CTA carte */}
                 <Link
-                  href="/contact"
+                  href={"href" in service ? service.href : "/contact"}
                   className="flex items-center gap-1.5 text-[11px] font-bold
                     text-[var(--hm-text-soft)] transition-all duration-200
                     group-hover:text-[var(--hm-rose)]"
                 >
-                  Demander un devis
+                  {"href" in service ? "Voir le catalogue" : "Demander un devis"}
                   <ArrowRight
                     size={10}
                     className="transition-transform duration-200

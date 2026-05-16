@@ -166,10 +166,15 @@ function CheckoutAuthGate({
                     <div key={item.id} className="flex justify-between gap-2 text-xs">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[var(--hm-text-soft)]">
-                          {item.product.shortName} × {item.quantity}
+                          {item.product.shortName}
+                          {item.printConfig
+                            ? ` · ${item.printConfig.quantity} ex.`
+                            : ` × ${item.quantity}`}
                         </p>
                         <p className="text-[10px] text-[var(--hm-text-muted)]">
-                          {TECHNIQUE_LABELS[item.technique]} · {PLACEMENT_LABELS[item.placement]} · {item.size}
+                          {item.printConfig
+                            ? `Impression · ${item.printConfig.finish === "mat" ? "Mat" : item.printConfig.finish === "brillant" ? "Brillant" : "Premium"} · ${item.printConfig.faces === "recto" ? "Recto" : "Recto-verso"}`
+                            : `${TECHNIQUE_LABELS[item.technique]} · ${PLACEMENT_LABELS[item.placement]} · ${item.size}`}
                         </p>
                       </div>
                       <span className="shrink-0 font-semibold text-[var(--hm-text)]">
@@ -432,6 +437,15 @@ export default function CheckoutPage() {
   );
   const allLogosReady = itemsNeedingLogo.length === 0;
 
+  // ── Items print avec printConfig manquant (guard défensif) ─────────────────
+  // Normalement impossible si store/cart.ts persiste correctement printConfig.
+  // Couche de sécurité : si un item print n'a plus de config (localStorage
+  // corrompu, migration de données), on bloque avant que le serveur plante en 500.
+  const printItemsMissingConfig = items.filter(
+    (item) => item.technique === "print" && !item.printConfig
+  );
+  const allPrintConfigsReady = printItemsMissingConfig.length === 0;
+
   // ── Place order ────────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
     setLoading(true);
@@ -457,6 +471,8 @@ export default function CheckoutPage() {
             logoEffect:              i.logoEffect              ?? null,
             logoPlacementTransform:  i.logoPlacementTransform  ?? null,
             batRef:                  i.batRef                  ?? null,
+            // Print — transmis uniquement pour les commandes impression
+            printConfig: i.printConfig ?? null,
           })),
           billingAddress,
           shippingAddress: sameShipping ? billingAddress : undefined,
@@ -478,6 +494,7 @@ export default function CheckoutPage() {
 
   const canSubmit =
     allLogosReady &&
+    allPrintConfigsReady &&
     billingAddress.email.includes("@") &&
     billingAddress.firstName.trim().length > 0 &&
     billingAddress.street.trim().length > 0 &&
@@ -502,6 +519,24 @@ export default function CheckoutPage() {
               <div className="flex items-start gap-2 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-xs text-[#92400e]">
                 <AlertCircle size={12} className="mt-0.5 shrink-0" />
                 Veuillez enregistrer tous les logos ci-dessus avant de procéder au paiement.
+              </div>
+            )}
+
+            {/* Avertissement impression — configuration incomplète (guard défensif) */}
+            {!allPrintConfigsReady && (
+              <div className="flex items-start gap-3 rounded-xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3 text-xs text-[#b91c1c]">
+                <AlertCircle size={13} className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold">Configuration impression incomplète</p>
+                  <p className="mt-0.5 text-[#b91c1c]/80">
+                    La configuration de votre carte de visite est introuvable (session expirée ou page rechargée).
+                    Veuillez{" "}
+                    <a href="/impression/cartes-de-visite" className="font-bold underline hover:text-[#b91c1c]">
+                      recommencer la personnalisation
+                    </a>
+                    {" "}pour finaliser votre commande.
+                  </p>
+                </div>
               </div>
             )}
 
@@ -710,10 +745,15 @@ export default function CheckoutPage() {
                     <div key={item.id} className="flex justify-between gap-2 text-xs">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[var(--hm-text-soft)]">
-                          {item.product.shortName} × {item.quantity}
+                          {item.product.shortName}
+                          {item.printConfig
+                            ? ` · ${item.printConfig.quantity} ex.`
+                            : ` × ${item.quantity}`}
                         </p>
                         <p className="text-[10px] text-[var(--hm-text-muted)]">
-                          {TECHNIQUE_LABELS[item.technique]} · {PLACEMENT_LABELS[item.placement]} · {item.size}
+                          {item.printConfig
+                            ? `Impression · ${item.printConfig.finish === "mat" ? "Mat" : item.printConfig.finish === "brillant" ? "Brillant" : "Premium"} · ${item.printConfig.faces === "recto" ? "Recto" : "Recto-verso"}`
+                            : `${TECHNIQUE_LABELS[item.technique]} · ${PLACEMENT_LABELS[item.placement]} · ${item.size}`}
                         </p>
                       </div>
                       <span className="shrink-0 font-semibold text-[var(--hm-text)]">

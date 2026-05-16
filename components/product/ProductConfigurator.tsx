@@ -1,9 +1,25 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { Upload, X, CheckCircle, AlertCircle, Minus, Plus, ShoppingBag, Loader2 } from "lucide-react";
+import { Upload, X, CheckCircle, AlertCircle, Minus, Plus, ShoppingBag, Loader2, Truck } from "lucide-react";
+
+// ── Calcul date d'expédition estimée ──────────────────────────────────────────
+// Production + livraison : 5 à 7 jours ouvrés selon le volume
+function getEstimatedShipDate(businessDays = 6): string {
+  const now = new Date();
+  // Commandes passées après 14h → +1 jour
+  if (now.getHours() >= 14) businessDays += 1;
+  let count = 0;
+  const d = new Date(now);
+  while (count < businessDays) {
+    d.setDate(d.getDate() + 1);
+    const day = d.getDay();
+    if (day !== 0 && day !== 6) count++; // skip weekend
+  }
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+}
 import { useCartStore } from "@/store/cart";
-import { formatPrice, PRICING_CONFIG } from "@/data/pricing";
+import { formatPrice, PRICING_CONFIG, getVolumePricedRate } from "@/data/pricing";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
 import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
@@ -50,6 +66,10 @@ interface Props {
    * Par défaut : false (ancien comportement conservé).
    */
   hideLogoUpload?: boolean;
+  /** Image composée face (shirt+logo) exportée depuis le Studio — transmise au panier */
+  studioComposedFront?: string | null;
+  /** Image composée dos (shirt+logo) exportée depuis le Studio — transmise au panier */
+  studioComposedBack?: string | null;
   /**
    * Quand true (produits Printful), le bouton "Ajouter au panier" est désactivé
    * tant qu'aucun logo n'est fourni (studioLogoPreset absent).
@@ -86,6 +106,8 @@ export default function ProductConfigurator({
   hideLogoUpload = false,
   requirePersonalization = false,
   studioCTA,
+  studioComposedFront,
+  studioComposedBack,
 }: Props) {
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -97,7 +119,7 @@ export default function ProductConfigurator({
   const [internalColor,     setInternalColor]      = useState<ProductColor | null>(
     product.colors.find((c) => c.available) ?? null
   );
-  const [internalQuantity,  setInternalQuantity]  = useState(1);
+  const [internalQuantity,  setInternalQuantity]  = useState(product.minOrderQty ?? 1);
 
   // Valeurs effectives : prop contrôlée prioritaire, état interne en fallback
   const technique = controlledTechnique ?? internalTechnique;
@@ -107,6 +129,8 @@ export default function ProductConfigurator({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string>("");
   const [addedToCart, setAddedToCart] = useState(false);
+  // Checkbox de validation création (inspiré de PrintOclock)
+  const [creationValidated, setCreationValidated] = useState(false);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -149,15 +173,25 @@ export default function ProductConfigurator({
   );
 
   // Price computation
-  // Utilise les surcharges spécifiques au produit (product.pricing.placements)
-  // et non la table globale PLACEMENT_SURCHARGES — correction bug prix Gildan/Bella.
-  const basePrice = product.pricing[technique] as number;
-  const placementSurcharge = technique === "broderie"
+  // Barème volume par technique (volumePricingByTechnique) > barème global (volumePricing) > prix fixe.
+  const activeVolumeTiers =
+    product.volumePricingByTechnique?.[technique] ??
+    product.volumePricing ??
+    null;
+
+  const isBroderieFamily = technique === "broderie" || technique === "broderie_illimitee";
+
+  const basePrice = activeVolumeTiers
+    ? getVolumePricedRate(activeVolumeTiers, quantity)
+    : (product.pricing[technique as Exclude<typeof technique, "print">] as number) ?? 0;
+
+  const placementSurcharge = isBroderieFamily
     ? product.pricing.broDeriePlacementSurcharge[placement]
     : product.pricing.placements[placement];
   const unitPrice = Math.round((basePrice + placementSurcharge) * 100) / 100;
   const totalPrice = Math.round(unitPrice * quantity * 100) / 100;
   const freeShipping = quantity >= PRICING_CONFIG.freeShippingThreshold;
+  const minQty = product.minOrderQty ?? 1;
 
   const availableTechniques = TECHNIQUES.filter((t) => product.techniques.includes(t.id));
   const availablePlacements = PLACEMENTS.filter((p) => product.placements.includes(p.id));
@@ -313,6 +347,8 @@ export default function ProductConfigurator({
       logoEffect,
       logoPlacementTransform: effectiveTransform,
       batRef,
+      composedPreviewUrl:  studioComposedFront ?? undefined,
+      composedPreviewBack: studioComposedBack  ?? undefined,
     });
 
     setAddedToCart(true);
@@ -412,36 +448,40 @@ export default function ProductConfigurator({
           {product.sizes.map((s) => {
             const active = size === s.label;
             return (
-              <button
-                type="button"
-                key={s.label}
-                onClick={() => { if (s.available && !s.soldOut) { setInternalSize(s.label); onSizeChange?.(s.label); } }}
-                disabled={!s.available || s.soldOut}
-                aria-pressed={active}
-                className={`relative flex h-10 min-w-[50px] items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all
-                  ${active
-                    ? "ring-2 ring-[rgba(177,63,116,0.12)] shadow-[0_10px_24px_rgba(177,63,116,0.18)]"
-                    : s.soldOut || !s.available
-                    ? "cursor-not-allowed border-[var(--hm-line)] bg-[var(--hm-surface)] text-[var(--hm-text-muted)]"
-                    : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]/40 hover:text-[var(--hm-text)]"
-                  }`}
-                style={
-                  active
-                    ? {
-                        backgroundColor: "var(--hm-primary)",
-                        borderColor: "var(--hm-primary)",
-                        color: "#ffffff",
-                      }
-                    : undefined
-                }
-              >
-                <span className="relative z-10 leading-none">{s.label}</span>
-                {s.soldOut && (
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <div className="absolute inset-x-2 top-1/2 h-[1px] rotate-12 bg-[var(--hm-text-muted)]/70" />
-                  </div>
-                )}
-              </button>
+              <div key={s.label} className="flex flex-col items-center gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => { if (s.available && !s.soldOut) { setInternalSize(s.label); onSizeChange?.(s.label); } }}
+                  disabled={!s.available || s.soldOut}
+                  aria-pressed={active}
+                  className={`relative flex h-10 min-w-[50px] items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all
+                    ${active
+                      ? "ring-2 ring-[rgba(177,63,116,0.12)] shadow-[0_10px_24px_rgba(177,63,116,0.18)]"
+                      : s.soldOut || !s.available
+                      ? "cursor-not-allowed border-[var(--hm-line)] bg-[var(--hm-surface)] text-[var(--hm-text-muted)]"
+                      : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]/40 hover:text-[var(--hm-text)]"
+                    }`}
+                  style={
+                    active
+                      ? { backgroundColor: "var(--hm-primary)", borderColor: "var(--hm-primary)", color: "#ffffff" }
+                      : undefined
+                  }
+                >
+                  <span className="relative z-10 leading-none">{s.label}</span>
+                  {s.soldOut && (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <div className="absolute inset-x-2 top-1/2 h-[1px] rotate-12 bg-[var(--hm-text-muted)]/70" />
+                    </div>
+                  )}
+                </button>
+                {/* Indicateur stock */}
+                <span className={`flex items-center gap-0.5 text-[9px] font-medium ${
+                  s.soldOut || !s.available ? "text-red-500" : "text-green-600"
+                }`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${s.soldOut || !s.available ? "bg-red-500" : "bg-green-500"}`} />
+                  {s.soldOut || !s.available ? "Épuisé" : "Dispo"}
+                </span>
+              </div>
             );
           })}
         </div>
@@ -463,7 +503,7 @@ export default function ProductConfigurator({
                 ? product.pricing.broDeriePlacementSurcharge[placement]
                 : product.pricing.placements[placement];
             const techPrice = Math.round(
-              ((product.pricing[tech.id] as number) + techPlacementSurcharge) * 100
+              ((product.pricing[tech.id as Exclude<typeof tech.id, "print">] as number) + techPlacementSurcharge) * 100
             ) / 100;
             const active = technique === tech.id;
 
@@ -569,7 +609,7 @@ export default function ProductConfigurator({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => { const nq = Math.max(1, quantity - 1); setInternalQuantity(nq); onQuantityChange?.(nq); }}
+                onClick={() => { const nq = Math.max(minQty, quantity - 1); setInternalQuantity(nq); onQuantityChange?.(nq); }}
                 className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)]/30 hover:text-[var(--hm-text)]"
               >
                 <Minus size={14} />
@@ -601,6 +641,47 @@ export default function ProductConfigurator({
               </p>
             </div>
           </div>
+
+          {/* Tableau dégressif — réactif à la technique sélectionnée */}
+          {activeVolumeTiers && (
+            <div className="mt-4 border-t border-[var(--hm-line)] pt-4">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
+                Prix par palier
+              </p>
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                {activeVolumeTiers.map((tier) => {
+                  const isActive = quantity >= tier.from && (tier.to === undefined || quantity <= tier.to);
+                  return (
+                    <button
+                      key={tier.from}
+                      type="button"
+                      onClick={() => {
+                        setInternalQuantity(tier.from);
+                        onQuantityChange?.(tier.from);
+                      }}
+                      className={`flex flex-col rounded-xl border px-3 py-2.5 text-left transition-all ${
+                        isActive
+                          ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]"
+                          : "border-[var(--hm-line)] bg-white hover:border-[var(--hm-primary)]/40"
+                      }`}
+                    >
+                      <span className={`text-[11px] font-semibold ${isActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text-soft)]"}`}>
+                        {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs
+                      </span>
+                      <span className={`text-sm font-black ${isActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text)]"}`}>
+                        {formatPrice(tier.unitPrice)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {minQty > 1 && (
+                <p className="mt-2 text-[10px] text-[var(--hm-text-soft)]">
+                  Minimum de commande : {minQty} pièces
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -775,21 +856,63 @@ export default function ProductConfigurator({
             </p>
           </div>
         </div>
-        <div className="mt-4 rounded-[1rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-3">
-          <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
-            {freeShipping
-              ? "La livraison est offerte pour cette configuration."
-              : `Livraison offerte dès ${PRICING_CONFIG.freeShippingThreshold} pièces. Il vous manque ${shippingPiecesLeft} pièce${shippingPiecesLeft > 1 ? "s" : ""}.`}
-          </p>
+        {/* Livraison + Expédition estimée — fusionnés dans la carte récap */}
+        <div className="mt-4 rounded-[1rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-3 flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--hm-primary)]/25 bg-white">
+            <Truck size={16} className="text-[var(--hm-primary)]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+              Expédition estimée · {getEstimatedShipDate()}
+            </p>
+            <p className="text-[11px] leading-snug text-[var(--hm-text-soft)]">
+              {freeShipping
+                ? "Livraison offerte pour cette configuration."
+                : `Livraison offerte dès ${PRICING_CONFIG.freeShippingThreshold} pièces — il vous manque ${shippingPiecesLeft} pièce${shippingPiecesLeft > 1 ? "s" : ""}.`}
+            </p>
+          </div>
+          {freeShipping && (
+            <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-[9px] font-bold text-green-700">
+              Offerte
+            </span>
+          )}
         </div>
       </div>
+
+      {/* ── Checkbox validation création ──────────────────────── */}
+      {(hasLogo || studioComposedFront) && (
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[var(--hm-line)] bg-white px-4 py-3 transition hover:border-[var(--hm-primary)]/40">
+          <div className="relative mt-0.5 shrink-0">
+            <input
+              type="checkbox"
+              checked={creationValidated}
+              onChange={(e) => setCreationValidated(e.target.checked)}
+              className="sr-only"
+            />
+            <div className={`flex h-5 w-5 items-center justify-center rounded border-2 transition ${
+              creationValidated
+                ? "border-[var(--hm-primary)] bg-[var(--hm-primary)]"
+                : "border-[var(--hm-line)] bg-white"
+            }`}>
+              {creationValidated && (
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4l2.5 2.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+          </div>
+          <p className="text-[11px] leading-relaxed text-[var(--hm-text)]">
+            J&apos;ai vérifié ma création et je la valide. Je comprends que le visuel affiché est un aperçu indicatif — le rendu final peut varier légèrement selon la technique d&apos;impression.
+          </p>
+        </label>
+      )}
 
       {/* ── CTA ───────────────────────────────────────────────── */}
       <button
         onClick={handleAddToCart}
-        disabled={!canAdd || isUploading || isUploadingOnSelect}
+        disabled={!canAdd || isUploading || isUploadingOnSelect || ((hasLogo || !!studioComposedFront) && !creationValidated)}
         className={`btn-primary w-full gap-3 py-4 text-sm
-          ${!canAdd || isUploading || isUploadingOnSelect ? "cursor-not-allowed" : ""}`}
+          ${!canAdd || isUploading || isUploadingOnSelect || ((hasLogo || !!studioComposedFront) && !creationValidated) ? "cursor-not-allowed" : ""}`}
       >
         {addedToCart ? (
           <>

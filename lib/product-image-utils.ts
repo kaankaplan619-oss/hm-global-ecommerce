@@ -2,11 +2,12 @@
  * product-image-utils.ts — Sélection de l'image principale catalogue.
  *
  * Priorité (B2 — direction visuelle HM Global) :
- *   0. Mockup HM Global par coloris (getHMMockupPath)
- *   1. Packshot TopTex couleur par défaut (CDN /packshots/)
- *   2. Premier packshot TopTex disponible pour n'importe quelle couleur
- *   3. Premier packshot TopTex indépendamment de la disponibilité
- *   4. product.images[0] (photo mannequin /pictures/ — dernier recours)
+ *   0. Images fournisseur explicites (supplierImages) pour catalogue/fiches
+ *   1. Mockup HM Global par coloris (getHMMockupPath)
+ *   2. Packshot TopTex couleur par défaut (CDN /packshots/)
+ *   3. Premier packshot TopTex disponible pour n'importe quelle couleur
+ *   4. Premier packshot TopTex indépendamment de la disponibilité
+ *   5. product.images[0] (photo mannequin /pictures/ — dernier recours)
  *
  * Isomorphique (fonctionne en SSR et client). Aucun appel réseau.
  */
@@ -37,7 +38,11 @@ const NO_CATALOG_EDITORIAL = new Set([
  *                 mockup HM ou le packshot TopTex correspondant.
  */
 export function getProductCatalogImage(product: Product, colorId?: string): string {
-  // 0. Mockup HM Global (priorité absolue — direction visuelle B2)
+  // 0. Images fournisseur explicites — catalogue/fiches uniquement.
+  const supplierImage = product.supplierImages?.[0];
+  if (supplierImage) return supplierImage;
+
+  // 1. Mockup HM Global (direction visuelle B2)
   const hmMockup = getHMMockupPath(product, colorId);
   if (hmMockup) return hmMockup;
 

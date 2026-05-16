@@ -1,14 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 function getSiteUrl() {
   return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-    (typeof window !== "undefined" ? window.location.origin : "")
+    (typeof window !== "undefined" ? window.location.origin : "") ||
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+    ""
   );
 }
 
@@ -33,6 +35,7 @@ export default function ForgotPasswordPage() {
       });
 
       if (resetError) {
+        console.error("[ForgotPassword] resetPasswordForEmail failed:", resetError.message);
         setError("Impossible d'envoyer l'email de réinitialisation pour le moment.");
         return;
       }
@@ -46,66 +49,122 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center pt-16 px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
-            <div className="text-[#f5f5f5] font-black text-xl tracking-wider uppercase">HM GLOBAL</div>
-            <div className="text-[#c9a96e] font-light text-[10px] tracking-[0.25em] uppercase">Agence</div>
-          </Link>
-          <h1 className="text-2xl font-black text-[#f5f5f5] mb-2">Mot de passe oublié</h1>
-          <p className="text-sm text-[#555555]">
-            Entrez votre adresse email pour recevoir un lien de réinitialisation.
-          </p>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl flex flex-col gap-4"
-        >
-          {error && (
-            <div className="p-3 bg-[#f8717111] border border-[#f8717133] rounded-lg text-sm text-[#f87171]">
-              {error}
+    <div className="min-h-screen bg-[linear-gradient(180deg,rgba(247,250,252,0.92)_0%,rgba(255,255,255,1)_100%)] px-4 pt-28 pb-16">
+      <div className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <div className="rounded-[2rem] border border-[var(--hm-line)] bg-white p-8 shadow-[0_20px_48px_rgba(63,45,88,0.06)] md:p-10">
+          <div className="mb-8">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-primary)]" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-primary)]">
+                Récupération sécurisée
+              </span>
             </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-[#4ade8011] border border-[#4ade8033] rounded-lg text-sm text-[#86efac]">
-              Si un compte existe avec cette adresse, un email de réinitialisation a été envoyé.
-            </div>
-          )}
-
-          <div>
-            <label className="label">Email</label>
-            <input
-              type="email"
-              className="input"
-              placeholder="vous@exemple.fr"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
+            <h1 className="mb-3 text-3xl font-black text-[var(--hm-text)] md:text-4xl">
+              Mot de passe oublié
+            </h1>
+            <p className="max-w-md text-sm leading-7 text-[var(--hm-text-soft)]">
+              Entrez votre adresse email et nous vous enverrons un lien de réinitialisation
+              pour retrouver votre espace client rapidement.
+            </p>
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary w-full gap-2 mt-2">
-            {loading ? (
-              "Envoi en cours..."
-            ) : (
-              <>
-                <Mail size={14} />
-                Recevoir le lien
-              </>
-            )}
-          </button>
-        </form>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">Lien privé</p>
+              <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
+                Un lien unique est envoyé sur votre boite mail pour sécuriser la réinitialisation.
+              </p>
+            </div>
+            <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">Retour rapide</p>
+              <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
+                Une fois le mot de passe changé, vous pourrez revenir à votre panier et vos commandes.
+              </p>
+            </div>
+          </div>
+        </div>
 
-        <p className="text-center text-sm text-[#555555] mt-6">
-          Vous vous souvenez de votre mot de passe ?{" "}
-          <Link href="/connexion" className="text-[#c9a96e] hover:underline font-semibold">
-            Retour à la connexion
-          </Link>
-        </p>
+        <div className="w-full max-w-md justify-self-center">
+          <div className="mb-8 text-center">
+            <Link href="/" className="mb-6 inline-block">
+              <Image
+                src="/logo/hm-global-logo.png"
+                alt="HM Global Agence"
+                width={220}
+                height={60}
+                className="h-11 w-auto"
+                priority
+              />
+            </Link>
+            <h2 className="mb-2 text-2xl font-black text-[var(--hm-text)]">Recevoir un lien</h2>
+            <p className="text-sm text-[var(--hm-text-soft)]">
+              Saisissez l&apos;email associé à votre compte client HM Global.
+            </p>
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-4 rounded-[1.75rem] border border-[var(--hm-line)] bg-white p-6 shadow-[0_18px_40px_rgba(63,45,88,0.06)]"
+          >
+            {error && (
+              <div className="rounded-lg border border-[#fecaca] bg-[#fef2f2] p-3 text-sm text-[#b91c1c]">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="rounded-[1rem] border border-[#86efac] bg-[#ecfdf5] p-4 text-sm text-[#166534]">
+                Si un compte existe avec cette adresse, un email de réinitialisation a été envoyé.
+              </div>
+            )}
+
+            <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+              <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
+                <ShieldCheck size={14} className="text-[var(--hm-primary)]" />
+                Sécurité du compte
+              </div>
+              <p className="text-xs leading-6 text-[var(--hm-text-soft)]">
+                Nous n&apos;indiquons jamais si un compte existe ou non, pour protéger vos accès.
+              </p>
+            </div>
+
+            <div>
+              <label className="label">Email</label>
+              <input
+                type="email"
+                className="input"
+                placeholder="vous@exemple.fr"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            <button type="submit" disabled={loading} className="btn-primary mt-2 w-full gap-2">
+              {loading ? (
+                "Envoi en cours..."
+              ) : (
+                <>
+                  <Mail size={14} />
+                  Recevoir le lien
+                </>
+              )}
+            </button>
+
+            <Link
+              href="/connexion"
+              className="inline-flex items-center justify-center gap-2 text-sm font-medium text-[var(--hm-text-soft)] transition hover:text-[var(--hm-primary)]"
+            >
+              <ArrowLeft size={14} />
+              Retour à la connexion
+            </Link>
+          </form>
+
+          <p className="mt-5 text-center text-xs leading-6 text-[var(--hm-text-muted)]">
+            Pensez à vérifier vos indésirables si l&apos;email n&apos;arrive pas dans les prochaines minutes.
+          </p>
+        </div>
       </div>
     </div>
   );

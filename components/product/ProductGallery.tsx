@@ -2,8 +2,19 @@
 
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import Image from "next/image";
-import { Package } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Package, Box, Images } from "lucide-react";
 import type { ProductColor } from "@/types";
+
+// Chargement dynamique du viewer 3D (Three.js exclut SSR)
+const TShirt3DViewer = dynamic(() => import("./TShirt3DViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute inset-0 flex items-center justify-center bg-white">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--hm-line)] border-t-[var(--hm-primary)]" />
+    </div>
+  ),
+});
 
 // ─── Mapping couleur ID → clés anglaises dans les noms de fichiers ────────────
 //
@@ -158,8 +169,10 @@ function resolveTopTexImages(
 function buildVariantGallery(
   images: string[],
   selectedColor: ProductColor | null,
-  colorImages?: Record<string, string[]>
+  colorImages?: Record<string, string[]>,
+  supplierImages?: string[]
 ): string[] {
+  if (supplierImages?.length) return supplierImages;
   if (images.length === 0) return [""];
 
   // Priorité 1 : images TopTex per-color si disponibles via API
@@ -270,6 +283,7 @@ function GalleryImage({
   const [error, setError] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const isTopTexCdn = src.startsWith("https://cdn.toptex.com");
 
   useEffect(() => {
     setError(false);
@@ -302,7 +316,7 @@ function GalleryImage({
     );
   }
 
-  if (src.startsWith("https://cdn.toptex.com")) {
+  if (isTopTexCdn) {
     return (
       <>
         {!loaded && (
@@ -337,7 +351,7 @@ function GalleryImage({
   return (
     <>
       {!loaded && (
-        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[var(--hm-accent-soft-blue)] to-[var(--hm-accent-soft-purple)]" />
+        <div className="absolute inset-0 bg-white" />
       )}
       <Image
         src={src}
@@ -348,7 +362,7 @@ function GalleryImage({
         className={[
           className,
           "transition-opacity duration-300",
-          loaded ? "opacity-100" : "opacity-0",
+          "opacity-100",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -367,6 +381,8 @@ type ProductGalleryProps = {
   colors: ProductColor[];
   selectedColor: ProductColor | null;
   badge?: string;
+  /** Images fournisseur explicites — catalogue/fiches/galerie uniquement. */
+  supplierImages?: string[];
   /**
    * Map colorId → imageUrls chargée depuis l'API TopTex + packshots statiques.
    * Prioritaire sur le fallback filename-based.
@@ -383,16 +399,18 @@ export default function ProductGallery({
   images,
   selectedColor,
   badge,
+  supplierImages,
   colorImages,
   mediasLoading,
   productId,
 }: ProductGalleryProps) {
   const gallery = useMemo(
-    () => buildVariantGallery(images, selectedColor, colorImages),
-    [images, selectedColor, colorImages]
+    () => buildVariantGallery(images, selectedColor, colorImages, supplierImages),
+    [images, selectedColor, colorImages, supplierImages]
   );
 
   const [activeImage, setActiveImage] = useState(gallery[0]);
+  const [show3D, setShow3D] = useState(false);
 
   useEffect(() => {
     setActiveImage(gallery[0]);
@@ -400,7 +418,11 @@ export default function ProductGallery({
 
   const handleThumb = useCallback((img: string) => {
     setActiveImage(img);
+    setShow3D(false); // retour à la photo si on clique sur miniature
   }, []);
+
+  // N'active le bouton 3D que si l'image est un mockup local (PNG Printful)
+  const is3DCapable = activeImage?.startsWith("/mockups/");
 
   // ── Debug log (développement uniquement) ────────────────────────────────────
   useEffect(() => {
@@ -455,19 +477,43 @@ export default function ProductGallery({
           border-[var(--hm-line)] bg-white
           shadow-[0_20px_48px_rgba(63,45,88,0.08)]"
       >
-        <GalleryImage
-          src={activeImage}
-          alt={name}
-          fill
-          priority
-          sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-contain"
-        />
+        {/* Image 2D ou Viewer 3D */}
+        {show3D && is3DCapable ? (
+          <TShirt3DViewer className="absolute inset-0" />
+        ) : (
+          <GalleryImage
+            src={activeImage}
+            alt={name}
+            fill
+            priority
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="object-contain"
+          />
+        )}
 
         {badge && (
           <div className="absolute left-4 top-4">
             <span className="badge badge-gold">{badge}</span>
           </div>
+        )}
+
+        {/* Bouton bascule 3D — visible uniquement pour les mockups Printful */}
+        {is3DCapable && (
+          <button
+            type="button"
+            onClick={() => setShow3D(!show3D)}
+            className={`absolute right-4 top-4 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition-all
+              ${show3D
+                ? "border-[var(--hm-rose)] bg-[var(--hm-rose)] text-white shadow-[0_4px_12px_rgba(177,63,116,0.30)]"
+                : "border-[var(--hm-line)] bg-white/90 text-[var(--hm-text-soft)] hover:border-[var(--hm-rose)] hover:text-[var(--hm-rose)]"
+              }`}
+          >
+            {show3D ? (
+              <><Images size={11} />Photos</>
+            ) : (
+              <><Box size={11} />Vue 3D</>
+            )}
+          </button>
         )}
 
         {/* Compteur de vues */}

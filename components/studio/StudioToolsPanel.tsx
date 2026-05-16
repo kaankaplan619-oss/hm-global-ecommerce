@@ -1,15 +1,21 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Upload, Type, Sparkles } from "lucide-react";
+import { Upload, Type, Sparkles, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, QrCode } from "lucide-react";
+import QRCode from "qrcode";
 import { EFFECT_OPTIONS } from "@/lib/color-utils";
 import type { StudioObject } from "./StudioCanvas";
 
 const FONT_OPTIONS = [
-  { value: "Arial",           label: "Arial (Sans-serif)"     },
-  { value: "Georgia",         label: "Georgia (Serif)"        },
-  { value: "Courier New",     label: "Courier New (Mono)"     },
+  { value: "Arial",           label: "Arial" },
+  { value: "Georgia",         label: "Georgia" },
+  { value: "Courier New",     label: "Courier New" },
+  { value: "Impact",          label: "Impact" },
+  { value: "Trebuchet MS",    label: "Trebuchet MS" },
+  { value: "Times New Roman", label: "Times New Roman" },
 ];
+
+const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 60, 72];
 
 const COLOR_PRESETS = [
   "#000000", "#FFFFFF", "#b13f74", "#2563EB", "#DC2626", "#166534",
@@ -39,14 +45,29 @@ interface Props {
 
 export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<"logo" | "text" | "design" | "effects">("logo");
+  const [activeTab, setActiveTab] = useState<"logo" | "text" | "design" | "qr">("logo");
+
+  // ── QR Code state ─────────────────────────────────────────────────────────
+  const [qrUrl,          setQrUrl]          = useState("https://");
+  const [qrFgColor,      setQrFgColor]      = useState("#000000");
+  const [qrBgColor,      setQrBgColor]      = useState("#FFFFFF");
+  const [qrTransparent,  setQrTransparent]  = useState(false);
+  const [qrSize,         setQrSize]         = useState(200);
+  const [qrGenerating,   setQrGenerating]   = useState(false);
+  const [qrPreview,      setQrPreview]      = useState<string | null>(null);
+  const [qrError,        setQrError]        = useState<string | null>(null);
 
   // ── Text state ────────────────────────────────────────────────────────────
-  const [textValue,   setTextValue]   = useState("");
-  const [fontFamily,  setFontFamily]  = useState("Arial");
-  const [fontSize,    setFontSize]    = useState(24);
-  const [textColor,   setTextColor]   = useState("#000000");
-  const [hexInput,    setHexInput]    = useState("#000000");
+  const [textValue,      setTextValue]      = useState("");
+  const [fontFamily,     setFontFamily]     = useState("Arial");
+  const [fontSize,       setFontSize]       = useState(24);
+  const [textColor,      setTextColor]      = useState("#FFFFFF");
+  const [fontWeight,     setFontWeight]     = useState<"normal" | "bold">("bold");
+  const [fontStyle,      setFontStyle]      = useState<"normal" | "italic">("normal");
+  const [textDecoration, setTextDecoration] = useState<"none" | "underline">("none");
+  const [textAlign,      setTextAlign]      = useState<"left" | "center" | "right">("center");
+  const [letterSpacing,  setLetterSpacing]  = useState(0);
+  const [hexInput,    setHexInput]    = useState("#FFFFFF");
   // ── Logo state ────────────────────────────────────────────────────────────
   const [logoWarning, setLogoWarning] = useState<string | null>(null);
 
@@ -55,15 +76,24 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
     if (!file) return;
     setLogoWarning(null);
 
-    // Check PNG/JPEG dimensions
-    if (file.type === "image/png" || file.type === "image/jpeg") {
+    const isJpeg = file.type === "image/jpeg" || file.type === "image/jpg";
+
+    // JPEG → toujours un fond opaque, avertissement immédiat
+    if (isJpeg) {
+      setLogoWarning(
+        "⚠️ JPEG détecté — ce format a toujours un fond opaque (blanc ou coloré). " +
+        "Le fond apparaîtra sur le t-shirt. Utilisez un PNG fond transparent ou un fichier SVG."
+      );
+    }
+
+    // Check dimensions (PNG + JPEG)
+    if (file.type === "image/png" || isJpeg) {
       const img = new window.Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
         if (img.naturalWidth < 300 || img.naturalHeight < 300) {
-          setLogoWarning(
-            `Résolution faible (${img.naturalWidth}×${img.naturalHeight}px). Pour un rendu optimal, utilisez une image d'au moins 300×300px.`
-          );
+          const dimWarning = `Résolution faible (${img.naturalWidth}×${img.naturalHeight}px). Pour un rendu net sur textile, utilisez au minimum 300×300px — idéalement 1000px+.`;
+          setLogoWarning((prev) => prev ? `${prev}\n${dimWarning}` : dimWarning);
         }
         URL.revokeObjectURL(url);
       };
@@ -89,7 +119,12 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
       text: textValue.trim(),
       fontFamily,
       fontSize,
-      color: textColor,
+      color:         textColor,
+      fontWeight,
+      fontStyle,
+      textDecoration,
+      textAlign,
+      letterSpacing,
       label: textValue.trim().slice(0, 20),
       face,
     });
@@ -106,14 +141,54 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
     });
   };
 
+  // ── QR Code helpers ───────────────────────────────────────────────────────
+  const generateQR = async () => {
+    const trimmed = qrUrl.trim();
+    if (!trimmed || trimmed === "https://") {
+      setQrError("Saisissez une URL ou un texte.");
+      return;
+    }
+    setQrError(null);
+    setQrGenerating(true);
+    try {
+      const dataUrl = await QRCode.toDataURL(trimmed, {
+        width: qrSize,
+        margin: 1,
+        color: {
+          dark:  qrFgColor,
+          light: qrTransparent ? "#00000000" : qrBgColor,
+        },
+        errorCorrectionLevel: "H",
+      });
+      setQrPreview(dataUrl);
+    } catch {
+      setQrError("Impossible de générer le QR code. Vérifiez le texte saisi.");
+    } finally {
+      setQrGenerating(false);
+    }
+  };
+
+  const handleAddQR = () => {
+    if (!qrPreview) return;
+    onAddObject({
+      id: `qr-${Date.now()}`,
+      type: "logo",          // réutilise le rendu image existant
+      src: qrPreview,        // data URL PNG
+      label: "QR Code",
+      face,
+    });
+    setQrPreview(null);
+  };
+
   const tabs = [
-    { id: "logo"    as const, label: "Logo",    icon: <Upload size={14} /> },
-    { id: "text"    as const, label: "Texte",   icon: <Type size={14} /> },
-    { id: "design"  as const, label: "Designs", icon: <Sparkles size={14} /> },
+    { id: "logo"    as const, label: "Logo",    icon: <Upload size={16} /> },
+    { id: "text"    as const, label: "Texte",   icon: <Type size={16} /> },
+    { id: "design"  as const, label: "Designs", icon: <Sparkles size={16} /> },
+    { id: "qr"      as const, label: "QR Code", icon: <QrCode size={16} /> },
   ];
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* ── Input fichier — toujours dans le DOM (sr-only) pour iOS Safari ────── */}
       <input
         id="studio-logo-input"
@@ -124,17 +199,17 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
         onChange={handleFileChange}
       />
 
-      {/* ── Tab bar ──────────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-1">
+      {/* ── Tab bar 2×2 ──────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-1 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all
+            className={`flex flex-col items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-[11px] font-semibold transition-all
               ${activeTab === tab.id
                 ? "bg-white text-[var(--hm-primary)] shadow-sm"
-                : "text-[var(--hm-text-soft)] hover:text-[var(--hm-text)]"
+                : "text-[var(--hm-text-soft)] hover:bg-white/60 hover:text-[var(--hm-text)]"
               }`}
           >
             {tab.icon}
@@ -149,26 +224,48 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
           {/* Label native file-input trigger — le plus fiable sur iOS/Android/desktop */}
           <label
             htmlFor="studio-logo-input"
-            className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[var(--hm-line)] bg-[var(--hm-bg)] px-4 py-8 text-center transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
+            className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[var(--hm-line)] bg-[var(--hm-bg)] px-4 py-6 text-center transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
           >
             <Upload size={24} className="text-[var(--hm-primary)]" />
             <span className="text-sm font-semibold text-[var(--hm-text)]">
               {hasLogo ? "Remplacer le logo" : "Importer votre logo"}
             </span>
             <span className="text-xs text-[var(--hm-text-soft)]">
-              PNG, SVG ou JPEG · Recommandé : 300px minimum
+              SVG · PNG fond transparent · min. 300px
             </span>
           </label>
 
+          {/* Alerte dynamique (JPEG, résolution faible, etc.) */}
           {logoWarning && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
-              ⚠ {logoWarning}
+            <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-[11px] leading-snug text-amber-800">
+              {logoWarning.split("\n").map((line, i) => (
+                <p key={i} className={i > 0 ? "mt-1" : ""}>{line}</p>
+              ))}
             </div>
           )}
 
+          {/* Guide format */}
+          <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-3">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Format recommandé</p>
+            <div className="flex flex-col gap-1.5 text-[11px]">
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-8 items-center justify-center rounded bg-green-100 text-[9px] font-bold text-green-700">SVG</span>
+                <span className="text-[var(--hm-text)]">Vecteur — qualité parfaite, aucun fond</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-8 items-center justify-center rounded bg-blue-100 text-[9px] font-bold text-blue-700">PNG</span>
+                <span className="text-[var(--hm-text)]">Fond transparent obligatoire · 1000px+</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-8 items-center justify-center rounded bg-red-100 text-[9px] font-bold text-red-600">JPG</span>
+                <span className="text-[var(--hm-text-soft)]">Déconseillé — fond opaque visible sur textile</span>
+              </div>
+            </div>
+          </div>
+
           <p className="text-[10px] text-[var(--hm-text-muted)]">
-            Formats acceptés : PNG (fond transparent recommandé), SVG, JPEG.
-            Pour la broderie, privilégiez les logos simples avec peu de couleurs.
+            Pour la broderie, privilégiez des logos simples avec peu de couleurs.
+            Si votre logo n'est disponible qu'en JPEG, demandez-nous un détourage professionnel.
           </p>
 
           {/* Logo effects section */}
@@ -197,28 +294,23 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
 
       {/* ── Text panel ───────────────────────────────────────────────────────── */}
       {activeTab === "text" && (
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-              Votre texte
-            </label>
-            <textarea
-              value={textValue}
-              onChange={(e) => setTextValue(e.target.value)}
-              placeholder="Ex: Mon Club, Mon Équipe..."
-              rows={2}
-              className="w-full resize-none rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-sm text-[var(--hm-text)] placeholder:text-[var(--hm-text-muted)] focus:border-[var(--hm-primary)] focus:outline-none"
-            />
-          </div>
+        <div className="flex flex-col gap-3">
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-              Police
-            </label>
+          {/* ── Texte ─────────────────────────────────────────────────── */}
+          <textarea
+            value={textValue}
+            onChange={(e) => setTextValue(e.target.value)}
+            placeholder="Ex: Mon Club, Mon Équipe..."
+            rows={2}
+            className="w-full resize-none rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-sm text-[var(--hm-text)] placeholder:text-[var(--hm-text-muted)] focus:border-[var(--hm-primary)] focus:outline-none"
+          />
+
+          {/* ── Police + Taille ───────────────────────────────────────── */}
+          <div className="flex gap-2">
             <select
               value={fontFamily}
               onChange={(e) => setFontFamily(e.target.value)}
-              className="w-full rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-sm text-[var(--hm-text)] focus:border-[var(--hm-primary)] focus:outline-none"
+              className="flex-1 min-w-0 rounded-xl border border-[var(--hm-line)] bg-white px-2 py-2 text-xs text-[var(--hm-text)] focus:border-[var(--hm-primary)] focus:outline-none"
             >
               {FONT_OPTIONS.map((f) => (
                 <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>
@@ -226,33 +318,113 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-              Taille ({fontSize}px)
-            </label>
-            <input
-              type="range"
-              min={10}
-              max={72}
+            <select
               value={fontSize}
               onChange={(e) => setFontSize(parseInt(e.target.value))}
+              className="w-20 shrink-0 rounded-xl border border-[var(--hm-line)] bg-white px-2 py-2 text-xs text-[var(--hm-text)] focus:border-[var(--hm-primary)] focus:outline-none"
+            >
+              {FONT_SIZES.map((s) => (
+                <option key={s} value={s}>{s} px</option>
+              ))}
+            </select>
+          </div>
+
+          {/* ── Gras / Italique / Souligné + Alignement ───────────────── */}
+          <div className="flex gap-1.5">
+            {/* Gras */}
+            <button
+              type="button"
+              onClick={() => setFontWeight(w => w === "bold" ? "normal" : "bold")}
+              title="Gras"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-bold transition ${
+                fontWeight === "bold"
+                  ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                  : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+              }`}
+            >
+              <Bold size={14} />
+            </button>
+            {/* Italique */}
+            <button
+              type="button"
+              onClick={() => setFontStyle(s => s === "italic" ? "normal" : "italic")}
+              title="Italique"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+                fontStyle === "italic"
+                  ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                  : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+              }`}
+            >
+              <Italic size={14} />
+            </button>
+            {/* Souligné */}
+            <button
+              type="button"
+              onClick={() => setTextDecoration(d => d === "underline" ? "none" : "underline")}
+              title="Souligné"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+                textDecoration === "underline"
+                  ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                  : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+              }`}
+            >
+              <Underline size={14} />
+            </button>
+            {/* Séparateur */}
+            <div className="mx-0.5 w-px self-stretch bg-[var(--hm-line)]" />
+            {/* Alignement */}
+            {([
+              { align: "left"   as const, Icon: AlignLeft   },
+              { align: "center" as const, Icon: AlignCenter },
+              { align: "right"  as const, Icon: AlignRight  },
+            ]).map(({ align, Icon }) => (
+              <button
+                key={align}
+                type="button"
+                onClick={() => setTextAlign(align)}
+                title={`Aligner ${align === "left" ? "à gauche" : align === "center" ? "au centre" : "à droite"}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+                  textAlign === align
+                    ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                    : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+                }`}
+              >
+                <Icon size={14} />
+              </button>
+            ))}
+          </div>
+
+          {/* ── Espacement lettres ────────────────────────────────────── */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                Espacement lettres
+              </span>
+              <span className="text-[10px] font-mono text-[var(--hm-text-soft)]">{letterSpacing} px</span>
+            </div>
+            <input
+              type="range"
+              min={-3}
+              max={20}
+              step={0.5}
+              value={letterSpacing}
+              onChange={(e) => setLetterSpacing(parseFloat(e.target.value))}
               className="w-full accent-[var(--hm-primary)]"
             />
           </div>
 
+          {/* ── Couleur ───────────────────────────────────────────────── */}
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
               Couleur
-            </label>
+            </span>
             <div className="flex flex-wrap gap-2">
               {COLOR_PRESETS.map((color) => (
                 <button
                   key={color}
                   type="button"
                   onClick={() => { setTextColor(color); setHexInput(color); }}
-                  className={`h-8 w-8 rounded-full border-2 transition ${
+                  className={`h-7 w-7 rounded-full border-2 transition ${
                     textColor === color
                       ? "border-[var(--hm-primary)] scale-110 shadow-md"
                       : "border-[var(--hm-line)]"
@@ -279,7 +451,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
                   }
                 }}
                 placeholder="#000000"
-                className="flex-1 rounded-xl border border-[var(--hm-line)] bg-white px-3 py-1.5 text-xs text-[var(--hm-text)] focus:border-[var(--hm-primary)] focus:outline-none"
+                className="flex-1 rounded-xl border border-[var(--hm-line)] bg-white px-3 py-1.5 text-xs font-mono text-[var(--hm-text)] focus:border-[var(--hm-primary)] focus:outline-none"
               />
             </div>
           </div>
@@ -290,7 +462,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
             onClick={handleAddText}
             className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Ajouter le texte au canvas
+            Ajouter le texte
           </button>
         </div>
       )}
@@ -326,6 +498,149 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
           <p className="text-[10px] text-[var(--hm-text-muted)]">
             Cliquez sur un design pour l&apos;ajouter au canvas. Vous pouvez le déplacer et redimensionner après.
           </p>
+        </div>
+      )}
+
+      {/* ── QR Code panel ────────────────────────────────────────────────────── */}
+      {activeTab === "qr" && (
+        <div className="flex flex-col gap-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+            Générer un QR code
+          </p>
+
+          {/* URL / texte */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">URL ou texte</label>
+            <input
+              type="text"
+              value={qrUrl}
+              onChange={(e) => { setQrUrl(e.target.value); setQrPreview(null); setQrError(null); }}
+              placeholder="https://votre-site.com"
+              className="w-full rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-xs text-[var(--hm-text)] placeholder:text-[var(--hm-text-muted)] focus:border-[var(--hm-primary)] focus:outline-none"
+            />
+          </div>
+
+          {/* Couleurs */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">Couleur QR</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={qrFgColor}
+                  onChange={(e) => { setQrFgColor(e.target.value); setQrPreview(null); }}
+                  className="h-8 w-8 cursor-pointer rounded border border-[var(--hm-line)] bg-white p-0.5"
+                />
+                <input
+                  type="text"
+                  value={qrFgColor}
+                  onChange={(e) => { if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) { setQrFgColor(e.target.value); setQrPreview(null); } }}
+                  className="flex-1 rounded-lg border border-[var(--hm-line)] bg-white px-2 py-1.5 text-[10px] font-mono text-[var(--hm-text)] focus:border-[var(--hm-primary)] focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">Fond</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={qrBgColor}
+                  disabled={qrTransparent}
+                  onChange={(e) => { setQrBgColor(e.target.value); setQrPreview(null); }}
+                  className="h-8 w-8 cursor-pointer rounded border border-[var(--hm-line)] bg-white p-0.5 disabled:opacity-40"
+                />
+                <input
+                  type="text"
+                  value={qrTransparent ? "Transparent" : qrBgColor}
+                  readOnly
+                  className="flex-1 rounded-lg border border-[var(--hm-line)] bg-white px-2 py-1.5 text-[10px] font-mono text-[var(--hm-text-muted)] focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Fond transparent */}
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              checked={qrTransparent}
+              onChange={(e) => { setQrTransparent(e.target.checked); setQrPreview(null); }}
+              className="h-4 w-4 accent-[var(--hm-primary)]"
+            />
+            <span className="text-xs text-[var(--hm-text)]">Fond transparent (PNG)</span>
+          </label>
+
+          {/* Taille */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">Taille de génération</label>
+              <span className="text-[10px] font-mono text-[var(--hm-text-soft)]">{qrSize} px</span>
+            </div>
+            <input
+              type="range"
+              min={100}
+              max={600}
+              step={50}
+              value={qrSize}
+              onChange={(e) => { setQrSize(parseInt(e.target.value)); setQrPreview(null); }}
+              className="w-full accent-[var(--hm-primary)]"
+            />
+            <p className="text-[9px] text-[var(--hm-text-muted)]">
+              Recommandé : 300 px minimum pour une impression nette.
+            </p>
+          </div>
+
+          {/* Erreur */}
+          {qrError && (
+            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
+              {qrError}
+            </p>
+          )}
+
+          {/* Prévisualisation */}
+          {qrPreview && (
+            <div className="flex flex-col items-center gap-2 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">Aperçu</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qrPreview}
+                alt="QR Code prévisualisation"
+                className="h-32 w-32 rounded-lg"
+                style={{ imageRendering: "pixelated", background: qrTransparent ? "repeating-conic-gradient(#ddd 0% 25%, #fff 0% 50%) 0 0 / 10px 10px" : "transparent" }}
+              />
+              <p className="max-w-full truncate text-center text-[9px] text-[var(--hm-text-muted)]">{qrUrl}</p>
+            </div>
+          )}
+
+          {/* Boutons */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={generateQR}
+              disabled={qrGenerating}
+              className="flex-1 rounded-xl border border-[var(--hm-primary)] bg-white px-3 py-2.5 text-xs font-semibold text-[var(--hm-primary)] transition hover:bg-[var(--hm-accent-soft-rose)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {qrGenerating ? "Génération…" : qrPreview ? "Regénérer" : "Générer"}
+            </button>
+            {qrPreview && (
+              <button
+                type="button"
+                onClick={handleAddQR}
+                className="btn-primary flex-1"
+              >
+                Ajouter au canvas
+              </button>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-3 text-[10px] text-[var(--hm-text-soft)]">
+            <p className="font-semibold mb-1">Conseils :</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              <li>Testez le QR code avec votre téléphone avant d&apos;imprimer</li>
+              <li>Fond transparent = idéal sur textile coloré</li>
+              <li>Choisissez un contraste fort pour une meilleure lisibilité</li>
+            </ul>
+          </div>
         </div>
       )}
     </div>

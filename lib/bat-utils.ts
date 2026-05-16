@@ -40,9 +40,12 @@ export interface BATData {
 // ── Labels ────────────────────────────────────────────────────────────────────
 
 export const TECHNIQUE_LABELS: Record<Technique, string> = {
-  dtf:      "Impression DTF",
-  flex:     "Flocage Flex",
-  broderie: "Broderie",
+  dtf:                "Impression DTF",
+  dtflex:             "Impression DTFlex",
+  flex:               "Flocage Flex",
+  broderie:           "Broderie",
+  broderie_illimitee: "Broderie · Couleur illimitée",
+  print:              "Impression",
 };
 
 export const PLACEMENT_LABELS: Record<Placement, string> = {

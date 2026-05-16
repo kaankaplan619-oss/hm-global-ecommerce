@@ -1,11 +1,21 @@
+"use client";
+
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { Layers3 } from "lucide-react";
 import { formatPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getVisualMode } from "@/lib/hm-visual-utils";
 import type { Product } from "@/types";
 import HMProductVisual from "@/components/product/HMProductVisual";
+
+// Three.js chargé uniquement côté client — jamais en SSR
+const TShirt3DViewer = dynamic(
+  () => import("@/components/product/TShirt3DViewer"),
+  { ssr: false }
+);
 
 interface ProductCardProps {
   product: Product;
@@ -19,6 +29,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   polaires:   "Polaire / Doudoune",
   casquettes: "Casquette",
   sacs:       "Sac & Tote",
+  goodies:    "Mug & Goodie",
   enfants:    "Enfant",
 };
 
@@ -37,9 +48,27 @@ export default function ProductCard({ product }: ProductCardProps) {
   // Image catalogue (B2) : mockup HM Global > packshot TopTex > photo mannequin
   const catalogImage = getProductCatalogImage(product, defaultColor?.id);
 
-  // Mode visuel : Printful → rendu simple fond blanc (pas HMProductVisual)
-  const isPrintful = product.supplierName === "printful";
+  // Mode visuel : Printful + Spreadshirt → rendu simple fond blanc (pas HMProductVisual)
+  const isPrintful = product.supplierName === "printful" || product.supplierName === "spreadshirt";
   const visualMode = isPrintful ? "supplier" : getVisualMode(product);
+
+  // 3D hover uniquement pour les t-shirts (shirt.glb)
+  // Hoodies : photos Printful utilisées — modèle 3D non disponible pour l'instant
+  const is3DCapable = isPrintful && product.category === "tshirts";
+
+  // ── Hover 3D ─────────────────────────────────────────────────────────────────
+  const [show3D, setShow3D] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    if (!is3DCapable) return;
+    // Délai 180ms pour éviter les faux positifs (scroll rapide)
+    timerRef.current = setTimeout(() => setShow3D(true), 180);
+  };
+  const handleMouseLeave = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setShow3D(false);
+  };
 
   return (
     <Link
@@ -47,18 +76,40 @@ export default function ProductCard({ product }: ProductCardProps) {
       className="hm-card-enter group card card-hover block overflow-hidden"
     >
       {/* ── Zone image ────────────────────────────────────────────────────── */}
-      <div className="relative aspect-[4/5] overflow-hidden rounded-t-xl">
+      <div
+        className="relative aspect-[4/5] overflow-hidden rounded-t-xl"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
 
         {isPrintful ? (
-          /* Produits Printful : fond blanc pur, image sans wrapper intermédiaire */
+          /* Produits Printful : fond blanc pur */
           <div className="absolute inset-0 bg-white flex items-center justify-center">
-            <Image
-              src={catalogImage || "/mockups/tshirt/blanc-front.jpg"}
-              alt={product.name}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              className="object-contain scale-[1.18] transition-transform duration-500 group-hover:scale-[1.24]"
-            />
+
+            {/* ── 3D viewer (hover) — t-shirt uniquement ── */}
+            {show3D ? (
+              <TShirt3DViewer
+                color={defaultColor?.hex ?? "#111111"}
+                autoRotate
+                hideLabel
+                className="absolute inset-0 w-full h-full"
+              />
+            ) : catalogImage || product.category !== "goodies" ? (
+              /* Flat packshot */
+              <Image
+                src={catalogImage || "/mockups/tshirt/blanc-front.jpg"}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                className="object-contain p-3 transition-transform duration-700 group-hover:scale-[1.06] [mix-blend-mode:multiply]"
+              />
+            ) : (
+              /* Placeholder goodies */
+              <div className="flex flex-col items-center justify-center gap-2 opacity-30 select-none">
+                <span className="text-6xl leading-none">☕</span>
+                <span className="text-[10px] font-medium text-[var(--hm-text-soft)] tracking-wide">Visuel à venir</span>
+              </div>
+            )}
           </div>
         ) : (
           /* Autres produits (TopTex, etc.) : HMProductVisual avec mode hm/supplier */
@@ -81,21 +132,23 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Pastilles couleurs */}
-        <div className="absolute bottom-3 left-3 flex gap-1.5">
-          {product.colors.slice(0, 5).map((color) => (
-            <div
-              key={color.id}
-              className="w-4 h-4 rounded-full border border-black/20 shadow-sm"
-              style={{ backgroundColor: color.hex }}
-              title={color.label}
-            />
-          ))}
-          {product.colors.length > 5 && (
-            <div className="w-5 h-5 rounded-full bg-white/90 border border-[var(--hm-line)] flex items-center justify-center">
-              <span className="text-[8px] text-[var(--hm-text-soft)]">+{product.colors.length - 5}</span>
-            </div>
-          )}
-        </div>
+        {!show3D && (
+          <div className="absolute bottom-3 left-3 flex gap-1.5">
+            {product.colors.slice(0, 5).map((color) => (
+              <div
+                key={color.id}
+                className="w-4 h-4 rounded-full border border-black/20 shadow-sm"
+                style={{ backgroundColor: color.hex }}
+                title={color.label}
+              />
+            ))}
+            {product.colors.length > 5 && (
+              <div className="w-5 h-5 rounded-full bg-white/90 border border-[var(--hm-line)] flex items-center justify-center">
+                <span className="text-[8px] text-[var(--hm-text-soft)]">+{product.colors.length - 5}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Infos produit ─────────────────────────────────────────────────── */}

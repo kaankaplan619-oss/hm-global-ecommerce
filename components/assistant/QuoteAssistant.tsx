@@ -27,12 +27,11 @@ import {
   Building2,
   Layers,
   Phone,
-  BookOpen,
 } from "lucide-react";
 
 // ─── Routes masquées ──────────────────────────────────────────────────────────
 
-const HIDDEN_PATHS = ["/checkout", "/checkout/paiement"];
+const HIDDEN_PATHS = ["/checkout", "/checkout/paiement", "/studio"];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -506,7 +505,7 @@ function QuoteAssistantWidget() {
         className={`
           fixed bottom-20 right-4 sm:bottom-[88px] sm:right-6
           z-40
-          w-[min(320px,calc(100vw-32px))]
+          w-[min(312px,calc(100vw-32px))]
           transition-all duration-200 ease-out
           ${open
             ? "opacity-100 translate-y-0 pointer-events-auto"
@@ -575,7 +574,7 @@ function QuoteAssistantWidget() {
         className={`
           fixed bottom-4 right-4 sm:bottom-6 sm:right-6
           z-40
-          w-14 h-14 rounded-full shadow-lg
+          h-[52px] w-[52px] rounded-full shadow-[0_14px_30px_rgba(177,63,116,0.28)]
           flex items-center justify-center
           transition-all duration-200
           ${open

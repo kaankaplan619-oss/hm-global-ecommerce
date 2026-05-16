@@ -59,6 +59,38 @@ const TSHIRT_MOCKUP_BY_COLOR: Record<string, string> = {
 
 const TSHIRT_MOCKUP_DEFAULT = "/mockups/tshirt/blanc-front.jpg";
 
+// ── Assets HM propres — nouvelle génération (webp 1500×1500, fond propre) ─────
+// Structure : productId → colorId → { front, back }
+// Fallback automatique : si l'entrée est absente, l'ancien système (hmMockupImages
+// sur le produit) prend le relais sans interruption.
+// Pour désactiver un test : retirer l'entrée colorId du map.
+const HM_TEXTILE_ASSETS: Record<string, Record<string, { front: string; back: string }>> = {
+  "gildan-18000": {
+    "noir": {
+      front: "/mockups/hm/textile/gildan-18000/noir/front.webp",
+      back:  "/mockups/hm/textile/gildan-18000/noir/back.webp",
+    },
+  },
+};
+
+/**
+ * Retourne le chemin de l'image face avant HM propre (webp nouvelle génération)
+ * pour un produit + coloris, ou `null` si aucun asset de ce type n'est enregistré
+ * (→ fallback vers hmMockupImages du produit).
+ */
+export function getHMTextileFrontPath(productId: string, colorId?: string): string | null {
+  return HM_TEXTILE_ASSETS[productId]?.[colorId ?? ""]?.front ?? null;
+}
+
+/**
+ * Retourne le chemin de l'image face dos HM propre (webp nouvelle génération)
+ * pour un produit + coloris, ou `null` si aucun asset de ce type n'est enregistré
+ * (→ fallback vers hmMockupImagesBack du produit).
+ */
+export function getHMTextileBackPath(productId: string, colorId?: string): string | null {
+  return HM_TEXTILE_ASSETS[productId]?.[colorId ?? ""]?.back ?? null;
+}
+
 /**
  * Familles pour lesquelles des assets mockup HM Global sont disponibles
  * dans /public/mockups/.
@@ -101,14 +133,23 @@ export function getHMMockupPath(
   product: Product,
   colorId?: string,
 ): string | null {
+  // P-1. Assets HM propres nouvelle génération (webp 1500×1500) — priorité absolue
+  const hmTextileFront =
+    product.id === "gildan-18000" ? null : getHMTextileFrontPath(product.id, colorId);
+  if (hmTextileFront) return hmTextileFront;
+
   // P0. Produits Printful → mockups locaux HM Global (jamais images CDN ghost-mannequin)
   if (product.supplierName === "printful") {
     // P0a. Mockup propre au produit + coloris (priorité absolue)
     if (colorId && product.hmMockupImages?.[colorId]) {
       return product.hmMockupImages[colorId];
     }
-    // P0b. Fallback générique par coloris (anciens produits sans hmMockupImages)
-    return (colorId && PRINTFUL_LOCAL_BY_COLOR[colorId]) || PRINTFUL_LOCAL_DEFAULT;
+    // P0b. Fallback générique par coloris — uniquement si le produit a des hmMockupImages définis.
+    // Évite d'afficher un t-shirt pour les goodies/mugs et autres POD sans assets locaux.
+    if (product.hmMockupImages) {
+      return (colorId && PRINTFUL_LOCAL_BY_COLOR[colorId]) || PRINTFUL_LOCAL_DEFAULT;
+    }
+    return null; // Pas d'assets définis → "Visuel à venir" (HMProductVisual isEmpty)
   }
 
   // 0a. Override par coloris (per-product, priorité absolue)

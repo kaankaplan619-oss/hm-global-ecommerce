@@ -1,6 +1,6 @@
-# AGENT_REPORT.md — Mission 3 : URL logo stable dans BATData
+# AGENT_REPORT.md — Refonte visuelle home / header / footer
 
-> Rapport de tâche — priorité Supabase URL > blob local pour le BAT + révocation différée blob.
+> Rapport de tâche — montée en gamme visuelle de la page d'accueil, du header, du footer et du menu mobile, sans toucher à la logique sensible catalogue / panier / configurateur.
 
 ---
 
@@ -8,209 +8,105 @@
 
 | Champ | Valeur |
 |---|---|
-| Date | 2026-04-29 |
-| Commit | `a479b7a` |
+| Date | 2026-05-14 |
 | Branche | `main` |
-| Déployé sur Vercel | ✅ `dpl_AnfbuBi6jGcsx2mYGmZXC3hGaQK3` (Mission 2) · en attente pour `a479b7a` |
-| URL de test | `https://hm-global-sumup-agen-ia-s-projects.vercel.app` |
+| Commit | non créé |
+| Périmètre | `app/page.tsx`, `app/layout.tsx`, `app/globals.css`, `components/home/*`, `components/layout/*`, `components/assistant/QuoteAssistant.tsx` |
 
 ---
 
 ## 1. Objectif demandé
 
-Stabiliser l'URL logo utilisée par `BATModal` :
-1. **URL Supabase** si disponible (persistante, stable après refresh)
-2. **Blob URL** sinon (fallback non-authentifié)
-3. **null** si aucun logo
+Refondre la partie design du site pour donner une impression plus propre, plus élégante et plus rassurante, tout en évitant d'impacter négativement le code métier déjà en cours sur le projet.
 
-Garantir que le blob URL n'est pas révoqué pendant que `BATModal` est ouvert et que le changement de fichier A → B invalide correctement l'état précédent.
+Contraintes suivies :
+- ne pas toucher à la logique catalogue / produit / panier / BAT
+- garder la navigation existante
+- améliorer surtout la hiérarchie visuelle, la désirabilité et la lisibilité mobile
 
 ---
 
-## 2. Problèmes identifiés à l'audit
+## 2. Résumé des modifications
 
-| # | Problème | Localisation |
+| Zone | Modifications |
+|---|---|
+| `app/layout.tsx` | retrait des Google Fonts distantes, maintien d'une pile locale élégante |
+| `app/globals.css` | ajustement du fond global, ajout d'une famille `font-display`, conservation des tokens existants |
+| `components/layout/Header.tsx` | header plus premium, nav desktop plus légère, menu mobile transformé en vrai panneau |
+| `components/layout/Footer.tsx` | footer reconstruit avec contraste plus fort et structure plus lisible |
+| `components/home/Hero.tsx` | hero entièrement redesigné avec meilleure hiérarchie, stats, preuves et composition produit |
+| `components/home/BestSellers.tsx` | section raccourcie et montée en gamme pour mieux orienter vers l'achat |
+| `components/home/CategorySection.tsx` | clarification des 2 parcours : commande directe vs projet accompagné |
+| `components/home/CTASection.tsx` | closing section plus nette et plus orientée conversion |
+| `app/page.tsx` | suppression de `TrustSection` du flux home pour éviter la redondance |
+| `components/assistant/QuoteAssistant.tsx` | légère réduction de l'impact visuel du bouton flottant |
+
+---
+
+## 3. Choix design
+
+- direction plus éditoriale et plus premium
+- meilleure respiration dans le hero
+- séparation plus claire entre `catalogue` et `devis`
+- moins de répétition de blocs rassurance
+- mobile menu plus propre et plus assumé
+- footer plus statutaire
+
+---
+
+## 4. Fonctionnalités protégées impactées
+
+| Feature protégée | Impact | Statut |
 |---|---|---|
-| P1 | `buildBATData` ne recevait que le blob URL — l'URL Supabase de `logoUploadResult` (dans `ProductConfigurator`) n'était pas remontée au parent | `ProductDetailClient.tsx` |
-| P2 | Révocation synchrone du blob URL dans le `useEffect` de `ProductDetailClient` — fenêtre d'1 frame avec image cassée dans `BATModal` si celui-ci est ouvert | `ProductDetailClient.tsx` |
-| P3 | Commentaire `BATData.logoUrl` "blob URL ou null" inexact | `lib/bat-utils.ts` |
+| Navigation header | style uniquement, logique conservée | ✅ |
+| Responsive mobile / desktop | home + menu mobile revérifiés | ✅ |
+| QuoteAssistant viewport | taille et présence revues visuellement | ✅ |
+| Catalogue / page produit / BAT / panier | non modifiés volontairement | ⏭ hors périmètre |
 
 ---
 
-## 3. Résumé des modifications
+## 5. Tests exécutés
 
-| Fichier | Lignes | Nature |
-|---|---|---|
-| `components/product/ProductConfigurator.tsx` | +8 / -1 | Nouvelle prop `onLogoUploadResult` + appels |
-| `components/product/ProductDetailClient.tsx` | +25 / -5 | État `logoSupabaseUrl` + `batLogoUrl` + révocation différée |
-| `lib/bat-utils.ts` | +1 / -1 | Commentaire mis à jour |
-
-`BATModal.tsx`, `BATPreviewCard.tsx`, `buildBATData()`, `store/cart.ts`, `LightMockupPreview.tsx`, `uploadLogo.ts` — **non touchés**.
-
----
-
-## 4. Détail avant / après
-
-### `ProductConfigurator.tsx` — nouvelle prop `onLogoUploadResult`
-
-```typescript
-// Avant — pas de prop pour remonter l'URL Supabase
-interface Props {
-  onLogoChange?: (f: File | null) => void;
-  // ... pas d'onLogoUploadResult
-}
-
-// Après
-interface Props {
-  onLogoChange?: (f: File | null) => void;
-  onLogoUploadResult?: (result: LogoUploadResult | null) => void;
-  // ...
-}
-
-// Dans handleFileChange :
-// Au début (reset)
-onLogoUploadResult?.(null);
-// Après upload réussi
-onLogoUploadResult?.(data);
-// Dans le handler de suppression fichier
-onLogoUploadResult?.(null);
-```
-
-### `ProductDetailClient.tsx` — priorité URL + révocation différée
-
-```typescript
-// Avant
-const [logoUrl, setLogoUrl] = useState<string | null>(null);
-useEffect(() => {
-  if (!logoFile) { setLogoUrl(null); return; }
-  const url = URL.createObjectURL(logoFile);
-  setLogoUrl(url);
-  return () => URL.revokeObjectURL(url); // ← révocation synchrone = image cassée possible
-}, [logoFile]);
-
-// buildBATData recevait logoUrl (blob seulement)
-return buildBATData(..., logoUrl);
-
-// Après
-const [logoSupabaseUrl, setLogoSupabaseUrl] = useState<string | null>(null);
-const handleLogoUploadResult = useCallback((result: LogoUploadResult | null) => {
-  setLogoSupabaseUrl(result?.logoFileUrl ?? null);
-}, []);
-
-const [logoUrl, setLogoUrl] = useState<string | null>(null);
-useEffect(() => {
-  if (!logoFile) { setLogoUrl(null); return; }
-  const url = URL.createObjectURL(logoFile);
-  setLogoUrl(url);
-  return () => {
-    window.setTimeout(() => URL.revokeObjectURL(url), 0); // ← révocation différée ✅
-  };
-}, [logoFile]);
-
-// Priorité : Supabase URL > blob URL
-const batLogoUrl = logoSupabaseUrl ?? logoUrl;
-return buildBATData(..., batLogoUrl);
-```
-
----
-
-## 5. Logique de priorité URL logo dans BATData
-
-| Cas | `logoSupabaseUrl` | `logoUrl` | `batLogoUrl` | Résultat BAT |
-|---|---|---|---|---|
-| Authentifié, upload réussi | `https://supabase.co/…` | `blob:A` | `https://supabase.co/…` | ✅ URL stable |
-| Authentifié, upload en cours | `null` | `blob:A` | `blob:A` | ⏳ Blob (transitoire) |
-| Non authentifié | `null` | `blob:A` | `blob:A` | ⚠ Blob (fragile) |
-| Aucun logo | `null` | `null` | `null` | Pas de logo |
-| Fichier changé (A→B, upload B en cours) | `null` | `blob:B` | `blob:B` | ⏳ Blob B |
-| Fichier changé (A→B, upload B réussi) | `https://…/B` | `blob:B` | `https://…/B` | ✅ URL B stable |
-
----
-
-## 6. Tests exécutés
-
-### Build & TypeScript
+### Build & qualité
 
 | # | Test | Commande | Résultat |
 |---|---|---|---|
-| A1 | TypeScript sans erreur | `npm run type-check` | ✅ 0 erreur |
-| A2 | Build Next.js sans erreur | `npm run build` | ✅ 84/84 pages compilées |
+| A1 | TypeScript sans erreur | `npm run type-check` | ✅ |
+| A2 | Build Next.js sans erreur | `npm run build` | ✅ |
+| A3 | Lint | `npm run lint` | ⏭ échec sur erreurs préexistantes hors périmètre |
 
-### Tests logiques (vérification statique)
+### Vérifications manuelles
 
-| # | Scénario | Résultat | Détail |
-|---|---|---|---|
-| T1 | BAT avec logo Supabase disponible | ✅ | `batLogoUrl = logoSupabaseUrl` dès que `onLogoUploadResult(data)` reçu |
-| T2 | BAT avec blob local seulement (non-auth) | ✅ | `batLogoUrl = logoUrl` (fallback) |
-| T3 | Changement logo A → B puis ouverture BAT | ✅ | `onLogoUploadResult(null)` en tête de `handleFileChange` reset `logoSupabaseUrl` |
-| T4 | Fermeture/réouverture BAT sans image cassée | ✅ | `batLogoUrl` est stable (Supabase URL persistante) |
-| T5 | Suppression logo → BAT sans ancienne image | ✅ | Bouton remove → `onLogoUploadResult(null)` + `onLogoChange(null)` → `batLogoUrl = null` |
-| T_REVOKE | Révocation différée — pas d'image cassée | ✅ | `window.setTimeout(() => revokeObjectURL(url), 0)` laisse React commiter |
-
----
-
-## 7. Risques techniques
-
-- **`setTimeout(0)` pour la révocation** : le blob URL reste valide pendant ~1ms de plus après changement de fichier. Aucun impact mémoire notable (les blobs sont petits, < 10 Mo chacun, et révoqués au tick suivant).
-- **`onLogoUploadResult` dans deps de `handleFileChange`** : la référence de la callback change si `ProductDetailClient` la recrée. `handleLogoUploadResult` est protégée par `useCallback([])` → référence stable ✅.
-- **Changement rapide A→B (race condition)** : déjà géré par `uploadGenerationRef` de Mission 2 — `onLogoUploadResult(data)` n'est appelé que si `generation === uploadGenerationRef.current` → résultats périmés ignorés ✅.
-- **Non-authentifié** : `logoSupabaseUrl` reste `null`, `batLogoUrl = logoUrl` (blob) → comportement identique à avant ✅.
-
----
-
-## 8. Bugs restants connus (hors périmètre Mission 3)
-
-| # | Bug | Priorité |
+| # | Vérification | Résultat |
 |---|---|---|
-| B3 | Position Fabric.js (left/top/scale) non persistée dans BATData | Moyenne |
-| B5 | Supabase path lié à `sessionId` pas `orderId` | Basse |
+| M1 | Home desktop `/` | ✅ hero, best-sellers, CTA visuellement chargés correctement |
+| M2 | Home mobile `/` | ✅ hiérarchie lisible, CTA visibles, cartes stats lisibles |
+| M3 | Menu mobile | ✅ panneau ouvert proprement, navigation et CTA visibles |
+| M4 | Header desktop | ✅ nav et CTA cohérents après refonte |
 
 ---
 
-## 9. Message prêt à envoyer à ChatGPT pour review
+## 6. Résultat lint
 
-```
-=== CONTEXTE PROJET ===
-Site : HM Global Agence — e-commerce B2B textile personnalisé
-Stack : Next.js 16, React 19, Tailwind CSS v4, Fabric.js v7, Supabase, Stripe, Vercel
-Repo : kaankaplan619-oss/hm-global-ecommerce (branche main, commit a479b7a)
+`npm run lint` ne peut pas servir de signal de régression fiable sur cette tâche car le projet contient déjà de nombreuses erreurs ESLint hors périmètre, notamment :
+- `react/no-unescaped-entities` sur plusieurs pages statiques
+- `react-hooks/set-state-in-effect` dans plusieurs composants produit/studio
+- divers warnings de variables non utilisées
 
-=== TÂCHE RÉALISÉE ===
-Mission 3 — URL logo stable dans BATData (priorité Supabase > blob local).
+Je n'ai pas essayé de corriger ces erreurs globales pour éviter de mélanger la refonte visuelle avec un chantier de remise à niveau lint plus large.
 
-=== MODIFICATIONS EFFECTUÉES ===
-3 fichiers, +28 lignes nettes.
+---
 
-ProductConfigurator.tsx :
-+ prop onLogoUploadResult?(result: LogoUploadResult | null)
-+ onLogoUploadResult?.(null) en tête de handleFileChange (reset)
-+ onLogoUploadResult?.(data) après upload réussi
-+ onLogoUploadResult?.(null) dans le handler de suppression
+## 7. Risques résiduels
 
-ProductDetailClient.tsx :
-+ logoSupabaseUrl state + handleLogoUploadResult (useCallback stable)
-+ onLogoUploadResult={handleLogoUploadResult} → ProductConfigurator
-+ batLogoUrl = logoSupabaseUrl ?? logoUrl
-+ buildBATData reçoit batLogoUrl
-+ Révocation blob : setTimeout(0) pour différer après commit React
+- la refonte est volontairement concentrée sur la home et la navigation visible ; certaines pages internes gardent encore l'ancien langage visuel
+- la pile typographique est locale pour éviter toute dépendance réseau ; le rendu exact peut varier légèrement selon la machine
+- le projet contient déjà beaucoup de changements utilisateur non liés ; ils ont été laissés intacts
 
-lib/bat-utils.ts :
-~ Commentaire BATData.logoUrl mis à jour
+---
 
-=== TESTS PASSÉS ===
-- npm run type-check : 0 erreur TypeScript
-- npm run build : ✅ 84/84 pages compilées
-- 6 tests logiques T1-T5 + T_REVOKE : tous ✅
+## 8. Prochaine action conseillée
 
-=== QUESTION POUR REVIEW ===
-1. setTimeout(0) dans la révocation blob : est-ce suffisant pour garantir
-   que React a commité le nouveau blob avant que l'ancien soit révoqué,
-   même sur des connexions lentes où useEffect peut être différé ?
-2. handleLogoUploadResult avec useCallback([]) : la référence est stable,
-   mais si ProductDetailClient re-render pour une autre raison entre
-   handleFileChange upload start et upload finish, la callback reçue par
-   ProductConfigurator sera-t-elle toujours la même référence ?
-   (Réponse attendue : oui, useCallback([], []) garantit stabilité.)
-3. Prochaine priorité : lier le Supabase path à orderId (pas sessionId)
-   pour éviter les logos orphelins après commande.
-```
+1. Étendre la même direction visuelle à `/catalogue`
+2. Harmoniser ensuite la fiche produit pour augmenter la conversion
+3. Faire un second passage UI sur les pages `contact`, `techniques` et `entreprises`

@@ -9,6 +9,13 @@ export const TECHNIQUES: TechniqueOption[] = [
     available: true,
   },
   {
+    id: "dtflex",
+    label: "DTFlex",
+    description:
+      "DTFlex — dernière génération. Résultat ultra-vif, toucher soyeux, excellente tenue sur tissus foncés. Couches plus fines, rendu plus premium que le DTF classique.",
+    available: true,
+  },
+  {
     id: "flex",
     label: "Flex / Vinyle",
     description:
@@ -20,6 +27,13 @@ export const TECHNIQUES: TechniqueOption[] = [
     label: "Broderie",
     description:
       "Broderie machine haute définition — rendu premium et durable. Idéal pour les polos, vestes et softshells. Finition professionnelle garantie.",
+    available: true,
+  },
+  {
+    id: "broderie_illimitee",
+    label: "Broderie · Couleur illimitée",
+    description:
+      "Broderie couleurs illimitées — même qualité premium, mais sans restriction sur le nombre de couleurs du fil. Idéal pour les logos multicolores complexes.",
     available: true,
   },
 ];
@@ -43,9 +57,12 @@ export const PLACEMENTS: PlacementOption[] = [
 ];
 
 export const TECHNIQUE_LABELS: Record<string, string> = {
-  dtf:      "DTF",
-  flex:     "Flex / Vinyle",
-  broderie: "Broderie",
+  dtf:                "DTF",
+  dtflex:             "DTFlex",
+  flex:               "Flex / Vinyle",
+  broderie:           "Broderie",
+  broderie_illimitee: "Broderie · Couleur illimitée",
+  print:              "Impression",
 };
 
 export const PLACEMENT_LABELS: Record<string, string> = {
@@ -55,13 +72,17 @@ export const PLACEMENT_LABELS: Record<string, string> = {
 };
 
 export const TECHNIQUE_BADGES: Record<string, string> = {
-  dtf:      "Populaire",
-  flex:     "Économique",
-  broderie: "Premium",
+  dtf:                "Populaire",
+  dtflex:             "Nouveau",
+  flex:               "Économique",
+  broderie:           "Premium",
+  broderie_illimitee: "Illimitée",
 };
 
 export const TECHNIQUE_COLORS: Record<string, string> = {
-  dtf:      "#c9a96e",
-  flex:     "#60a5fa",
-  broderie: "#a78bfa",
+  dtf:                "#c9a96e",
+  dtflex:             "#7c3aed",
+  flex:               "#60a5fa",
+  broderie:           "#a78bfa",
+  broderie_illimitee: "#9333ea",
 };

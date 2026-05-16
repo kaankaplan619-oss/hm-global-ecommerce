@@ -148,6 +148,9 @@ export function mapDbOrderToOrder(row: any): Order {
       batRef:                 item.bat_ref                  ?? undefined,
       logoPlacementTransform: item.logo_placement_transform ?? undefined,
       printfulVariantId:      item.printful_variant_id      ?? undefined,
+      // Config impression — extraite du JSONB product_snapshot (pas de colonne dédiée)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      printConfig: (item.product_snapshot as any)?.printConfig ?? undefined,
     })),
   };
 }

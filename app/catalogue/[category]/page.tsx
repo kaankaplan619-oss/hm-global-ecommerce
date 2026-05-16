@@ -42,10 +42,16 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
       "Casquettes brodées sur mesure. Coton épais, vintage, sandwich contrasté. Broderie uniquement pour un résultat premium durable.",
   },
   sacs: {
-    label: "Sacs & Goodies personnalisés",
+    label: "Sacs & Tote bags personnalisés",
     short: "Sacs",
     description:
       "Tote bags et sacs en coton bio personnalisés en DTF ou flex. Idéal pour les événements, associations et boutiques.",
+  },
+  goodies: {
+    label: "Mugs & Goodies personnalisés",
+    short: "Goodies",
+    description:
+      "Mugs et objets publicitaires personnalisés avec votre logo. Impression sublimation pleine couleur. Idéal pour les séminaires, cadeaux d'entreprise et événements.",
   },
   enfants: {
     label: "Vêtements enfants personnalisés",
@@ -55,7 +61,7 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
   },
 };
 
-const PUBLIC_CATEGORY_IDS = ["tshirts", "hoodies"] as const;
+const PUBLIC_CATEGORY_IDS = ["tshirts", "hoodies", "goodies"] as const;
 
 type Props = {
   params: Promise<{ category: string }>;
