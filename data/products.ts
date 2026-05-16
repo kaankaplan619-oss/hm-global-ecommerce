@@ -1,10 +1,7 @@
 import type { Product } from "@/types";
 import {
-  TSHIRT_PRICES,
   TSHIRT_IDEAL_PRICES,
-  HOODIE_PRICES,
   SWEAT_IDEAL_PRICES,
-  SOFTSHELL_PRICES,
   POLO_PRICES,
   POLAIRE_PRICES,
   CASQUETTE_PRICES,
@@ -109,17 +106,6 @@ const PLACEHOLDER_IMAGES = (id: string): string[] =>
 // présentes dans `public/images/products/...` doivent être listées ici.
 
 // ─── T-SHIRTS ─────────────────────────────────────────────────────────────────
-
-const TSHIRT_COLORS_CLASSIC = [
-  { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
-  { id: "noir", label: "Noir", hex: "#111111", available: true },
-  { id: "gris", label: "Gris chiné", hex: "#9CA3AF", available: true },
-  { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-  { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
-  { id: "bleu-royal", label: "Bleu royal", hex: "#2563EB", available: true },
-  { id: "vert-bouteille", label: "Vert bouteille", hex: "#166534", available: true },
-  { id: "bordeaux", label: "Bordeaux", hex: "#7F1D1D", available: true },
-];
 
 const TSHIRT_SIZES = [
   { label: "XS", available: true },
@@ -396,13 +382,6 @@ export const PRODUCT_WU620: Product = {
 };
 
 // ─── SOFTSHELLS / VESTES ──────────────────────────────────────────────────────
-
-const SOFTSHELL_COLORS = [
-  { id: "noir", label: "Noir", hex: "#111111", available: true },
-  { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-  { id: "gris-acier", label: "Gris acier", hex: "#4B5563", available: true },
-  { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
-];
 
 const SOFTSHELL_SIZES = [
   { label: "S", available: true },
@@ -1772,10 +1751,10 @@ export const PRODUCT_GILDAN_5000: Product = {
   weight: "185 g/m²",
   images: [],
   colors: [
-    { id: "blanc",      label: "Blanc",      hex: "#FFFFFF", available: true },
-    { id: "noir",       label: "Noir",       hex: "#1a1a1a", available: true },
-    { id: "gris-sport", label: "Gris Sport", hex: "#8a9090", available: true },
-    { id: "marine",     label: "Marine",     hex: "#1b2a4a", available: true },
+    { id: "blanc",        label: "Blanc",        hex: "#FFFFFF", available: true },
+    { id: "noir",         label: "Noir",         hex: "#1a1a1a", available: true },
+    { id: "marine",       label: "Marine",       hex: "#1b2a4a", available: true },
+    { id: "dark-heather", label: "Dark Heather", hex: "#5c5c5c", available: true },
   ],
   sizes: [
     { label: "S",   available: true },
@@ -2641,19 +2620,10 @@ export const PRODUCT_MUG_11OZ: Product = {
 // Les anciens produits TopTex/B&C/iDeal/Kariban etc. n'ont pas visible: true
 // → filtrés automatiquement, données conservées pour compatibilité commandes.
 const _ALL_PRODUCTS: Product[] = [
-  // ── T-shirts B&C — photos locales complètes ✓
-  PRODUCT_TU01T,   // 81 photos couleurs
-  PRODUCT_TW02T,   // photos locales
-  PRODUCT_TU03T,   // photos locales
-
   // ── T-shirts iDeal — 2 photos CDN par produit
   PRODUCT_IB320,
   PRODUCT_IB321,
   PRODUCT_IB323,
-
-  // ── Hoodies B&C — photos locales complètes ✓
-  PRODUCT_WG004,
-  PRODUCT_WU620,
 
   // ── Hoodies iDeal & Native Spirit — CDN
   PRODUCT_IB400,
@@ -2661,10 +2631,6 @@ const _ALL_PRODUCTS: Product[] = [
   PRODUCT_NS400,
   PRODUCT_NS401,
   PRODUCT_NS408,
-
-  // ── Softshells B&C — photos locales complètes ✓
-  PRODUCT_JUI62,
-  PRODUCT_JWI63,
 
   // ── Polos Kariban — CDN
   PRODUCT_K262,

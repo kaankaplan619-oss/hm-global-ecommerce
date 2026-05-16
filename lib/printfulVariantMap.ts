@@ -36,33 +36,33 @@ function normalizeSizeForPrintful(size: string): string {
 // Format clé : `{hmColorId}__{printfulSize}`
 
 const GILDAN_5000_VARIANTS: Record<string, number> = {
-  // White — S/M/L/XL/XXL
+  // White — S/M/L/XL/2XL
   "blanc__S":   11576,
   "blanc__M":   11577,
   "blanc__L":   11578,
   "blanc__XL":  11579,
   "blanc__2XL": 11580,
 
-  // Black — S/M/L/XL/XXL
+  // Black — S/M/L/XL/2XL
   "noir__S":   11546,
   "noir__M":   11547,
   "noir__L":   11548,
   "noir__XL":  11549,
   "noir__2XL": 11550,
 
-  // Sport Grey — S/M/L/XL/XXL
-  "gris-sport__S":   11571,
-  "gris-sport__M":   11572,
-  "gris-sport__L":   11573,
-  "gris-sport__XL":  11574,
-  "gris-sport__2XL": 11575,
-
-  // Navy — S/M/L/XL/XXL
+  // Navy — S/M/L/XL/2XL
   "marine__S":   11561,
   "marine__M":   11562,
   "marine__L":   11563,
   "marine__XL":  11564,
   "marine__2XL": 11565,
+
+  // Dark Heather — S/M/L/XL/2XL
+  "dark-heather__S":   15843,
+  "dark-heather__M":   15844,
+  "dark-heather__L":   15845,
+  "dark-heather__XL":  15846,
+  "dark-heather__2XL": 15847,
 };
 
 // ─── Bella+Canvas 3001 (product_id: 71) ──────────────────────────────────────

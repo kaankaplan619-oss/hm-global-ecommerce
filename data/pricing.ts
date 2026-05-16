@@ -30,8 +30,7 @@ export function formatPrice(price: number): string {
 // Tous les prix sont en TTC
 
 // Gildan 5000 — Printful POD (DTF uniquement)
-// V1 lancement : prix d'acquisition marché — marge ~4,72 € HT / cœur seul
-// V2 après test marché : dtf → 22.49 (cœur), surcharge coeur-dos → 7.41 (→ 29.90)
+// Coût Printful ~6,90 € HT + livraison ~4,04 € — marge cœur seul ~9,27 € HT (44,7%)
 export const GILDAN_5000_PRICES = {
   dtf:                19.90,  // cœur seul TTC — coût Printful 7.50 € → marge ~10.33 € HT
   dtflex:             21.90,  // coût Printful 9.00 €

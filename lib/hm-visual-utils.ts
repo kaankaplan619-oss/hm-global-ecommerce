@@ -102,7 +102,7 @@ export function getHMTextileBackPath(productId: string, colorId?: string): strin
  *    Remettre tshirt: true quand des photos HM individuelles par produit existent.
  */
 const FAMILY_HAS_HM_ASSETS: Partial<Record<ProductFamilyVisual, boolean>> = {
-  // tshirt: true,  // désactivé — tous t-shirts → packshots TopTex en supplier mode
+  tshirt: true,
 };
 
 // ── Résolution de la famille visuelle ────────────────────────────────────────
