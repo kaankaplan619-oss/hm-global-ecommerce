@@ -10,7 +10,7 @@ const CATEGORIES = [
     intro: "Le support le plus rapide à activer",
     description:
       "Pour équiper une équipe, lancer une opération ou démarrer un merchandising propre avec un budget net.",
-    image: "/mockups/gildan-5000/blanc-front.png",
+    image: "/mockups/printify/gildan-5000/blanc-front.jpg",
     href: "/catalogue/tshirts",
     price: "19,90 €",
   },
@@ -20,7 +20,7 @@ const CATEGORIES = [
     intro: "La version plus visible et plus premium",
     description:
       "Pour les marques, clubs ou équipes qui veulent un rendu plus installé, plus durable et plus valorisant.",
-    image: "/mockups/gildan-18500/noir-front.png",
+    image: "/mockups/printify/gildan-18500/noir-front.jpg",
     href: "/catalogue/hoodies",
     price: "39,90 €",
   },
@@ -75,20 +75,19 @@ export default function CategorySection() {
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/64">
               Entrée idéale
             </p>
-            <p className="mt-3 max-w-[24ch] text-2xl font-semibold leading-[1.06] tracking-[-0.04em]">
-              Faire comprendre très vite quoi faire ensuite.
+            <p className="mt-3 max-w-[24ch] text-2xl font-semibold leading-[1.1] tracking-[-0.03em]">
+              Deux façons de lancer votre projet.
             </p>
-            <div className="mt-6 space-y-3 text-sm text-white/78">
-              <p>Le catalogue sert les commandes simples.</p>
-              <p>Le devis sert les besoins plus flous, plus larges ou plus sensibles.</p>
-              <p>Cette séparation rend le site plus élégant et augmente la sensation de maîtrise.</p>
+            <div className="mt-5 space-y-2.5 text-sm text-white/78">
+              <p>Le catalogue pour les commandes simples et claires.</p>
+              <p>Le devis pour les besoins plus larges ou multi-supports.</p>
             </div>
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/catalogue" className="btn-primary px-5 py-3 text-[0.78rem]">
-                Accéder au catalogue
+                Commander en ligne
               </Link>
-              <Link href="/contact" className="btn-outline border-white/20 bg-white/10 px-5 py-3 text-[0.78rem] text-white hover:bg-white hover:text-[var(--hm-text)]">
-                Demander un devis
+              <Link href="/contact?sujet=devis" className="btn-outline border-white/20 bg-white/10 px-5 py-3 text-[0.78rem] text-white hover:bg-white hover:text-[var(--hm-text)]">
+                Demander un accompagnement
               </Link>
             </div>
           </div>
@@ -160,8 +159,8 @@ export default function CategorySection() {
               <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--hm-primary)]">
                 Projet accompagné
               </p>
-              <h3 className="mt-2 max-w-[12ch] text-[1.6rem] font-semibold leading-[1.08] tracking-[-0.04em] text-[var(--hm-text)]">
-                Besoin plus large qu’un simple textile ?
+              <h3 className="mt-2 max-w-[14ch] text-[1.5rem] font-semibold leading-[1.1] tracking-[-0.03em] text-[var(--hm-text)]">
+                Un besoin plus large que le textile ?
               </h3>
               <p className="mt-4 text-[14px] leading-7 text-[var(--hm-text-soft)]">
                 Logo à reprendre, volume particulier, besoin multi-supports, signalétique ou accompagnement

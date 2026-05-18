@@ -235,11 +235,32 @@ export default function Header() {
               </div>
               <div className="flex flex-col gap-2">
               <Link
-                href={isAuthenticated ? "/mon-compte" : "/connexion"}
+                href="/contact?sujet=devis"
+                onClick={() => setIsMobileOpen(false)}
+                className="btn-primary w-full text-center"
+              >
+                Demander un devis
+              </Link>
+              <Link
+                href="/catalogue/tshirts"
                 onClick={() => setIsMobileOpen(false)}
                 className="btn-outline w-full text-center"
               >
-                {isAuthenticated ? "Mon compte" : "Connexion"}
+                Voir le catalogue textile
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setIsMobileOpen(false)}
+                className="block w-full text-center text-xs font-semibold text-[var(--hm-text-soft)] underline-offset-2 hover:text-[var(--hm-rose)] hover:underline"
+              >
+                Contact rapide
+              </Link>
+              <Link
+                href={isAuthenticated ? "/mon-compte" : "/connexion"}
+                onClick={() => setIsMobileOpen(false)}
+                className="mt-1 block text-center text-[11px] text-[var(--hm-text-muted)] hover:text-[var(--hm-purple)]"
+              >
+                {isAuthenticated ? "Mon compte" : "Connexion / inscription"}
               </Link>
               {isAuthenticated && user?.role === "admin" && (
                 <Link
@@ -251,13 +272,6 @@ export default function Header() {
                   Commandes admin
                 </Link>
               )}
-              <Link
-                href="/catalogue"
-                onClick={() => setIsMobileOpen(false)}
-                className="btn-primary w-full text-center"
-              >
-                Commander maintenant
-              </Link>
             </div>
             </div>
             </div>

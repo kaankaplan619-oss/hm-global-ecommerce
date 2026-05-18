@@ -63,6 +63,33 @@
   --hm-ink:         #3f2d58;
   --hm-muted:       #6e6280;
   --hm-shadow-soft: 0 4px 16px rgba(63,45,88,0.07);
+
+  /* ─────────────────────────────────────────────────────────────────
+   * HM Global — Palette officielle (2026)
+   * Tokens ajoutés en complément des tokens historiques.
+   * Réservés aux nouveaux composants homepage premium :
+   *   HomeHeroPremium, HomeQuickEntries, HomeVisualShowcase,
+   *   HomePack360, HomeTrustStrip, HomeFinalCTA.
+   * Ne PAS remplacer brutalement les anciens tokens partout :
+   * audit d'usage requis avant toute migration globale.
+   * ───────────────────────────────────────────────────────────────── */
+  --hm-violet:          #3B235A;
+  --hm-purple-deep:     #4B2A6F;
+  --hm-magenta:         #C13C8A;
+  --hm-magenta-bright:  #D64A9A;
+  --hm-cyan:            #54B6D2;
+  --hm-cyan-light:      #6EC7DD;
+  --hm-navy:            #172033;
+  --hm-cream:           #F7F3EA;
+  --hm-warm-white:      #FFFDF8;
+  --hm-text-main:       #2D2340;
+  --hm-text-muted-2:    #7B728A;
+
+  /* Halos & ombres premium pour les nouvelles sections */
+  --hm-shadow-premium:  0 24px 56px rgba(59,35,90,0.10);
+  --hm-shadow-card:     0 14px 32px rgba(59,35,90,0.07);
+  --hm-glow-cyan:       0 0 0 1px rgba(84,182,210,0.18), 0 24px 60px rgba(84,182,210,0.18);
+  --hm-glow-magenta:    0 0 0 1px rgba(193,60,138,0.16), 0 24px 60px rgba(193,60,138,0.14);
 }
 
 /* ─── Base ──────────────────────────────────────────────────────── */
@@ -452,6 +479,86 @@ body {
   text-decoration: none;
 }
 .btn-ghost:hover { color: var(--hm-rose); }
+
+/* ─── Boutons HM Global premium (homepage only, palette 2026) ──────── */
+.btn-hm-violet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background-color: var(--hm-violet);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(59,35,90,0.18);
+}
+.btn-hm-violet:hover {
+  background-color: var(--hm-magenta);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(193,60,138,0.26);
+}
+.btn-hm-violet:active { transform: translateY(0); }
+
+.btn-hm-violet-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 26px;
+  background-color: transparent;
+  color: var(--hm-violet);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--hm-violet);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+.btn-hm-violet-outline:hover {
+  background-color: var(--hm-violet);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-hm-magenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background-color: var(--hm-magenta);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(193,60,138,0.22);
+}
+.btn-hm-magenta:hover {
+  background-color: var(--hm-magenta-bright);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(214,74,154,0.30);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-hm-violet,
+  .btn-hm-violet-outline,
+  .btn-hm-magenta { transition: none; }
+  .btn-hm-violet:hover,
+  .btn-hm-violet-outline:hover,
+  .btn-hm-magenta:hover { transform: none; }
+}
 
 /* ─── Cards ─────────────────────────────────────────────────────── */
 .card {

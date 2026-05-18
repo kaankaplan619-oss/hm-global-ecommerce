@@ -14,46 +14,46 @@ import {
 
 const SECTORS = [
   {
-    icon: Briefcase,
-    label: "Entreprises & Corporate",
-    example: "Uniformes, tenues d'équipe, cadeaux clients",
-    bg: "bg-[var(--hm-accent-soft-blue)]",
-    color: "text-[var(--hm-blue)]",
-  },
-  {
-    icon: HardHat,
-    label: "BTP & Industrie",
-    example: "Vêtements de travail identifiés, sécurité renforcée",
-    bg: "bg-[var(--hm-accent-soft-purple)]",
-    color: "text-[var(--hm-purple)]",
-  },
-  {
     icon: UtensilsCrossed,
-    label: "Restauration & Hôtellerie",
-    example: "Tenues de salle, tabliers, polos brodés",
+    label: "Restaurants & Hôtellerie",
+    deliverables: ["Tabliers brodés", "Polos service", "Cartes menus", "Flyers évènement"],
     bg: "bg-[var(--hm-accent-soft-rose)]",
     color: "text-[var(--hm-rose)]",
   },
   {
+    icon: HardHat,
+    label: "BTP & Industrie",
+    deliverables: ["T-shirts chantier", "Vestes hiver", "Marquage véhicule", "Panneaux chantier"],
+    bg: "bg-[var(--hm-accent-soft-purple)]",
+    color: "text-[var(--hm-purple)]",
+  },
+  {
     icon: Trophy,
-    label: "Associations & Clubs",
-    example: "Maillots, sweats de club, kits complets",
+    label: "Clubs & Associations",
+    deliverables: ["Sweats équipe", "T-shirts évènement", "Packs adhérents", "Affiches saison"],
+    bg: "bg-[var(--hm-accent-soft-blue)]",
+    color: "text-[var(--hm-blue)]",
+  },
+  {
+    icon: Store,
+    label: "Retail & Commerces",
+    deliverables: ["Textile équipe", "Vitrine personnalisée", "Cartes & flyers", "Goodies caisse"],
+    bg: "bg-[var(--hm-accent-soft-rose)]",
+    color: "text-[var(--hm-rose)]",
+  },
+  {
+    icon: Briefcase,
+    label: "Entreprises & PME",
+    deliverables: ["Uniformes équipe", "Cadeaux clients", "Cartes de visite", "Signalétique bureaux"],
     bg: "bg-[var(--hm-accent-soft-blue)]",
     color: "text-[var(--hm-blue)]",
   },
   {
     icon: CalendarDays,
-    label: "Événementiel",
-    example: "T-shirts d'événement, lots promotionnels, goodies",
+    label: "Évènementiel",
+    deliverables: ["T-shirts staff", "Lots promotionnels", "Affiches & roll-ups", "Goodies"],
     bg: "bg-[var(--hm-accent-soft-purple)]",
     color: "text-[var(--hm-purple)]",
-  },
-  {
-    icon: Store,
-    label: "Commerce & Retail",
-    example: "Merchandising, vêtements à l'effigie de votre enseigne",
-    bg: "bg-[var(--hm-accent-soft-rose)]",
-    color: "text-[var(--hm-rose)]",
   },
 ] as const;
 
@@ -99,8 +99,8 @@ export default function TrustBand() {
             </h2>
             <p className="max-w-xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
               T-shirts, hoodies et vestes personnalisés pour les entreprises, associations
-              et commerces d'Alsace et partout en France. Chaque commande est traitée avec
-              le même niveau d'exigence, que ce soit 10 ou 500 pièces.
+              et commerces d&apos;Alsace et partout en France. Chaque commande est traitée avec
+              le même niveau d&apos;exigence, que ce soit 10 ou 500 pièces.
             </p>
           </div>
           <Link
@@ -128,13 +128,20 @@ export default function TrustBand() {
                   rounded-xl ${sector.bg}`}>
                   <Icon size={16} className={sector.color} />
                 </div>
-                <div>
-                  <p className="mb-0.5 text-[13px] font-bold text-[var(--hm-text)]">
+                <div className="min-w-0">
+                  <p className="mb-1 text-[13px] font-bold text-[var(--hm-text)]">
                     {sector.label}
                   </p>
-                  <p className="text-[11px] leading-snug text-[var(--hm-text-soft)]">
-                    {sector.example}
-                  </p>
+                  <ul className="flex flex-wrap gap-1.5">
+                    {sector.deliverables.map((d) => (
+                      <li
+                        key={d}
+                        className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2 py-0.5 text-[10px] font-medium text-[var(--hm-text-soft)]"
+                      >
+                        {d}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             );
@@ -171,7 +178,7 @@ export default function TrustBand() {
           <div className="border-t border-[var(--hm-line)] bg-[var(--hm-surface)]
             px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[12px] text-[var(--hm-text-soft)]">
-              Votre secteur d'activité n'est pas listé ?
+              Votre secteur d&apos;activité n&apos;est pas listé ?
               <span className="ml-1 font-semibold text-[var(--hm-text)]">
                 On travaille sur mesure pour tous les professionnels.
               </span>

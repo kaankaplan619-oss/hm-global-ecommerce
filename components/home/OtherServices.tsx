@@ -81,11 +81,13 @@ export default function OtherServices() {
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="section-tag">Autres services</p>
-            <h2 className="mb-3 text-3xl font-black leading-tight tracking-tight
-              text-[var(--hm-text)] md:text-4xl">
-              Le textile n'est qu'une partie
+            <h2
+              className="mb-3 font-black leading-[1.1] tracking-tight text-[var(--hm-text)]"
+              style={{ fontSize: "clamp(1.5rem, 2.4vw + 0.6rem, 2.4rem)" }}
+            >
+              Un besoin plus large
               <br />
-              <span className="text-gradient-gold">du savoir-faire HM Global</span>
+              <span className="text-gradient-gold">que le textile ?</span>
             </h2>
             <p className="max-w-xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
               Signalétique, habillage véhicule, print, design — HM Global accompagne

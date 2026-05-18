@@ -1,45 +1,72 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, Printer } from "lucide-react";
+import PrintImageStage, { type PrintFamily } from "@/components/print/PrintImageStage";
 
-// ─── Produits mis en avant ────────────────────────────────────────────────────
+/**
+ * Section Impression homepage — V1 (devis pas auto-commande).
+ *
+ * Stratégie business :
+ *   - Printify = textile V1 (commande auto)
+ *   - Gelato API = uniquement canvas / posters encadrés / hanging posters
+ *     (en back-office uniquement, pas branché front V1 car prix non compétitifs
+ *      sur cartes/flyers/affiches courants)
+ *   - Print courant (cartes / flyers / affiches) = devis ou fournisseur manuel
+ *     (PrintOclock / Pixart / Exaprint) jusqu'à validation prix
+ *
+ * Les CTAs des 4 cartes pointent donc vers le formulaire de devis,
+ * pas vers un parcours de commande automatique.
+ */
 
-const PRINT_ITEMS = [
+// ─── Familles print mises en avant ──────────────────────────────────────────
+
+const PRINT_ITEMS: {
+  label:       string;
+  description: string;
+  image:       string;
+  family:      PrintFamily;
+  href:        string;
+  tag:         string;
+  ctaLabel:    string;
+}[] = [
   {
     label:       "Cartes de visite",
-    description: "350 g/m² · Mat ou brillant · Coins ronds dispo",
+    description: "350 g/m² · Mat ou brillant · Coins ronds disponibles",
     image:       "/mockups/print/business-card/carte-visite-premium.webp",
-    href:        "/impression#business-cards",
-    tag:         "Le basique premium",
-    color:       "from-[#3f2d58] to-[#5c3d7a]",
+    family:      "business-cards",
+    href:        "/contact?sujet=devis&support=cartes-de-visite",
+    tag:         "Le basique pro",
+    ctaLabel:    "Demander un devis",
   },
   {
     label:       "Flyers",
-    description: "A4, A5 · 170 g/m² couché · Recto / recto-verso",
+    description: "A4, A5 · 170 g/m² couché · Recto ou recto-verso",
     image:       "/mockups/print/flyer/flyer-premium.webp",
-    href:        "/impression#flyer",
+    family:      "flyer",
+    href:        "/contact?sujet=devis&support=flyers",
     tag:         "Diffusion terrain",
-    color:       "from-[#b13f74] to-[#d4527e]",
+    ctaLabel:    "Demander un devis",
   },
   {
-    label:       "Affiches",
-    description: "30×40 à 50×70 cm · 200 g/m² · Grand format",
+    label:       "Affiches & posters",
+    description: "30×40 à 50×70 cm · 200 g/m² · Grand format disponible",
     image:       "/mockups/print/affiche/affiche-premium.webp",
-    href:        "/impression#poster",
+    family:      "poster",
+    href:        "/contact?sujet=devis&support=affiches",
     tag:         "Grand format",
-    color:       "from-[#5fa8d2] to-[#3f8ab5]",
+    ctaLabel:    "Demander un devis",
   },
   {
     label:       "Toiles canvas",
-    description: "Cadre bois FSC · Impression haute résolution",
+    description: "Cadre bois FSC · Impression haute résolution unitaire",
     image:       "/mockups/print/canvas/canvas-premium.webp",
-    href:        "/impression#canvas",
+    family:      "canvas",
+    href:        "/contact?sujet=devis&support=canvas",
     tag:         "Déco & signalétique",
-    color:       "from-[#3f2d58] to-[#b13f74]",
+    ctaLabel:    "Voir les options",
   },
-] as const;
+];
 
-// ─── Composant ────────────────────────────────────────────────────────────────
+// ─── Composant ───────────────────────────────────────────────────────────────
 
 export default function ImpressionSection() {
   return (
@@ -50,23 +77,27 @@ export default function ImpressionSection() {
         <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="section-tag">Impression professionnelle</p>
-            <h2 className="mb-3 text-3xl font-black leading-tight tracking-tight text-[var(--hm-text)] md:text-4xl">
-              Cartes de visite, flyers, affiches —
+            <h2
+              className="mb-3 font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--hm-text)]"
+              style={{ fontSize: "clamp(1.6rem, 2.8vw + 0.5rem, 2.4rem)" }}
+            >
+              Cartes, flyers, affiches & canvas —
               <br />
-              <span className="text-gradient-gold">imprimés et livrés chez vous</span>
+              <span className="text-[var(--hm-primary)]">cadrés avec vous avant production.</span>
             </h2>
             <p className="max-w-xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
-              Envoyez votre fichier PDF ou PNG, choisissez le format et la finition.
-              Nos ateliers partenaires impriment et livrent en 5 à 7 jours ouvrés partout en France.
+              Envoyez votre fichier PDF ou PNG. Nous validons le BAT avec vous,
+              puis lançons la production chez le bon partenaire d&apos;impression
+              selon le format et la quantité.
             </p>
           </div>
 
           <Link
-            href="/impression"
+            href="/contact?sujet=devis&support=impression"
             className="btn-primary shrink-0 gap-2 px-6 py-3 text-[0.8rem]"
           >
             <Printer size={15} />
-            Voir tout le catalogue print
+            Demander un devis print
           </Link>
         </div>
 
@@ -78,17 +109,17 @@ export default function ImpressionSection() {
               href={item.href}
               className="group relative flex flex-col overflow-hidden rounded-[1.8rem] border border-[var(--hm-line)] bg-white shadow-[0_12px_30px_rgba(63,45,88,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.20)] hover:shadow-[0_20px_42px_rgba(63,45,88,0.10)]"
             >
-              {/* Image mockup */}
-              <div className="relative aspect-[4/3] overflow-hidden border-b border-[var(--hm-line)] bg-[var(--hm-surface)]">
-                <Image
+              {/* Image mockup — PrintImageStage avec différenciation par famille */}
+              <div className="relative aspect-[4/3] overflow-hidden border-b border-[var(--hm-line)]">
+                <PrintImageStage
                   src={item.image}
                   alt={item.label}
-                  fill
+                  family={item.family}
+                  variant="compact"
                   sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 95vw"
-                  className="object-cover transition duration-500 group-hover:scale-[1.04]"
                 />
                 {/* Tag flottant */}
-                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)] shadow-sm backdrop-blur-sm">
+                <span className="absolute left-3 top-3 z-20 rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)] shadow-sm backdrop-blur-sm">
                   {item.tag}
                 </span>
               </div>
@@ -103,10 +134,10 @@ export default function ImpressionSection() {
                 </p>
                 <div className="mt-3 flex items-center justify-between border-t border-[var(--hm-line)] pt-3">
                   <span className="text-[11px] font-bold text-[var(--hm-text-muted)]">
-                    Devis en ligne
+                    Sur devis
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--hm-primary)] transition group-hover:translate-x-0.5">
-                    Voir <ArrowRight size={11} />
+                    {item.ctaLabel} <ArrowRight size={11} />
                   </span>
                 </div>
               </div>
@@ -117,11 +148,11 @@ export default function ImpressionSection() {
         {/* ── Bandeau réassurance ───────────────────────────────────────── */}
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           {[
-            "📦 Livraison suivie incluse",
-            "🎨 PDF / PNG acceptés",
+            "🎨 Fichiers PDF / PNG acceptés",
             "✅ BAT validé avant impression",
-            "⚡ 5–7 jours ouvrés",
-            "🇫🇷 Ateliers certifiés",
+            "🖌️ Accompagnement PAO possible",
+            "📦 Production après validation",
+            "🇫🇷 Livraison France via partenaires certifiés",
           ].map((item) => (
             <span
               key={item}

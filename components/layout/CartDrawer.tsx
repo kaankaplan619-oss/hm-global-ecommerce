@@ -371,13 +371,13 @@ export default function CartDrawer() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
-                        Ajouter aussi
+                        Compléter votre commande
                       </p>
                       <h3 className="mt-1 text-base font-semibold text-[var(--hm-text)]">
-                        Complétez la commande pendant que le client est chaud
+                        Produits souvent ajoutés ensemble
                       </h3>
                     </div>
-                    <span className="badge badge-gold">Idées</span>
+                    <span className="badge badge-gold">Suggestions</span>
                   </div>
 
                   <div className="mt-4 grid gap-3">
