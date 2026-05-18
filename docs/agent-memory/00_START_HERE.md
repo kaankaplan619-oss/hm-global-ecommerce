@@ -54,6 +54,20 @@ Couleur accent : `#b13f74`. Design tokens : `--hm-*`.
 | Mockup / Fabric.js / zones | `04_MOCKUP_VIEWER_RULES.md` |
 | Supabase / upload logo / bucket | `05_SUPABASE_UPLOAD_RULES.md` |
 | Zones interdites détaillées | `06_FORBIDDEN_ZONES.md` |
-| Tâche active détaillée / B4/BAT | `07_ACTIVE_TASK.md` |
+| Tâche active détaillée | `07_ACTIVE_TASK.md` |
 | Protocole de test / vérifications | `08_TESTING_PROTOCOL.md` |
 | Prompt de démarrage session | `09_PROMPT_STARTER.md` |
+| Vision produit long terme | `10_PRODUCT_VISION_HM_GLOBAL_PLATFORM.md` |
+| Spec du studio configurateur | `11_STUDIO_SPEC.md` |
+| **État global du projet (dashboard)** | **`PROJECT_STATE.md`** |
+| **Git workflow / commits / branches** | **`GIT_WORKFLOW.md`** |
+| **Debug Vercel (build local OK, Vercel KO)** | **`VERCEL_DEBUG.md`** |
+| **Règles assets images (commit / Vercel)** | **`IMAGE_ASSETS_RULES.md`** |
+
+## Lecture conseillée par scénario
+
+- **Démarrage de session normal** : `CLAUDE.md` → ce fichier → `PROJECT_STATE.md` → `07_ACTIVE_TASK.md`. Stop.
+- **Avant commit / push** : `GIT_WORKFLOW.md`.
+- **Build Vercel échoue alors que local passe** : `VERCEL_DEBUG.md`.
+- **"Visuel à venir" ou image 404** : `IMAGE_ASSETS_RULES.md`.
+- **Mission Hermès structurée** : voir aussi `../../../docs/hermes/01_MISSION_TEMPLATE.md` (working dir parent).

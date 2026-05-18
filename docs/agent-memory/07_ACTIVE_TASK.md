@@ -1,8 +1,33 @@
 # 07 — Tâche Active
 
-*Dernière mise à jour : 2026-05-01*
+*Dernière mise à jour : 2026-05-18*
 
-## État actuel du projet
+> Pour l'état global du projet (dashboard, commits récents, branches), voir `PROJECT_STATE.md`.
+
+---
+
+## Mission active — Configurateur Unification Zones
+
+- **Branche :** `mission/2026-05-18-configurateur-unification-zones`
+- **Objectif :** source de vérité unique des zones de marquage textile (`lib/textile-zones.ts`), aligner `StudioCanvas` sur le rectangle TopTex utilisé par `MockupViewer` et `BatPreviewStudio`.
+- **Mission Hermès :** `docs/hermes/missions/2026-05-18_configurateur-unification-zones.md` (+ rapport de cadrage + rapport d'exécution à venir).
+- **Statut :** code fait, type-check OK, build local OK, branche poussée (`ec2124e`), **Vercel à valider visuellement**.
+- **Risque principal :** placement logo dans `StudioCanvas` se déplace de ~10-13 % à l'écran (passage Bella+Canvas → TopTex). À valider visuellement par Kaan sur preview Vercel.
+- **Ne pas merger sans validation Kaan.**
+
+### Étapes restantes
+
+1. Vérifier que le build Vercel passe sur `ec2124e`.
+2. Tester la preview visuellement (homepage + studio + catalogue + impression).
+3. Ouvrir une PR draft vers `main` (template `.github/pull_request_template.md`).
+4. Approval Kaan → merge.
+5. Mettre à jour `PROJECT_STATE.md` après merge.
+
+---
+
+## Archive — Historique avant 2026-05-18
+
+### État actuel du projet
 
 | Étape | Statut | Notes |
 |---|---|---|
