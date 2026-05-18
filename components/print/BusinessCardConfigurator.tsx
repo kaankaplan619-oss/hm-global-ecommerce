@@ -571,8 +571,8 @@ export default function BusinessCardConfigurator() {
                 <Row label="Finition"     value={PRINT_FINISH_LABELS[finish]} />
                 <Row label="Coins"        value={PRINT_CORNERS_LABELS[corners]} />
                 <Row label="Quantité"     value={`${quantity} exemplaires`} />
-                <Row label="Fournisseur"  value="Gelato" />
-                <Row label="Délai"        value="5–7 jours ouvrés" />
+                <Row label="Fournisseur"  value="Partenaire impression HM" />
+                <Row label="Délai"        value="Confirmé après validation du BAT" />
               </div>
             </div>
 
@@ -585,7 +585,7 @@ export default function BusinessCardConfigurator() {
                 {formatPrice(lotPrice)}
               </p>
               <p className="mt-1 text-[11px] text-[var(--hm-text-soft)]">
-                Livraison incluse · BAT vérifié avant impression
+                Production après validation · BAT vérifié avant impression
               </p>
               <p className="mt-2 text-[10px] font-semibold text-[var(--hm-text-muted)]">
                 soit {(lotPrice / quantity).toFixed(3).replace(".", ",")} € / carte

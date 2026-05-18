@@ -34,8 +34,8 @@ export default function CartesDeVisitePage() {
           </h1>
           <p className="max-w-2xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
             Déposez vos fichiers recto et verso (PDF, PNG ou JPG en haute résolution),
-            choisissez votre finition et validez votre BAT avant impression.
-            Livraison sous 5–7 jours ouvrés.
+            choisissez votre finition et validez votre BAT.
+            Production après validation, délai confirmé au devis.
           </p>
         </div>
 
@@ -46,7 +46,8 @@ export default function CartesDeVisitePage() {
             "📄 Papier 350 g/m²",
             "🎨 PDF · PNG · JPG acceptés",
             "✅ BAT validé avant impression",
-            "📦 Livraison 5–7 jours ouvrés",
+            "📦 Production après validation",
+            "🖌️ Accompagnement PAO possible",
           ].map((item) => (
             <span
               key={item}

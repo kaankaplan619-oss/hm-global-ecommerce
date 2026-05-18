@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, FileText, Image as ImageIcon, CreditCard, Frame, BookOpen } from "lucide-react";
+import { ArrowRight, FileText, Image as ImageIcon, CreditCard, Frame, BookOpen, Palette, ShieldCheck, Brush, Package, MapPin } from "lucide-react";
 import { getGelatoProducts, isGelatoConfigured } from "@/lib/gelato";
+import PrintImageStage, { type PrintFamily } from "@/components/print/PrintImageStage";
 
 export const metadata: Metadata = {
   title: "Impression — Cartes de visite, Flyers, Affiches",
@@ -64,33 +64,57 @@ const PRINT_CATEGORIES = [
 // Utilisé quand Gelato n'est pas configuré ou retourne une liste vide.
 // Permet d'afficher une page propre en toutes circonstances.
 
+/**
+ * Fallback statique par famille.
+ *
+ * `image` : visuel à servir. Priorité auto :
+ *   1. /mockups/print/hm/{family}.webp si présent (vrais visuels HM à
+ *      générer — cf docs/prompts/print-mockups-prompts.md)
+ *   2. fichier de fallback actuel (carte-visite-premium.webp, etc.)
+ *
+ * Tant que les visuels HM ne sont pas générés, on reste sur les fallbacks
+ * mais `PrintImageStage` applique des fonds + cadrages différents par
+ * famille pour visualiser la distinction.
+ */
 const STATIC_FALLBACK: Record<string, {
   image:   string;
+  family:  PrintFamily;
   formats: string[];
   specs:   string[];
 }> = {
+  // business-cards : photo éditoriale premium HM Global (stack + cartes face)
   "business-cards": {
-    image:   "/mockups/print/business-card/carte-visite-premium.webp",
+    image:   "/images/home/hm-print-cartes-de-visite.webp",
+    family:  "business-cards",
     formats: ["85×55 mm standard", "85×55 mm coins ronds"],
     specs:   ["350 g/m²", "Mat ou brillant"],
   },
+  // flyer : photo éditoriale premium (éventail flyers gradient HM)
   flyer: {
-    image:   "/mockups/print/flyer/flyer-premium.webp",
+    image:   "/images/home/hm-print-flyers.webp",
+    family:  "flyer",
     formats: ["A4", "A5", "A6"],
     specs:   ["170 g/m² couché", "Recto / recto-verso"],
   },
+  // poster : photo éditoriale premium (2 affiches contre mur)
   poster: {
-    image:   "/mockups/print/affiche/affiche-premium.webp",
+    image:   "/images/home/hm-print-affiches-posters.webp",
+    family:  "poster",
     formats: ["30×40 cm", "40×60 cm", "50×70 cm"],
     specs:   ["200 g/m²", "Impression 4/0"],
   },
+  // canvas : photo éditoriale premium (canvas accroché intérieur)
   canvas: {
-    image:   "/mockups/print/canvas/canvas-premium.webp",
+    image:   "/images/home/hm-print-toiles-canvas.webp",
+    family:  "canvas",
     formats: ["30×30 cm carré", "40×60 cm portrait", "60×90 cm panoramique"],
     specs:   ["Toile canvas tendue", "Cadre bois FSC"],
   },
+  // cards (cartes d'invitations) : partage le visuel premium business-cards
+  //   (cohérence DA — papier 350 g/m² satiné, même esthétique)
   cards: {
-    image:   "/print/carte-visite-mockup.jpg",
+    image:   "/images/home/hm-print-cartes-de-visite.webp",
+    family:  "cards",
     formats: ["A6 portrait", "Carré 140×140 mm"],
     specs:   ["350 g/m² couché satiné", "Option dorure"],
   },
@@ -147,31 +171,41 @@ export default async function ImpressionPage() {
       <div className="container">
 
         {/* ── En-tête ──────────────────────────────────────────────────── */}
-        <div className="mb-14">
+        <div className="mb-10">
           <p className="section-tag">Impression professionnelle</p>
-          <h1 className="mb-4 text-3xl font-black text-[var(--hm-text)] md:text-5xl">
-            Imprimez votre communication<br />
-            <span className="text-gradient-gold">en quelques clics</span>
+          <h1
+            className="mb-4 font-semibold leading-[1.05] tracking-[-0.025em] text-[var(--hm-text)]"
+            style={{ fontSize: "clamp(1.8rem, 3.4vw + 0.4rem, 3.2rem)" }}
+          >
+            Vos supports imprimés<br />
+            <span style={{ color: "var(--hm-violet)" }}>cadrés avec vous avant production.</span>
           </h1>
           <p className="max-w-xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
-            Cartes de visite, flyers, affiches, toiles — tous vos supports print livrés
-            directement depuis nos ateliers partenaires. Fichiers PDF acceptés, BAT validé avant impression.
+            Cartes de visite, flyers, affiches, toiles canvas — envoyez votre
+            fichier PDF ou PNG, on valide le BAT avec vous puis on lance la production
+            chez le partenaire d&apos;impression adapté au format et à la quantité.
           </p>
         </div>
 
         {/* ── Bandeau réassurance ───────────────────────────────────────── */}
-        <div className="mb-14 flex flex-wrap gap-3">
+        <div className="mb-12 flex flex-wrap gap-2">
           {[
-            "📦 Livraison suivie incluse",
-            "🎨 Fichiers PDF / PNG acceptés",
-            "✅ BAT validé avant impression",
-            "⚡ Délai 5–7 jours ouvrés",
-          ].map((item) => (
+            { icon: Palette,     label: "Fichiers PDF / PNG acceptés" },
+            { icon: ShieldCheck, label: "BAT validé avant impression" },
+            { icon: Brush,       label: "Accompagnement PAO possible" },
+            { icon: Package,     label: "Production après validation" },
+            { icon: MapPin,      label: "Livraison France via partenaires certifiés" },
+          ].map(({ icon: Icon, label }) => (
             <span
-              key={item}
-              className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-2 text-xs font-semibold text-[var(--hm-text-soft)]"
+              key={label}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[11.5px] font-semibold"
+              style={{
+                color: "var(--hm-text-main)",
+                border: "1px solid rgba(45,35,64,0.08)",
+              }}
             >
-              {item}
+              <Icon size={13} style={{ color: "var(--hm-cyan)" }} strokeWidth={1.8} />
+              {label}
             </span>
           ))}
         </div>
@@ -192,7 +226,7 @@ export default async function ImpressionPage() {
                     <Icon size={16} className={cat.iconColor} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-black text-[var(--hm-text)]">{cat.label}</h2>
+                    <h2 className="text-lg font-semibold tracking-[-0.015em] text-[var(--hm-text)]">{cat.label}</h2>
                     <p className="text-xs text-[var(--hm-text-soft)]">{cat.description}</p>
                   </div>
                   <div className="ml-auto h-[1px] flex-1 bg-[var(--hm-line)]" />
@@ -203,7 +237,7 @@ export default async function ImpressionPage() {
 
                 {products.length > 0 ? (
                   /* ── Produits Gelato dynamiques ── */
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {products.map((product) => {
                       const dimLabel    = getDimensionLabel(product.dimensions ?? []);
                       const paperLabel  = getPaperLabel(product.productUid);
@@ -213,75 +247,89 @@ export default async function ImpressionPage() {
                       return (
                         <article
                           key={product.id}
-                          className="group flex flex-col rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 transition-all duration-300
-                            hover:border-[rgba(177,63,116,0.22)] hover:shadow-[0_10px_28px_rgba(63,45,88,0.08)] hover:-translate-y-0.5"
+                          className="group flex flex-col overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)] bg-white shadow-[0_12px_30px_rgba(63,45,88,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.20)] hover:shadow-[0_20px_42px_rgba(63,45,88,0.10)]"
                         >
-                          {/* Visuel format */}
-                          <div className="mb-4 flex items-center justify-center rounded-xl border border-[var(--hm-line)] bg-white py-5">
-                            <div
-                              className={`border-2 border-[var(--hm-primary)] bg-[rgba(177,63,116,0.06)] ${
-                                isLandscape ? "h-14 w-20" : "h-20 w-14"
-                              } rounded-md`}
-                            />
+                          {/* Image en pleine largeur — différenciée par famille via PrintImageStage */}
+                          <div className="relative aspect-[4/3] overflow-hidden">
+                            {fallback?.image ? (
+                              <PrintImageStage
+                                src={fallback.image}
+                                alt={`${cat.label} ${dimLabel}`}
+                                family={fallback.family}
+                                variant="catalog"
+                                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 95vw"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center"
+                                   style={{ background: "linear-gradient(180deg,#f7f6f4 0%,#ebe9e5 100%)" }}>
+                                <div className={`relative ${isLandscape ? "h-14 w-20" : "h-20 w-14"} rounded-[3px] bg-white shadow-[0_8px_18px_rgba(0,0,0,0.15)] ring-1 ring-black/5`}>
+                                  <span className="absolute left-2 right-4 top-2 block h-1 rounded-full bg-[var(--hm-primary)]/35" />
+                                  <span className="absolute left-2 right-6 top-4 block h-0.5 rounded-full bg-[var(--hm-text-soft)]/30" />
+                                </div>
+                              </div>
+                            )}
                           </div>
 
-                          <div className="flex-1">
-                            <p className="mb-1 text-[13px] font-bold text-[var(--hm-text)] leading-tight">
+                          <div className="flex flex-1 flex-col p-5">
+                            <p className="text-[14px] font-semibold text-[var(--hm-text)] leading-tight">
                               {dimLabel || cat.label}
                             </p>
-                            <div className="mt-2 flex flex-wrap gap-1">
+                            <div className="mt-2.5 flex flex-wrap gap-1.5">
                               {paperLabel && (
-                                <span className="rounded-full border border-[var(--hm-line)] px-2 py-0.5 text-[10px] text-[var(--hm-text-muted)]">
+                                <span className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--hm-text-muted)]">
                                   {paperLabel}
                                 </span>
                               )}
                               {finishLabel && (
-                                <span className="rounded-full border border-[var(--hm-line)] px-2 py-0.5 text-[10px] text-[var(--hm-text-muted)]">
+                                <span className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--hm-text-muted)]">
                                   {finishLabel}
                                 </span>
                               )}
                               {isLandscape && (
-                                <span className="rounded-full border border-[var(--hm-line)] px-2 py-0.5 text-[10px] text-[var(--hm-text-muted)]">
+                                <span className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--hm-text-muted)]">
                                   Paysage
                                 </span>
                               )}
                             </div>
-                          </div>
 
-                          <Link
-                            href={`/contact?sujet=impression&produit=${encodeURIComponent(product.productUid)}&format=${encodeURIComponent(dimLabel)}`}
-                            className="mt-4 flex items-center justify-between rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2.5 text-[11px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)]"
-                          >
-                            Demander un devis
-                            <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
-                          </Link>
+                            <Link
+                              href={`/contact?sujet=impression&produit=${encodeURIComponent(product.productUid)}&format=${encodeURIComponent(dimLabel)}`}
+                              className="mt-auto flex items-center justify-between rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2.5 text-[11px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)] pt-3"
+                            >
+                              Demander un devis
+                              <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
+                            </Link>
+                          </div>
                         </article>
                       );
                     })}
                   </div>
                 ) : fallback ? (
-                  /* ── Fallback statique — jamais de skeleton infini ── */
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                    {/* Carte principale avec photo réelle */}
-                    <article className="group flex flex-col rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] overflow-hidden transition-all duration-300 hover:border-[rgba(177,63,116,0.22)] hover:shadow-[0_10px_28px_rgba(63,45,88,0.08)] hover:-translate-y-0.5">
-                      <div className="relative aspect-[4/3] overflow-hidden border-b border-[var(--hm-line)] bg-white">
-                        <Image
+                  /* ── Fallback statique — card visuelle dominante 60% / specs 40% ── */
+                  <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
+                    {/* Carte principale avec image grande — PrintImageStage */}
+                    <article className="group flex flex-col overflow-hidden rounded-[1.8rem] border border-[var(--hm-line)] bg-white shadow-[0_14px_32px_rgba(63,45,88,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.22)] hover:shadow-[0_22px_50px_rgba(63,45,88,0.10)]">
+                      <div className="relative aspect-[16/10] overflow-hidden">
+                        <PrintImageStage
                           src={fallback.image}
                           alt={cat.label}
-                          fill
-                          sizes="(min-width: 768px) 33vw, 95vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                          family={fallback.family}
+                          variant="catalog"
+                          sizes="(min-width: 1024px) 55vw, 95vw"
                         />
                       </div>
-                      <div className="flex flex-1 flex-col p-4">
-                        <p className="mb-2 text-[13px] font-bold text-[var(--hm-text)]">
-                          Formats disponibles
+                      <div className="flex flex-1 flex-col gap-3 p-6">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--hm-text-muted)]">
+                          {cat.label}
                         </p>
-                        <div className="flex flex-wrap gap-1">
+                        <h3 className="text-[1.15rem] font-semibold tracking-[-0.01em] text-[var(--hm-text)]">
+                          {cat.description}
+                        </h3>
+                        <div className="flex flex-wrap gap-1.5">
                           {[...fallback.formats, ...fallback.specs].map((tag) => (
                             <span
                               key={tag}
-                              className="rounded-full border border-[var(--hm-line)] px-2 py-0.5 text-[10px] text-[var(--hm-text-muted)]"
+                              className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--hm-text-muted)]"
                             >
                               {tag}
                             </span>
@@ -289,17 +337,17 @@ export default async function ImpressionPage() {
                         </div>
                         <Link
                           href={`/contact?sujet=impression&categorie=${encodeURIComponent(cat.uid)}`}
-                          className="mt-4 flex items-center justify-between rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2.5 text-[11px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)]"
+                          className="mt-auto inline-flex items-center justify-between gap-2 rounded-xl border border-[var(--hm-line)] bg-white px-4 py-2.5 text-[12px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)]"
                         >
-                          Demander un devis
-                          <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
+                          Demander un devis pour ce support
+                          <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                         </Link>
                       </div>
                     </article>
 
                     {/* Carte secondaire — formats & specs */}
-                    <div className="flex flex-col gap-4">
-                      <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-1">
+                      <div className="rounded-[1.4rem] border border-[var(--hm-line)] bg-white p-5">
                         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--hm-text-muted)]">
                           Formats
                         </p>
@@ -312,7 +360,7 @@ export default async function ImpressionPage() {
                           ))}
                         </ul>
                       </div>
-                      <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+                      <div className="rounded-[1.4rem] border border-[var(--hm-line)] bg-white p-5">
                         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--hm-text-muted)]">
                           Spécifications
                         </p>
@@ -334,27 +382,47 @@ export default async function ImpressionPage() {
           })}
         </div>
 
-        {/* ── CTA bas de page ──────────────────────────────────────────── */}
-        <div className="mt-16 rounded-[2rem] border border-[rgba(63,45,88,0.08)] bg-[linear-gradient(180deg,#433053_0%,#3f2d58_100%)] p-8 text-center text-white shadow-[0_18px_40px_rgba(63,45,88,0.14)]">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60">
-            Besoin d&apos;un projet sur-mesure ?
+        {/* ── CTA bas de page (palette 2026, fond blanc épuré) ─────────── */}
+        <div
+          className="mt-16 rounded-[1.8rem] p-8 text-center sm:p-12"
+          style={{
+            background:
+              "linear-gradient(135deg, #f4f8fb 0%, #ffffff 50%, #faf3f7 100%)",
+            border: "1px solid rgba(45,35,64,0.06)",
+            boxShadow: "0 10px 32px rgba(45,35,64,0.06)",
+          }}
+        >
+          <p
+            className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em]"
+            style={{ color: "var(--hm-cyan)" }}
+          >
+            Besoin d&apos;un projet sur-mesure&nbsp;?
           </p>
-          <h2 className="mb-3 text-2xl font-black">
-            Textile + Print + Signalétique — on gère tout
+          <h2
+            className="mb-3 font-semibold leading-[1.08] tracking-[-0.02em]"
+            style={{
+              fontSize: "clamp(1.4rem, 2.4vw + 0.4rem, 2rem)",
+              color: "var(--hm-text-main)",
+            }}
+          >
+            Textile + Print + Signalétique —{" "}
+            <span style={{ color: "var(--hm-magenta)" }}>on gère tout</span>
           </h2>
-          <p className="mb-6 max-w-lg mx-auto text-sm text-white/70">
-            Commande mixte, grand volume, adaptation logo ou projet complet : HM Global vous accompagne du fichier à la livraison.
+          <p
+            className="mb-7 max-w-xl mx-auto text-[14px] leading-[1.7]"
+            style={{ color: "var(--hm-text-muted-2)" }}
+          >
+            Commande mixte, grand volume, adaptation logo ou projet complet :
+            HM Global vous accompagne du fichier à la livraison.
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/contact" className="btn-primary px-6 py-3 text-[0.8rem]">
+          <div className="flex flex-col items-center justify-center gap-2.5 sm:flex-row">
+            <Link href="/contact" className="btn-hm-magenta w-full sm:w-auto">
               Demander un devis global
-              <ArrowRight size={13} className="ml-2" />
+              <ArrowRight size={15} />
             </Link>
-            <Link
-              href="/catalogue"
-              className="btn-outline border-white/20 bg-white/10 px-6 py-3 text-[0.8rem] text-white hover:bg-white hover:text-[var(--hm-text)]"
-            >
+            <Link href="/catalogue" className="btn-hm-violet-outline w-full sm:w-auto">
               Voir le textile
+              <ArrowRight size={13} />
             </Link>
           </div>
         </div>
