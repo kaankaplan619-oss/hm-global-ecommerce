@@ -28,6 +28,12 @@ import {
 } from "lucide-react";
 import type { Placement } from "@/types";
 import { proxyCdnUrl } from "@/lib/proxy-cdn-url";
+import {
+  MOCKUP_FILES,
+  COLOR_TO_MOCKUP,
+  getZoneCenter as zonesGetCenter,
+  getZoneSize as zonesGetSize,
+} from "@/lib/textile-zones";
 
 // ── Constante pixel → cm ──────────────────────────────────────────────────────
 // Gildan 5000 adulte taille M : corps ≈ 52 cm de large
@@ -70,6 +76,13 @@ export interface StudioCanvasHandle {
    * Retourne "" pour une face si aucun logo n'est présent dessus.
    */
   exportComposed: () => Promise<{ front: string; back: string }>;
+  /**
+   * Taille réelle du container canvas (px), mesurée via ResizeObserver.
+   * Permet aux consommateurs (BAT serveur, StudioSummaryPanel) de rapporter
+   * la bonne échelle au lieu d'une valeur hardcodée.
+   * Retourne 0 si le canvas n'est pas encore monté.
+   */
+  getContainerSize: () => number;
 }
 
 interface Props {
@@ -85,75 +98,41 @@ interface Props {
 }
 
 // ── Zones de placement ─────────────────────────────────────────────────────────
-// Coordonnées calibrées sur mockups Printful ghost mannequin (Bella+Canvas 3001).
-// cx/cy = fractions du container (0=gauche/haut, 1=droite/bas).
-// "coeur" = poitrine GAUCHE du porteur = DROITE depuis le spectateur → cx > 0.50.
-const ZONE_CENTER: Record<string, { coeur: [number, number]; dos: [number, number] }> = {
-  tshirts:    { coeur: [0.60, 0.33], dos: [0.50, 0.44] },
-  hoodies:    { coeur: [0.61, 0.38], dos: [0.50, 0.47] },
-  softshells: { coeur: [0.60, 0.37], dos: [0.50, 0.45] },
-};
-const ZONE_DEFAULT = { coeur: [0.60, 0.33] as [number, number], dos: [0.50, 0.44] as [number, number] };
+// Les centres (cx, cy) sont dérivés du rectangle [l, t, w, h] source de vérité
+// (lib/textile-zones.ts) — alignés sur les packshots TopTex.
+// "coeur" = poitrine du porteur → centre du rectangle de marquage.
+// Voir docs/hermes/missions/2026-05-18_configurateur-unification-zones-rapport.md.
 
-// ── Zones de guidage visuelles calibrées Printful DTG/DTF ────────────────────
-//
-// Source : Printful Print Guidelines (Bella+Canvas 3001)
-//   • Cœur (left chest)  : max 10 × 10 cm
-//   • Dos standard logo  : max 28 × 35 cm (DTG) / 28 × 35 cm (DTF)
-//
-// wFrac / hFrac = taille de la zone en fraction du container (canvas carré).
-// Formule : cm × SHIRT_BODY_FILL / SHIRT_BODY_CM  (= cm × 0.58 / 52)
-//
-//   10 cm × 0.58/52 ≈ 0.112   ← coeur max
-//   28 cm × 0.58/52 ≈ 0.312   ← dos largeur max
-//   35 cm × 0.58/52 ≈ 0.390   ← dos hauteur max
-//
-// defaultCm = taille pré-sélectionnée lors du snap (≤ max)
-const GUIDE_ZONES: Record<string, {
-  coeur: { wFrac: number; hFrac: number; defaultCm: number; label: string };
-  dos:   { wFrac: number; hFrac: number; defaultCm: number; label: string };
+// ── Métadonnées zones (cm Printful + labels) ─────────────────────────────────
+// Les DIMENSIONS visuelles (wFrac, hFrac) viennent maintenant du rectangle
+// source de vérité (lib/textile-zones.ts) via zonesGetSize().
+// Ici on conserve uniquement les méta-données spécifiques à la production :
+//   - defaultCm : taille cm pré-sélectionnée lors du snap (specs Printful DTG/DTF)
+//   - label : texte affiché dans la zone de guidage
+// Cœur (left chest) max 10×10 cm ; Dos standard 28×35 cm (T-shirt) / 27×32 cm (Hoodie, Softshell).
+const GUIDE_META: Record<string, {
+  coeur: { defaultCm: number; label: string };
+  dos:   { defaultCm: number; label: string };
 }> = {
   tshirts:    {
-    coeur: { wFrac: 0.112, hFrac: 0.112, defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
-    dos:   { wFrac: 0.312, hFrac: 0.390, defaultCm: 21, label: "Dos · max 28×35 cm" },
+    coeur: { defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
+    dos:   { defaultCm: 21, label: "Dos · max 28×35 cm" },
   },
   hoodies:    {
-    coeur: { wFrac: 0.112, hFrac: 0.112, defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
-    dos:   { wFrac: 0.295, hFrac: 0.370, defaultCm: 21, label: "Dos · max 27×32 cm" },
+    coeur: { defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
+    dos:   { defaultCm: 21, label: "Dos · max 27×32 cm" },
   },
   softshells: {
-    coeur: { wFrac: 0.112, hFrac: 0.112, defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
-    dos:   { wFrac: 0.295, hFrac: 0.370, defaultCm: 21, label: "Dos · max 27×32 cm" },
+    coeur: { defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
+    dos:   { defaultCm: 21, label: "Dos · max 27×32 cm" },
   },
 };
-const GUIDE_ZONES_DEFAULT = {
-  coeur: { wFrac: 0.112, hFrac: 0.112, defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
-  dos:   { wFrac: 0.312, hFrac: 0.390, defaultCm: 21, label: "Dos · max 28×35 cm" },
+const GUIDE_META_DEFAULT = {
+  coeur: { defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
+  dos:   { defaultCm: 21, label: "Dos · max 28×35 cm" },
 };
 
-// ── Mockup fallback ────────────────────────────────────────────────────────────
-const MOCKUP_FILES: Record<string, { front: string; back: string }> = {
-  blanc:    { front: "/mockups/tshirt/blanc-front.jpg",    back: "/mockups/tshirt/blanc-back.png"    },
-  noir:     { front: "/mockups/tshirt/noir-front.jpg",     back: "/mockups/tshirt/noir-back.png"     },
-  gris:     { front: "/mockups/tshirt/gris-front.jpg",     back: "/mockups/tshirt/gris-back.png"     },
-  marine:   { front: "/mockups/tshirt/marine-front.jpg",   back: "/mockups/tshirt/marine-back.png"   },
-  rouge:    { front: "/mockups/tshirt/rouge-front.jpg",    back: "/mockups/tshirt/rouge-back.png"    },
-  bleu:     { front: "/mockups/tshirt/bleu-front.jpg",     back: "/mockups/tshirt/bleu-back.png"     },
-  vert:     { front: "/mockups/tshirt/vert-front.jpg",     back: "/mockups/tshirt/vert-back.png"     },
-  bordeaux: { front: "/mockups/tshirt/bordeaux-front.png", back: "/mockups/tshirt/bordeaux-back.png" },
-};
-const COLOR_TO_MOCKUP: Record<string, string> = {
-  "blanc": "blanc", "blanc-casse": "blanc", "naturel": "blanc", "beige": "blanc",
-  "jaune": "blanc", "sable": "blanc", "ecru": "blanc",
-  "noir": "noir", "anthracite": "noir", "gris-anthracite": "noir",
-  "gris": "gris", "gris-melange": "gris", "gris-acier": "gris", "gris-chine": "gris",
-  "marine": "marine", "navy": "marine",
-  "rouge": "rouge", "rouge-feu": "rouge", "orange": "rouge", "rose": "rouge",
-  "bleu-royal": "bleu", "bleu-ciel": "bleu", "bleu": "bleu", "cobalt": "bleu",
-  "turquoise": "bleu", "violet": "bleu",
-  "vert-bouteille": "vert", "vert-foret": "vert", "vert": "vert", "kaki": "vert",
-  "bordeaux": "bordeaux", "bourgogne": "bordeaux",
-};
+// MOCKUP_FILES + COLOR_TO_MOCKUP : voir @/lib/textile-zones (import en haut).
 
 // ── Composant ─────────────────────────────────────────────────────────────────
 
@@ -202,25 +181,27 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     ? (packshot     ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
     : (packshotBack ?? mockups?.back  ?? packshot ?? "/mockups/tshirt/blanc-back.png");
 
-  // ── Zone centre ─────────────────────────────────────────────────────────
+  // ── Zone centre (dérivé du rectangle source de vérité — textile-zones) ──
   const getZoneCenter = useCallback((): [number, number] => {
-    const zones = (productCategory ? ZONE_CENTER[productCategory] : null) ?? ZONE_DEFAULT;
-    return view === "back" ? zones.dos : zones.coeur;
+    return zonesGetCenter(productCategory, view === "back" ? "dos" : "coeur");
   }, [view, productCategory]);
 
-  // ── Guide zone actif (dépend de la vue) ─────────────────────────────────
-  const guideZoneDefs = (productCategory ? GUIDE_ZONES[productCategory] : null) ?? GUIDE_ZONES_DEFAULT;
-  const guideZone     = view === "back" ? guideZoneDefs.dos : guideZoneDefs.coeur;
+  // ── Guide zone actif (dimensions: rectangle SoV ; méta: cm Printful) ────
+  const guidePlacement = view === "back" ? "dos" : "coeur";
+  const guideSize = zonesGetSize(productCategory, guidePlacement);
+  const guideMeta = (productCategory ? GUIDE_META[productCategory] : null)?.[guidePlacement]
+    ?? GUIDE_META_DEFAULT[guidePlacement];
+  const guideZone = { ...guideSize, ...guideMeta };
   const [guideCx, guideCy] = getZoneCenter();
 
   // ── Snap au centre de la zone avec taille standard ───────────────────────
   const handleSnapToZone = useCallback(() => {
     const cSize     = containerSizeRef.current || 480;
-    const cat       = productCategory ?? "";
-    const zDefs     = ZONE_CENTER[cat] ?? ZONE_DEFAULT;
-    const gDefs     = GUIDE_ZONES[cat] ?? GUIDE_ZONES_DEFAULT;
-    const [cx, cy]  = view === "back" ? zDefs.dos  : zDefs.coeur;
-    const defaultCm = view === "back" ? gDefs.dos.defaultCm : gDefs.coeur.defaultCm;
+    const placement = view === "back" ? "dos" : "coeur";
+    const [cx, cy]  = zonesGetCenter(productCategory, placement);
+    const meta      = (productCategory ? GUIDE_META[productCategory] : null)?.[placement]
+      ?? GUIDE_META_DEFAULT[placement];
+    const defaultCm = meta.defaultCm;
 
     if (!selectedId) {
       // Aucun logo sélectionné → flash de feedback pour indiquer qu'il faut en choisir un
@@ -447,6 +428,8 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
       ]);
       return { front, back };
     },
+
+    getContainerSize: () => containerSizeRef.current || 0,
   }), [colorId, packshot, packshotBack]);
 
   // ── Drag state ───────────────────────────────────────────────────────────
@@ -541,9 +524,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
       const cSize = containerSizeRef.current || 480;
 
       // Résoudre la zone cible en fonction de la FACE de l'objet, pas de la vue courante
-      const cat     = productCategory ?? "";
-      const zDefs   = ZONE_CENTER[cat] ?? ZONE_DEFAULT;
-      const [cx, cy] = obj.face === "back" ? zDefs.dos : zDefs.coeur;
+      const [cx, cy] = zonesGetCenter(productCategory, obj.face === "back" ? "dos" : "coeur");
 
       // Tailles par défaut calées sur les specs Printful DTG/DTF
       const defaultCm = obj.face === "back" ? 21 : 10;
@@ -643,13 +624,10 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
       (o) => o.type === "text" && o.fabricState?.cx === undefined
     );
     if (textUninit.length === 0) return;
-    const cSize = containerSizeRef.current || 480;
-    const cat   = productCategory ?? "";
-    const zDefs = ZONE_CENTER[cat] ?? ZONE_DEFAULT;
     onObjectsChangeRef.current(
       objects.map((o) => {
         if (o.type !== "text" || o.fabricState?.cx !== undefined) return o;
-        const [cx, cy] = o.face === "back" ? zDefs.dos : zDefs.coeur;
+        const [cx, cy] = zonesGetCenter(productCategory, o.face === "back" ? "dos" : "coeur");
         return { ...o, fabricState: { cx, cy, scale: 1, angle: 0, nw: 0, nh: 0 } };
       })
     );

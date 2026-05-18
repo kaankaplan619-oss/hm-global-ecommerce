@@ -45,6 +45,8 @@ interface Props {
   slug: string;
   exportPNG: () => string;
   exportComposed?: () => Promise<{ front: string; back: string }>;
+  /** Taille reelle du canvas studio (px) — fournie par StudioCanvasHandle. */
+  getContainerSize?: () => number;
 }
 
 export default function StudioSummaryPanel({
@@ -59,6 +61,7 @@ export default function StudioSummaryPanel({
   slug,
   exportPNG,
   exportComposed,
+  getContainerSize,
 }: Props) {
   const router = useRouter();
   const { addItem } = useCartStore();
@@ -153,6 +156,9 @@ export default function StudioSummaryPanel({
 
       // ── Position du premier objet ────────────────────────────────────────
       const firstObj = objects.find(o => o.type === "logo") ?? objects[0];
+      // canvasSize : taille reelle mesuree par StudioCanvas (ResizeObserver),
+      // pas une valeur hardcodee. Fallback 544 si le canvas n'est pas encore monte.
+      const measuredCanvasSize = getContainerSize?.() || 544;
       const logoPlacementTransform = firstObj?.fabricState
         ? {
             left:   firstObj.fabricState.left   ?? 0,
@@ -162,7 +168,7 @@ export default function StudioSummaryPanel({
             width:  firstObj.fabricState.width  ?? 0,
             height: firstObj.fabricState.height ?? 0,
             angle:  firstObj.fabricState.angle  ?? 0,
-            canvasSize: 544,
+            canvasSize: measuredCanvasSize,
             source: "fabric-canvas" as const,
           }
         : null;

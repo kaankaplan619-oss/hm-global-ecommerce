@@ -132,6 +132,10 @@ export default function StudioClient({ product }: Props) {
     return result ?? { front: "", back: "" };
   }, []);
 
+  const getContainerSize = useCallback(() => {
+    return canvasRef.current?.getContainerSize() ?? 0;
+  }, []);
+
 
   return (
     <div className="bg-[var(--hm-bg)]">
@@ -394,6 +398,7 @@ export default function StudioClient({ product }: Props) {
                 slug={product.slug}
                 exportPNG={exportPNG}
                 exportComposed={exportComposed}
+                getContainerSize={getContainerSize}
               />
             </div>
 

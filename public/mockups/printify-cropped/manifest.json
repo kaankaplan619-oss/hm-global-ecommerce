@@ -1,0 +1,214 @@
+{
+  "generatedAt": "2026-05-17T10:45:26.875Z",
+  "marginPct": 3,
+  "whiteThreshold": 245,
+  "products": {
+    "gildan-5000": {
+      "mockups": {
+        "blanc": {
+          "back-2": "/mockups/printify-cropped/gildan-5000/blanc-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-5000/blanc-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-5000/blanc-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-5000/blanc-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-5000/blanc-front.jpg"
+        },
+        "gris": {
+          "back-2": "/mockups/printify-cropped/gildan-5000/gris-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-5000/gris-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-5000/gris-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-5000/gris-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-5000/gris-front.jpg"
+        },
+        "marine": {
+          "back-2": "/mockups/printify-cropped/gildan-5000/marine-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-5000/marine-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-5000/marine-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-5000/marine-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-5000/marine-front.jpg"
+        },
+        "noir": {
+          "back-2": "/mockups/printify-cropped/gildan-5000/noir-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-5000/noir-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-5000/noir-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-5000/noir-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-5000/noir-front.jpg"
+        },
+        "rouge": {
+          "back-2": "/mockups/printify-cropped/gildan-5000/rouge-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-5000/rouge-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-5000/rouge-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-5000/rouge-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-5000/rouge-front.jpg"
+        },
+        "royal": {
+          "back-2": "/mockups/printify-cropped/gildan-5000/royal-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-5000/royal-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-5000/royal-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-5000/royal-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-5000/royal-front.jpg"
+        }
+      }
+    },
+    "bella-3001": {
+      "mockups": {
+        "blanc": {
+          "back-2": "/mockups/printify-cropped/bella-3001/blanc-back-2.jpg",
+          "back": "/mockups/printify-cropped/bella-3001/blanc-back.jpg",
+          "folded": "/mockups/printify-cropped/bella-3001/blanc-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/bella-3001/blanc-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/bella-3001/blanc-front.jpg"
+        },
+        "gris": {
+          "back-2": "/mockups/printify-cropped/bella-3001/gris-back-2.jpg",
+          "back": "/mockups/printify-cropped/bella-3001/gris-back.jpg",
+          "folded": "/mockups/printify-cropped/bella-3001/gris-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/bella-3001/gris-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/bella-3001/gris-front.jpg"
+        },
+        "marine": {
+          "back-2": "/mockups/printify-cropped/bella-3001/marine-back-2.jpg",
+          "back": "/mockups/printify-cropped/bella-3001/marine-back.jpg",
+          "folded": "/mockups/printify-cropped/bella-3001/marine-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/bella-3001/marine-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/bella-3001/marine-front.jpg"
+        },
+        "noir": {
+          "back-2": "/mockups/printify-cropped/bella-3001/noir-back-2.jpg",
+          "back": "/mockups/printify-cropped/bella-3001/noir-back.jpg",
+          "folded": "/mockups/printify-cropped/bella-3001/noir-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/bella-3001/noir-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/bella-3001/noir-front.jpg"
+        },
+        "rouge": {
+          "back-2": "/mockups/printify-cropped/bella-3001/rouge-back-2.jpg",
+          "back": "/mockups/printify-cropped/bella-3001/rouge-back.jpg",
+          "folded": "/mockups/printify-cropped/bella-3001/rouge-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/bella-3001/rouge-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/bella-3001/rouge-front.jpg"
+        },
+        "royal": {
+          "back-2": "/mockups/printify-cropped/bella-3001/royal-back-2.jpg",
+          "back": "/mockups/printify-cropped/bella-3001/royal-back.jpg",
+          "folded": "/mockups/printify-cropped/bella-3001/royal-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/bella-3001/royal-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/bella-3001/royal-front.jpg"
+        }
+      }
+    },
+    "comfort-colors-1717": {
+      "mockups": {
+        "blanc": {
+          "back": "/mockups/printify-cropped/comfort-colors-1717/blanc-back.jpg",
+          "folded": "/mockups/printify-cropped/comfort-colors-1717/blanc-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/comfort-colors-1717/blanc-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/comfort-colors-1717/blanc-front.jpg"
+        },
+        "gris": {
+          "back": "/mockups/printify-cropped/comfort-colors-1717/gris-back.jpg",
+          "folded": "/mockups/printify-cropped/comfort-colors-1717/gris-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/comfort-colors-1717/gris-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/comfort-colors-1717/gris-front.jpg"
+        },
+        "marine": {
+          "back": "/mockups/printify-cropped/comfort-colors-1717/marine-back.jpg",
+          "folded": "/mockups/printify-cropped/comfort-colors-1717/marine-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/comfort-colors-1717/marine-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/comfort-colors-1717/marine-front.jpg"
+        },
+        "naturel": {
+          "back": "/mockups/printify-cropped/comfort-colors-1717/naturel-back.jpg",
+          "folded": "/mockups/printify-cropped/comfort-colors-1717/naturel-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/comfort-colors-1717/naturel-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/comfort-colors-1717/naturel-front.jpg"
+        },
+        "noir": {
+          "back": "/mockups/printify-cropped/comfort-colors-1717/noir-back.jpg",
+          "folded": "/mockups/printify-cropped/comfort-colors-1717/noir-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/comfort-colors-1717/noir-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/comfort-colors-1717/noir-front.jpg"
+        },
+        "rouge": {
+          "back": "/mockups/printify-cropped/comfort-colors-1717/rouge-back.jpg",
+          "folded": "/mockups/printify-cropped/comfort-colors-1717/rouge-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/comfort-colors-1717/rouge-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/comfort-colors-1717/rouge-front.jpg"
+        }
+      }
+    },
+    "gildan-18000": {
+      "mockups": {
+        "blanc": {
+          "back": "/mockups/printify-cropped/gildan-18000/blanc-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18000/blanc-folded.jpg",
+          "front": "/mockups/printify-cropped/gildan-18000/blanc-front.jpg"
+        },
+        "gris": {
+          "back": "/mockups/printify-cropped/gildan-18000/gris-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18000/gris-folded.jpg",
+          "front": "/mockups/printify-cropped/gildan-18000/gris-front.jpg"
+        },
+        "marine": {
+          "back": "/mockups/printify-cropped/gildan-18000/marine-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18000/marine-folded.jpg",
+          "front": "/mockups/printify-cropped/gildan-18000/marine-front.jpg"
+        },
+        "noir": {
+          "back": "/mockups/printify-cropped/gildan-18000/noir-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18000/noir-folded.jpg",
+          "front": "/mockups/printify-cropped/gildan-18000/noir-front.jpg"
+        },
+        "rouge": {
+          "back": "/mockups/printify-cropped/gildan-18000/rouge-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18000/rouge-folded.jpg",
+          "front": "/mockups/printify-cropped/gildan-18000/rouge-front.jpg"
+        }
+      }
+    },
+    "gildan-18500": {
+      "mockups": {
+        "blanc": {
+          "back-2": "/mockups/printify-cropped/gildan-18500/blanc-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-18500/blanc-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18500/blanc-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-18500/blanc-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-18500/blanc-front.jpg"
+        },
+        "gris": {
+          "back-2": "/mockups/printify-cropped/gildan-18500/gris-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-18500/gris-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18500/gris-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-18500/gris-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-18500/gris-front.jpg"
+        },
+        "marine": {
+          "back-2": "/mockups/printify-cropped/gildan-18500/marine-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-18500/marine-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18500/marine-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-18500/marine-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-18500/marine-front.jpg"
+        },
+        "noir": {
+          "back-2": "/mockups/printify-cropped/gildan-18500/noir-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-18500/noir-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18500/noir-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-18500/noir-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-18500/noir-front.jpg"
+        },
+        "rouge": {
+          "back-2": "/mockups/printify-cropped/gildan-18500/rouge-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-18500/rouge-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18500/rouge-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-18500/rouge-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-18500/rouge-front.jpg"
+        },
+        "royal": {
+          "back-2": "/mockups/printify-cropped/gildan-18500/royal-back-2.jpg",
+          "back": "/mockups/printify-cropped/gildan-18500/royal-back.jpg",
+          "folded": "/mockups/printify-cropped/gildan-18500/royal-folded.jpg",
+          "front-collar-closeup": "/mockups/printify-cropped/gildan-18500/royal-front-collar-closeup.jpg",
+          "front": "/mockups/printify-cropped/gildan-18500/royal-front.jpg"
+        }
+      }
+    }
+  }
+}

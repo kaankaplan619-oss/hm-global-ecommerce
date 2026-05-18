@@ -15,34 +15,23 @@ import { useEffect, useState } from "react";
 import type { Placement, ProductCategory } from "@/types";
 import { isColorDark, EFFECT_OPTIONS } from "@/lib/color-utils";
 import type { LogoEffect } from "@/lib/color-utils";
+import { getZoneRect } from "@/lib/textile-zones";
 
-// ── Positions de la zone coeur par catégorie produit ─────────────────────────
-// Calibrées sur les packshots TopTex (portrait, fond neutre).
-// coeur = poitrine gauche du porteur → droite du viewer (left ≈ 42-43%)
-// dos   = haut du dos centré (identique pour toutes les catégories)
-const COEUR_BY_CATEGORY: Partial<Record<ProductCategory, React.CSSProperties>> = {
-  // T-shirts iDeal (packshots portrait, coupe plus courte que hoodie → coeur plus haut)
-  tshirts:    { position: "absolute", top: "26%", left: "43%", width: "17%" },
-  hoodies:    { position: "absolute", top: "30%", left: "43%", width: "18%" },
-  softshells: { position: "absolute", top: "32%", left: "42%", width: "17%" },
-  polos:      { position: "absolute", top: "34%", left: "42%", width: "16%" },
-  // polaires, casquettes, sacs → fallback générique ci-dessous
-};
-
-const COEUR_DEFAULT: React.CSSProperties = {
-  position: "absolute",
-  top:   "30%",
-  left:  "43%",
-  width: "18%",
-};
-
-const DOS_STYLE: React.CSSProperties = {
-  position: "absolute",
-  top:  "22%",
-  left: "50%",
-  transform: "translateX(-50%)",
-  width: "28%",
-};
+// ── Position des zones — dérivées du rectangle source de vérité ──────────────
+// Les positions cœur / dos viennent de @/lib/textile-zones (packshots TopTex).
+// Format : rectangle [left, top, width, height] → CSS top/left/width/height en %.
+function zoneStyle(category: ProductCategory | undefined, placement: "coeur" | "dos"): React.CSSProperties {
+  // ProductCategory inclut "polos", "polaires", "casquettes", "sacs", "enfants", "goodies"
+  // qui ne sont pas dans ZONES_BY_CATEGORY → fallback automatique sur tshirts via getZoneRect.
+  const [l, t, w, h] = getZoneRect(category, placement);
+  return {
+    position: "absolute",
+    left:   `${l * 100}%`,
+    top:    `${t * 100}%`,
+    width:  `${w * 100}%`,
+    height: `${h * 100}%`,
+  };
+}
 
 // ── CSS filters logo ─────────────────────────────────────────────────────────
 // "Contour blanc" : drop-shadow suit les pixels opaques → idéal pour PNG transparents.
@@ -111,9 +100,9 @@ export default function LightMockupPreview({
   const showCoeur = placement === "coeur" || placement === "coeur-dos";
   const showDos   = placement === "dos"   || placement === "coeur-dos";
 
-  // Position coeur calibrée selon la catégorie produit
-  const coeurStyle: React.CSSProperties =
-    (category && COEUR_BY_CATEGORY[category]) ?? COEUR_DEFAULT;
+  // Position coeur calibrée — dérivée du rectangle source de vérité (textile-zones)
+  const coeurStyle: React.CSSProperties = zoneStyle(category, "coeur");
+  const dosStyle:   React.CSSProperties = zoneStyle(category, "dos");
 
   // Style appliqué à l'<img> du logo selon l'effet choisi
   const logoImgStyle: React.CSSProperties =
@@ -162,7 +151,7 @@ export default function LightMockupPreview({
 
         {/* ── Zone dos (haut du dos centré) ─────────────────────────────── */}
         {showDos && (
-          <div style={DOS_STYLE}>
+          <div style={dosStyle}>
             <div
               className="absolute inset-0 rounded"
               style={{
