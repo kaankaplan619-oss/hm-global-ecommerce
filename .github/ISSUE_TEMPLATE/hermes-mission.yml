@@ -1,0 +1,145 @@
+name: "🎯 Mission Hermès"
+description: "Mission d'audit ou d'exécution conforme au template Hermès. Pour toute modification structurée du code ou audit."
+title: "[mission] "
+labels: ["hermes:mission", "status:to-validate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Avant de soumettre** : lire `docs/hermes/01_MISSION_TEMPLATE.md` et `docs/hermes/04_FORBIDDEN_ZONES.md`.
+        > **Règle d'or Hermès** : Hermès prépare, Claude Code exécute, Kaan valide.
+
+  - type: input
+    id: titre-court
+    attributes:
+      label: Titre court
+      description: "Une phrase descriptive, sans jargon. Servira aussi de nom de branche (`mission/AAAA-MM-JJ-titre-court`)."
+      placeholder: "Unification zones marquage configurateur"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type-mission
+    attributes:
+      label: Type de mission
+      description: "Audit = lecture seule. Exécution = modifications réelles."
+      options:
+        - "Audit (lecture seule, rapport uniquement)"
+        - "Exécution (modifications code applicatif)"
+        - "Documentaire (mise à jour de docs Hermès uniquement)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priorite
+    attributes:
+      label: Priorité
+      options:
+        - "P1 — cette semaine"
+        - "P2 — quinzaine"
+        - "P3 — backlog"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: niveau-risque
+    attributes:
+      label: Niveau de risque
+      description: "Voir docs/hermes/04_FORBIDDEN_ZONES.md. HIGH = autorisation explicite Kaan obligatoire."
+      options:
+        - "LOW — audit, lecture, docs"
+        - "MEDIUM — UI ciblée, fichiers listés explicitement"
+        - "HIGH — touche zone interdite (validation Kaan obligatoire)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: contexte
+    attributes:
+      label: Contexte
+      description: "Pourquoi cette mission existe. Lier à une décision du DECISION_LOG si applicable."
+      placeholder: "Le rapport d'audit du 2026-05-18 a identifié 3 systèmes de zones de marquage incohérents..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: objectif
+    attributes:
+      label: Objectif (1 phrase, mesurable)
+      placeholder: "À la fin de la mission, MockupViewer et StudioCanvas affichent la même zone pour T-shirt/Hoodie/Softshell."
+    validations:
+      required: true
+
+  - type: textarea
+    id: fichiers-autorises
+    attributes:
+      label: Fichiers autorisés
+      description: "Liste explicite. Pas de wildcards sauf justification."
+      placeholder: |
+        - hm-global/lib/textile-zones.ts (nouveau)
+        - hm-global/components/studio/StudioCanvas.tsx
+        - hm-global/components/product/MockupViewer.tsx
+    validations:
+      required: true
+
+  - type: textarea
+    id: fichiers-interdits
+    attributes:
+      label: Fichiers / zones interdits
+      description: "Rappel des zones sensibles à ne pas toucher (voir 04_FORBIDDEN_ZONES.md)."
+      value: |
+        - lib/stripe/**
+        - lib/supabase/**
+        - components/checkout/**
+        - components/cart/**
+        - app/api/checkout/**, app/api/payment/**, app/api/webhook/**
+        - lib/auth/**
+        - data/products/pricing.ts
+        - data/suppliers/supplierMap.ts
+        - .env*
+    validations:
+      required: true
+
+  - type: textarea
+    id: contraintes
+    attributes:
+      label: Contraintes (business / design / technique)
+      placeholder: |
+        - Mobile-first, 6 clics max
+        - Pas de nouvelle dépendance npm
+        - Conserver les valeurs ZONES_BY_CATEGORY existantes comme source de vérité
+    validations:
+      required: true
+
+  - type: textarea
+    id: tests-obligatoires
+    attributes:
+      label: Tests obligatoires avant rapport
+      value: |
+        - [ ] `pnpm typecheck` passe
+        - [ ] `pnpm lint` passe
+        - [ ] Captures Chrome MCP desktop 1440px + mobile 375px
+        - [ ] Console JS : aucune erreur rouge
+    validations:
+      required: true
+
+  - type: textarea
+    id: livrable
+    attributes:
+      label: Livrable attendu
+      placeholder: "Rapport conforme docs/hermes/03_REPORT_TEMPLATE.md, archivé dans docs/hermes/missions/."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: pre-flight
+    attributes:
+      label: Pre-flight check sécurité
+      description: "Toutes les cases doivent être cochées avant que la mission soit prise."
+      options:
+        - label: "J'ai lu `docs/hermes/04_FORBIDDEN_ZONES.md` et confirme qu'aucun fichier listé n'est dans le périmètre."
+          required: true
+        - label: "Si niveau HIGH, j'ai obtenu validation Kaan **écrite** (en commentaire de cette issue)."
+          required: true
+        - label: "Aucune nouvelle dépendance npm n'est introduite sans validation séparée."
+          required: true

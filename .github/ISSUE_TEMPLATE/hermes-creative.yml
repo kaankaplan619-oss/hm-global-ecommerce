@@ -1,0 +1,135 @@
+name: "🎨 Brief Creative Studio"
+description: "Brief créatif : vidéo, post Instagram, moodboard, prompt image, présentation client."
+title: "[creative] "
+labels: ["hermes:creative", "status:to-validate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Avant de soumettre** : consulter `docs/hermes/creative-studio/00_CREATIVE_STUDIO_SYSTEM.md`.
+        > **Règle** : Hermès prépare, **Kaan valide**. Aucun contenu n'est publié sans validation explicite.
+
+  - type: input
+    id: titre
+    attributes:
+      label: Titre court
+      placeholder: "Reel — du logo au textile"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type-brief
+    attributes:
+      label: Type de brief
+      description: "Détermine le template Creative Studio à utiliser."
+      options:
+        - "Vidéo (reel, LinkedIn, site) — template 01"
+        - "Direction artistique (moodboard) — template 02"
+        - "Contenu Instagram (post / carrousel / story) — template 03"
+        - "Prompt image (Midjourney / Firefly / DALL-E) — template 04"
+        - "Présentation client B2B — template 05"
+        - "Autre (préciser ci-dessous)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: canal
+    attributes:
+      label: Canal principal
+      options:
+        - "Instagram"
+        - "LinkedIn"
+        - "TikTok"
+        - "Site web"
+        - "Email / prospection"
+        - "Rdv client (présentation physique / PDF)"
+        - "Multi-canal (préciser)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: objectif-business
+    attributes:
+      label: Objectif business
+      description: "Un seul des 4 axes. Pas de 'tout à la fois'."
+      options:
+        - "Notoriété — faire connaître HM Global"
+        - "Conversion — drive vers site/devis/rdv"
+        - "Preuve — social proof, before/after, témoignage"
+        - "Pédagogie — éduquer sur un sujet métier"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priorite
+    attributes:
+      label: Priorité
+      options:
+        - "P1 — cette semaine"
+        - "P2 — quinzaine"
+        - "P3 — backlog"
+    validations:
+      required: true
+
+  - type: textarea
+    id: contexte
+    attributes:
+      label: Contexte / déclencheur
+      placeholder: "Sortie configurateur, nouveau pack, retour client, refonte page /impression..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: angle
+    attributes:
+      label: Angle / hook
+      description: "Ce qui doit accrocher en 3 secondes (vidéo) ou en 1 ligne (post)."
+      placeholder: "Plan rapproché du transfert DTF qui se décolle au ralenti, son grave de presse hydraulique."
+    validations:
+      required: true
+
+  - type: textarea
+    id: audience
+    attributes:
+      label: Audience cible
+      placeholder: "Dirigeants PME 35-55 Alsace, responsables comm/RH, cherche fournisseur textile B2B."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reutilisation
+    attributes:
+      label: Réutilisation cross-canal envisagée
+      description: "Le ratio effort / réutilisation détermine la priorité réelle."
+      placeholder: |
+        - Site web : section /textile (hero technique DTF)
+        - Insta : reel 9:16 + variante story 7s
+        - LinkedIn : post 30s 1:1 avec voix off
+        - Signature email : intro 5s en boucle
+    validations:
+      required: true
+
+  - type: textarea
+    id: livrable
+    attributes:
+      label: Livrable attendu
+      placeholder: |
+        - Vidéo 9:16 ~15s, sous-titres FR incrustés
+        - Variante courte 7s pour story
+        - Miniature 1080×1350 pour le feed
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: style-check
+    attributes:
+      label: Conformité style HM Global
+      options:
+        - label: "Corporate, moderne, premium — jamais cheap, jamais agressif."
+          required: true
+        - label: "Couleur primaire `#b13f74` présente en accent."
+          required: true
+        - label: "Pas de promo `-XX%`, pas d'urgence artificielle, pas d'emoji-spam."
+          required: true
+        - label: "Aucun faux logo client, aucun watermark, aucun visage non validé."
+          required: true

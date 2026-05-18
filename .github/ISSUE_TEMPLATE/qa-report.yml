@@ -1,0 +1,104 @@
+name: "✅ Rapport QA"
+description: "Compte-rendu de revue qualité (visuel, console, performance) sur une page ou un flux."
+title: "[qa] "
+labels: ["qa", "status:to-validate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > Rapport de revue qualité — pas un bug isolé. Pour signaler un seul bug, utiliser le template "🐛 Bug report".
+
+  - type: input
+    id: scope
+    attributes:
+      label: Périmètre revu
+      placeholder: "Page /produits/gildan-18000 — desktop + mobile"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type-qa
+    attributes:
+      label: Type de revue
+      options:
+        - "Visuel (cohérence DA, hiérarchie, mobile)"
+        - "Console (erreurs JS, warnings, network)"
+        - "Performance (LCP, CLS, INP, Lighthouse)"
+        - "Accessibilité (WCAG, contraste, navigation clavier)"
+        - "Cross-browser (Chrome / Safari / Firefox)"
+        - "Cross-device (desktop / tablet / mobile)"
+        - "Revue complète (visuel + console + perf)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environnement
+    attributes:
+      label: Environnement
+      options:
+        - "Production"
+        - "Preview Vercel"
+        - "Local"
+    validations:
+      required: true
+
+  - type: textarea
+    id: methode
+    attributes:
+      label: Méthode utilisée
+      placeholder: |
+        - Chrome MCP : navigation + captures desktop 1440px + mobile 375px
+        - Console JS lue avec filtre level=error,warning
+        - Network filtré sur 4xx/5xx
+        - Lighthouse mobile + desktop, 3 runs
+    validations:
+      required: true
+
+  - type: textarea
+    id: findings-ok
+    attributes:
+      label: Ce qui fonctionne ✅
+      placeholder: |
+        - Tunnel d'achat clic 1-5 fluide
+        - Captures cohérentes avec la DA
+        - 0 erreur console sur le parcours principal
+    validations:
+      required: true
+
+  - type: textarea
+    id: findings-warn
+    attributes:
+      label: Warnings ⚠️ (non bloquant)
+      placeholder: |
+        - Warning Next.js sur image sans width/height (3 occurrences)
+        - LCP 2.8s sur fiche produit mobile — proche du seuil 2.5s
+    validations:
+      required: false
+
+  - type: textarea
+    id: findings-ko
+    attributes:
+      label: Bloquants ❌
+      placeholder: |
+        - Aucun bloquant identifié
+        - OU lister les bugs critiques (préférer ouvrir un bug-report dédié par item)
+    validations:
+      required: false
+
+  - type: textarea
+    id: captures
+    attributes:
+      label: Captures jointes
+      description: "Lister les fichiers de captures attachés."
+      placeholder: |
+        - desktop-1440-home.png
+        - mobile-375-fiche-produit.png
+        - lighthouse-mobile-report.pdf
+
+  - type: textarea
+    id: recommandations
+    attributes:
+      label: Recommandations / prochaines actions
+      placeholder: |
+        1. Ouvrir un bug-report pour le LCP fiche produit mobile (priorité P2)
+        2. Mission documentaire : auditer les images sans width/height (P3)

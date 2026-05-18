@@ -1,0 +1,88 @@
+name: "🌙 Mission Night Mode"
+description: "Mission exécutée hors heures Kaan (LOW risk uniquement)."
+title: "[night] "
+labels: ["hermes:night", "priority:P2", "status:to-validate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Night Mode** = mission qui peut être exécutée pendant que Kaan dort.
+        >
+        > ⚠ **LOW risk uniquement.** MEDIUM seulement si très cadré (fichiers explicitement listés, rollback automatique).
+        > ❌ **HIGH interdit** sans exception. Toute alerte HIGH déclenche `❌` dans `#night-alertes` et arrête la mission.
+        >
+        > Voir `docs/hermes/reports/2026-05-18_hermes-agentic-architecture-report.md` §7 pour les définitions de niveaux.
+
+  - type: input
+    id: titre
+    attributes:
+      label: Titre court
+      placeholder: "Audit visuel /impression mobile 375px"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: niveau
+    attributes:
+      label: Niveau de risque
+      description: "Vérification stricte avant prise."
+      options:
+        - "LOW — audit, lecture, docs, prompts, idées créatives"
+        - "MEDIUM — modifications cosmétiques sur fichiers explicitement listés"
+    validations:
+      required: true
+
+  - type: textarea
+    id: pourquoi-night
+    attributes:
+      label: Pourquoi en Night Mode ?
+      description: "Justifier que cette tâche peut attendre la nuit sans bloquer le business."
+      placeholder: "Audit visuel non urgent, ne touche pas le tunnel d'achat, rapport au matin suffit."
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope-exact
+    attributes:
+      label: Périmètre exact
+      description: "Lister les fichiers / pages concernés. Pas de wildcards sauf justification."
+      placeholder: |
+        - Lecture : app/impression/page.tsx
+        - Captures Chrome MCP : /impression desktop 1440px + mobile 375px
+        - Console : noter erreurs JS éventuelles
+    validations:
+      required: true
+
+  - type: textarea
+    id: stop-conditions
+    attributes:
+      label: Conditions d'arrêt automatique
+      value: |
+        - [ ] Détection d'un fichier dans `04_FORBIDDEN_ZONES.md` → STOP + alerte `#night-alertes`
+        - [ ] Échec `pnpm typecheck` ou `pnpm lint` 2 fois de suite → STOP
+        - [ ] Temps écoulé > 30 min → STOP avec rapport intermédiaire
+        - [ ] Toute action HIGH demandée → STOP immédiat, attendre Kaan
+    validations:
+      required: true
+
+  - type: textarea
+    id: livrable
+    attributes:
+      label: Livrable au matin
+      placeholder: "Rapport conforme 03_REPORT_TEMPLATE.md dans docs/hermes/missions/, captures jointes, notif 🌙 #night-alertes."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: night-safety
+    attributes:
+      label: Safety check Night Mode
+      options:
+        - label: "Niveau confirmé LOW ou MEDIUM cadré — aucun cas HIGH dans le périmètre."
+          required: true
+        - label: "Aucun email client, aucune commande fournisseur, aucun paiement, aucun déploiement déclenchable."
+          required: true
+        - label: "Rapport obligatoire au matin. Si la mission échoue, rapport quand même avec cause d'arrêt."
+          required: true
+        - label: "Aucune URL webhook, clé API, secret affiché — règle Discord §3.1-3.4."
+          required: true

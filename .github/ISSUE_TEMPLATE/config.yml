@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation Hermès
+    url: https://github.com/kaankaplan619-oss/hm-global-ecommerce
+    about: Avant d'ouvrir une issue, consulter docs/hermes/00_HERMES_SYSTEM.md et docs/hermes/04_FORBIDDEN_ZONES.md. Choisir le template adapté ci-dessous.
+  - name: Discussion privée (rdv / devis client)
+    url: https://discord.com
+    about: Pour les questions commerciales ou les rdv client, passer par Discord — ne pas ouvrir d'issue publique.

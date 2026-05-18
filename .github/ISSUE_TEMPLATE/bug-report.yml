@@ -1,0 +1,108 @@
+name: "🐛 Bug report"
+description: "Signaler un bug du site HM Global (client, admin, configurateur)."
+title: "[bug] "
+labels: ["bug", "status:to-validate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > Décris le bug avec précision. Si tu peux reproduire, indique les étapes.
+        > Pour un bug **bloquant en production** sur une zone sensible (Stripe, checkout, auth), notifier Kaan directement avant d'ouvrir l'issue.
+
+  - type: input
+    id: resume
+    attributes:
+      label: Résumé en 1 ligne
+      placeholder: "Le bouton 'Commander' reste grisé même quand toutes les options sont sélectionnées"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severite
+    attributes:
+      label: Sévérité
+      options:
+        - "Bloquant — tunnel d'achat cassé / production down"
+        - "Critique — feature majeure inutilisable"
+        - "Majeur — feature dégradée mais contournable"
+        - "Mineur — gêne UX, pas bloquant"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: zone
+    attributes:
+      label: Zone concernée
+      options:
+        - "Configurateur textile / studio mockup"
+        - "Catalogue / fiches produit"
+        - "Tunnel d'achat (panier / checkout)"
+        - "Auth / connexion Google OAuth"
+        - "Admin / agent Jean-Yves"
+        - "Page /impression"
+        - "Performance / perf rendering"
+        - "Autre (préciser dans la description)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Étapes pour reproduire
+      placeholder: |
+        1. Aller sur /produits/gildan-18000
+        2. Cliquer "Personnaliser"
+        3. Uploader logo PNG
+        4. Choisir taille L
+        5. Observer : bouton "Commander" reste grisé alors qu'il devrait s'activer
+    validations:
+      required: true
+
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Comportement attendu
+      placeholder: "Le bouton 'Commander' s'active dès que couleur + taille + logo + qté ≥ 1 sont remplis (voir brief Phase 1)."
+    validations:
+      required: true
+
+  - type: textarea
+    id: observe
+    attributes:
+      label: Comportement observé
+      placeholder: "Le bouton reste grisé même avec tous les champs remplis. Console JS : aucune erreur visible."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environnement
+    attributes:
+      label: Environnement
+      options:
+        - "Production (hm-global.fr / Vercel prod)"
+        - "Preview Vercel (PR / branche)"
+        - "Local (pnpm dev)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device / navigateur
+      options:
+        - "Desktop Chrome"
+        - "Desktop Safari"
+        - "Desktop Firefox"
+        - "Mobile iOS Safari"
+        - "Mobile Android Chrome"
+        - "iPad Safari"
+        - "Autre (préciser)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: captures
+    attributes:
+      label: Captures / vidéo
+      description: "Glisser-déposer des captures Chrome MCP, Playwright, ou screenshots manuels."
+      placeholder: "Joindre screenshots desktop + mobile si pertinent."
