@@ -68,3 +68,40 @@ Développer et maintenir le site e-commerce B2B de textile personnalisé HM Glob
 ## Retour attendu
 
 Réponses concises, sans commentaires inutiles dans le code, sans abstractions superflues. Chaque tâche = périmètre strict. Pas d'initiative non demandée.
+
+---
+
+# Workflow Hermès & Git (ajout 2026-05-18)
+
+## Hermès — système de coordination des missions
+
+- Les missions structurées vivent dans `docs/hermes/missions/` (hors repo, working dir parent).
+- Templates : `docs/hermes/01_MISSION_TEMPLATE.md`, rapports : `docs/hermes/03_REPORT_TEMPLATE.md`.
+- Zones interdites consolidées : `docs/hermes/04_FORBIDDEN_ZONES.md` (en plus de `docs/agent-memory/06_FORBIDDEN_ZONES.md` qui reste la source repo).
+- Discord opérationnel (webhooks `DISCORD_WEBHOOK_URL` + `DISCORD_NIGHT_WEBHOOK_URL` dans `.env.local`). Format messages : `docs/hermes/missions/2026-05-18_hermes-discord-channel.md`.
+- GitHub Issue/PR templates : `.github/ISSUE_TEMPLATE/` (5 templates) + `.github/pull_request_template.md`.
+- Règle d'or : **Hermès prépare, Claude Code exécute, Kaan valide.**
+
+## Quick Git protocol (lecture obligatoire avant toute commit)
+
+1. **Toujours commencer par** `git status --short` + `git branch --show-current`.
+2. **Jamais `git add -A`** ni `git add .` — stage par groupe précis (fichier par fichier ou dossier ciblé).
+3. **Jamais de push sur `main`** sans validation Kaan explicite.
+4. **Toujours `npx tsc --noEmit` + `npm run build`** avant de push une branche destinée à Vercel.
+5. **Toujours vérifier les untracked** qui pourraient casser Vercel — voir `docs/agent-memory/VERCEL_DEBUG.md` §1.
+6. **Toujours un commit thématique** (un commit = un sujet cohérent). Pas de fourre-tout.
+
+## Pour les bugs Vercel
+
+Le **build local peut passer** alors que Vercel échoue (différence : Vercel voit seulement Git). Avant toute correction :
+1. Récupérer le **log Vercel exact** (ne pas deviner).
+2. Lire `docs/agent-memory/VERCEL_DEBUG.md`.
+3. Diagnostiquer avec le log, puis proposer la correction minimale.
+
+## Pour les assets images
+
+Voir `docs/agent-memory/IMAGE_ASSETS_RULES.md`. Règle clé : **les images dans `public/` doivent être commitées si elles sont référencées par du code tracké**. Les manifests JSON seuls ne suffisent pas.
+
+## Pour l'état actuel du projet
+
+Voir `docs/agent-memory/PROJECT_STATE.md` (dashboard d'état, derniers commits, branches actives).
