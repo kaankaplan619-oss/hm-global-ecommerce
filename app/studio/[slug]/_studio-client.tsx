@@ -11,7 +11,8 @@ import type { StudioCanvasHandle } from "@/components/studio/StudioCanvas";
 import StudioToolsPanel from "@/components/studio/StudioToolsPanel";
 import StudioSummaryPanel from "@/components/studio/StudioSummaryPanel";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
-import { getHMTextileFrontPath, getHMTextileBackPath } from "@/lib/hm-visual-utils";
+import { getHMTextileBackPath, getHMMockupPath } from "@/lib/hm-visual-utils";
+import { getDisplayedColors, getPrintifyMockupForHMColor } from "@/lib/suppliers/printify/printify-colors";
 
 // Fabric.js must be dynamic (no SSR)
 const StudioCanvas = dynamic(
@@ -43,16 +44,25 @@ export default function StudioClient({ product }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // ── Couleurs affichees dans le studio = identique a la fiche produit ─────
+  // Filtree via getDisplayedColors pour les produits Printify V1 (n'affiche que
+  // les couleurs qui ont un mockup Printify cropped). Pour les autres, passthrough.
+  // Aligne fiche et studio, evite la palette globale + visuels casses (silver, etc.).
+  const displayedColors = useMemo(
+    () => getDisplayedColors(product.id, product.colors),
+    [product.id, product.colors],
+  );
+
   // ── Read query params ─────────────────────────────────────────────────────
-  const initColorId   = searchParams.get("couleur")   ?? product.colors.find((c) => c.available)?.id ?? "";
+  const initColorId   = searchParams.get("couleur")   ?? displayedColors.find((c) => c.available)?.id ?? "";
   const initSize      = searchParams.get("taille")    ?? "";
   const initTechnique = (searchParams.get("technique") as Technique) ?? product.techniques[0];
   const initQuantity  = parseInt(searchParams.get("quantite") ?? "1") || 1;
   const initPlacement = (searchParams.get("placement") as Placement) ?? product.placements[0];
 
   const defaultColor = useMemo(
-    () => product.colors.find((c) => c.id === initColorId && c.available)
-          ?? product.colors.find((c) => c.available)
+    () => displayedColors.find((c) => c.id === initColorId && c.available)
+          ?? displayedColors.find((c) => c.available)
           ?? null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [product.id]
@@ -80,29 +90,30 @@ export default function StudioClient({ product }: Props) {
   // ── Canvas ref for exportPNG ──────────────────────────────────────────────
   const canvasRef = useRef<StudioCanvasHandle>(null);
 
-  // Packshot face — vraies photos par coloris pour les produits Printful
+  // Packshot face — cascade unifiee :
+  //   1. Printify cropped (produits V1, le plus coherent visuellement)
+  //   2. HM webp premium (lib/hm-visual-utils HM_TEXTILE_ASSETS)
+  //   3. hmMockupImages (Printful local, fallback ancien)
+  //   4. getProductCatalogImage (TopTex / Printful packshot)
+  // Voir getHMMockupPath dans lib/hm-visual-utils.ts pour le detail.
   const packshot = useMemo(() => {
-    if (product.supplierName === "printful") {
-      return product.hmMockupImages?.[selectedColor?.id ?? ""] ?? null;
-    }
-    // Assets HM propres (webp haute qualité) en priorité, sinon packshot TopTex/fallback
     return (
-      getHMTextileFrontPath(product.id, selectedColor?.id) ??
+      getHMMockupPath(product, selectedColor?.id) ??
       getProductCatalogImage(product, selectedColor?.id ?? "")
     );
   }, [product, selectedColor]);
 
-  // Packshot dos — assets HM propres en priorité, sinon hmMockupImagesBack produit
+  // Packshot dos — meme cascade que packshot front, mais cote back :
+  //   1. Printify cropped back
+  //   2. HM webp back
+  //   3. hmMockupImagesBack (Printful local)
   const packshotBack = useMemo(() => {
-    if (product.supplierName === "printful") {
-      return (
-        getHMTextileBackPath(product.id, selectedColor?.id) ??
-        product.hmMockupImagesBack?.[selectedColor?.id ?? ""] ??
-        null
-      );
-    }
-    // Assets HM propres pour le dos (non-printful)
-    return getHMTextileBackPath(product.id, selectedColor?.id) ?? null;
+    if (!selectedColor) return null;
+    const printifyBack = getPrintifyMockupForHMColor(product.id, selectedColor.id, "back");
+    if (printifyBack) return printifyBack;
+    const hmBack = getHMTextileBackPath(product.id, selectedColor.id);
+    if (hmBack) return hmBack;
+    return product.hmMockupImagesBack?.[selectedColor.id] ?? null;
   }, [product, selectedColor]);
 
   const handleAddObject = useCallback((obj: StudioObject) => {
@@ -218,7 +229,7 @@ export default function StudioClient({ product }: Props) {
                   <div>
                     <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">Couleur</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {product.colors.filter((c) => c.available).map((c) => (
+                      {displayedColors.filter((c) => c.available).map((c) => (
                         <button key={c.id} type="button" onClick={() => setSelectedColor(c)}
                           className={`h-7 w-7 rounded-full border-2 transition ${selectedColor?.id === c.id ? "border-[var(--hm-primary)] scale-110" : "border-transparent"}`}
                           style={{ backgroundColor: c.hex }} title={c.label}
@@ -306,7 +317,7 @@ export default function StudioClient({ product }: Props) {
             <div className="hidden rounded-2xl border border-[var(--hm-line)] bg-white p-4 lg:block">
               <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Couleur</p>
               <div className="flex flex-wrap gap-2">
-                {product.colors.filter((c) => c.available).map((c) => (
+                {displayedColors.filter((c) => c.available).map((c) => (
                   <button key={c.id} type="button" onClick={() => setSelectedColor(c)}
                     className={`h-7 w-7 rounded-full border-2 transition ${selectedColor?.id === c.id ? "border-[var(--hm-primary)] scale-110 shadow" : "border-[var(--hm-line)]"}`}
                     style={{ backgroundColor: c.hex }} title={c.label}
