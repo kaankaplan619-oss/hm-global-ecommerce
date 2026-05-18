@@ -25,6 +25,10 @@ import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib
 import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
 import { useAuthStore } from "@/store/auth";
 import { colorHasImages, colorHasSpecificImage } from "@/components/product/ProductGallery";
+import {
+  getDisplayedColors,
+  isPrintifyV1Product,
+} from "@/lib/suppliers/printify/printify-colors";
 import type { Product, Technique, Placement, ProductColor, LogoEffect, LogoPlacementTransform } from "@/types";
 
 interface Props {
@@ -112,12 +116,19 @@ export default function ProductConfigurator({
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
 
+  // Couleurs affichées : filtrées Printify V1 si applicable, sinon liste complète
+  const displayedColors = useMemo(
+    () => getDisplayedColors(product.id, product.colors),
+    [product.id, product.colors]
+  );
+  const isPrintifyV1 = isPrintifyV1Product(product.id);
+
   // Config state — états internes (utilisés quand le parent ne passe pas de valeur contrôlée)
   const [internalTechnique, setInternalTechnique] = useState<Technique>(product.techniques[0]);
   const [internalPlacement, setInternalPlacement] = useState<Placement>(product.placements[0]);
   const [internalSize,      setInternalSize]      = useState<string>("");
   const [internalColor,     setInternalColor]      = useState<ProductColor | null>(
-    product.colors.find((c) => c.available) ?? null
+    displayedColors.find((c) => c.available) ?? displayedColors[0] ?? null
   );
   const [internalQuantity,  setInternalQuantity]  = useState(product.minOrderQty ?? 1);
 
@@ -372,7 +383,7 @@ export default function ProductConfigurator({
           )}
         </label>
         <div className="flex flex-wrap gap-2">
-          {product.colors.map((c) => {
+          {displayedColors.map((c) => {
             // Couleur barrée uniquement si vraiment indisponible dans notre catalogue
             const unavailable = !c.available;
             // Photo spécifique = packshot exact pour cette couleur (statique ou API)
@@ -434,7 +445,9 @@ export default function ProductConfigurator({
             );
           })}
         </div>
-        {color && !colorHasImages(product.images, color, colorImages) && !product.hmMockupImages?.[color.id] && (
+        {/* Message "Visuel non disponible" — masqué pour les produits Printify V1 puisque
+            toutes les couleurs affichées ont obligatoirement un mockup local généré */}
+        {!isPrintifyV1 && color && !colorHasImages(product.images, color, colorImages) && !product.hmMockupImages?.[color.id] && (
           <p className="mt-1.5 text-[11px] text-[var(--hm-text-muted)]">
             Visuel non disponible pour cette couleur — vous pouvez tout de même la commander.
           </p>

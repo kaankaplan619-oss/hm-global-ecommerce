@@ -128,12 +128,39 @@ export default async function CategoryPage({ params }: Props) {
           })}
         </div>
 
-        {/* Products */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {/* Products — état vide propre si aucune fiche visible (ex: goodies V1) */}
+        {products.length === 0 ? (
+          <div
+            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--hm-line)] px-6 py-16 text-center"
+            style={{ background: "linear-gradient(180deg, #f8f6f2 0%, #f1eee8 100%)" }}
+          >
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--hm-primary)]">
+              Bientôt disponible
+            </p>
+            <h2 className="mb-3 text-xl font-semibold text-[var(--hm-text)] sm:text-2xl">
+              {category === "goodies"
+                ? "Les goodies personnalisés arrivent bientôt"
+                : `${meta.label} : sélection en préparation`}
+            </h2>
+            <p className="mb-6 max-w-md text-sm leading-6 text-[var(--hm-text-soft)]">
+              {category === "goodies"
+                ? "Mugs, gourdes, tote bags : nous préparons une sélection cohérente avec la qualité HM Global. Pour une demande urgente, demandez un devis."
+                : "Notre sélection arrive prochainement. Pour une demande urgente, demandez un devis sur mesure."}
+            </p>
+            <Link
+              href={`/contact?sujet=devis&support=${category}`}
+              className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-[12px]"
+            >
+              Demander un devis
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

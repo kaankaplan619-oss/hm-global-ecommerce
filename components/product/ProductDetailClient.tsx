@@ -13,11 +13,20 @@ import ProductGallery from "@/components/product/ProductGallery";
 import LightMockupPreview from "@/components/product/LightMockupPreview";
 import BATModal from "@/components/product/BATModal";
 import TopTexStockBadge from "@/components/product/TopTexStockBadge";
+import VolumeQuoteBlock from "@/components/product/VolumeQuoteBlock";
+import QuoteOnlyBlock from "@/components/product/QuoteOnlyBlock";
 import { useTopTexMedias } from "@/hooks/useTopTexMedias";
 import { isColorDark } from "@/lib/color-utils";
 import { buildBATData } from "@/lib/bat-utils";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
-import { getHMMockupPath, getVisualMode } from "@/lib/hm-visual-utils";
+import { getHMMockupPath, getVisualMode, resolveMockupAssetUrl } from "@/lib/hm-visual-utils";
+import { getPrintifyGallery } from "@/lib/suppliers/printify/mockups-local";
+import {
+  getDisplayedColors,
+  isPrintifyV1Product,
+  getPrintifyColorIdForHM,
+} from "@/lib/suppliers/printify/printify-colors";
+import { getV1PrintifyImage, getV1PrintifyGallery } from "@/lib/suppliers/printify/v1-image";
 import HMProductVisual from "@/components/product/HMProductVisual";
 import { formatPrice, getVolumePricedRate } from "@/data/pricing";
 import type { Product, ProductColor, Placement, Technique } from "@/types";
@@ -53,9 +62,17 @@ type Props = {
 export default function ProductDetailClient({ product }: Props) {
   const searchParams = useSearchParams();
 
+  // Couleurs affichées : pour les produits Printify V1, on filtre strictement
+  // sur les couleurs réellement disponibles (manifest + mapping variant_id).
+  // Pour les autres produits, retourne la liste complète inchangée.
+  const displayedColors = useMemo(
+    () => getDisplayedColors(product.id, product.colors),
+    [product.id, product.colors]
+  );
+
   const defaultColor = useMemo(
-    () => product.colors.find((c) => c.available) ?? null,
-    [product]
+    () => displayedColors.find((c) => c.available) ?? displayedColors[0] ?? null,
+    [displayedColors]
   );
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(defaultColor);
   const [placement, setPlacement]   = useState<Placement>(product.placements[0]);
@@ -305,10 +322,11 @@ export default function ProductDetailClient({ product }: Props) {
   const isPOD        = isPrintful || product.supplierName === "spreadshirt";
   const hasLogoReady = !!logoFile || !!studioLogoPreset;
 
-  // Vue 3D — uniquement t-shirts (shirt.glb)
-  // Hoodies : photos Printful utilisées — modèle 3D non disponible pour l'instant
-  const has3DViewer = isPrintful && product.category === "tshirts";
-  const [show3D, setShow3D] = useState(has3DViewer);
+  // Vue 3D — désactivée pour les produits Printify V1 (mockups réels obligatoires).
+  // Reste active pour les autres produits Printful (Cotton Heritage M2480 etc.).
+  const isPrintifyV1 = isPrintifyV1Product(product.id);
+  const has3DViewer = isPrintful && product.category === "tshirts" && !isPrintifyV1;
+  const [show3D, setShow3D] = useState(false);   // V1 : photos par défaut, jamais 3D
   // Index de vue 3D : 0=face, 1=dos, 2=manche
   const [view3DIndex, setView3DIndex] = useState(0);
   const VIEW_3D_COUNT = 3;
@@ -320,23 +338,41 @@ export default function ProductDetailClient({ product }: Props) {
   const gallery: string[] = useMemo(() => {
     if (!isPrintful) return [];
     const cid = selectedColor?.id ?? "";
-    return product.hmMockupGallery?.[cid] ?? [];
-  }, [isPrintful, selectedColor?.id, product]);
+
+    // ⚠️ Pour les 6 produits Printify V1 : galerie STRICTEMENT issue de /mockups/printify/.
+    //    Aucun fallback hmMockupGallery, aucune source ancienne autorisée.
+    if (isPrintifyV1) {
+      return getV1PrintifyGallery(product.id, cid);
+    }
+
+    // Pour les autres Printful (Cotton Heritage etc.) : ancien comportement
+    const pf = getPrintifyGallery(product.id, cid);
+    if (pf.front) {
+      return [pf.front, pf.back, pf.folded].filter((s): s is string => Boolean(s));
+    }
+    return (product.hmMockupGallery?.[cid] ?? []).map(resolveMockupAssetUrl);
+  }, [isPrintful, isPrintifyV1, selectedColor?.id, product]);
 
   // Image produit actuelle (utilisée par MockupViewer, LightMockupPreview + BAT)
-  // Priorité (B2) : mockup HM → packshot TopTex couleur → packshot catalogue → photo mannequin
-  // Pour les produits Printful avec galerie : l'image affichée suit galleryIndex.
+  // ⚠️ Pour les 6 produits Printify V1 : URL STRICTEMENT issue de /mockups/printify/.
+  //    Aucun fallback colorImages, aucune source ancienne, aucun packshot TopTex.
   const currentImageUrl = useMemo(() => {
     const cid = selectedColor?.id ?? "";
-    // Printful + galerie active → l'image de la galerie prime
-    if (isPrintful && gallery.length > 0) {
-      return gallery[galleryIndex] ?? gallery[0];
+
+    if (isPrintifyV1) {
+      // Galerie Printify uniquement : suivi de galleryIndex sur front/back/folded
+      if (gallery.length > 0) return gallery[galleryIndex] ?? gallery[0];
+      // Sinon front direct (cas où la galerie n'a pas encore été calculée)
+      return getV1PrintifyImage(product.id, cid, "front") ?? "";
     }
+
+    // Comportement historique pour les produits NON-V1
+    if (isPrintful && gallery.length > 0) return gallery[galleryIndex] ?? gallery[0];
     const hmMockup = getHMMockupPath(product, cid);
     if (hmMockup) return hmMockup;
     if (cid && colorImages[cid]?.[0]) return colorImages[cid][0];
     return getProductCatalogImage(product, cid);
-  }, [selectedColor?.id, colorImages, product, galleryIndex, gallery, isPrintful]);
+  }, [selectedColor?.id, colorImages, product, galleryIndex, gallery, isPrintful, isPrintifyV1]);
 
   const handlePreviewNext = useCallback(() => {
     if (studioComposedUrl) return;
@@ -709,7 +745,7 @@ export default function ProductDetailClient({ product }: Props) {
                 <ProductGallery
                   name={product.name}
                   images={product.images}
-                  colors={product.colors}
+                  colors={displayedColors}
                   selectedColor={selectedColor}
                   badge={product.badge}
                   supplierImages={product.supplierImages}
@@ -758,6 +794,15 @@ export default function ProductDetailClient({ product }: Props) {
             </p>
           </div>
         </div>
+
+        {/* Bloc devis volume — affiché pour les catégories textile, hors goodies */}
+        {(product.category === "tshirts" ||
+          product.category === "hoodies" ||
+          product.category === "polos" ||
+          product.category === "softshells" ||
+          product.category === "polaires") && (
+          <VolumeQuoteBlock productSlug={product.slug} />
+        )}
 
         {product.category === "softshells" && (
           <div className="flex items-start gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-accent-soft-purple)] p-4">
@@ -818,6 +863,13 @@ export default function ProductDetailClient({ product }: Props) {
           )}
         </div>
 
+        {/* Bascule devis-only : si product.quoteOnly = true, on remplace
+            entièrement le ProductConfigurator (et donc le bouton "Ajouter
+            au panier") par un CTA "Demander un devis". Aucune logique
+            panier / Stripe / API n'est appelée pour ces produits. */}
+        {product.quoteOnly ? (
+          <QuoteOnlyBlock product={product} />
+        ) : (
         <ProductConfigurator
           product={product}
           selectedColor={selectedColor}
@@ -878,6 +930,7 @@ export default function ProductDetailClient({ product }: Props) {
             )
           }
         />
+        )}
       </div>
 
       {/* ── BAT Preview Studio (portal body) — t-shirts B&C uniquement ── */}

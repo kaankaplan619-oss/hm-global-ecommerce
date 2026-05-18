@@ -2,14 +2,16 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import { Layers3 } from "lucide-react";
 import { formatPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getVisualMode } from "@/lib/hm-visual-utils";
+import { getDisplayedColors, isPrintifyV1Product } from "@/lib/suppliers/printify/printify-colors";
+import { getV1PrintifyImage } from "@/lib/suppliers/printify/v1-image";
 import type { Product } from "@/types";
 import HMProductVisual from "@/components/product/HMProductVisual";
+import ProductImageStage from "@/components/product/ProductImageStage";
 
 // Three.js chargé uniquement côté client — jamais en SSR
 const TShirt3DViewer = dynamic(
@@ -42,19 +44,27 @@ export default function ProductCard({ product }: ProductCardProps) {
   ].filter((p) => p > 0);
   const basePrice = prices.length > 0 ? Math.min(...prices) : 0;
 
-  // Coloris par défaut pour sélectionner le bon mockup / packshot
-  const defaultColor = product.colors.find((c) => c.available);
+  // Couleurs affichées : pour les produits Printify V1, on filtre strictement
+  // sur les couleurs réellement disponibles (manifest + mapping variant_id).
+  // Pour les autres produits : liste complète inchangée.
+  const displayedColors = getDisplayedColors(product.id, product.colors);
 
-  // Image catalogue (B2) : mockup HM Global > packshot TopTex > photo mannequin
-  const catalogImage = getProductCatalogImage(product, defaultColor?.id);
+  // Coloris par défaut pour sélectionner le bon mockup / packshot
+  const defaultColor =
+    displayedColors.find((c) => c.available) ?? displayedColors[0] ?? product.colors[0];
+
+  // Pour les 6 produits Printify V1 : image STRICTEMENT issue de /mockups/printify/.
+  const isPrintifyV1 = isPrintifyV1Product(product.id);
+  const v1Image      = isPrintifyV1 ? getV1PrintifyImage(product.id, defaultColor?.id, "front") : null;
+  // Sinon : pipeline historique (TopTex, autres Printful, packshots)
+  const catalogImage = v1Image ?? getProductCatalogImage(product, defaultColor?.id);
 
   // Mode visuel : Printful + Spreadshirt → rendu simple fond blanc (pas HMProductVisual)
   const isPrintful = product.supplierName === "printful" || product.supplierName === "spreadshirt";
   const visualMode = isPrintful ? "supplier" : getVisualMode(product);
 
-  // 3D hover uniquement pour les t-shirts (shirt.glb)
-  // Hoodies : photos Printful utilisées — modèle 3D non disponible pour l'instant
-  const is3DCapable = isPrintful && product.category === "tshirts";
+  // 3D hover uniquement pour les t-shirts NON V1 (les V1 ont des mockups réels obligatoires).
+  const is3DCapable = isPrintful && product.category === "tshirts" && !isPrintifyV1;
 
   // ── Hover 3D ─────────────────────────────────────────────────────────────────
   const [show3D, setShow3D] = useState(false);
@@ -75,42 +85,55 @@ export default function ProductCard({ product }: ProductCardProps) {
       href={`/produits/${product.slug}`}
       className="hm-card-enter group card card-hover block overflow-hidden"
     >
-      {/* ── Zone image ────────────────────────────────────────────────────── */}
+      {/* ── Zone image (plus haute pour donner plus d'impact au produit) ─── */}
       <div
-        className="relative aspect-[4/5] overflow-hidden rounded-t-xl"
+        className="relative aspect-[4/4.4] overflow-hidden rounded-t-xl"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
 
         {isPrintful ? (
-          /* Produits Printful : fond blanc pur */
-          <div className="absolute inset-0 bg-white flex items-center justify-center">
-
-            {/* ── 3D viewer (hover) — t-shirt uniquement ── */}
-            {show3D ? (
+          /* Scène image premium unifiée — produit valorisé par scale + ombre + gradient */
+          show3D ? (
+            /* 3D viewer (hover) — uniquement t-shirts NON-V1 (gate dans is3DCapable) */
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 42%, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.72) 38%, rgba(244,241,234,1) 100%)",
+                borderBottom: "1px solid rgba(60,45,75,0.06)",
+              }}
+            >
               <TShirt3DViewer
                 color={defaultColor?.hex ?? "#111111"}
                 autoRotate
                 hideLabel
                 className="absolute inset-0 w-full h-full"
               />
-            ) : catalogImage || product.category !== "goodies" ? (
-              /* Flat packshot */
-              <Image
-                src={catalogImage || "/mockups/tshirt/blanc-front.jpg"}
+            </div>
+          ) : catalogImage || product.category !== "goodies" ? (
+            <div className="absolute inset-0">
+              <ProductImageStage
+                src={catalogImage || "/mockups/tshirt/blanc-front.webp"}
                 alt={product.name}
-                fill
+                category={product.category}
+                variant="catalog"
                 sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                className="object-contain p-3 transition-transform duration-700 group-hover:scale-[1.06] [mix-blend-mode:multiply]"
               />
-            ) : (
-              /* Placeholder goodies */
-              <div className="flex flex-col items-center justify-center gap-2 opacity-30 select-none">
-                <span className="text-6xl leading-none">☕</span>
-                <span className="text-[10px] font-medium text-[var(--hm-text-soft)] tracking-wide">Visuel à venir</span>
-              </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            /* Placeholder goodies */
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-30 select-none"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 42%, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.72) 38%, rgba(244,241,234,1) 100%)",
+              }}
+            >
+              <span className="text-6xl leading-none">☕</span>
+              <span className="text-[10px] font-medium text-[var(--hm-text-soft)] tracking-wide">Visuel à venir</span>
+            </div>
+          )
         ) : (
           /* Autres produits (TopTex, etc.) : HMProductVisual avec mode hm/supplier */
           <HMProductVisual
@@ -125,34 +148,40 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Rupture de stock */}
-        {product.colors.every((c) => !c.available) && (
+        {displayedColors.length > 0 && displayedColors.every((c) => !c.available) && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <span className="badge badge-neutral text-base">Rupture de stock</span>
           </div>
         )}
-
-        {/* Pastilles couleurs */}
-        {!show3D && (
-          <div className="absolute bottom-3 left-3 flex gap-1.5">
-            {product.colors.slice(0, 5).map((color) => (
-              <div
-                key={color.id}
-                className="w-4 h-4 rounded-full border border-black/20 shadow-sm"
-                style={{ backgroundColor: color.hex }}
-                title={color.label}
-              />
-            ))}
-            {product.colors.length > 5 && (
-              <div className="w-5 h-5 rounded-full bg-white/90 border border-[var(--hm-line)] flex items-center justify-center">
-                <span className="text-[8px] text-[var(--hm-text-soft)]">+{product.colors.length - 5}</span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
+      {/* ── Bande swatches — barre dédiée avec border-top, jamais sur l'image ── */}
+      {!show3D && displayedColors.length > 0 && (
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 min-h-[36px]"
+          style={{
+            borderTop: "1px solid rgba(60,45,75,0.06)",
+            background: "rgba(255,255,255,0.55)",
+          }}
+        >
+          {displayedColors.slice(0, 6).map((color) => (
+            <div
+              key={color.id}
+              className="h-4 w-4 rounded-full border border-black/15 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+              style={{ backgroundColor: color.hex }}
+              title={color.label}
+            />
+          ))}
+          {displayedColors.length > 6 && (
+            <span className="text-[10px] font-medium text-[var(--hm-text-muted)]">
+              +{displayedColors.length - 6}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* ── Infos produit ─────────────────────────────────────────────────── */}
-      <div className="p-4">
+      <div className="px-4 pb-4 pt-3">
         <div className="flex items-center justify-between gap-3 mb-1">
           <p className="text-[10px] text-[var(--hm-text-soft)] font-mono">{product.reference}</p>
           <span className="text-[10px] text-[var(--hm-text-soft)] inline-flex items-center gap-1">

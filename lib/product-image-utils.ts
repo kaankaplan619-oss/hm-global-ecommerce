@@ -1,13 +1,17 @@
 /**
  * product-image-utils.ts — Sélection de l'image principale catalogue.
  *
- * Priorité (B2 — direction visuelle HM Global) :
- *   0. Images fournisseur explicites (supplierImages) pour catalogue/fiches
- *   1. Mockup HM Global par coloris (getHMMockupPath)
- *   2. Packshot TopTex couleur par défaut (CDN /packshots/)
+ * Priorité HM Global (B2 — direction visuelle premium, B3 mission) :
+ *   1. Mockup HM Global / image locale propre sans mannequin (getHMMockupPath)
+ *   2. Packshot TopTex couleur par défaut (CDN /packshots/) — fournisseur sans mannequin
  *   3. Premier packshot TopTex disponible pour n'importe quelle couleur
  *   4. Premier packshot TopTex indépendamment de la disponibilité
- *   5. product.images[0] (photo mannequin /pictures/ — dernier recours)
+ *   5. Images fournisseur explicites (supplierImages) — peut contenir mannequin
+ *   6. product.images[0] (photo mannequin /pictures/ — dernier recours)
+ *
+ * Règle d'or : ne jamais afficher une image avec mannequin si une image
+ * propre sans mannequin est disponible. supplierImages descendu en priorité 5
+ * pour respecter cette règle.
  *
  * Isomorphique (fonctionne en SSR et client). Aucun appel réseau.
  */
@@ -38,11 +42,7 @@ const NO_CATALOG_EDITORIAL = new Set([
  *                 mockup HM ou le packshot TopTex correspondant.
  */
 export function getProductCatalogImage(product: Product, colorId?: string): string {
-  // 0. Images fournisseur explicites — catalogue/fiches uniquement.
-  const supplierImage = product.supplierImages?.[0];
-  if (supplierImage) return supplierImage;
-
-  // 1. Mockup HM Global (direction visuelle B2)
+  // 1. Mockup HM Global (direction visuelle B2) — priorité absolue
   const hmMockup = getHMMockupPath(product, colorId);
   if (hmMockup) return hmMockup;
 
@@ -67,7 +67,11 @@ export function getProductCatalogImage(product: Product, colorId?: string): stri
     if (firstPackshot) return firstPackshot;
   }
 
-  // 4. Dernier recours : photo éditoriale/mannequin
+  // 5. Image fournisseur explicite (peut contenir mannequin, donc descendue ici)
+  const supplierImage = product.supplierImages?.[0];
+  if (supplierImage) return supplierImage;
+
+  // 6. Dernier recours : photo éditoriale/mannequin
   // Si le produit est dans la liste de blocage, on retourne "" pour afficher
   // le placeholder "Visuel à venir" plutôt qu'une photo mannequin.
   if (NO_CATALOG_EDITORIAL.has(product.id)) return "";

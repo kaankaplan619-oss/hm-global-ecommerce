@@ -140,6 +140,7 @@ export default function HMProductVisual({
           </div>
         ) : fill ? (
           <Image
+            key={src}
             src={src}
             alt={alt}
             fill
@@ -150,6 +151,7 @@ export default function HMProductVisual({
           />
         ) : (
           <Image
+            key={src}
             src={src}
             alt={alt}
             width={width ?? 600}
@@ -180,12 +182,25 @@ export default function HMProductVisual({
     );
   }
 
-  // ── Mode Supplier — fond clair fournisseur ────────────────────────────────────
+  // ── Mode Supplier — fond clair fournisseur (dégradé doux premium) ──────────
   return (
     <div
       className={`${wrapperPositionClass} overflow-hidden ${className}`}
-      style={{ background: bgColor ?? "#f7f6f4" }}
+      style={{
+        background:
+          bgColor ??
+          "linear-gradient(180deg, #f7f6f4 0%, #f2f0ec 55%, #ebe8e2 100%)",
+      }}
     >
+      {/* Ombre douce sous le produit pour profondeur */}
+      {!isEmpty && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-2 left-1/2 z-0 h-3 w-2/3 -translate-x-1/2 rounded-[100%]"
+          style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.10) 0%, transparent 70%)" }}
+        />
+      )}
+
       {isEmpty ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <Package size={36} className="text-gray-300" />
@@ -195,6 +210,7 @@ export default function HMProductVisual({
         </div>
       ) : fill ? (
         <Image
+          key={src}
           src={src}
           alt={alt}
           fill
@@ -205,6 +221,7 @@ export default function HMProductVisual({
         />
       ) : (
         <Image
+          key={src}
           src={src}
           alt={alt}
           width={width ?? 600}

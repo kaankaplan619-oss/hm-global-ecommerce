@@ -5,6 +5,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { Package, Box, Images } from "lucide-react";
 import type { ProductColor } from "@/types";
+import { hasPrintifyMockups } from "@/lib/suppliers/printify/mockups-local";
 
 // Chargement dynamique du viewer 3D (Three.js exclut SSR)
 const TShirt3DViewer = dynamic(() => import("./TShirt3DViewer"), {
@@ -351,7 +352,10 @@ function GalleryImage({
   return (
     <>
       {!loaded && (
-        <div className="absolute inset-0 bg-white" />
+        <div
+          className="absolute inset-0"
+          style={{ background: "transparent" }}
+        />
       )}
       <Image
         src={src}
@@ -469,14 +473,35 @@ export default function ProductGallery({
     (colorImages && Object.keys(colorImages).length > 0) ||
     images.some((img) => extractImageColor(img) !== "");
 
+  // Si le produit a un mockup Printify auto-généré, on désactive gradient + ombre
+  // (les mockups ont déjà un fond blanc parfait + leur propre ombrage textile)
+  const hasPrintifyAsset = productId ? hasPrintifyMockups(productId) : false;
+
   return (
     <div className="flex flex-col gap-4">
       {/* ── Image principale ── */}
       <div
-        className="relative aspect-square overflow-hidden rounded-[28px] border
-          border-[var(--hm-line)] bg-white
+        className="relative aspect-square max-h-[min(78vh,640px)] overflow-hidden rounded-[28px] border
+          border-[var(--hm-line)]
           shadow-[0_20px_48px_rgba(63,45,88,0.08)]"
+        style={
+          hasPrintifyAsset
+            ? { background: "#fafaf9" }
+            : {
+                background:
+                  "linear-gradient(180deg, #f7f6f4 0%, #f2f0ec 55%, #ebe8e2 100%)",
+              }
+        }
       >
+        {/* Ombre radiale sous produit : seulement si pas de mockup Printify */}
+        {!hasPrintifyAsset && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-6 left-1/2 z-0 h-4 w-3/5 -translate-x-1/2 rounded-[100%]"
+            style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.12) 0%, transparent 70%)" }}
+          />
+        )}
+
         {/* Image 2D ou Viewer 3D */}
         {show3D && is3DCapable ? (
           <TShirt3DViewer className="absolute inset-0" />
@@ -487,7 +512,7 @@ export default function ProductGallery({
             fill
             priority
             sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-contain"
+            className="relative z-10 object-contain p-6 sm:p-8"
           />
         )}
 

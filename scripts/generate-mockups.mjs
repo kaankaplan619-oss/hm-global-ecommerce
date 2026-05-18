@@ -88,6 +88,7 @@ const CLEAN_FRONT_TEMPLATE_PRODUCTS = new Set([
   "gildan-18500",
   "gildan-18000",
   "gildan-5000",
+  "bella-3001",
 ]);
 
 const FRONT_TEMPLATE_OVERRIDES = {
