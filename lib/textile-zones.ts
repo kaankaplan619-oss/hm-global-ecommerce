@@ -25,7 +25,10 @@ export const ZONES_BY_CATEGORY: Record<
   }
 > = {
   tshirts:    { coeur: [0.38, 0.28, 0.18, 0.18], dos: [0.25, 0.20, 0.50, 0.45] },
-  hoodies:    { coeur: [0.40, 0.32, 0.16, 0.16], dos: [0.25, 0.22, 0.50, 0.42] },
+  // hoodies coeur left ajuste de 0.40 a 0.38 pour aligner le placement
+  // left-chest professionnel sur celui du t-shirt (centre x = 0.46 au lieu
+  // de 0.48 qui paraissait trop center-torso). Top/width/height inchanges.
+  hoodies:    { coeur: [0.38, 0.32, 0.16, 0.16], dos: [0.25, 0.22, 0.50, 0.42] },
   softshells: { coeur: [0.42, 0.30, 0.15, 0.15], dos: [0.26, 0.22, 0.48, 0.40] },
 };
 
