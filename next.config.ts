@@ -5,7 +5,30 @@ const nextConfig: NextConfig = {
   // Marking them as serverExternalPackages prevents Turbopack from bundling
   // them into shared SSR chunks (_0sobcok._.js) — they are never require()'d
   // server-side because the payment component is loaded with ssr:false.
-  serverExternalPackages: ["@stripe/stripe-js", "@stripe/react-stripe-js"],
+  // sharp : librairie native (binaires @img/*) — charge depuis node_modules au
+  // runtime serveur, evite de gonfler le bundle des fonctions qui l'utilisent.
+  serverExternalPackages: ["@stripe/stripe-js", "@stripe/react-stripe-js", "sharp"],
+
+  // Exclure du tracing de la fonction render-bat les dossiers mockups non lus.
+  // La fonction lit uniquement public/mockups/hm/textile/** (force par
+  // validateGarmentPath dans lib/bat-renderer.ts). Sans cet exclude, Next.js
+  // trace tout public/mockups/ (~419 MB) dans le bundle de la function et
+  // depasse la limite Vercel de 300 MB.
+  outputFileTracingExcludes: {
+    "/api/mockups/render-bat/route": [
+      "./public/mockups/printify/**",
+      "./public/mockups/printify-cropped/**",
+      "./public/mockups/bella-3001/**",
+      "./public/mockups/gildan-5000/**",
+      "./public/mockups/gildan-18000/**",
+      "./public/mockups/gildan-18500/**",
+      "./public/mockups/gildan-64800/**",
+      "./public/mockups/tshirt/**",
+      "./public/mockups/cotton-heritage-m2480/**",
+      "./public/mockups/print/**",
+      "./public/images/**",
+    ],
+  },
 
   // Images — add your CDN / storage domains here
   images: {
