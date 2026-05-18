@@ -8,46 +8,12 @@ import type { LogoEffect } from "@/lib/color-utils";
 import type { LogoPlacementTransform } from "@/lib/bat-utils";
 
 import { proxyCdnUrl } from "@/lib/proxy-cdn-url";
-
-// ── Mockup image paths ────────────────────────────────────────────────────────
-const MOCKUP_FILES: Record<string, { front: string; back: string }> = {
-  blanc:    { front: "/mockups/tshirt/blanc-front.jpg",    back: "/mockups/tshirt/blanc-back.png"    },
-  noir:     { front: "/mockups/tshirt/noir-front.jpg",     back: "/mockups/tshirt/noir-back.png"     },
-  gris:     { front: "/mockups/tshirt/gris-front.jpg",     back: "/mockups/tshirt/gris-back.png"     },
-  marine:   { front: "/mockups/tshirt/marine-front.jpg",   back: "/mockups/tshirt/marine-back.png"   },
-  rouge:    { front: "/mockups/tshirt/rouge-front.jpg",    back: "/mockups/tshirt/rouge-back.png"    },
-  bleu:     { front: "/mockups/tshirt/bleu-front.jpg",     back: "/mockups/tshirt/bleu-back.png"     },
-  vert:     { front: "/mockups/tshirt/vert-front.jpg",     back: "/mockups/tshirt/vert-back.png"     },
-  bordeaux: { front: "/mockups/tshirt/bordeaux-front.png", back: "/mockups/tshirt/bordeaux-back.png" },
-};
-
-// ── Product color ID → mockup slug ───────────────────────────────────────────
-const COLOR_TO_MOCKUP: Record<string, string> = {
-  "blanc": "blanc", "blanc-casse": "blanc", "naturel": "blanc", "beige": "blanc",
-  "jaune": "blanc", "sable": "blanc", "ecru": "blanc",
-  "noir": "noir", "anthracite": "noir", "gris-anthracite": "noir",
-  "gris": "gris", "gris-melange": "gris", "gris-acier": "gris", "gris-chine": "gris",
-  "marine": "marine", "navy": "marine",
-  "rouge": "rouge", "rouge-feu": "rouge", "orange": "rouge",
-  "rose": "rouge",
-  "bleu-royal": "bleu", "bleu-ciel": "bleu", "bleu": "bleu", "cobalt": "bleu",
-  "turquoise": "bleu", "violet": "bleu",
-  "vert-bouteille": "vert", "vert-foret": "vert", "vert": "vert", "kaki": "vert",
-  "bordeaux": "bordeaux", "bourgogne": "bordeaux",
-};
-
-// ── Zones calibrées par catégorie (packshots TopTex) ─────────────────────────
-// [left, top, width, height] as fraction of canvas
-const ZONES_BY_CATEGORY: Record<string, { coeur: [number,number,number,number]; dos: [number,number,number,number] }> = {
-  tshirts:    { coeur: [0.38, 0.28, 0.18, 0.18], dos: [0.25, 0.20, 0.50, 0.45] },
-  hoodies:    { coeur: [0.40, 0.32, 0.16, 0.16], dos: [0.25, 0.22, 0.50, 0.42] },
-  softshells: { coeur: [0.42, 0.30, 0.15, 0.15], dos: [0.26, 0.22, 0.48, 0.40] },
-};
-// Fallback pour les mockups statiques B&C Exact 190 (B3.2-A2 validé)
-const ZONES_STATIC = {
-  coeur: [0.60, 0.25, 0.14, 0.14] as [number,number,number,number],
-  dos:   [0.26, 0.13, 0.48, 0.29] as [number,number,number,number],
-};
+import {
+  MOCKUP_FILES,
+  COLOR_TO_MOCKUP,
+  ZONES_BY_CATEGORY,
+  ZONES_STATIC,
+} from "@/lib/textile-zones";
 
 type View = "front" | "back";
 

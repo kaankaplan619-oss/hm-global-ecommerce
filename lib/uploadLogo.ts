@@ -109,7 +109,7 @@ export function getUploadErrorMessage(error: LogoUploadError): string {
     case "FILE_TOO_LARGE":
       return "Fichier trop lourd. La taille maximale est 10 Mo.";
     case "FORMAT_NOT_ALLOWED":
-      return "Format non autorisé. Formats acceptés : PNG, JPG, WEBP, SVG, PDF.";
+      return "Format non autorisé. Formats acceptés : PNG, SVG.";
     case "NOT_AUTHENTICATED":
       return "Connectez-vous pour envoyer votre logo maintenant, ou ajoutez au panier — vous pourrez l'envoyer depuis votre espace commande.";
     case "SUPABASE_UPLOAD_ERROR":

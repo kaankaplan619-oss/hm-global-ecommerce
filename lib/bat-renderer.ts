@@ -15,17 +15,11 @@ import sharp from "sharp";
 import { readFile } from "fs/promises";
 import path from "path";
 
-// Zones calibrées — identiques à MockupViewer.tsx ZONES_BY_CATEGORY.
-// [left, top, width, height] en fractions du canvasSize.
-// Ne jamais modifier ces valeurs — elles sont la source de vérité du studio.
-const ZONES_BY_CATEGORY: Record<
-  string,
-  { coeur: [number, number, number, number]; dos: [number, number, number, number] }
-> = {
-  tshirts:    { coeur: [0.38, 0.28, 0.18, 0.18], dos: [0.25, 0.20, 0.50, 0.45] },
-  hoodies:    { coeur: [0.40, 0.32, 0.16, 0.16], dos: [0.25, 0.22, 0.50, 0.42] },
-  softshells: { coeur: [0.42, 0.30, 0.15, 0.15], dos: [0.26, 0.22, 0.48, 0.40] },
-};
+// Zones calibrées — la source de vérité unique vit dans @/lib/textile-zones.
+// Les valeurs sont identiques côté client (MockupViewer, BatPreviewStudio, StudioCanvas)
+// et côté serveur (ici) pour garantir que le BAT haute résolution reproduit
+// fidèlement le placement studio.
+// ZONES_BY_CATEGORY est importé (et non re-déclaré ici) pour éviter toute dérive.
 
 export interface LogoTransform {
   left:       number;
@@ -156,8 +150,11 @@ export async function renderBat(input: BatRenderInput): Promise<BatRenderResult>
   // En mode "coeur-dos", la route reçoit une face par appel.
   // En mode "dos", le rendu attendu est la face "back".
   // Si incohérent (dos sur front), on continue quand même — c'est à l'appelant de passer la bonne combinaison.
+  // productCategory reste dans l'API publique pour cohérence avec MockupViewer (logging futur ou
+  // routing serveur). La géométrie courante vient entièrement de `transform`.
   void placement;
   void face;
+  void productCategory;
 
   // ── 5. Calcul position logo ────────────────────────────────────────────────
   const params = computeCompositeParams(transform, outputSize);
