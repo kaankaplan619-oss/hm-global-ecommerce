@@ -171,6 +171,23 @@ export interface Product {
    * Utilisé pour distinguer clairement les visuels HM des photos fournisseur.
    */
   supplierImages?: string[];
+
+  // ── Bascule "devis-only" (commande automatique désactivée) ────────────────
+  /**
+   * Quand true, la fiche produit reste visible mais le bouton "Ajouter au
+   * panier" est remplacé par un CTA "Demander un devis". Aucune logique
+   * panier / Stripe / checkout n'est appelée pour ce produit.
+   *
+   * Cas d'usage :
+   *   - Produits broderie qui n'ont pas de viabilité unitaire (ex. Polo
+   *     Gildan 64800 — broderie uniquement, intéressant en volume).
+   *   - Produits fournisseur en cours d'audit / migration.
+   */
+  quoteOnly?: boolean;
+  /** Sujet à pré-renseigner dans le formulaire contact si quoteOnly = true. */
+  quoteOnlySubject?: string;
+  /** Texte d'explication court affiché à la place du configurateur. */
+  quoteOnlyMessage?: string;
 }
 
 // ─── Print Types ─────────────────────────────────────────────────────────────────

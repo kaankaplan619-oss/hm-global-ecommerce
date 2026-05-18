@@ -34,6 +34,18 @@ import {
   GILDAN_18500_DTFLEX_VOLUME,
   GILDAN_18500_BRODERIE_VOLUME,
   GILDAN_18500_BRODERIE_ILLIMITEE_VOLUME,
+  COMFORT_COLORS_1717_PRICES,
+  COMFORT_COLORS_1717_PLACEMENT_SURCHARGES,
+  COMFORT_COLORS_1717_DTF_VOLUME,
+  COMFORT_COLORS_1717_DTFLEX_VOLUME,
+  COMFORT_COLORS_1717_BRODERIE_VOLUME,
+  COMFORT_COLORS_1717_BRODERIE_ILLIMITEE_VOLUME,
+  GILDAN_2400_LS_PRICES,
+  GILDAN_2400_LS_PLACEMENT_SURCHARGES,
+  GILDAN_2400_LS_DTF_VOLUME,
+  GILDAN_2400_LS_DTFLEX_VOLUME,
+  GILDAN_2400_LS_BRODERIE_VOLUME,
+  GILDAN_2400_LS_BRODERIE_ILLIMITEE_VOLUME,
   SPREADSHIRT_GILDAN_TSHIRT_VOLUME,
   SPREADSHIRT_GILDAN_TSHIRT_BRODERIE_VOLUME,
   SPREADSHIRT_HOODIE_VOLUME,
@@ -92,7 +104,10 @@ const TOPTEX_IMGS: Record<string, string[]> = {
   kp165:  ["https://cdn.toptex.com/packshots/PS_KP165-B_BLACKWASHED.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDBLUEQUARTZ.png","https://cdn.toptex.com/packshots/PS_KP165_DARKPINKWASHED.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDDUSKYORCHID.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDIVYGREEN.png"],
   kp185:  ["https://cdn.toptex.com/packshots/PS_KP185_BLACK.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-ORANGE.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-RED.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-WHITE.png","https://cdn.toptex.com/packshots/PS_KP185_DARKGREY-LIGHTGREY.png"],
   // ── Sacs & tote bags Kimood (packshots par coloris via API) ──────────────
-  ki0262: ["https://cdn.toptex.com/packshots/PS_KI0262_NATURAL.png","https://cdn.toptex.com/packshots/PS_KI0262_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0262_NAVYBLUE.png","https://cdn.toptex.com/packshots/PS_KI0262_CURCUMA.png","https://cdn.toptex.com/packshots/PS_KI0262_METALGREY.png"],
+  // KI0262 — V1 réduit à 3 couleurs (Naturel/Noir/Marine) — Curcuma + MetalGrey
+  // retirés temporairement (option C audit 2026-05-18). Coloris rouge/bleu roi
+  // initialement définis dans colors[] n'avaient pas d'URL CDN correspondante.
+  ki0262: ["https://cdn.toptex.com/packshots/PS_KI0262_NATURAL.png","https://cdn.toptex.com/packshots/PS_KI0262_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0262_NAVYBLUE.png"],
   ki0252: ["https://cdn.toptex.com/packshots/PS_KI0252_NATURAL.png","https://cdn.toptex.com/packshots/PS_KI0252_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0252_NAVYBLUE.png","https://cdn.toptex.com/packshots/PS_KI0252_CURCUMA.png","https://cdn.toptex.com/packshots/PS_KI0252_METALGREY.png"],
   ki0275: ["https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-BLACK.png","https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-NAVY.png","https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-RED.png"],
   ki0274: ["https://cdn.toptex.com/packshots/PS_KI0274_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0274_BLACK-SILVER.png","https://cdn.toptex.com/packshots/PS_KI0274_CHERRYRED-GOLD.png","https://cdn.toptex.com/packshots/PS_KI0274_ICEMINT.png","https://cdn.toptex.com/packshots/PS_KI0274_MIDNIGHTBLUE.png"],
@@ -1472,6 +1487,21 @@ export const PRODUCT_KP185: Product = {
 
 const SAC_PLACEMENT_SURCHARGES = { coeur: 0, dos: 0, "coeur-dos": 0 };
 
+// ─── TopTex KI0262 — Tote Bag Coton Bio (V1 actif, 3 couleurs) ───────────────
+// Issu de : option B audit `docs/audits/printify-new-categories-2026-05-18.md`
+// suite à l'abandon du ticket P1 bp 731 Westford Mill (sample KO).
+//
+// Activation V1 le 2026-05-18 — option C retenue :
+//   3 couleurs sûres (Naturel/Noir/Marine) avec URLs CDN Toptex validées HTTP 200.
+//   Rouge et Bleu roi retirées temporairement (pas d'URL CDN correspondante).
+//
+// Câblage technique :
+//   - supplierName "toptex" + supplierRef "KI0262" (mappé dans supplierMap.ts)
+//   - pricing via SAC_PRICES.toteBio (data/pricing.ts:281)
+//   - images via TOPTEX_IMGS.ki0262 (3 URLs CDN — voir ligne 107)
+//
+// V2 envisageable : étendre à Curcuma/MetalGrey (URLs CDN dispos) ou vérifier
+// disponibilité Rouge/Bleu roi chez TopTex (call API ou consultation TopTex.fr).
 export const PRODUCT_KI0262: Product = {
   id: "ki0262",
   slug: "tote-bag-coton-bio-kimood",
@@ -1483,16 +1513,14 @@ export const PRODUCT_KI0262: Product = {
   category: "sacs",
   gender: "unisex",
   tier: "appel",
-  description: "Tote bag en coton biologique certifié GOTS. 5 coloris naturels. Idéal comme cadeau client, goodies événementiels, sac logo boutique.",
+  description: "Tote bag en coton biologique certifié GOTS. 3 coloris au choix (Naturel, Noir, Marine). Idéal comme cadeau client, goodies événementiels, sac logo boutique.",
   composition: "100% coton biologique",
   weight: "140 g/m²",
   images: PLACEHOLDER_IMAGES("ki0262"),
   colors: [
     { id: "naturel", label: "Naturel", hex: "#E8DCC8", available: true },
-    { id: "noir", label: "Noir", hex: "#111111", available: true },
-    { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-    { id: "rouge", label: "Rouge", hex: "#DC2626", available: true },
-    { id: "bleu-roi", label: "Bleu roi", hex: "#2563EB", available: true },
+    { id: "noir",    label: "Noir",    hex: "#111111", available: true },
+    { id: "marine",  label: "Marine",  hex: "#1E3A5F", available: true },
   ],
   sizes: [{ label: "One size", available: true }],
   techniques: ["dtf", "dtflex", "flex"],
@@ -1506,11 +1534,12 @@ export const PRODUCT_KI0262: Product = {
     broDeriePlacementSurcharge: SAC_PLACEMENT_SURCHARGES,
   },
   featured: true,
+  visible: true, // 2026-05-18 — activation V1 (option C : 3 couleurs sûres)
   seasonal: ["printemps", "ete"],
-  badge: "Écoresponsable",
+  badge: "Coton bio",
   supplierName: "toptex",
   supplierRef: "KI0262",
-  ideaPour: ["Cadeaux clients", "Événementiels", "Boutiques & Commerce"],
+  ideaPour: ["Cadeaux clients", "Événementiels", "Boutiques & Commerce", "Goodies entreprise"],
 };
 
 export const PRODUCT_KI0252: Product = {
@@ -1767,15 +1796,20 @@ export const PRODUCT_GILDAN_5000: Product = {
   category: "tshirts",
   gender: "unisex",
   tier: "standard",
-  description: "T-shirt unisexe 185 g/m² en coton épais. Col rond côtelé, coupe régulière. Impression DTF haute qualité. Expédition directe depuis l'UE (Lettonie / Espagne).",
+  description: "Le t-shirt essentiel pour équiper une équipe, un événement ou une association. Unisexe 185 g/m² en coton épais, col rond côtelé, coupe régulière. Imprimable DTF, DTFlex ou broderie. Expédition directe depuis l'Allemagne.",
   composition: "100% coton épais",
   weight: "185 g/m²",
   images: [],
   colors: [
-    { id: "blanc",        label: "Blanc",        hex: "#FFFFFF", available: true },
-    { id: "noir",         label: "Noir",         hex: "#1a1a1a", available: true },
-    { id: "marine",       label: "Marine",       hex: "#1b2a4a", available: true },
-    { id: "dark-heather", label: "Dark Heather", hex: "#5c5c5c", available: true },
+    // Couleurs V1 Printify : alignées sur le manifest + mapping variant_id
+    // dark-heather retiré V1 : pas de vrai mockup Dark Heather Printify
+    // (fallback gris-front.jpg trompeur) — à réintroduire si mockup dédié généré
+    { id: "blanc",  label: "Blanc",  hex: "#FFFFFF", available: true },
+    { id: "noir",   label: "Noir",   hex: "#1a1a1a", available: true },
+    { id: "gris",   label: "Sport Grey", hex: "#97999B", available: true },
+    { id: "marine", label: "Marine", hex: "#1b2a4a", available: true },
+    { id: "rouge",  label: "Rouge",  hex: "#DC2626", available: true },
+    { id: "royal",  label: "Bleu Royal", hex: "#1D50A4", available: true },
   ],
   sizes: [
     { label: "S",   available: true },
@@ -1797,7 +1831,7 @@ export const PRODUCT_GILDAN_5000: Product = {
   },
   featured: true,
   visible: true,
-  badge: "Produit d'appel",
+  badge: "Essentiel",
   supplierName: "printful",
   ideaPour: ["Associations", "Événementiel", "Équipes"],
   conseil: "Notre t-shirt personnalisé entrée de gamme le plus vendu. Coton épais 185 g/m², couleurs intenses, expédition directe depuis l'UE. À partir de 17,90 € l'unité dès 25 pièces.",
@@ -1845,7 +1879,7 @@ export const PRODUCT_BELLA_3001: Product = {
   category: "tshirts",
   gender: "unisex",
   tier: "premium",
-  description: "T-shirt unisexe 145 g/m² en coton ring-spun peigné — le tissu le plus doux de notre gamme. 84 couleurs disponibles, XS à 5XL, étiquette détachable, ruban épaule à épaule, coutures latérales. Note clients : 4.5/5 (5 852 avis), 93% recommandent.",
+  description: "Un t-shirt doux et moderne, idéal pour une image de marque plus soignée. Unisexe 145 g/m² en coton ring-spun peigné, étiquette détachable, coutures latérales, coupe ajustée. Imprimable DTF, DTFlex, broderie.",
   composition: "Coloris unis : 100% coton ring-spun peigné · Heather : 52% coton / 48% polyester",
   weight: "145 g/m²",
   images: [],
@@ -1919,7 +1953,9 @@ export const PRODUCT_BELLA_3001: Product = {
     placements: BELLA_3001_PLACEMENT_SURCHARGES,
     broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
   },
-  featured: true,
+  // Bella 3001 retiré du featured homepage : on garde G5000/Comfort/G18000/G18500
+  // pour la sélection "Nos textiles les plus commandés" (mission merchandising V1).
+  featured: false,
   visible: true,
   badge: "Premium",
   supplierName: "printful",
@@ -2062,7 +2098,7 @@ export const PRODUCT_GILDAN_18000: Product = {
   category: "hoodies",
   gender: "unisex",
   tier: "standard",
-  description: "Sweatshirt col rond 271 g/m² en coton/polyester filé par jet d'air. Corps avec quart-de-tour (sans pli central), col côtelé 1×1 avec élasthanne, poignets et ceinture côtelés, coutures doubles. 25 couleurs, tailles S à 5XL. DTG, DTFlex et Broderie disponibles.",
+  description: "Le sweat classique pour clubs, équipes et entreprises. Col rond 271 g/m² en coton/polyester, poignets et ceinture côtelés, coutures doubles. Imprimable DTF, DTFlex ou broderie.",
   composition: "50% coton, 50% polyester (prélavé)",
   weight: "271 g/m²",
   images: [],
@@ -2122,7 +2158,7 @@ export const PRODUCT_GILDAN_18000: Product = {
   },
   featured: true,
   visible: true,
-  badge: "Bestseller",
+  badge: "Sweat classique",
   supplierName: "printful",
   supplierImages: [],
   ideaPour: ["Associations & Clubs", "BDE & Étudiants", "Corporate & Équipes"],
@@ -2169,7 +2205,7 @@ export const PRODUCT_GILDAN_18500: Product = {
   category: "hoodies",
   gender: "unisex",
   tier: "standard",
-  description: "Hoodie à capuche unisexe 271 g/m² en coton/polyester filé par jet d'air. Capuche double doublure avec cordon assorti, poche kangourou, corps avec quart-de-tour. Poignets et ceinture côtelés 1×1 avec élasthanne. 26 couleurs, tailles S à 5XL. DTG, DTFlex et Broderie disponibles.",
+  description: "Le hoodie polyvalent pour staff, associations et collections personnalisées. Capuche double doublure avec cordon, poche kangourou, 271 g/m² coton/polyester, poignets et ceinture côtelés. Imprimable DTF, DTFlex ou broderie.",
   composition: "50% coton prérétréci, 50% polyester",
   weight: "271 g/m²",
   images: [],
@@ -2230,7 +2266,7 @@ export const PRODUCT_GILDAN_18500: Product = {
   },
   featured: true,
   visible: true,
-  badge: "Populaire",
+  badge: "Hoodie",
   supplierName: "printful",
   ideaPour: ["Associations & BDE", "Sport & Clubs", "Streetwear & Marques"],
   conseil: "Le Gildan 18500 est le hoodie le plus commandé sur Printful — 3 015 avis, 88% satisfaits. Intérieur molleton doux, poche kangourou spacieuse, rendu DTG net et broderie premium disponible.",
@@ -2311,6 +2347,175 @@ export const PRODUCT_GILDAN_18500: Product = {
   },
 };
 
+// ─── Printify POD — Comfort Colors 1717 Heavyweight Tee (V1) ────────────────
+// T-shirt heavyweight 195 g/m² teint en pièce (garment-dyed).
+// Provider : Textildruck Europa DE — coût Printify 9,09 € HT (moins cher que Gildan 5000).
+// Positionnement HM : T-shirt mode / casual / restauration avec touche garment-dyed.
+// 6 couleurs V1 strictes (alignées sur le mapping Printify V1).
+export const PRODUCT_COMFORT_COLORS_1717: Product = {
+  id: "comfort-colors-1717",
+  slug: "tshirt-comfort-colors-heavyweight",
+  reference: "Comfort Colors 1717",
+  name: "T-shirt Comfort Colors 1717 — Heavyweight teint en pièce",
+  shortName: "T-shirt Heavyweight",
+  category: "tshirts",
+  gender: "unisex",
+  tier: "premium",
+  description: "Un t-shirt heavyweight au rendu lifestyle, parfait pour du merch premium. Unisexe Comfort Colors 1717 en coton épais 195 g/m² teint en pièce (garment-dyed), effet vintage reconnaissable, double couture, étiquette détachable. Imprimable DTF, DTFlex ou broderie.",
+  composition: "100% coton ring-spun teint en pièce",
+  weight: "195 g/m²",
+  images: [],
+  colors: [
+    { id: "noir",    label: "Noir",      hex: "#1a1a1a", available: true },
+    { id: "blanc",   label: "Blanc",     hex: "#FAFAF6", available: true },
+    { id: "gris",    label: "Sport Grey", hex: "#97999B", available: true },
+    { id: "marine",  label: "Marine",    hex: "#1b2a4a", available: true },
+    { id: "rouge",   label: "Rouge",     hex: "#C1121F", available: true },
+    { id: "naturel", label: "Natural",   hex: "#E8DDC5", available: true },
+  ],
+  sizes: [
+    { label: "S",   available: true },
+    { label: "M",   available: true },
+    { label: "L",   available: true },
+    { label: "XL",  available: true },
+    { label: "XXL", available: true },
+  ],
+  techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
+  placements: ["coeur", "dos", "coeur-dos"],
+  pricing: {
+    dtf:                COMFORT_COLORS_1717_PRICES.dtf,
+    dtflex:             COMFORT_COLORS_1717_PRICES.dtflex,
+    flex:               COMFORT_COLORS_1717_PRICES.flex,
+    broderie:           COMFORT_COLORS_1717_PRICES.broderie,
+    broderie_illimitee: COMFORT_COLORS_1717_PRICES.broderie_illimitee,
+    placements: COMFORT_COLORS_1717_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
+  },
+  featured: true,
+  visible: true,
+  badge: "Heavyweight",
+  supplierName: "printful",
+  ideaPour: ["Mode urbaine", "Restauration", "Marques retail"],
+  conseil: "T-shirt mode garment-dyed parfait pour une image plus chaleureuse et un effet vintage. Excellent rapport qualité/prix par rapport au Bella+Canvas 3001.",
+  volumePricingByTechnique: {
+    dtf:                COMFORT_COLORS_1717_DTF_VOLUME,
+    dtflex:             COMFORT_COLORS_1717_DTFLEX_VOLUME,
+    broderie:           COMFORT_COLORS_1717_BRODERIE_VOLUME,
+    broderie_illimitee: COMFORT_COLORS_1717_BRODERIE_ILLIMITEE_VOLUME,
+  },
+  // Mockups locaux Printify auto-générés (script : refresh-printify-mockups.mjs)
+  hmMockupImages: {
+    "noir":    "/mockups/printify/comfort-colors-1717/noir-front.jpg",
+    "blanc":   "/mockups/printify/comfort-colors-1717/blanc-front.jpg",
+    "gris":    "/mockups/printify/comfort-colors-1717/gris-front.jpg",
+    "marine":  "/mockups/printify/comfort-colors-1717/marine-front.jpg",
+    "rouge":   "/mockups/printify/comfort-colors-1717/rouge-front.jpg",
+    "naturel": "/mockups/printify/comfort-colors-1717/naturel-front.jpg",
+  },
+  hmMockupImagesBack: {
+    "noir":    "/mockups/printify/comfort-colors-1717/noir-back.jpg",
+    "blanc":   "/mockups/printify/comfort-colors-1717/blanc-back.jpg",
+    "gris":    "/mockups/printify/comfort-colors-1717/gris-back.jpg",
+    "marine":  "/mockups/printify/comfort-colors-1717/marine-back.jpg",
+    "rouge":   "/mockups/printify/comfort-colors-1717/rouge-back.jpg",
+    "naturel": "/mockups/printify/comfort-colors-1717/naturel-back.jpg",
+  },
+  hmMockupGallery: {
+    "noir":    ["/mockups/printify/comfort-colors-1717/noir-front.jpg",    "/mockups/printify/comfort-colors-1717/noir-back.jpg",    "/mockups/printify/comfort-colors-1717/noir-folded.jpg"],
+    "blanc":   ["/mockups/printify/comfort-colors-1717/blanc-front.jpg",   "/mockups/printify/comfort-colors-1717/blanc-back.jpg",   "/mockups/printify/comfort-colors-1717/blanc-folded.jpg"],
+    "gris":    ["/mockups/printify/comfort-colors-1717/gris-front.jpg",    "/mockups/printify/comfort-colors-1717/gris-back.jpg",    "/mockups/printify/comfort-colors-1717/gris-folded.jpg"],
+    "marine":  ["/mockups/printify/comfort-colors-1717/marine-front.jpg",  "/mockups/printify/comfort-colors-1717/marine-back.jpg",  "/mockups/printify/comfort-colors-1717/marine-folded.jpg"],
+    "rouge":   ["/mockups/printify/comfort-colors-1717/rouge-front.jpg",   "/mockups/printify/comfort-colors-1717/rouge-back.jpg",   "/mockups/printify/comfort-colors-1717/rouge-folded.jpg"],
+    "naturel": ["/mockups/printify/comfort-colors-1717/naturel-front.jpg", "/mockups/printify/comfort-colors-1717/naturel-back.jpg", "/mockups/printify/comfort-colors-1717/naturel-folded.jpg"],
+  },
+};
+
+// ─── Printify POD — Gildan 2400 Ultra Cotton Long Sleeve Tee (V1) ───────────
+// T-shirt manches longues 230 g/m². Provider : Textildruck Europa DE — coût 11,72 €.
+// Positionnement HM : couvre la demande hiver / restauration / staff polyvalent.
+export const PRODUCT_GILDAN_2400_LS: Product = {
+  id: "gildan-2400-ls",
+  slug: "tshirt-gildan-long-sleeve",
+  reference: "Gildan 2400",
+  name: "T-shirt manches longues Gildan 2400",
+  shortName: "T-shirt manches longues",
+  category: "tshirts",
+  gender: "unisex",
+  tier: "standard",
+  description: "Une option manches longues pour la demi-saison, le staff ou les événements. Unisexe Gildan 2400 Ultra Cotton, 230 g/m², coupe régulière, col rond côtelé. Imprimable DTF, DTFlex ou broderie.",
+  composition: "100% coton Ultra Cotton",
+  weight: "230 g/m²",
+  images: [],
+  colors: [
+    { id: "noir",    label: "Noir",      hex: "#1a1a1a", available: true },
+    { id: "blanc",   label: "Blanc",     hex: "#FFFFFF", available: true },
+    { id: "gris",    label: "Sport Grey", hex: "#97999B", available: true },
+    { id: "marine",  label: "Marine",    hex: "#1b2a4a", available: true },
+    { id: "rouge",   label: "Rouge",     hex: "#DC2626", available: true },
+    { id: "naturel", label: "Sand",      hex: "#D5C9A7", available: true },
+  ],
+  sizes: [
+    { label: "S",   available: true },
+    { label: "M",   available: true },
+    { label: "L",   available: true },
+    { label: "XL",  available: true },
+    { label: "XXL", available: true },
+  ],
+  techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
+  placements: ["coeur", "dos", "coeur-dos"],
+  pricing: {
+    dtf:                GILDAN_2400_LS_PRICES.dtf,
+    dtflex:             GILDAN_2400_LS_PRICES.dtflex,
+    flex:               GILDAN_2400_LS_PRICES.flex,
+    broderie:           GILDAN_2400_LS_PRICES.broderie,
+    broderie_illimitee: GILDAN_2400_LS_PRICES.broderie_illimitee,
+    placements: GILDAN_2400_LS_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
+  },
+  featured: false,
+  // ⚠️ V1 MASQUÉ — Mai 2026 : blueprint utilisé pour mockups (36) était un t-shirt
+  // manches courtes (mauvaise référence). Le vrai Gildan 2400 = blueprint 80,
+  // mais Textildruck DE n'expose que 4 couleurs (noir/blanc/marine/rouge).
+  // À réintroduire V2 : soit re-générer mockups avec bp 80 chez Textildruck DE
+  // (4 couleurs seulement), soit basculer sur Print Clever GB / OPT OnDemand CZ
+  // (20+ couleurs mais shipping moins compétitif).
+  visible: false,
+  badge: "Manches longues",
+  supplierName: "printful",
+  ideaPour: ["Restauration", "Staff hiver", "Événementiel mi-saison"],
+  conseil: "Idéal pour couvrir la saison fraîche et les équipes restauration / accueil. Coton épais 230 g/m² confortable et durable.",
+  volumePricingByTechnique: {
+    dtf:                GILDAN_2400_LS_DTF_VOLUME,
+    dtflex:             GILDAN_2400_LS_DTFLEX_VOLUME,
+    broderie:           GILDAN_2400_LS_BRODERIE_VOLUME,
+    broderie_illimitee: GILDAN_2400_LS_BRODERIE_ILLIMITEE_VOLUME,
+  },
+  hmMockupImages: {
+    "noir":    "/mockups/printify/gildan-2400-ls/noir-front.jpg",
+    "blanc":   "/mockups/printify/gildan-2400-ls/blanc-front.jpg",
+    "gris":    "/mockups/printify/gildan-2400-ls/gris-front.jpg",
+    "marine":  "/mockups/printify/gildan-2400-ls/marine-front.jpg",
+    "rouge":   "/mockups/printify/gildan-2400-ls/rouge-front.jpg",
+    "naturel": "/mockups/printify/gildan-2400-ls/naturel-front.jpg",
+  },
+  hmMockupImagesBack: {
+    "noir":    "/mockups/printify/gildan-2400-ls/noir-back.jpg",
+    "blanc":   "/mockups/printify/gildan-2400-ls/blanc-back.jpg",
+    "gris":    "/mockups/printify/gildan-2400-ls/gris-back.jpg",
+    "marine":  "/mockups/printify/gildan-2400-ls/marine-back.jpg",
+    "rouge":   "/mockups/printify/gildan-2400-ls/rouge-back.jpg",
+    "naturel": "/mockups/printify/gildan-2400-ls/naturel-back.jpg",
+  },
+  hmMockupGallery: {
+    "noir":    ["/mockups/printify/gildan-2400-ls/noir-front.jpg",    "/mockups/printify/gildan-2400-ls/noir-back.jpg",    "/mockups/printify/gildan-2400-ls/noir-folded.jpg"],
+    "blanc":   ["/mockups/printify/gildan-2400-ls/blanc-front.jpg",   "/mockups/printify/gildan-2400-ls/blanc-back.jpg",   "/mockups/printify/gildan-2400-ls/blanc-folded.jpg"],
+    "gris":    ["/mockups/printify/gildan-2400-ls/gris-front.jpg",    "/mockups/printify/gildan-2400-ls/gris-back.jpg",    "/mockups/printify/gildan-2400-ls/gris-folded.jpg"],
+    "marine":  ["/mockups/printify/gildan-2400-ls/marine-front.jpg",  "/mockups/printify/gildan-2400-ls/marine-back.jpg",  "/mockups/printify/gildan-2400-ls/marine-folded.jpg"],
+    "rouge":   ["/mockups/printify/gildan-2400-ls/rouge-front.jpg",   "/mockups/printify/gildan-2400-ls/rouge-back.jpg",   "/mockups/printify/gildan-2400-ls/rouge-folded.jpg"],
+    "naturel": ["/mockups/printify/gildan-2400-ls/naturel-front.jpg", "/mockups/printify/gildan-2400-ls/naturel-back.jpg", "/mockups/printify/gildan-2400-ls/naturel-folded.jpg"],
+  },
+};
+
 // ─── Printful POD — Gildan 64800 Polo ───────────────────────────────────────
 export const PRODUCT_GILDAN_64800: Product = {
   id: "gildan-64800",
@@ -2351,8 +2556,16 @@ export const PRODUCT_GILDAN_64800: Product = {
   },
   featured: false,
   visible: true,
-  badge: "Nouveau",
+  badge: "Sur devis",
   supplierName: "printful",
+  // Bascule devis-only (mai 2026) : ce polo broderie n'est rentable qu'en
+  // volume et n'a pas de provider Printify EU exploitable (cf
+  // docs/audits/printify-equivalents-cotton-polo.md). On garde la fiche
+  // visible mais on remplace "Ajouter au panier" par un CTA devis broderie.
+  quoteOnly: true,
+  quoteOnlySubject: "devis-broderie",
+  quoteOnlyMessage:
+    "Polo brodé professionnel disponible sur devis pour équipes, accueil, restaurants et événements.",
   ideaPour: ["Corporate", "Restauration", "Accueil & événements"],
   conseil: "Un polo simple et lisible pour les équipes terrain et l'image entreprise. La broderie reste l'option la plus propre sur ce type de maille.",
   hmMockupImages: {
@@ -2375,7 +2588,19 @@ export const PRODUCT_GILDAN_64800: Product = {
   },
 };
 
-// ─── Printful POD — Cotton Heritage M2480 ───────────────────────────────────
+// ─── Printful POD — Cotton Heritage M2480 (RETIRÉ DU CATALOGUE V1) ──────────
+// Décision 2026-05-18 : ce produit est retiré du catalogue front-end (visible: false).
+// Raison : audit `docs/audits/printify-equivalents-cotton-polo.md` (2026-05-17)
+// → un seul provider Printify pour ce blueprint (Printify Choice US-default,
+//   pas d'imprimeur EU). Délais 14-21 j + customs FR = non rentable.
+// Remplacement V1 : le Sweatshirt Gildan 18000 (PRODUCT_GILDAN_18000 ci-dessus)
+// joue désormais le rôle de sweat principal. Il est disponible chez Textildruck
+// Europa DE (blueprint Printify 49) — bascule supplier opérationnelle côté admin,
+// pas dans le code applicatif (supplierName reste "printful" pour ne pas casser
+// les conditions `isPrintful` dans 9 fichiers UI/studio/BAT).
+// La définition ci-dessous est conservée pour traçabilité historique des
+// commandes existantes — ne pas supprimer l'objet pour ne pas casser les
+// routes admin /api/printify/catalog-audit + variant-map-test.
 export const PRODUCT_COTTON_HERITAGE_M2480: Product = {
   id: "cotton-heritage-m2480",
   slug: "sweat-cotton-heritage-m2480",
@@ -2414,7 +2639,7 @@ export const PRODUCT_COTTON_HERITAGE_M2480: Product = {
     broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
   },
   featured: false,
-  visible: true,
+  visible: false, // 2026-05-18 — retiré du catalogue V1, remplacé par Gildan 18000
   badge: "Premium",
   supplierName: "printful",
   ideaPour: ["Marques", "Staff premium", "Corporate soigné"],
@@ -2682,14 +2907,16 @@ const _ALL_PRODUCTS: Product[] = [
   PRODUCT_IB401,   // 1 photo CDN
   PRODUCT_IB403,   // 1 photo CDN
 
-  // ── Printful POD V1 — catalogue public ───────────────────────────────────
-  PRODUCT_GILDAN_5000,    // 19.90 € TTC — produit d'appel
-  PRODUCT_BELLA_3001,     // 22.90 € TTC — premium (V2)
-  PRODUCT_GILDAN_18000,   // 39.90 € TTC — sweatshirt
-  PRODUCT_GILDAN_18500,   // 49.90 € TTC — hoodie
-  PRODUCT_GILDAN_64800,   // polo piqué Printful
+  // ── Printify POD V1 — catalogue public ───────────────────────────────────
+  PRODUCT_GILDAN_5000,        // 19.90 € TTC — produit d'appel
+  PRODUCT_BELLA_3001,         // 22.90 € TTC — premium ring-spun
+  PRODUCT_COMFORT_COLORS_1717, // 21.90 € TTC — premium garment-dyed (NOUVEAU V1)
+  PRODUCT_GILDAN_2400_LS,     // 27.90 € TTC — manches longues (NOUVEAU V1)
+  PRODUCT_GILDAN_18000,       // 39.90 € TTC — sweatshirt
+  PRODUCT_GILDAN_18500,       // 49.90 € TTC — hoodie
+  PRODUCT_GILDAN_64800,       // polo piqué Printful
   PRODUCT_COTTON_HERITAGE_M2480, // sweat premium Printful
-  PRODUCT_MUG_11OZ,       // 19.90 € TTC — goodie
+  PRODUCT_MUG_11OZ,           // 19.90 € TTC — goodie
 
   // ── Spreadshirt — tarification dégressive dès 10 pièces ──────────────────
   PRODUCT_SPREADSHIRT_GILDAN_TSHIRT,   // 13.90–19.90 € TTC selon palier

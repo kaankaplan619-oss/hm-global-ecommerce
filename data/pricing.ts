@@ -365,12 +365,14 @@ export const BELLA_3001_PLACEMENT_SURCHARGES = {
 // Bella+Canvas 3001 — Volume pricing tiers CORRIGÉS (remises Printful réelles)
 // Remises Printful Bella+Canvas : 25 pcs -13% | 50 pcs -21% | 100 pcs -27% | 200 pcs -30% | 500 pcs -32%
 export const BELLA_3001_DTF_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 22.90 }, // Printful 12.30 €
-  { from: 25,  to: 49,  unitPrice: 19.90 }, // -13% Printful → 10.70 €
-  { from: 50,  to: 99,  unitPrice: 17.90 }, // -21% Printful →  9.72 €
-  { from: 100, to: 199, unitPrice: 16.90 }, // -27% Printful →  8.98 €
-  { from: 200, to: 499, unitPrice: 15.90 }, // -30% Printful →  8.62 €
-  { from: 500,          unitPrice: 14.90 }, // -32% Printful →  8.36 €
+  { from: 1,   to: 24,  unitPrice: 22.90 }, // Printify 13.65 €
+  { from: 25,  to: 49,  unitPrice: 19.90 }, // -13%
+  // Tier 50-99 ajusté Mai 2026 : 17.90 → 19.90 € (sort du déficit avéré −0,27€/u
+  // sur coût Printify réel 13.65 € + shipping 1.26€/u + Stripe). Cf audit prix V1.
+  { from: 50,  to: 99,  unitPrice: 19.90 }, // -21% Printful (corrigé +2€)
+  { from: 100, to: 199, unitPrice: 18.90 }, // -27%
+  { from: 200, to: 499, unitPrice: 17.90 }, // -30%
+  { from: 500,          unitPrice: 16.90 }, // -32%
 ];
 
 export const BELLA_3001_DTFLEX_VOLUME: VolumePricingTier[] = [
@@ -506,6 +508,114 @@ export const GILDAN_18500_BRODERIE_ILLIMITEE_VOLUME: VolumePricingTier[] = [
   { from: 100, to: 199, unitPrice: 46.90 }, // -23% Printful 22.36 €
   { from: 200, to: 499, unitPrice: 39.90 }, // -34% Printful 19.17 €
   { from: 500,          unitPrice: 37.90 }, // -38% Printful 17.95 €
+];
+
+// ─── Comfort Colors 1717 (NOUVEAU V1) — Printify Textildruck DE ──────────────
+// Coût Printify HT : 9.09 € (audit Mai 2026). Shipping FR : 1.55€/u dès 10 ex.
+// Marges nettes cibles : 16% à 1 ex / 36% à 10 ex / 33% à 25 ex / 29% à 50 ex.
+
+export const COMFORT_COLORS_1717_PRICES = {
+  dtf:                21.90,  // coût ~9.09 € → marge HT ~9.16 € (50%) hors shipping/Stripe
+  dtflex:             23.90,
+  flex:               0,
+  broderie:           26.90,
+  broderie_illimitee: 30.90,
+} as const;
+
+export const COMFORT_COLORS_1717_PLACEMENT_SURCHARGES = {
+  coeur:       0,
+  dos:         0,
+  "coeur-dos": 8.00,
+} as const;
+
+export const COMFORT_COLORS_1717_DTF_VOLUME: VolumePricingTier[] = [
+  { from: 1,   to: 24,  unitPrice: 21.90 },
+  { from: 25,  to: 49,  unitPrice: 19.90 }, // -9%
+  { from: 50,  to: 99,  unitPrice: 17.90 }, // -18%
+  { from: 100, to: 199, unitPrice: 16.90 },
+  { from: 200, to: 499, unitPrice: 15.90 },
+  { from: 500,          unitPrice: 14.90 },
+];
+
+export const COMFORT_COLORS_1717_DTFLEX_VOLUME: VolumePricingTier[] = [
+  { from: 1,   to: 24,  unitPrice: 23.90 },
+  { from: 25,  to: 49,  unitPrice: 21.90 },
+  { from: 50,  to: 99,  unitPrice: 19.90 },
+  { from: 100, to: 199, unitPrice: 18.90 },
+  { from: 200, to: 499, unitPrice: 17.90 },
+  { from: 500,          unitPrice: 16.90 },
+];
+
+export const COMFORT_COLORS_1717_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,   to: 24,  unitPrice: 26.90 },
+  { from: 25,  to: 49,  unitPrice: 24.90 },
+  { from: 50,  to: 99,  unitPrice: 22.90 },
+  { from: 100, to: 199, unitPrice: 21.90 },
+  { from: 200, to: 499, unitPrice: 20.90 },
+  { from: 500,          unitPrice: 19.90 },
+];
+
+export const COMFORT_COLORS_1717_BRODERIE_ILLIMITEE_VOLUME: VolumePricingTier[] = [
+  { from: 1,   to: 24,  unitPrice: 30.90 },
+  { from: 25,  to: 49,  unitPrice: 28.90 },
+  { from: 50,  to: 99,  unitPrice: 26.90 },
+  { from: 100, to: 199, unitPrice: 25.90 },
+  { from: 200, to: 499, unitPrice: 24.90 },
+  { from: 500,          unitPrice: 23.90 },
+];
+
+// ─── Gildan 2400 Long Sleeve (NOUVEAU V1) — Printify Textildruck DE ──────────
+// Coût Printify HT : 11.72 € (audit Mai 2026). Shipping FR : 1.55€/u dès 10 ex.
+// Marges nettes cibles : 18% à 1 ex / 32% à 10 ex / 29% à 25 ex / 25% à 50 ex.
+
+export const GILDAN_2400_LS_PRICES = {
+  dtf:                27.90,
+  dtflex:             29.90,
+  flex:               0,
+  broderie:           32.90,
+  broderie_illimitee: 36.90,
+} as const;
+
+export const GILDAN_2400_LS_PLACEMENT_SURCHARGES = {
+  coeur:       0,
+  dos:         0,
+  "coeur-dos": 8.00,
+} as const;
+
+export const GILDAN_2400_LS_DTF_VOLUME: VolumePricingTier[] = [
+  { from: 1,   to: 24,  unitPrice: 27.90 },
+  { from: 25,  to: 49,  unitPrice: 25.90 },
+  { from: 50,  to: 99,  unitPrice: 23.90 },
+  { from: 100, to: 199, unitPrice: 22.90 },
+  { from: 200, to: 499, unitPrice: 21.90 },
+  { from: 500,          unitPrice: 20.90 },
+];
+
+export const GILDAN_2400_LS_DTFLEX_VOLUME: VolumePricingTier[] = [
+  { from: 1,   to: 24,  unitPrice: 29.90 },
+  { from: 25,  to: 49,  unitPrice: 27.90 },
+  { from: 50,  to: 99,  unitPrice: 25.90 },
+  { from: 100, to: 199, unitPrice: 24.90 },
+  { from: 200, to: 499, unitPrice: 23.90 },
+  { from: 500,          unitPrice: 22.90 },
+];
+
+export const GILDAN_2400_LS_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,   to: 24,  unitPrice: 32.90 },
+  { from: 25,  to: 49,  unitPrice: 30.90 },
+  { from: 50,  to: 99,  unitPrice: 28.90 },
+  { from: 100, to: 199, unitPrice: 27.90 },
+  { from: 200, to: 499, unitPrice: 26.90 },
+  { from: 500,          unitPrice: 25.90 },
+];
+
+export const GILDAN_2400_LS_BRODERIE_ILLIMITEE_VOLUME: VolumePricingTier[] = [
+  { from: 1,   to: 24,  unitPrice: 36.90 },
+  { from: 25,  to: 49,  unitPrice: 34.90 },
+  { from: 50,  to: 99,  unitPrice: 32.90 },
+  { from: 100, to: 199, unitPrice: 31.90 },
+  { from: 200, to: 499, unitPrice: 30.90 },
+  { from: 500,          unitPrice: 29.90 },
 ];
 
 // ─── Compute item price TTC ───────────────────────────────────────────────────

@@ -32,7 +32,7 @@ export interface PrintProductConfig {
 }
 
 // ─── Tarifs cartes de visite — prix du LOT TTC ───────────────────────────────
-// Livraison incluse. TVA 20 % incluse.
+// TVA 20 % incluse. Frais d'expédition confirmés au devis selon adresse.
 
 const BASE_LOT_PRICES: Record<PrintFinish, Record<BusinessCardQty, number>> = {
   mat: {
