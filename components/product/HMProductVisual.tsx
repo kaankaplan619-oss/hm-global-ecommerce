@@ -12,11 +12,12 @@
  *   - Badge "HM Global" en coin supérieur droit
  *   - Produit centré, object-contain, padding réduit
  *
- * "supplier" (fond clair) :
- *   - Background : blanc cassé (#f7f6f4)
- *   - Shadow subtile
- *   - Badge "Photo fournisseur" discret
- *   - Traitement identique à l'ancien bg-gray-50 mais avec meilleure finition
+ * "supplier" (fond clair premium HM) :
+ *   - Background : blanc HM (#fafafa) — neutre, propre, agence
+ *   - Halo signature HM très discret en coin supérieur droit (rose #b13f74 à 3.5%)
+ *   - Ombre d'ancrage teintée HM (ink #3f2d58 à 8%, plus chaude que noir pur)
+ *   - Badge "Photo de référence" en style HM (rose sur fond accent-soft-rose)
+ *   - Cohérent avec la DA premium agence — pas de rendu catalogue fournisseur
  *
  * Le composant supporte fill (carte catalogue) et dimensions fixes (fiche produit).
  */
@@ -54,7 +55,7 @@ interface Props {
    * Par défaut : "object-contain transition-transform duration-500"
    */
   imageClassName?: string;
-  /** Couleur de fond override pour le mode supplier (défaut : #f7f6f4) */
+  /** Couleur de fond override pour le mode supplier (défaut : #fafafa). */
   bgColor?: string;
 }
 
@@ -182,22 +183,32 @@ export default function HMProductVisual({
     );
   }
 
-  // ── Mode Supplier — fond clair fournisseur (dégradé doux premium) ──────────
+  // ── Mode Supplier — fond blanc premium HM ──────────────────────────────────
   return (
     <div
       className={`${wrapperPositionClass} overflow-hidden ${className}`}
       style={{
-        background:
-          bgColor ??
-          "linear-gradient(180deg, #f7f6f4 0%, #f2f0ec 55%, #ebe8e2 100%)",
+        background: bgColor ?? "#fafafa",
       }}
     >
-      {/* Ombre douce sous le produit pour profondeur */}
+      {/* Halo signature HM — coin supérieur droit, quasi-invisible mais marque la card. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(circle at 88% 12%, rgba(177,63,116,0.035) 0%, transparent 45%)",
+        }}
+      />
+
+      {/* Ombre d'ancrage teintée HM (ink #3f2d58 8%, plus chaude que noir pur). */}
       {!isEmpty && (
         <div
           aria-hidden="true"
           className="pointer-events-none absolute bottom-2 left-1/2 z-0 h-3 w-2/3 -translate-x-1/2 rounded-[100%]"
-          style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.10) 0%, transparent 70%)" }}
+          style={{
+            background: "radial-gradient(ellipse, rgba(63,45,88,0.08) 0%, transparent 70%)",
+          }}
         />
       )}
 
@@ -233,11 +244,18 @@ export default function HMProductVisual({
         />
       )}
 
-      {/* Badge fournisseur discret */}
+      {/* Badge "Photo de référence" — style HM cohérent (rose sur fond accent-soft-rose). */}
       {showBadge && !isEmpty && (
         <div className="absolute bottom-2 right-2 z-10">
-          <span className="inline-flex items-center rounded-full border border-gray-200 bg-white/80 px-2 py-0.5 text-[8px] font-medium tracking-wide text-gray-400">
-            Photo fournisseur
+          <span
+            className="inline-flex items-center rounded-full px-2 py-0.5 text-[8px] font-medium tracking-wide"
+            style={{
+              background:   "var(--hm-accent-soft-rose)",
+              border:       "1px solid rgba(177,63,116,0.10)",
+              color:        "var(--hm-rose)",
+            }}
+          >
+            Photo de référence
           </span>
         </div>
       )}
