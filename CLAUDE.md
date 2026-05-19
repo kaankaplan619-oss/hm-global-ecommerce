@@ -68,3 +68,23 @@ Développer et maintenir le site e-commerce B2B de textile personnalisé HM Glob
 ## Retour attendu
 
 Réponses concises, sans commentaires inutiles dans le code, sans abstractions superflues. Chaque tâche = périmètre strict. Pas d'initiative non demandée.
+
+---
+
+## Mandatory Project Memory
+
+Before starting any coding task, Claude Code must read:
+/docs/agent-memory/00_START_HERE.md
+
+Then Claude Code must read all relevant files in:
+/docs/agent-memory/
+
+Claude Code must not start editing before summarizing:
+1. project context,
+2. agent roles,
+3. design rules,
+4. product image rules,
+5. current task,
+6. do-not-touch areas.
+
+If the requested task conflicts with the memory files, Claude Code must stop and ask for validation.
