@@ -130,7 +130,7 @@ export default function MissionsClient({
             <button
               type="button"
               onClick={() => prepareMission()}
-              className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-semibold text-white transition disabled:opacity-45"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-semibold text-white transition disabled:opacity-45 sm:w-auto"
               disabled={!request.trim()}
               style={{
                 background: "linear-gradient(135deg, #54B6D2 0%, #C13C8A 100%)",
@@ -138,7 +138,7 @@ export default function MissionsClient({
               }}
             >
               <Send size={15} />
-              Préparer
+              Préparer mission
             </button>
             <p className="text-[11.5px] text-white/42">Pré-remplissage local, sans envoi externe.</p>
           </div>
@@ -232,11 +232,11 @@ export default function MissionsClient({
             </MissionBlock>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              <CopyButton text={prepared.prompt} label="Copier le prompt" />
-              <LocalAction icon={<ClipboardList size={13} />} label="Créer une tâche" />
-              <LocalAction icon={<Inbox size={13} />} label="Envoyer dans Inbox" />
-              <LocalAction icon={<PlayCircle size={13} />} label="Marquer lancé" onClick={() => setLocalState("launched")} />
-              <LocalAction icon={<PauseCircle size={13} />} label="Attente retour agent" onClick={() => setLocalState("waiting")} />
+              <CopyButton text={prepared.prompt} label="Copier prompt" />
+              <LocalAction icon={<ClipboardList size={13} />} label="Créer tâche" doneLabel="Tâche créée" />
+              <LocalAction icon={<Inbox size={13} />} label="Envoyer dans Inbox" doneLabel="Envoyé Inbox" />
+              <LocalAction icon={<PlayCircle size={13} />} label="Marquer lancé" doneLabel="Mission lancée" onClick={() => setLocalState("launched")} />
+              <LocalAction icon={<PauseCircle size={13} />} label="Attente retour agent" doneLabel="En attente agent" onClick={() => setLocalState("waiting")} />
             </div>
           </div>
         </Card>
@@ -298,10 +298,12 @@ function MissionBlock({ title, children }: { title: string; children: React.Reac
 function LocalAction({
   icon,
   label,
+  doneLabel,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
+  doneLabel: string;
   onClick?: () => void;
 }) {
   const [done, setDone] = useState(false);
@@ -312,7 +314,7 @@ function LocalAction({
         onClick?.();
         setDone(true);
       }}
-      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11.5px] font-medium transition"
+      className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11.5px] font-medium transition sm:flex-none"
       style={{
         background: done ? "rgba(74,222,128,0.10)" : "rgba(255,255,255,0.045)",
         border: done ? "1px solid rgba(74,222,128,0.24)" : "1px solid rgba(255,255,255,0.08)",
@@ -320,7 +322,7 @@ function LocalAction({
       }}
     >
       {icon}
-      <span>{done ? "OK" : label}</span>
+      <span>{done ? doneLabel : label}</span>
     </button>
   );
 }

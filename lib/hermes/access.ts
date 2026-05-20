@@ -36,6 +36,10 @@ function parseAllowedEmails(): string[] {
  * À appeler depuis `app/hermes/layout.tsx` (server component).
  */
 export async function checkHermesAccess(): Promise<HermesAccess> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return { allowed: false, email: null, reason: "not_configured" };
+  }
+
   const user = await getSessionUser();
 
   if (!user) {
