@@ -6,6 +6,8 @@ import { CheckCircle2, Home, LayoutGrid, Shirt, Tag } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
 import ProductDetailClient from "@/components/product/ProductDetailClient";
 import ProductFeaturesSection from "@/components/product/ProductFeaturesSection";
+import DeliveryBadge from "@/components/shared/DeliveryBadge";
+import EmbroideryNotice from "@/components/shared/EmbroideryNotice";
 import { getProductBySlug, ALL_PRODUCTS } from "@/data/products";
 
 type Props = {
@@ -153,6 +155,11 @@ export default async function ProductPage({ params }: Props) {
           </span>
         </nav>
 
+        {/* Bande délais — confiance B2B */}
+        <div className="mb-6">
+          <DeliveryBadge variant="block" />
+        </div>
+
         <Suspense>
           <ProductDetailClient product={product} />
         </Suspense>
@@ -199,6 +206,13 @@ export default async function ProductPage({ params }: Props) {
             </p>
           </section>
         </div>
+
+        {/* Notice broderie — affichée uniquement si la broderie est disponible */}
+        {product.techniques.includes("broderie") && (
+          <div className="mb-12">
+            <EmbroideryNotice />
+          </div>
+        )}
 
         {related.length > 0 && (
           <div className="border-t border-[var(--hm-line)] pt-8 md:pt-10">

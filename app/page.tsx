@@ -1,7 +1,9 @@
 import HomeHeroPremium from "../components/home/HomeHeroPremium";
 import HomeQuickEntries from "../components/home/HomeQuickEntries";
+import HomeUsagesGrid from "../components/home/HomeUsagesGrid";
 import HomeTextilePremium from "../components/home/HomeTextilePremium";
 import BestSellers from "../components/home/BestSellers";
+import HomePacksStrip from "../components/home/HomePacksStrip";
 import HomeProcessBAT from "../components/home/HomeProcessBAT";
 import HomeVisualShowcase from "../components/home/HomeVisualShowcase";
 import HomeAtelier from "../components/home/HomeAtelier";
@@ -29,8 +31,10 @@ export default function HomePage() {
     <>
       <HomeHeroPremium />
       <HomeQuickEntries />
+      <HomeUsagesGrid />
       <HomeTextilePremium />
       <BestSellers />
+      <HomePacksStrip />
       <HomeProcessBAT />
       <HomeVisualShowcase />
       <HomeAtelier />

@@ -15,6 +15,8 @@ const NAV_ITEMS = [
     children: [
       { label: "T-shirts", href: "/catalogue/tshirts" },
       { label: "Hoodies & Sweats", href: "/catalogue/hoodies" },
+      { label: "Par usage métier", href: "/catalogue/usages" },
+      { label: "Packs B2B", href: "/catalogue/packs" },
       { label: "Voir tout le catalogue →", href: "/catalogue" },
     ],
   },

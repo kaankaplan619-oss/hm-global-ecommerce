@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Layers3 } from "lucide-react";
 import { formatPrice } from "@/data/pricing";
+import PriceTierBadge from "@/components/shared/PriceTierBadge";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getVisualMode } from "@/lib/hm-visual-utils";
 import { getDisplayedColors, isPrintifyV1Product } from "@/lib/suppliers/printify/printify-colors";
@@ -217,6 +218,10 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="text-[10px] text-[var(--hm-text-soft)]">
             {formatPrice(basePrice / 1.2)} HT
           </span>
+        </div>
+
+        <div className="mt-2">
+          <PriceTierBadge product={product} variant="compact" />
         </div>
       </div>
     </Link>
