@@ -1,4 +1,11 @@
 import type { Product } from "@/types";
+
+// TODO — Product families ready for future expansion (vue admin "Commandes à traiter") :
+//   casquettes (KP157/KP162/KP165/KP185), bonnets, sacs (KI0252/KI0262/KI0274/KI0275),
+//   tabliers, mugs, vestes sans manches, t-shirts manches longues (IB323),
+//   survêtements, produits express faits en interne (DTF/flex rapide HM).
+// La structure Product actuelle supporte ces familles sans modification.
+// Voir docs/agent-memory/05_CATALOGUE_RULES.md pour les règles d'ajout.
 import {
   TSHIRT_PRICES,
   TSHIRT_IDEAL_PRICES,
