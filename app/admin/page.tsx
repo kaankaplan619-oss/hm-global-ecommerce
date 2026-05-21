@@ -7,6 +7,7 @@ import {
   Package, Users, FileText, Settings,
   AlertTriangle, CheckCircle, Clock,
   TrendingUp, Truck, Factory, ShoppingCart, Eye,
+  ArrowRight,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 
@@ -203,6 +204,25 @@ export default function AdminPage() {
             Bienvenue{user.firstName ? `, ${user.firstName}` : ""}. Tableau de pilotage production.
           </p>
         </div>
+
+        {/* Accès rapide vue simplifiée — orientée production */}
+        <Link
+          href="/admin/commandes/a-traiter"
+          className="flex items-center justify-between gap-3 mb-6 p-4 rounded-2xl border border-[var(--hm-primary)]/20 bg-gradient-to-r from-[var(--hm-accent-soft-rose)] to-white hover:border-[var(--hm-primary)]/40 hover:shadow-[0_8px_24px_rgba(63,45,88,0.08)] transition-all group"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-[var(--hm-primary)]/10 flex items-center justify-center shrink-0">
+              <Package size={18} className="text-[var(--hm-primary)]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-[var(--hm-text)]">Commandes à traiter</p>
+              <p className="text-[11px] text-[var(--hm-text-soft)] leading-tight">
+                Vue simplifiée : client, logo, BAT, circuit production, prochaine action
+              </p>
+            </div>
+          </div>
+          <ArrowRight size={16} className="text-[var(--hm-primary)] shrink-0 group-hover:translate-x-1 transition-transform" />
+        </Link>
 
         {/* KPIs rapides */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
