@@ -341,16 +341,19 @@ export default function ProductDetailClient({ product }: Props) {
 
     // ⚠️ Pour les 6 produits Printify V1 : galerie STRICTEMENT issue de /mockups/printify/.
     //    Aucun fallback hmMockupGallery, aucune source ancienne autorisée.
+    let raw: string[];
     if (isPrintifyV1) {
-      return getV1PrintifyGallery(product.id, cid);
+      raw = getV1PrintifyGallery(product.id, cid);
+    } else {
+      // Pour les autres Printful (Cotton Heritage, polo Gildan 64800…) : ancien comportement
+      const pf = getPrintifyGallery(product.id, cid);
+      raw = pf.front
+        ? [pf.front, pf.back, pf.folded].filter((s): s is string => Boolean(s))
+        : (product.hmMockupGallery?.[cid] ?? []).map(resolveMockupAssetUrl);
     }
 
-    // Pour les autres Printful (Cotton Heritage etc.) : ancien comportement
-    const pf = getPrintifyGallery(product.id, cid);
-    if (pf.front) {
-      return [pf.front, pf.back, pf.folded].filter((s): s is string => Boolean(s));
-    }
-    return (product.hmMockupGallery?.[cid] ?? []).map(resolveMockupAssetUrl);
+    // Dédup : les flèches de galerie ne doivent jamais répéter le même visuel.
+    return [...new Set(raw)];
   }, [isPrintful, isPrintifyV1, selectedColor?.id, product]);
 
   // Image produit actuelle (utilisée par MockupViewer, LightMockupPreview + BAT)
@@ -486,7 +489,13 @@ export default function ProductDetailClient({ product }: Props) {
                     studioComposedUrl
                       ? "object-contain w-full transition-opacity duration-300"
                       : `object-contain w-full transition-opacity duration-300${
-                          visualMode === "hm" ? " p-4 relative z-10" : isPOD ? " scale-[1.10] p-3" : " p-6"
+                          visualMode === "hm"
+                            ? " p-4 relative z-10"
+                            : isPOD
+                              // Le polo piqué est un packshot plein cadre : pas d'agrandissement
+                              // (scale-[1.10] est calibré pour les mockups t-shirt cropped serrés).
+                              ? product.category === "polos" ? " p-6" : " scale-[1.10] p-3"
+                              : " p-6"
                         }`
                   }
                 />
