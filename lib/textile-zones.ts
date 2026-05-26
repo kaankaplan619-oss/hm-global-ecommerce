@@ -24,7 +24,14 @@ export const ZONES_BY_CATEGORY: Record<
     dos:   [number, number, number, number];
   }
 > = {
-  tshirts:    { coeur: [0.38, 0.28, 0.18, 0.18], dos: [0.25, 0.20, 0.50, 0.45] },
+  // tshirts.coeur aligné sur la doctrine d'origine (00_START_HERE.md + ZONES_STATIC B3.2-A2)
+  // [0.38, 0.28, 0.18, 0.18] → [0.60, 0.25, 0.14, 0.14] le 2026-05-26.
+  // Raison : la zone visuelle était à x≈0.38 (centre-image = pectoral droit du porteur)
+  // au lieu du vrai cœur poitrine gauche du porteur (= côté droit image en vue de face).
+  // BAT signés non impactés : bat-renderer.ts utilise uniquement le transform absolu
+  // (left/top/scaleX/scaleY/canvasSize), pas ZONES_BY_CATEGORY (commentaire ligne 153-157).
+  // Pilote tshirts seul — hoodies/softshells à valider visuellement plus tard.
+  tshirts:    { coeur: [0.60, 0.25, 0.14, 0.14], dos: [0.25, 0.20, 0.50, 0.45] },
   // hoodies coeur left ajuste de 0.40 a 0.38 pour aligner le placement
   // left-chest professionnel sur celui du t-shirt (centre x = 0.46 au lieu
   // de 0.48 qui paraissait trop center-torso). Top/width/height inchanges.
