@@ -35,6 +35,45 @@ const CATEGORY_LABEL: Record<string, string> = {
   enfants:    "Enfant",
 };
 
+const CATEGORY_USAGE: Record<string, string> = {
+  tshirts:    "Équipes, événements, associations",
+  hoodies:    "Marque, équipe, merch premium",
+  softshells: "Terrain, chantier, nettoyage",
+  polos:      "Entreprise, restaurant, accueil",
+  polaires:   "Extérieur, logistique, équipe terrain",
+  casquettes: "Événement, club, staff",
+  sacs:       "Goodies, boutique, événement",
+  goodies:    "Cadeaux clients, séminaires",
+  enfants:    "Écoles, clubs, sorties",
+};
+
+const TECHNIQUE_LABEL: Record<string, string> = {
+  dtf:                "DTF",
+  dtflex:             "DTFlex",
+  flex:               "Flex",
+  broderie:           "Broderie",
+  broderie_illimitee: "Broderie",
+  print:              "Print",
+};
+
+function recommendedTechnique(product: Product): string {
+  const preferred = product.techniqueRecommandee ?? product.techniques[0];
+  return TECHNIQUE_LABEL[preferred] ?? preferred.toUpperCase();
+}
+
+function recommendedMinimum(product: Product): string {
+  if (product.quoteOnly) return "Sur devis";
+  return `${product.minOrderQty ?? 10} pcs`;
+}
+
+function indicativeDelay(product: Product): string {
+  if (product.category === "goodies") return "3-7 j ouvrés";
+  if (product.techniques.includes("broderie") || product.techniques.includes("broderie_illimitee")) {
+    return "7-12 j ouvrés";
+  }
+  return "5-10 j ouvrés";
+}
+
 export default function ProductCard({ product }: ProductCardProps) {
   // Filtre les techniques à 0 (= non disponibles) avant de prendre le min
   const prices = [
@@ -153,6 +192,17 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="badge badge-neutral text-base">Rupture de stock</span>
           </div>
         )}
+
+        {/* Badge premium (overlay top-right) — affiché uniquement si product.badge est défini.
+            Ex. "En stock agence", "Bestseller", "Nouveau". Style cohérent avec
+            `.badge .badge-gold` (globals.css) + ombre légère pour lisibilité sur image. */}
+        {product.badge && (
+          <div className="pointer-events-none absolute right-2.5 top-2.5 z-20">
+            <span className="badge badge-gold bg-white/95 shadow-sm backdrop-blur-sm">
+              {product.badge}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── Bande swatches — barre dédiée avec border-top, jamais sur l'image ── */}
@@ -194,16 +244,19 @@ export default function ProductCard({ product }: ProductCardProps) {
           {product.shortName}
         </h3>
 
-        <p className="line-clamp-2 text-[11px] text-[var(--hm-text-soft)] leading-relaxed mb-3">
-          {product.description}
-        </p>
-
-        <div className="flex gap-1.5 flex-wrap mb-3">
-          {product.techniques.map((tech) => (
-            <span key={tech} className="text-[9px] px-2 py-0.5 bg-[var(--hm-accent-soft-purple)] border border-[var(--hm-line)] rounded-full text-[var(--hm-text-soft)] uppercase font-semibold tracking-wider">
-              {tech === "broderie" ? "Broderie" : tech.toUpperCase()}
-            </span>
-          ))}
+        <div className="mb-3 grid gap-1.5 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-3">
+          <p className="line-clamp-1 text-[11px] text-[var(--hm-text-soft)]">
+            <span className="font-semibold text-[var(--hm-text)]">Usage :</span>{" "}
+            {product.ideaPour?.[0] ?? CATEGORY_USAGE[product.category] ?? "Projet textile"}
+          </p>
+          <p className="text-[11px] text-[var(--hm-text-soft)]">
+            <span className="font-semibold text-[var(--hm-text)]">Technique :</span>{" "}
+            {recommendedTechnique(product)}
+          </p>
+          <p className="text-[11px] text-[var(--hm-text-soft)]">
+            <span className="font-semibold text-[var(--hm-text)]">Min. :</span>{" "}
+            {recommendedMinimum(product)} · {indicativeDelay(product)}
+          </p>
         </div>
 
         <div className="flex items-center justify-between">
@@ -218,6 +271,10 @@ export default function ProductCard({ product }: ProductCardProps) {
             {formatPrice(basePrice / 1.2)} HT
           </span>
         </div>
+
+        <span className="mt-3 flex w-full items-center justify-center rounded-xl bg-[var(--hm-primary)] px-3 py-2 text-[11px] font-bold text-white transition group-hover:bg-[var(--hm-rose-dark)]">
+          Voir la fiche
+        </span>
       </div>
     </Link>
   );
