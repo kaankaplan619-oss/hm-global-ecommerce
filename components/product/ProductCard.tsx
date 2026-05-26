@@ -181,20 +181,20 @@ export default function ProductCard({ product }: ProductCardProps) {
             mode={visualMode}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
-            imageClassName={`object-contain transition-transform duration-500${
+            imageClassName={`${product.id === "wg004" ? "object-top" : "object-center"} object-contain transition-transform duration-500${
               // WG004 — exception ciblée : le packshot TopTex CDN (PS_CGWG004_*.png)
               // a ~67% de marge blanche (produit centré dans une bbox de 1270×1044
               // sur 2000×2000), ce qui rend l'image visuellement trop petite dans
               // la card vs les sweats Printify cropped (fill 83%).
               //
-              // Iter 2 (2026-05-26) : passage de scale 1.15 → 1.40 pour harmoniser
-              // visuellement avec les Gildan 18000/18500. Fill apparent ~33% × 1.40²
-              // ≈ 65%, proche du 83% Gildan sans risque de couper les manches
-              // (produit occupe 89% de la largeur après scale, marge edge 11%).
-              // Ne s'applique qu'à WG004 ; les autres sweats Falk&Ross actuellement
-              // invisibles ne sont pas affectés.
+              // Iter 3 (2026-05-26) : scale 1.40 → 1.42 + object-top pour
+              // harmoniser avec Gildan 18000/18500. Le object-top ancre l'image
+              // au haut de la card (au lieu du centre), ce qui supprime l'espace
+              // blanc résiduel en haut et fait remonter le sweat dans la zone
+              // image. Marges produit final : ~5% horizontal, ~12% top (col safe),
+              // ~21% bottom (bas safe). Ne s'applique qu'à WG004.
               product.id === "wg004"
-                ? " scale-[1.40] group-hover:scale-[1.47]"
+                ? " scale-[1.42] group-hover:scale-[1.49]"
                 : " group-hover:scale-105"
             }${visualMode === "hm" ? " p-5 relative z-10" : " p-2"}`}
             showBadge={false}
