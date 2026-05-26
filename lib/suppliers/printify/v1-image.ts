@@ -92,7 +92,16 @@ export function getV1PrintifyImage(
  * Itère sur GALLERY_VIEW_ORDER et conserve uniquement les vues réellement
  * présentes dans le manifest pour ce produit/couleur. Pour les textile V1
  * (Gildan, Bella, Comfort) → front/back/folded comme avant. Pour le mug
- * Printify EU (bp 441) → front/right/left/context.
+ * Printify EU (bp 441) → front/right/left.
+ *
+ * Important — déduplication par URL :
+ *   `getPrintifyMockupForHMColor` retombe silencieusement sur la vue "front"
+ *   quand la vue demandée n'existe pas dans le manifest. Sans dédup ici, le
+ *   mug retournerait [front, front (←fallback back), front (←fallback folded),
+ *   right, left, front (←fallback context)] = 6 entrées dont 4 identiques.
+ *   Même pattern pour les textiles si un view requested manque. La déduplication
+ *   par identité de chaîne garantit que la galerie ne contient que des URLs
+ *   uniques (le set préserve l'ordre d'insertion en JS).
  *
  * Garantie : toutes les URLs commencent par /mockups/printify/ ou
  * /mockups/printify-cropped/ (cf isAllowedV1Url).
@@ -103,9 +112,10 @@ export function getV1PrintifyGallery(
   hmColorId: string | undefined,
 ): string[] {
   if (!productId || !isPrintifyV1Product(productId) || !hmColorId) return [];
-  return GALLERY_VIEW_ORDER
+  const urls = GALLERY_VIEW_ORDER
     .map((view) => getV1PrintifyImage(productId, hmColorId, view))
     .filter((s): s is string => Boolean(s));
+  return Array.from(new Set(urls));
 }
 
 /**

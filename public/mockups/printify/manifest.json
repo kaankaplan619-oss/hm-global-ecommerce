@@ -235,10 +235,9 @@
       "skippedColors": [],
       "mockups": {
         "blanc": {
-          "front": "/mockups/printify/mug-ceramique-eu/blanc-front.jpg",
+          "front": "/mockups/printify/mug-ceramique-eu/blanc-front-v2.jpg",
           "right": "/mockups/printify/mug-ceramique-eu/blanc-right.jpg",
-          "left": "/mockups/printify/mug-ceramique-eu/blanc-left.jpg",
-          "context": "/mockups/printify/mug-ceramique-eu/blanc-context.jpg"
+          "left": "/mockups/printify/mug-ceramique-eu/blanc-left.jpg"
         }
       }
     }

@@ -613,8 +613,14 @@ export default function ProductDetailClient({ product }: Props) {
               )}
             </div>
 
-            {/* ── Miniatures SVG colorées — cohérentes avec la vue 3D ── */}
-            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && (() => {
+            {/* ── Miniatures SVG colorées — cohérentes avec la vue 3D ──
+                 Affichées uniquement pour les produits TEXTILE (les pictos sont
+                 hardcodés en silhouette t-shirt Face/Dos/Manche). Les catégories
+                 non-textile (goodies = mugs, sacs si Printify futur, casquettes)
+                 utilisent la navigation par dots simples du carousel principal
+                 (ligne 629-655). Pour les ajouter aux non-textiles, il faudra
+                 introduire des SVG dédiés par famille. */}
+            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && product.category !== "goodies" && (() => {
               const sc   = selectedColor?.hex ?? "#111111";
               // Contour visible uniquement sur les coloris très clairs
               const lum  = parseInt(sc.replace("#",""), 16);
