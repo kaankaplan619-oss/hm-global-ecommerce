@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, FileText, Image as ImageIcon, CreditCard, Frame, BookOpen, Palette, ShieldCheck, Brush, Package, MapPin } from "lucide-react";
 import { getGelatoProducts, isGelatoConfigured } from "@/lib/gelato";
 import PrintImageStage, { type PrintFamily } from "@/components/print/PrintImageStage";
+import { getMockupsByFamily, resolveMockupFamily } from "@/data/printMockupTemplates";
 
 export const metadata: Metadata = {
   title: "Impression — Cartes de visite, Flyers, Affiches",
@@ -82,43 +83,117 @@ const STATIC_FALLBACK: Record<string, {
   formats: string[];
   specs:   string[];
 }> = {
-  // business-cards : photo éditoriale premium HM Global (stack + cartes face)
+  // Bascule 2026-05-27 : remplacement des visuels "hm-print-*" éditoriaux
+  // génériques/IA par les vrais mockups réalistes Mockups Design (sources
+  // documentées dans data/printMockupTemplates.ts). Chaque famille a son
+  // mockup principal différencié → un coup d'œil = un type de support identifié.
   "business-cards": {
-    image:   "/images/home/hm-print-cartes-de-visite.webp",
+    image:   "/mockups/print/business-card/business-card-stack-01.webp",
     family:  "business-cards",
     formats: ["85×55 mm standard", "85×55 mm coins ronds"],
     specs:   ["350 g/m²", "Mat ou brillant"],
   },
-  // flyer : photo éditoriale premium (éventail flyers gradient HM)
   flyer: {
-    image:   "/images/home/hm-print-flyers.webp",
+    image:   "/mockups/print/flyer/flyer-shadow-01.webp",
     family:  "flyer",
     formats: ["A4", "A5", "A6"],
     specs:   ["170 g/m² couché", "Recto / recto-verso"],
   },
-  // poster : photo éditoriale premium (2 affiches contre mur)
   poster: {
-    image:   "/images/home/hm-print-affiches-posters.webp",
+    image:   "/mockups/print/poster/poster-framed-01.webp",
     family:  "poster",
     formats: ["30×40 cm", "40×60 cm", "50×70 cm"],
     specs:   ["200 g/m²", "Impression 4/0"],
   },
-  // canvas : photo éditoriale premium (canvas accroché intérieur)
   canvas: {
-    image:   "/images/home/hm-print-toiles-canvas.webp",
+    image:   "/mockups/print/canvas/canvas-01.webp",
     family:  "canvas",
     formats: ["30×30 cm carré", "40×60 cm portrait", "60×90 cm panoramique"],
     specs:   ["Toile canvas tendue", "Cadre bois FSC"],
   },
-  // cards (cartes d'invitations) : partage le visuel premium business-cards
-  //   (cohérence DA — papier 350 g/m² satiné, même esthétique)
   cards: {
-    image:   "/images/home/hm-print-cartes-de-visite.webp",
+    image:   "/mockups/print/brochure/brochure-trifold-01.webp",
     family:  "cards",
-    formats: ["A6 portrait", "Carré 140×140 mm"],
-    specs:   ["350 g/m² couché satiné", "Option dorure"],
+    formats: ["DL 3 volets (210×99 mm)", "A4 plié 3 volets"],
+    specs:   ["170 g/m² couché", "Pliage 3 volets accordéon"],
   },
 };
+
+// ─── Pool de variantes visuelles par catégorie ───────────────────────────────
+// Dérivé automatiquement depuis `data/printMockupTemplates.ts` (source de vérité
+// unique) pour éviter la duplication des chemins entre les deux fichiers. Si on
+// ajoute / supprime un mockup dans PRINT_MOCKUP_TEMPLATES, la grille catalogue
+// se met à jour sans toucher à ce fichier.
+//
+// Mapping catalogue uid → famille mockup (cf resolveMockupFamily) :
+//   "business-cards" → famille "business-cards"
+//   "flyer"          → famille "flyer"
+//   "poster"         → famille "poster"
+//   "canvas"         → famille "canvas"
+//   "cards"          → famille "brochure" (V1 — à remplacer par un vrai
+//                                          mockup carte/invitation A6 en V1.1)
+//
+// La rotation `index % length` du helper getPrintProductVisual garantit
+// qu'aucune image adjacente ne se répète dans la grille.
+const IMAGE_VARIANTS_BY_CATEGORY: Record<string, string[]> = (() => {
+  const map: Record<string, string[]> = {};
+  for (const uid of ["business-cards", "flyer", "poster", "canvas", "cards"] as const) {
+    const family = resolveMockupFamily(uid);
+    if (!family) continue;
+    const list = getMockupsByFamily(family).map((m) => m.sceneImage);
+    // Pour "cards" (cartes & invitations), V1 utilise les mockups brochure trifold
+    // car aucun mockup carte/invitation A6 dédié n'est encore dans le catalogue
+    // (TODO V1.1 : sourcer un mockup invitation pliée ou carrée A6). En attendant,
+    // on ajoute une variante business-card face pour aérer la grille catalogue
+    // — une carte d'invitation et une carte de visite ont une présentation
+    // visuelle suffisamment proche pour éviter la répétition stricte.
+    if (uid === "cards") {
+      list.push("/mockups/print/business-card/business-card-stack-02.webp");
+    }
+    map[uid] = list;
+  }
+  return map;
+})();
+
+/**
+ * getPrintProductVisual — Sélectionne le visuel d'une card produit print.
+ *
+ * Règle anti-répétition visuelle (DA HM Global) :
+ *   Dans une même section catégorie, deux cards voisines n'utilisent jamais
+ *   exactement la même image tant qu'une alternative existe dans
+ *   `IMAGE_VARIANTS_BY_CATEGORY`. La rotation cyclique
+ *   `variants[index % variants.length]` garantit que les positions adjacentes
+ *   (i et i+1) sont toujours différentes quand variants.length ≥ 2.
+ *
+ *   Objectif : la grille doit paraître pensée par une agence, pas générée
+ *   automatiquement. Quand Gelato retourne plusieurs formats d'une catégorie
+ *   (ex. 3 tailles d'affiche), on alterne stack ↔ packshot ↔ stack…
+ *
+ * Fallback safe : si la catégorie n'a pas de pool défini, utilise
+ *   `fallbackImage` (typiquement `STATIC_FALLBACK[uid].image`). Aucun risque
+ *   de broken image.
+ *
+ * @param product       Produit Gelato (réservé pour évolutions futures —
+ *                      ex. mapping explicite via `product.productUid`).
+ *                      Non utilisé en V1 mais conservé dans la signature
+ *                      pour stabilité d'API.
+ * @param index         Position de la card dans la liste de variants de la
+ *                      catégorie (0-indexed).
+ * @param category      UID catégorie (`business-cards`, `flyer`, `poster`,
+ *                      `canvas`, `cards`).
+ * @param fallbackImage Image de repli si la catégorie n'a pas de pool.
+ * @returns             Chemin `/public` à passer à `<PrintImageStage src />`.
+ */
+function getPrintProductVisual(
+  product: { productUid: string },
+  index: number,
+  category: string,
+  fallbackImage: string,
+): string {
+  const variants = IMAGE_VARIANTS_BY_CATEGORY[category];
+  if (!variants || variants.length === 0) return fallbackImage;
+  return variants[index % variants.length];
+}
 
 // ─── Helpers Gelato ───────────────────────────────────────────────────────────
 
@@ -238,24 +313,33 @@ export default async function ImpressionPage() {
                 {products.length > 0 ? (
                   /* ── Produits Gelato dynamiques ── */
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    {products.map((product) => {
+                    {products.map((product, index) => {
                       const dimLabel    = getDimensionLabel(product.dimensions ?? []);
                       const paperLabel  = getPaperLabel(product.productUid);
                       const finishLabel = getFinishLabel(product.productUid);
                       const isLandscape = product.productUid.includes("_hor");
+                      // Anti-répétition visuelle : deux cards voisines d'une même
+                      // section catégorie ne partagent jamais la même image quand
+                      // une alternative existe dans IMAGE_VARIANTS_BY_CATEGORY.
+                      const variantImage = getPrintProductVisual(
+                        product,
+                        index,
+                        cat.uid,
+                        fallback?.image ?? "",
+                      );
 
                       return (
                         <article
                           key={product.id}
                           className="group flex flex-col overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)] bg-white shadow-[0_12px_30px_rgba(63,45,88,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.20)] hover:shadow-[0_20px_42px_rgba(63,45,88,0.10)]"
                         >
-                          {/* Image en pleine largeur — différenciée par famille via PrintImageStage */}
+                          {/* Image en pleine largeur — variante alternée + différenciation famille via PrintImageStage */}
                           <div className="relative aspect-[4/3] overflow-hidden">
-                            {fallback?.image ? (
+                            {variantImage ? (
                               <PrintImageStage
-                                src={fallback.image}
+                                src={variantImage}
                                 alt={`${cat.label} ${dimLabel}`}
-                                family={fallback.family}
+                                family={fallback?.family ?? "cards"}
                                 variant="catalog"
                                 sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 95vw"
                               />

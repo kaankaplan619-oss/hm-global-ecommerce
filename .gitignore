@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# mockup source files — only WebP/JPG aplatis dans public/mockups/ sont autorisés.
+# Les PSD / ZIP / TIF restent dans ~/Desktop/HM-Global-Mockups-Free/ en local.
+# Règle confirmée 2026-05-27 : aucun fichier source dans Git.
+*.psd
+*.zip
+*.tif
+*.tiff
