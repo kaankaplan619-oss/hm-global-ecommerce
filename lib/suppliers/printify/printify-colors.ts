@@ -23,6 +23,7 @@ import { PRINTIFY_V1_MAP, getMappedColors } from "./printify-v1-map";
 import {
   hasPrintifyMockups,
   getPrintifyLocalMockup,
+  type PrintifyView,
 } from "./mockups-local";
 
 // ─── Mapping HM colorId → Printify colorId (par produit) ─────────────────────
@@ -96,6 +97,13 @@ export const HM_TO_PRINTIFY_COLOR: Record<string, Record<string, string>> = {
     marine:       "marine",
     rouge:        "rouge",
     royal:        "royal",
+  },
+
+  // ── Goodies ──────────────────────────────────────────────────────────────
+  // Mug céramique EU 11oz Printify (bp 441) — blanc unique (sublimation
+  // sur céramique blanche). Provider OPT OnDemand CZ. Activé 2026-05-26.
+  "mug-ceramique-eu": {
+    blanc: "blanc",
   },
 };
 
@@ -180,13 +188,16 @@ export function getDisplayedAvailableColors(
 
 /**
  * Pour un produit Printify V1 + un colorId HM, retourne le chemin mockup
- * local (front/back/folded) en passant automatiquement par l'alias couleur.
+ * local en passant automatiquement par l'alias couleur.
  * Renvoie null si la combinaison n'existe pas.
+ *
+ * Vues textile V1 : front, back, back-2, folded, front-collar-closeup.
+ * Vues non-textile (mug bp 441) : right, left, context — ajoutées 2026-05-26.
  */
 export function getPrintifyMockupForHMColor(
   productId: string,
   hmColorId: string | undefined,
-  view: "front" | "back" | "back-2" | "folded" | "front-collar-closeup" = "front",
+  view: PrintifyView = "front",
 ): string | null {
   if (!hmColorId) return null;
   const printifyColorId = getPrintifyColorIdForHM(productId, hmColorId);

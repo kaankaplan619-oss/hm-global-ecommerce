@@ -227,6 +227,20 @@
           "front": "/mockups/printify/gildan-5000/royal-front.jpg"
         }
       }
+    },
+    "mug-ceramique-eu": {
+      "blueprintId": 441,
+      "providerId": 30,
+      "providerLabel": "OPT OnDemand",
+      "skippedColors": [],
+      "mockups": {
+        "blanc": {
+          "front": "/mockups/printify/mug-ceramique-eu/blanc-front.jpg",
+          "right": "/mockups/printify/mug-ceramique-eu/blanc-right.jpg",
+          "left": "/mockups/printify/mug-ceramique-eu/blanc-left.jpg",
+          "context": "/mockups/printify/mug-ceramique-eu/blanc-context.jpg"
+        }
+      }
     }
   }
 }

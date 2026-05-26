@@ -29,7 +29,27 @@ import {
 } from "./printify-colors";
 import { getPrintifyGallery } from "./mockups-local";
 
-export type PrintifyV1View = "front" | "back" | "back-2" | "folded" | "front-collar-closeup";
+export type PrintifyV1View =
+  | "front"
+  | "back"
+  | "back-2"
+  | "folded"
+  | "front-collar-closeup"
+  // Vues additionnelles non-textile (mugs) — voir mockups-local.ts:PrintifyView
+  | "right"
+  | "left"
+  | "context";
+
+// Ordre des vues pour la galerie : front (toujours) puis vues secondaires.
+// Les produits qui n'ont pas une vue donnée la verront filtrée — pas de cast.
+const GALLERY_VIEW_ORDER: PrintifyV1View[] = [
+  "front",
+  "back",
+  "folded",
+  "right",
+  "left",
+  "context",
+];
 
 /**
  * URL whitelist : seules ces racines sont autorisées comme source d'image V1.
@@ -66,8 +86,13 @@ export function getV1PrintifyImage(
 }
 
 /**
- * Retourne la galerie complète d'un produit V1 (front, back, folded).
+ * Retourne la galerie complète d'un produit V1.
  * Pour ProductGallery / ProductDetailClient.
+ *
+ * Itère sur GALLERY_VIEW_ORDER et conserve uniquement les vues réellement
+ * présentes dans le manifest pour ce produit/couleur. Pour les textile V1
+ * (Gildan, Bella, Comfort) → front/back/folded comme avant. Pour le mug
+ * Printify EU (bp 441) → front/right/left/context.
  *
  * Garantie : toutes les URLs commencent par /mockups/printify/ ou
  * /mockups/printify-cropped/ (cf isAllowedV1Url).
@@ -78,10 +103,9 @@ export function getV1PrintifyGallery(
   hmColorId: string | undefined,
 ): string[] {
   if (!productId || !isPrintifyV1Product(productId) || !hmColorId) return [];
-  const front  = getV1PrintifyImage(productId, hmColorId, "front");
-  const back   = getV1PrintifyImage(productId, hmColorId, "back");
-  const folded = getV1PrintifyImage(productId, hmColorId, "folded");
-  return [front, back, folded].filter((s): s is string => Boolean(s));
+  return GALLERY_VIEW_ORDER
+    .map((view) => getV1PrintifyImage(productId, hmColorId, view))
+    .filter((s): s is string => Boolean(s));
 }
 
 /**

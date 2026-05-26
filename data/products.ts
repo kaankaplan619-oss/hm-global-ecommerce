@@ -2680,9 +2680,64 @@ export const PRODUCT_SPREADSHIRT_HOODIE: Product = {
   },
 };
 
-// ─── Printful POD — Mug blanc 11 oz ──────────────────────────────────────────
+// ─── Printify V1 — Mug céramique EU 11oz (bp 441 / OPT OnDemand CZ) ──────────
+// Pilote goodie Printify EU activé 2026-05-26.
+// Audit API : blueprint 441 "Ceramic Mug (EU)" — single provider EU (OPT OnDemand 🇨🇿).
+// Cost 11oz : 5.73 USD ≈ 5.37 € HT  |  Shipping EU first 6.59 USD / additional 1.99 USD.
+// Marge brute HT ~5 € (1 pc) / ~9 € (10+) à PV 19.90 € TTC (cohérent mug Printful).
+// Sublimation pleine couleur sur céramique blanche, wraparound (2717×1146 px).
+// Délai total 14-18 j ouvrés (handling 10 j + ship CZ→FR 4-8 j).
+// Mockups : 4 angles (front catalogue + right/left/context galerie),
+// stockés dans public/mockups/printify/mug-ceramique-eu/ et déclarés dans le manifest.
+// Pricing : réutilise MUG_11OZ_PRICES (19.90 € TTC) — source unique mugs.
+export const PRODUCT_MUG_CERAMIQUE_EU: Product = {
+  id: "mug-ceramique-eu",
+  slug: "mug-ceramique-eu",
+  reference: "Mug céramique EU 11oz",
+  name: "Mug personnalisé céramique EU",
+  shortName: "Mug céramique",
+  category: "goodies",
+  gender: "unisex",
+  tier: "appel",
+  description:
+    "Mug céramique blanc 11 oz (325 ml). Sublimation pleine couleur sur tout le pourtour, finition brillante, résistant au lave-vaisselle. Production et expédition en Union européenne (République tchèque). Délai 10-15 jours ouvrés.",
+  composition: "Céramique blanche",
+  weight: "320 g",
+  images: [],
+  colors: [
+    { id: "blanc", label: "Blanc", hex: "#FFFFFF", available: true },
+  ],
+  sizes: [
+    { label: "11 oz / 325 ml", available: true },
+  ],
+  techniques: ["dtf"], // dtf = sublimation pleine couleur pour les mugs
+  placements: ["coeur"],
+  pricing: {
+    dtf:    MUG_11OZ_PRICES.dtf, // 19.90 € TTC (source unique mugs)
+    dtflex: 0,
+    flex:   0,
+    broderie: 0,
+    placements: MUG_11OZ_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: MUG_11OZ_PLACEMENT_SURCHARGES,
+  },
+  featured: false,
+  visible: true,
+  badge: "Goodie B2B",
+  supplierName: "printful", // V1 catalogue interne — vraie source = PRINTIFY_V1_MAP["mug-ceramique-eu"]
+  ideaPour: ["Cadeaux d'entreprise", "Séminaires", "Associations"],
+  conseil:
+    "Le goodie B2B par excellence. Sublimation pleine couleur sur céramique blanche, couleurs éclatantes, résistant au lave-vaisselle. Idéal pour les séminaires, anniversaires d'entreprise et offres cadeaux clients. Production EU, délai 10-15 jours ouvrés.",
+  volumePricing: MUG_11OZ_DTF_VOLUME,
+  // Pas de hmMockupImages / hmMockupGallery : la résolution image passe par
+  // le pipeline Printify V1 (getV1PrintifyImage + getV1PrintifyGallery), qui
+  // lit le manifest /mockups/printify/mug-ceramique-eu/.
+};
+
+// ─── Printful POD — Mug blanc 11 oz (LEGACY, visible: false) ─────────────────
 // Goodie B2B : sublimation pleine couleur, résistant lave-vaisselle
 // Prix d'achat Printful TTC : ~5.50 € | Marge HT cible : ~12 € (1 pc), ~9 € (10+)
+// Conservé en code pour rétrocompatibilité commandes — masqué (visible: false).
+// Remplacé V1 par PRODUCT_MUG_CERAMIQUE_EU ci-dessus (Printify OPT OnDemand CZ).
 export const PRODUCT_MUG_11OZ: Product = {
   id: "mug-11oz",
   slug: "mug-personnalise-11oz",
@@ -2786,7 +2841,8 @@ const _ALL_PRODUCTS: Product[] = [
   PRODUCT_GILDAN_18500,       // 49.90 € TTC — hoodie
   PRODUCT_GILDAN_64800,       // polo piqué Printful
   PRODUCT_COTTON_HERITAGE_M2480, // sweat premium Printful
-  PRODUCT_MUG_11OZ,           // 19.90 € TTC — goodie
+  PRODUCT_MUG_CERAMIQUE_EU,   // 19.90 € TTC — goodie Printify EU (bp 441, OPT OnDemand CZ)
+  PRODUCT_MUG_11OZ,           // 19.90 € TTC — LEGACY Printful (visible: false)
 
   // ── Spreadshirt — tarification dégressive dès 10 pièces ──────────────────
   PRODUCT_SPREADSHIRT_GILDAN_TSHIRT,   // 13.90–19.90 € TTC selon palier

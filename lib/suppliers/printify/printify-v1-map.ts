@@ -32,6 +32,7 @@ export const PRINTIFY_PROVIDERS = {
   TEXTILDRUCK_EUROPA_DE: 26,
   ATELIER_KATANGA_FR:    402,
   PRINT_CLEVER_GB:       72,
+  OPT_ONDEMAND_CZ:       30,
 } as const;
 
 export type PrintifyProviderId = typeof PRINTIFY_PROVIDERS[keyof typeof PRINTIFY_PROVIDERS];
@@ -40,6 +41,7 @@ export const PROVIDER_LABELS: Record<number, { name: string; country: string; fl
   26:  { name: "Textildruck Europa", country: "DE", flag: "🇩🇪" },
   402: { name: "Atelier Katanga",    country: "FR", flag: "🇫🇷" },
   72:  { name: "Print Clever",       country: "GB", flag: "🇬🇧" },
+  30:  { name: "OPT OnDemand",       country: "CZ", flag: "🇨🇿" },
 };
 
 // ─── Type d'une variante mappée ──────────────────────────────────────────────
@@ -497,6 +499,30 @@ export const PRINTIFY_V1_MAP: Record<string, ProductMapping> = {
           L:   { variantId: 22009, availableProviders: [26] },
           XL:  { variantId: 22010, availableProviders: [26] },
           "2XL": { variantId: 22011, availableProviders: [26] },
+        },
+      },
+    },
+  },
+
+  // ── Mug céramique EU 11oz (NOUVEAU V1 — goodies) ────────────────────────
+  // Blueprint 441 "Ceramic Mug (EU)" chez OPT OnDemand CZ (single provider EU).
+  // Variant 62327 uniquement (11oz). Le 15oz (62328) n'est PAS activé V1.
+  // Cost audité 2026-05-26 : 5.73 USD ≈ 5.37 € HT.
+  // Sublimation pleine couleur sur céramique blanche.
+  // Pas de "taille" au sens textile : Printify n'a qu'un seul variant utilisé,
+  // on map sur une "taille" symbolique "11oz" pour rester cohérent avec le
+  // schéma SizeMap (key = label affichable côté HM).
+  "mug-ceramique-eu": {
+    hmSlug: "mug-ceramique-eu",
+    blueprintId: 441,
+    label: "Ceramic Mug (EU) 11oz",
+    preferredProvider: PRINTIFY_PROVIDERS.OPT_ONDEMAND_CZ,
+    knownProviders: [PRINTIFY_PROVIDERS.OPT_ONDEMAND_CZ],
+    colors: {
+      blanc: {
+        printifyColorName: "White",
+        sizes: {
+          "11oz": { variantId: 62327, availableProviders: [30] },
         },
       },
     },

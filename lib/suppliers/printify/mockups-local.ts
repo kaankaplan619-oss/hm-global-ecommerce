@@ -46,7 +46,14 @@ export type PrintifyView =
   | "back"
   | "back-2"
   | "folded"
-  | "front-collar-closeup";
+  | "front-collar-closeup"
+  // ── Vues additionnelles pour catégories non-textile (mugs, sacs) ────────
+  // Ajoutées 2026-05-26 pour Mug céramique EU bp 441 (4 angles : front,
+  // right, left, context). Les produits textile V1 ne renseignent jamais
+  // ces vues dans le manifest, donc aucun impact sur leur galerie.
+  | "right"
+  | "left"
+  | "context";
 
 const m = manifest as Manifest;
 const mc = croppedManifest as CroppedManifest;
