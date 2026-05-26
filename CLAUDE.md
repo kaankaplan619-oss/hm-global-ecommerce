@@ -71,6 +71,28 @@ Réponses concises, sans commentaires inutiles dans le code, sans abstractions s
 
 ---
 
+## Validation rendu UI obligatoire
+
+Pour toute tâche qui touche : **interface, composant, page produit, Studio, catalogue ou admin** — type-check + lint **ne sont jamais suffisants** pour conclure.
+
+Workflow obligatoire à chaque tâche UI :
+
+1. Audit lecture seule avant modification
+2. Modifier uniquement les fichiers validés par Kaan
+3. `npm run type-check` + `npm run lint`
+4. Lancer les routes concernées en HTTP (curl si dev server actif)
+5. Vérifier le rendu visuel réel (Playwright / Claude Preview / Chrome MCP / computer-use screenshot — selon ce qui est disponible)
+6. Comparer avant / après si possible
+7. Rapport structuré obligatoire : ce qui marche / ce qui casse / à vérifier manuellement / fichiers modifiés / risques
+
+Si aucun outil de rendu n'est disponible dans la session : **le dire explicitement** et fournir une checklist visuelle précise à Kaan (URLs + DOM markers + breakpoints à tester).
+
+**Ne jamais prétendre avoir validé un rendu sans l'avoir réellement vu.**
+
+Détails complets et pages à tester par type de tâche : `docs/agent-memory/12_TESTING_PROTOCOL.md`.
+
+---
+
 ## Mandatory Project Memory
 
 Before starting any coding task, Claude Code must read:

@@ -25,6 +25,7 @@ Couleur accent : `#b13f74`. Design tokens : `--hm-*`.
 - Ne pas remplacer les images principales HM (`images[]`, `hmHeroImage`, `hmMockupImages`) par des images fournisseur.
 - Ne pas rendre visible un produit avec `visible: false` sans validation Kaan.
 - Ne pas refaire une DA globale sans accord écrit.
+- **Ne jamais conclure une tâche UI comme terminée uniquement parce que TypeScript et ESLint passent** — la validation rendu réel est obligatoire pour catalogue / fiche produit / Studio / admin / responsive. Détail : `12_TESTING_PROTOCOL.md`.
 
 Détail complet et nuances → `08_DO_NOT_TOUCH.md`.
 
@@ -71,7 +72,7 @@ Détail complet et nuances → `08_DO_NOT_TOUCH.md`.
 | Fichier | Contenu | Lire quand |
 |---|---|---|
 | `11_MOCKUP_VIEWER_RULES.md` | Détail technique MockupViewer Fabric.js, zones par catégorie | Toute mission qui approche du composant mockup ou du studio |
-| `12_TESTING_PROTOCOL.md` | Checklist tests manuels, scénarios production, vérifications après modif | Avant chaque commit visible production |
+| `12_TESTING_PROTOCOL.md` | **Workflow UI rendering obligatoire** : 7 étapes, vérification rendu réel (non négociable), pages à tester par type de tâche | **Toute tâche UI / catalogue / fiche produit / Studio / admin / responsive** + avant chaque commit visible production |
 | `13_PROMPT_STARTER.md` | Template prompt de démarrage de session | Pratique pour relancer un agent dans le bon état |
 | `14_PRODUCT_VISION_HM_GLOBAL_PLATFORM.md` | Vision produit long terme — stratégie plateforme | Discussions roadmap V2-V5, refonte structurelle |
 | `15_STUDIO_SPEC.md` | Spécifications fonctionnelles complètes du studio personnalisation | Toute évolution du studio ou de l'expérience Canva-style |
