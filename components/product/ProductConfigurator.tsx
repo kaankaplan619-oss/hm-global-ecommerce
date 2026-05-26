@@ -577,7 +577,11 @@ export default function ProductConfigurator({
         </div>
       )}
 
-      {/* ── Emplacement ───────────────────────────────────────── */}
+      {/* ── Emplacement ───────────────────────────────────────────
+           Masqué pour les goodies (mugs) : 1 seule zone d'impression
+           wraparound, pas de choix utilisateur cœur/dos/coeur-dos.
+           Les textiles conservent le bloc intact. */}
+      {product.category !== "goodies" && (
       <div>
         <label className="label">Emplacement du marquage</label>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -614,6 +618,7 @@ export default function ProductConfigurator({
           })}
         </div>
       </div>
+      )}
 
       {/* ── Quantité ──────────────────────────────────────────── */}
       <div>
@@ -697,6 +702,19 @@ export default function ProductConfigurator({
           )}
         </div>
       </div>
+
+      {/* ── Encart informatif goodies — workflow validation manuelle ──
+           Affiché uniquement pour les goodies (mugs). Explique au client le
+           workflow honnête : upload → vérification équipe HM Global → rendu
+           préparé avant production. Pas de Studio textile, pas de BAT live. */}
+      {!hideLogoUpload && product.category === "goodies" && (
+        <div className="rounded-2xl border border-[var(--hm-primary)]/20 bg-[var(--hm-accent-soft-rose)] px-4 py-3">
+          <p className="text-[11px] leading-relaxed text-[var(--hm-text)]">
+            <span className="font-semibold text-[var(--hm-primary)]">Ajoutez votre logo ou visuel.</span>{" "}
+            Notre équipe vérifie votre fichier et prépare le rendu mug avant production.
+          </p>
+        </div>
+      )}
 
       {/* ── Logo upload ───────────────────────────────────────── */}
       {/* Masqué quand hideLogoUpload=true → l'upload se fait dans le studio */}
@@ -948,14 +966,28 @@ export default function ProductConfigurator({
             {!size
               ? "Sélectionnez une taille"
               : requirePersonalization && !hasLogo
-              ? "Personnalisez d'abord votre article"
-              : "Ajouter au panier"}
+              ? (product.category === "goodies"
+                  ? "Ajoutez votre visuel pour commander"
+                  : "Personnalisez d'abord votre article")
+              : (product.category === "goodies"
+                  ? "Ajouter mon mug au panier"
+                  : "Ajouter au panier")}
           </>
         )}
       </button>
 
-      {/* Message contextuel selon le flux */}
-      {requirePersonalization && !hasLogo ? (
+      {/* Message contextuel selon le flux.
+           Goodies (mugs) : upload direct sur la fiche, l'équipe HM Global vérifie
+           le visuel et prépare le rendu avant production. Pas d'aperçu live
+           trompeur (cf. LightMockupPreview gated dans ProductDetailClient).
+           Textile : redirection vers le bouton "🎨 Personnaliser mon article" qui
+           ouvre le Studio Fabric.js. */}
+      {product.category === "goodies" ? (
+        <p className="text-center text-[10px] text-[var(--hm-text-soft)] leading-snug">
+          Pour les mugs personnalisés, nous vérifions votre visuel avant production
+          afin d&apos;assurer un rendu propre sur la zone d&apos;impression.
+        </p>
+      ) : requirePersonalization && !hasLogo ? (
         <p className="text-center text-[10px] text-[var(--hm-primary)]">
           Utilisez le bouton <strong>🎨 Personnaliser mon article</strong> pour ajouter votre logo.
         </p>
@@ -963,6 +995,19 @@ export default function ProductConfigurator({
         <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
           Vous pouvez configurer et ajouter au panier librement. La connexion sera demandée au moment du checkout.
         </p>
+      )}
+
+      {/* ── Lien secondaire devis volume — uniquement pour les goodies ─────
+           Le mug bp 441 / OPT OnDemand est limité à 1 zone unique. Pour les
+           clients qui ont besoin d'un volume important (50+ pcs) ou d'une
+           validation BAT avant production, le devis manuel reste pertinent. */}
+      {product.category === "goodies" && (
+        <a
+          href="/contact?sujet=devis-mug"
+          className="block text-center text-[11px] text-[var(--hm-text-soft)] underline-offset-2 transition hover:text-[var(--hm-primary)] hover:underline"
+        >
+          Besoin d&apos;une grande quantité ? Demander un devis
+        </a>
       )}
     </div>
   );

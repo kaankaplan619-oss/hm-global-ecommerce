@@ -721,8 +721,17 @@ export default function ProductDetailClient({ product }: Props) {
               );
             })()}
 
-            {/* ── Aperçu logo (LightMockupPreview) ── */}
-            {logoFile && (
+            {/* ── Aperçu logo (LightMockupPreview) ──
+                 LightMockupPreview superpose le logo client sur l'image produit
+                 en utilisant les zones cœur/dos textile (fallback automatique
+                 sur tshirts pour les catégories non-mappées). Pour le mug et les
+                 autres goodies, ce serait visuellement trompeur (logo affiché à
+                 la position "poitrine" sur un objet non-textile). On masque donc
+                 cet overlay pour goodies — l'image principale (mockup mug blanc
+                 Printify) reste affichée telle quelle, et le client comprend que
+                 l'équipe HM Global préparera le rendu mug avant production
+                 (cf. encart info dans le ProductConfigurator). */}
+            {logoFile && product.category !== "goodies" && (
               <LightMockupPreview
                 imageUrl={currentImageUrl}
                 logoFile={logoFile}
@@ -896,24 +905,24 @@ export default function ProductDetailClient({ product }: Props) {
           logoPlacementTransform={logoPlacementTransform}
           batRef={batData?.batRef}
           studioLogoPreset={studioLogoPreset ?? undefined}
-          hideLogoUpload={true}
+          hideLogoUpload={product.category !== "goodies"}
           requirePersonalization={product.supplierName === "printful"}
           studioComposedFront={studioComposedFront}
           studioComposedBack={studioComposedBack}
           studioCTA={
             product.category === "goodies" ? (
-              /* Goodies (mugs, objets) — pas de studio Fabric.js, CTA devis */
-              <div className="flex flex-col gap-2">
-                <Link
-                  href="/contact"
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.30)] transition-all hover:bg-[var(--hm-primary)]/90 hover:shadow-[0_6px_20px_rgba(177,63,116,0.40)] active:scale-[0.98]"
-                >
-                  ✉️ Demander un devis →
-                </Link>
-                <p className="text-center text-[11px] text-[var(--hm-text-soft)] leading-snug">
-                  Pour les mugs personnalisés, notre équipe vérifie votre visuel avant production.
-                </p>
-              </div>
+              /* Goodies (mugs) — V1 personnalisable simple :
+                 - L'upload logo est activé dans ProductConfigurator (hideLogoUpload=false ci-dessus)
+                 - Pas de Studio Fabric.js (réservé textile)
+                 - Pas de bouton studio CTA — on laisse le bouton "Ajouter au panier"
+                   par défaut du ProductConfigurator s'afficher (gère lui-même
+                   l'état logo/taille/quantité + label "Ajoutez votre visuel pour
+                   commander" → "Ajouter mon mug au panier")
+                 - Lien secondaire "Demander un devis" rendu DANS le ProductConfigurator
+                   (sous le bouton, lien discret). L'encart d'info ci-dessus
+                   explique que l'équipe HM Global prépare le rendu mug avant
+                   production. */
+              undefined
             ) : size ? (
               <Link
                 href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}

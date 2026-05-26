@@ -2722,7 +2722,7 @@ export const PRODUCT_MUG_CERAMIQUE_EU: Product = {
   },
   featured: false,
   visible: true,
-  badge: "Goodie B2B",
+  badge: "Mug personnalisé",
   supplierName: "printful", // V1 catalogue interne — vraie source = PRINTIFY_V1_MAP["mug-ceramique-eu"]
   ideaPour: ["Cadeaux d'entreprise", "Séminaires", "Associations"],
   conseil:
