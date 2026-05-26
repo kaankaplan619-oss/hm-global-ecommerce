@@ -58,9 +58,16 @@ export default function CataloguePage() {
           ))}
         </div>
 
-        {/* Products by season order */}
+        {/* Products by season order.
+            Exclut les produits `quoteOnly: true` de la grille principale — ces
+            produits sont par nature non commandables directement (devis requis)
+            et ne doivent pas être mis en avant aux côtés du catalogue achetable.
+            Ils restent visibles dans leur page catégorie dédiée /catalogue/[cat]
+            où la signalétique "Sur devis" est claire. */}
         {order.map((catId) => {
-          const products = ALL_PRODUCTS.filter((p) => p.category === catId);
+          const products = ALL_PRODUCTS.filter(
+            (p) => p.category === catId && !p.quoteOnly,
+          );
           if (products.length === 0) return null;
 
           return (

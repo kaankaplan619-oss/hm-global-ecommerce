@@ -61,7 +61,20 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
   },
 };
 
-const PUBLIC_CATEGORY_IDS = ["tshirts", "hoodies", "goodies"] as const;
+// Ordre du sous-menu de navigation catégorie : essentiels → outdoor → accessoires → enfants.
+// Inclut les catégories sans produits aujourd'hui (softshells, polaires, casquettes, enfants) —
+// la page catégorie affiche un état "Bientôt disponible" si products.length === 0.
+const PUBLIC_CATEGORY_IDS = [
+  "tshirts",
+  "polos",
+  "hoodies",
+  "softshells",
+  "polaires",
+  "casquettes",
+  "sacs",
+  "goodies",
+  "enfants",
+] as const;
 
 type Props = {
   params: Promise<{ category: string }>;
