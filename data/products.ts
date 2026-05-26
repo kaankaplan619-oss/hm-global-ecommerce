@@ -290,18 +290,17 @@ export const PRODUCT_TU03T: Product = {
 
 // ─── HOODIES / SWEATS ────────────────────────────────────────────────────────
 
-// Couleurs réelles B&C WG004 (vérifiées sur CDN Toptex — packshots confirmés)
+// Couleurs WG004 — version stock agence V1 (2026-05-26).
+// Réduit de 10 → 1 couleur (Noir uniquement) pour refléter le stock réel
+// à l'agence : 100 pcs noir disponibles immédiatement, pas d'autres coloris
+// physiquement en stock. Les autres coloris (blanc, gris, marine, bleu royal,
+// bordeaux, rouge, vert bouteille, orange) restent dispos chez Falk&Ross en
+// flux mais ne sont pas exposés en V1 pour éviter la confusion stock vs flux.
+// Si on veut un jour réactiver le flux fournisseur multi-coloris, restaurer
+// la liste complète depuis l'historique git ou les packshots CDN TopTex
+// (data/colorPackshots.ts garde les 10 URLs).
 const WG004_COLORS = [
-  { id: "noir",          label: "Noir",          hex: "#111111", available: true },
-  { id: "blanc",         label: "Blanc cassé",   hex: "#F5F5F5", available: true },
-  { id: "gris-melange",  label: "Gris chiné",    hex: "#6B7280", available: true },
-  { id: "anthracite",    label: "Anthracite",    hex: "#374151", available: true },
-  { id: "marine",        label: "Marine",        hex: "#1E3A5F", available: true },
-  { id: "bleu-royal",   label: "Bleu royal",    hex: "#2563EB", available: true },
-  { id: "bordeaux",      label: "Bordeaux",      hex: "#7F1D1D", available: true },
-  { id: "rouge",         label: "Rouge",         hex: "#DC2626", available: true },
-  { id: "vert-bouteille",label: "Vert bouteille",hex: "#166534", available: true },
-  { id: "orange",        label: "Orange",        hex: "#EA580C", available: true },
+  { id: "noir", label: "Noir", hex: "#111111", available: true },
 ];
 
 // Couleurs réelles B&C WU620 (vérifiées sur CDN Toptex — packshots confirmés)
@@ -327,6 +326,17 @@ const HOODIE_SIZES = [
 ];
 
 
+// ─── WG004 stock agence V1 (2026-05-26) ──────────────────────────────────────
+// Override produit-spécifique pour le positionner en pilote stock :
+//   - Couleur : Noir uniquement (cf. WG004_COLORS ci-dessus)
+//   - Technique : DTF uniquement (les autres masquées via prix 0)
+//   - Prix : 24.90 € TTC override inline (HOODIE_PRICES.sweat.* reste à 44.90 €
+//     pour usage flux fournisseur futur — non modifié)
+//   - Description enrichie : mention "Stock agence : 100 pcs noir"
+//   - Badge "En stock agence" conservé
+//   - Personnalisation : upload logo actif, validation manuelle équipe HM
+//     (cf. ProductDetailClient — showMockup désactivé pour wg004 → pas de
+//     zone rose textile, image statique propre)
 export const PRODUCT_WG004: Product = {
   id: "wg004",
   slug: "sweat-col-rond-bc-set-in-sweat",
@@ -337,19 +347,23 @@ export const PRODUCT_WG004: Product = {
   gender: "unisex",
   tier: "appel",
   description:
-    "Sweat col rond classique, coupe droite confortable. Intérieur molletonné doux, idéal pour la communication d'entreprise. Résistant au lavage fréquent.",
+    "Sweat col rond classique, coupe droite confortable. Intérieur molletonné doux, idéal pour la communication d'entreprise. Résistant au lavage fréquent. **Stock agence : 100 pièces disponibles en noir, expédition immédiate.**",
   composition: "80% coton, 20% polyester recyclé",
   weight: "280 g/m²",
   images: PLACEHOLDER_IMAGES("wg004"),
   colors: WG004_COLORS,
   sizes: HOODIE_SIZES,
-  techniques: ["dtf", "dtflex", "flex", "broderie"],
+  // Stock agence V1 : DTF uniquement. Les techniques DTFlex / Flex / Broderie
+  // sont masquées du sélecteur (prix 0 = non disponible côté UI).
+  techniques: ["dtf"],
   placements: ["coeur", "dos", "coeur-dos"],
   pricing: {
-    dtf:      HOODIE_PRICES.sweat.dtf,
-    dtflex:   HOODIE_PRICES.sweat.dtflex,
-    flex:     HOODIE_PRICES.sweat.flex,
-    broderie: HOODIE_PRICES.sweat.broderie,
+    // Override inline 24.90 € — ne modifie PAS HOODIE_PRICES.sweat (qui reste
+    // à 44.90 € pour un éventuel passage flux fournisseur futur).
+    dtf:      24.90,
+    dtflex:   0, // Masqué V1 stock — réactivable si besoin (HOODIE_PRICES.sweat.dtflex = 46.90)
+    flex:     0, // Masqué V1 stock — réactivable si besoin (HOODIE_PRICES.sweat.flex   = 44.90)
+    broderie: 0, // Masqué V1 stock — réactivable si besoin (HOODIE_PRICES.sweat.broderie = 52.90)
     placements: {
       coeur:     PLACEMENT_SURCHARGES.dtf.coeur,
       dos:       PLACEMENT_SURCHARGES.dtf.dos,

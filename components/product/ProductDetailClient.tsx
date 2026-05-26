@@ -385,10 +385,20 @@ export default function ProductDetailClient({ product }: Props) {
     }
   }, [studioComposedUrl, show3D, gallery.length]);
 
+  // showMockup = on rend MockupViewer Fabric.js (avec zones, drag-resize logo,
+  // overlay zone rose pointillée). Désactivé pour les produits "stock agence"
+  // qui ne sont pas configurables visuellement par le client (l'équipe HM
+  // Global prépare le rendu manuellement) — pour ces produits on rend une
+  // image statique propre via HMProductVisual à la place.
+  //
+  // WG004 stock agence V1 : non configurable côté UI → image simple, pas de
+  // canvas Fabric.js, pas de zone rose. L'upload logo reste actif dans le
+  // ProductConfigurator (workflow validation manuelle équipe).
   const showMockup =
     (product.category === "tshirts" || product.category === "hoodies" || product.category === "softshells") &&
     !!currentImageUrl &&
-    (!isPOD || hasLogoReady);
+    (!isPOD || hasLogoReady) &&
+    product.id !== "wg004";
 
   // Mode visuel premium HM Global ou fournisseur
   // Les produits POD (Printful, Spreadshirt) utilisent le mode "supplier" (fond blanc)
@@ -486,7 +496,18 @@ export default function ProductDetailClient({ product }: Props) {
                     studioComposedUrl
                       ? "object-contain w-full transition-opacity duration-300"
                       : `object-contain w-full transition-opacity duration-300${
-                          visualMode === "hm" ? " p-4 relative z-10" : isPOD ? " scale-[1.10] p-3" : " p-6"
+                          // WG004 stock agence : packshot TopTex à 33% fill → scale 1.25
+                          // + object-top + p-2 pour agrandir l'image dans la fiche tout en
+                          // gardant col/manches visibles (marge horizontale ~10%, marge top
+                          // ~3%). Pattern aligné iter 3 cards catalogue (ProductCard.tsx)
+                          // mais ratio plus doux car container fiche plus carré que cards.
+                          visualMode === "hm"
+                            ? " p-4 relative z-10"
+                            : isPOD
+                              ? " scale-[1.10] p-3"
+                              : product.id === "wg004"
+                                ? " scale-[1.25] p-2 object-top"
+                                : " p-6"
                         }`
                   }
                 />
