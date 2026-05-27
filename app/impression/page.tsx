@@ -376,13 +376,30 @@ export default async function ImpressionPage() {
                               )}
                             </div>
 
-                            <Link
-                              href={`/contact?sujet=impression&produit=${encodeURIComponent(product.productUid)}&format=${encodeURIComponent(dimLabel)}`}
-                              className="mt-auto flex items-center justify-between rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2.5 text-[11px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)] pt-3"
-                            >
-                              Demander un devis
-                              <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
-                            </Link>
+                            {/* V1.1 (2026-05-27) — CTA différencié par catégorie :
+                               - Cartes de visite : configurateur direct
+                                 /impression/cartes-de-visite (upload + preview live)
+                               - Autres familles (flyer, poster, canvas, cards) :
+                                 devis manuel via /contact (configurateurs à venir
+                                 en V1.2). On garde le format dans l'URL devis pour
+                                 contexte commercial. */}
+                            {cat.uid === "business-cards" ? (
+                              <Link
+                                href="/impression/cartes-de-visite"
+                                className="mt-auto flex items-center justify-between rounded-xl border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-3 py-2.5 text-[11px] font-bold text-[var(--hm-primary)] transition-all group-hover:border-[var(--hm-primary)] group-hover:bg-[var(--hm-primary)] group-hover:text-white pt-3"
+                              >
+                                Personnaliser maintenant
+                                <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
+                              </Link>
+                            ) : (
+                              <Link
+                                href={`/contact?sujet=impression&produit=${encodeURIComponent(product.productUid)}&format=${encodeURIComponent(dimLabel)}`}
+                                className="mt-auto flex items-center justify-between rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2.5 text-[11px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)] pt-3"
+                              >
+                                Demander un devis
+                                <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
+                              </Link>
+                            )}
                           </div>
                         </article>
                       );
@@ -419,13 +436,25 @@ export default async function ImpressionPage() {
                             </span>
                           ))}
                         </div>
-                        <Link
-                          href={`/contact?sujet=impression&categorie=${encodeURIComponent(cat.uid)}`}
-                          className="mt-auto inline-flex items-center justify-between gap-2 rounded-xl border border-[var(--hm-line)] bg-white px-4 py-2.5 text-[12px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)]"
-                        >
-                          Demander un devis pour ce support
-                          <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-                        </Link>
+                        {/* V1.1 — pareil que la grille produits : configurateur
+                           direct pour les cartes de visite, devis pour le reste. */}
+                        {cat.uid === "business-cards" ? (
+                          <Link
+                            href="/impression/cartes-de-visite"
+                            className="mt-auto inline-flex items-center justify-between gap-2 rounded-xl border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-4 py-2.5 text-[12px] font-bold text-[var(--hm-primary)] transition-all group-hover:border-[var(--hm-primary)] group-hover:bg-[var(--hm-primary)] group-hover:text-white"
+                          >
+                            Personnaliser maintenant
+                            <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/contact?sujet=impression&categorie=${encodeURIComponent(cat.uid)}`}
+                            className="mt-auto inline-flex items-center justify-between gap-2 rounded-xl border border-[var(--hm-line)] bg-white px-4 py-2.5 text-[12px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)]"
+                          >
+                            Demander un devis pour ce support
+                            <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                          </Link>
+                        )}
                       </div>
                     </article>
 
