@@ -331,8 +331,23 @@ export default async function ImpressionPage() {
                       return (
                         <article
                           key={product.id}
-                          className="group flex flex-col overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)] bg-white shadow-[0_12px_30px_rgba(63,45,88,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.20)] hover:shadow-[0_20px_42px_rgba(63,45,88,0.10)]"
+                          className={`group relative flex flex-col overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)] bg-white shadow-[0_12px_30px_rgba(63,45,88,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.20)] hover:shadow-[0_20px_42px_rgba(63,45,88,0.10)]${
+                            cat.uid === "business-cards" ? " cursor-pointer" : ""
+                          }`}
                         >
+                          {/* V1.1 (2026-05-27) — Card cliquable comme les t-shirts.
+                             Overlay <Link> sur toute la surface pour business-cards
+                             uniquement → mène au configurateur. Les autres familles
+                             gardent le comportement "bouton seul" qui ouvre /contact.
+                             aria-label décrit l'action pour les screen readers. */}
+                          {cat.uid === "business-cards" && (
+                            <Link
+                              href="/impression/cartes-de-visite"
+                              aria-label={`Personnaliser cette carte de visite ${dimLabel}`}
+                              className="absolute inset-0 z-10"
+                            />
+                          )}
+
                           {/* Image en pleine largeur — variante alternée + différenciation famille via PrintImageStage */}
                           <div className="relative aspect-[4/3] overflow-hidden">
                             {variantImage ? (
