@@ -104,10 +104,15 @@ const TOPTEX_IMGS: Record<string, string[]> = {
   kp165:  ["https://cdn.toptex.com/packshots/PS_KP165-B_BLACKWASHED.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDBLUEQUARTZ.png","https://cdn.toptex.com/packshots/PS_KP165_DARKPINKWASHED.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDDUSKYORCHID.png","https://cdn.toptex.com/packshots/PS_KP165_WASHEDIVYGREEN.png"],
   kp185:  ["https://cdn.toptex.com/packshots/PS_KP185_BLACK.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-ORANGE.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-RED.png","https://cdn.toptex.com/packshots/PS_KP185_BLACK-WHITE.png","https://cdn.toptex.com/packshots/PS_KP185_DARKGREY-LIGHTGREY.png"],
   // ── Sacs & tote bags Kimood (packshots par coloris via API) ──────────────
-  // KI0262 — V1 réduit à 3 couleurs (Naturel/Noir/Marine) — Curcuma + MetalGrey
-  // retirés temporairement (option C audit 2026-05-18). Coloris rouge/bleu roi
-  // initialement définis dans colors[] n'avaient pas d'URL CDN correspondante.
-  ki0262: ["https://cdn.toptex.com/packshots/PS_KI0262_NATURAL.png","https://cdn.toptex.com/packshots/PS_KI0262_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0262_NAVYBLUE.png"],
+  // KI0262 — V1.1 (2026-05-27) : réduit à 1 SEULE couleur (Naturel) car le
+  // CDN TopTex sert le MÊME fichier image pour les 3 URLs (NATURAL, BLACK,
+  // NAVYBLUE renvoient toutes 2 746 145 bytes identiques — vérifié via curl).
+  // Avant cette modif, le client sélectionnait "Noir" ou "Marine" mais voyait
+  // toujours le tote naturel beige → expérience trompeuse.
+  // Pour ré-activer Noir et Marine en V1.2 : sourcer des vrais mockups
+  // ailleurs (photos HM Global, Kimood brand center, etc.) puis ajouter les
+  // chemins dans hmMockupImages côté PRODUCT_KI0262.
+  ki0262: ["https://cdn.toptex.com/packshots/PS_KI0262_NATURAL.png"],
   ki0252: ["https://cdn.toptex.com/packshots/PS_KI0252_NATURAL.png","https://cdn.toptex.com/packshots/PS_KI0252_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0252_NAVYBLUE.png","https://cdn.toptex.com/packshots/PS_KI0252_CURCUMA.png","https://cdn.toptex.com/packshots/PS_KI0252_METALGREY.png"],
   ki0275: ["https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-BLACK.png","https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-NAVY.png","https://cdn.toptex.com/packshots/PS_KI0275_NATURAL-RED.png"],
   ki0274: ["https://cdn.toptex.com/packshots/PS_KI0274_BLACK.png","https://cdn.toptex.com/packshots/PS_KI0274_BLACK-SILVER.png","https://cdn.toptex.com/packshots/PS_KI0274_CHERRYRED-GOLD.png","https://cdn.toptex.com/packshots/PS_KI0274_ICEMINT.png","https://cdn.toptex.com/packshots/PS_KI0274_MIDNIGHTBLUE.png"],
@@ -356,6 +361,9 @@ export const PRODUCT_WG004: Product = {
   // Stock agence V1 : DTF uniquement. Les techniques DTFlex / Flex / Broderie
   // sont masquées du sélecteur (prix 0 = non disponible côté UI).
   techniques: ["dtf"],
+  // Stock agence V1+ : 3 placements activés depuis qu'on a sourcé une vraie photo
+  // dos B&C ID.332 (via designpartner.fr, distributeur Falk&Ross). Pre-cropée
+  // localement dans /mockups/falkross-cropped/wg004/noir-back.jpg.
   placements: ["coeur", "dos", "coeur-dos"],
   pricing: {
     // Override inline 24.90 € — ne modifie PAS HOODIE_PRICES.sweat (qui reste
@@ -382,6 +390,13 @@ export const PRODUCT_WG004: Product = {
   supplierName: "falk-ross",
   supplierRef: "WG004",
   toptexRef: "CGWG004",
+  // Image dos pre-cropée localement (source designpartner.fr distributeur B&C).
+  // Active la vue "Dos" du Studio + le placement dos/coeur-dos. Le front est
+  // déjà géré via data/colorPackshots.ts (priorité Printify V1 inactif pour
+  // wg004 → fallback colorPackshots qui pointe sur la version cropée locale).
+  hmMockupImagesBack: {
+    "noir": "/mockups/falkross-cropped/wg004/noir-back.jpg",
+  },
 };
 
 export const PRODUCT_WU620: Product = {
@@ -1503,21 +1518,22 @@ export const PRODUCT_KP185: Product = {
 
 const SAC_PLACEMENT_SURCHARGES = { coeur: 0, dos: 0, "coeur-dos": 0 };
 
-// ─── TopTex KI0262 — Tote Bag Coton Bio (V1 actif, 3 couleurs) ───────────────
+// ─── TopTex KI0262 — Tote Bag Coton Bio (V1.1 actif, 1 couleur) ──────────────
 // Issu de : option B audit `docs/audits/printify-new-categories-2026-05-18.md`
 // suite à l'abandon du ticket P1 bp 731 Westford Mill (sample KO).
 //
-// Activation V1 le 2026-05-18 — option C retenue :
-//   3 couleurs sûres (Naturel/Noir/Marine) avec URLs CDN Toptex validées HTTP 200.
-//   Rouge et Bleu roi retirées temporairement (pas d'URL CDN correspondante).
+// V1.1 (2026-05-27) — Réduction à 1 SEULE couleur (Naturel) :
+//   Le CDN TopTex renvoie le MÊME fichier image (2 746 145 bytes) pour
+//   PS_KI0262_NATURAL.png, PS_KI0262_BLACK.png et PS_KI0262_NAVYBLUE.png.
+//   Conséquence : sélectionner "Noir" ou "Marine" sur la fiche produit
+//   affichait le tote naturel beige → expérience client trompeuse.
+//   Retrait temporaire Noir + Marine jusqu'à ce qu'on source des vrais
+//   visuels (photos HM, brand center Kimood, etc.). À ré-activer en V1.2.
 //
 // Câblage technique :
 //   - supplierName "toptex" + supplierRef "KI0262" (mappé dans supplierMap.ts)
 //   - pricing via SAC_PRICES.toteBio (data/pricing.ts:281)
-//   - images via TOPTEX_IMGS.ki0262 (3 URLs CDN — voir ligne 107)
-//
-// V2 envisageable : étendre à Curcuma/MetalGrey (URLs CDN dispos) ou vérifier
-// disponibilité Rouge/Bleu roi chez TopTex (call API ou consultation TopTex.fr).
+//   - images via TOPTEX_IMGS.ki0262 (1 URL CDN — voir ligne 107)
 export const PRODUCT_KI0262: Product = {
   id: "ki0262",
   slug: "tote-bag-coton-bio-kimood",
@@ -1529,14 +1545,12 @@ export const PRODUCT_KI0262: Product = {
   category: "sacs",
   gender: "unisex",
   tier: "appel",
-  description: "Tote bag en coton biologique certifié GOTS. 3 coloris au choix (Naturel, Noir, Marine). Idéal comme cadeau client, goodies événementiels, sac logo boutique.",
+  description: "Tote bag en coton biologique certifié GOTS, coloris naturel intemporel. Idéal comme cadeau client, goodies événementiels, sac logo boutique.",
   composition: "100% coton biologique",
   weight: "140 g/m²",
   images: PLACEHOLDER_IMAGES("ki0262"),
   colors: [
     { id: "naturel", label: "Naturel", hex: "#E8DCC8", available: true },
-    { id: "noir",    label: "Noir",    hex: "#111111", available: true },
-    { id: "marine",  label: "Marine",  hex: "#1E3A5F", available: true },
   ],
   sizes: [{ label: "One size", available: true }],
   techniques: ["dtf", "dtflex", "flex"],
@@ -1956,13 +1970,20 @@ export const PRODUCT_BELLA_3001: Product = {
     broderie_illimitee: BELLA_3001_BRODERIE_ILLIMITEE_VOLUME,
   },
   // Mockups locaux HM Global — V1 6 coloris validés (alignés sur colors[])
+  //
+  // Fix 2026-05-26 : "rouge" pointait vers /mockups/bella-3001/rouge-front.png
+  // qui est un MAUVAIS fichier (t-shirt court/large type Gildan avec étiquette
+  // blanche, ne ressemble PAS à un Bella+Canvas 3001). Redirigé vers la photo
+  // Printify cropped qui est le vrai Bella+Canvas slim (long sleeves, body
+  // ajusté). Idem pour rouge-back. Les 5 autres coloris (noir, blanc, marine,
+  // heather, true-royal) gardent /mockups/bella-3001/ qui sont corrects.
   hmMockupImages: {
     "noir":             "/mockups/bella-3001/noir-front.png",
     "blanc":            "/mockups/bella-3001/blanc-front.png",
     "marine":           "/mockups/bella-3001/marine-front.png",
     "athletic-heather": "/mockups/bella-3001/athletic-heather-front.png",
     "true-royal":       "/mockups/bella-3001/true-royal-front.png",
-    "rouge":            "/mockups/bella-3001/rouge-front.png",
+    "rouge":            "/mockups/printify-cropped/bella-3001/rouge-front.jpg",
   },
   hmMockupImagesBack: {
     "noir":             "/mockups/bella-3001/noir-back.png",
@@ -1970,7 +1991,7 @@ export const PRODUCT_BELLA_3001: Product = {
     "marine":           "/mockups/bella-3001/marine-back.png",
     "athletic-heather": "/mockups/bella-3001/athletic-heather-back.png",
     "true-royal":       "/mockups/bella-3001/true-royal-back.png",
-    "rouge":            "/mockups/bella-3001/rouge-back.png",
+    "rouge":            "/mockups/printify-cropped/bella-3001/rouge-back.jpg",
   },
   hmMockupGallery: {
     "noir":             ["/mockups/bella-3001/noir-front.png",             "/mockups/bella-3001/noir-back.png",             "/mockups/bella-3001/noir-detail.png"],
@@ -1978,7 +1999,10 @@ export const PRODUCT_BELLA_3001: Product = {
     "marine":           ["/mockups/bella-3001/marine-front.png",           "/mockups/bella-3001/marine-back.png",           "/mockups/bella-3001/marine-detail.png"],
     "athletic-heather": ["/mockups/bella-3001/athletic-heather-front.png", "/mockups/bella-3001/athletic-heather-back.png", "/mockups/bella-3001/athletic-heather-detail.png"],
     "true-royal":       ["/mockups/bella-3001/true-royal-front.png",       "/mockups/bella-3001/true-royal-back.png",       "/mockups/bella-3001/true-royal-detail.png"],
-    "rouge":            ["/mockups/bella-3001/rouge-front.png",            "/mockups/bella-3001/rouge-back.png",            "/mockups/bella-3001/rouge-detail.png"],
+    // Pareil pour la gallery : fichiers cassés remplacés par les bons. Pas de
+    // "rouge-detail.jpg" dans printify-cropped → on omet ce 3ᵉ slot (la gallery
+    // gère gracieusement les arrays courts).
+    "rouge":            ["/mockups/printify-cropped/bella-3001/rouge-front.jpg", "/mockups/printify-cropped/bella-3001/rouge-back.jpg"],
   },
 };
 
