@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { Upload, Check, AlertCircle, ShoppingCart, Loader2, ChevronRight, Info } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import BusinessCardVisualizer from "@/components/print/BusinessCardVisualizer";
+import PrintMockupViewer from "@/components/print/PrintMockupViewer";
 import {
   BUSINESS_CARD_OPTIONS,
   BUSINESS_CARD_PRODUCT,
@@ -518,6 +519,30 @@ export default function BusinessCardConfigurator() {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* ── Aperçu en situation (V1.1 — moteur preview mockup) ────────
+                 Mockup réaliste (pile de cartes sur table, perspective, ombre)
+                 avec OVERLAY du design client live. Le client voit son visuel
+                 sur le papier 350g comme s'il avait reçu son colis. Switch
+                 entre 3 scènes différentes pour montrer plusieurs angles.
+                 Complète le BusinessCardVisualizer flat ci-dessous qui sert
+                 lui à vérifier la zone de sécurité technique. */}
+              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                    Aperçu en situation
+                  </p>
+                  <span className="text-[10px] text-[var(--hm-text-muted)]">
+                    Cliquez les miniatures pour changer d&apos;angle
+                  </span>
+                </div>
+                <PrintMockupViewer
+                  family="business-cards"
+                  frontDesignUrl={frontFile?.url ?? null}
+                  backDesignUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
+                  alt="Aperçu carte de visite en situation"
+                />
               </div>
 
               <div className="flex justify-center rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-8">

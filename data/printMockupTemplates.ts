@@ -87,6 +87,11 @@ export const PRINT_MOCKUP_TEMPLATES: PrintMockupTemplate[] = [
   // ─── BUSINESS CARDS ────────────────────────────────────────────────────────
   // 3 scènes différentes (stack vertical / piles éparses / cards face) →
   // évite la répétition visuelle dans la grille catalogue
+  // ─── Cartes de visite ───────────────────────────────────────────────────────
+  // V1.1 (2026-05-27) : printArea affinées par mesure visuelle des WebP
+  // (1200×900 chacun). Les coords visent la CARTE DU DESSUS de la pile —
+  // celle qui montrera le design overlay du client (les cartes derrière
+  // restent en flou du mockup d'origine).
   {
     id: "business-card-stack-01",
     family: "business-cards",
@@ -96,7 +101,9 @@ export const PRINT_MOCKUP_TEMPLATES: PrintMockupTemplate[] = [
     sceneImage: "/mockups/print/business-card/business-card-stack-01.webp",
     supportedFormats: ["85×55 mm standard", "85×55 mm coins ronds", "90×50 mm"],
     recommendedUse: "Catalogue principal — pile de cartes en perspective",
-    printArea: { x: 320, y: 280, width: 560, height: 340, rotate: -2 },
+    // Carte du dessus (rose "Pastel") sur fond rose-bleu : pile en
+    // perspective inclinée, rotation visible. Mesuré visuellement.
+    printArea: { x: 340, y: 240, width: 540, height: 360, rotate: -8 },
   },
   {
     id: "business-card-stack-02",
@@ -107,7 +114,9 @@ export const PRINT_MOCKUP_TEMPLATES: PrintMockupTemplate[] = [
     sceneImage: "/mockups/print/business-card/business-card-stack-02.webp",
     supportedFormats: ["85×55 mm standard", "Carrée 70×70 mm"],
     recommendedUse: "Variante grille — cartes face visible",
-    printArea: { x: 280, y: 260, width: 600, height: 360 },
+    // Top-down view : carte du dessus quasi horizontale, peu de rotation.
+    // Couvre la totalité de la carte rose visible au centre.
+    printArea: { x: 200, y: 250, width: 700, height: 380, rotate: -2 },
   },
   {
     id: "business-card-stack-03",
@@ -118,7 +127,8 @@ export const PRINT_MOCKUP_TEMPLATES: PrintMockupTemplate[] = [
     sceneImage: "/mockups/print/business-card/business-card-stack-03.webp",
     supportedFormats: ["85×55 mm", "Slim 85×40 mm"],
     recommendedUse: "Variante grille — composition recto/verso",
-    printArea: { x: 300, y: 280, width: 580, height: 340 },
+    // Pile sur coin de table bleu, carte du dessus inclinée plus fortement.
+    printArea: { x: 240, y: 80, width: 620, height: 380, rotate: -6 },
   },
 
   // ─── FLYERS ────────────────────────────────────────────────────────────────

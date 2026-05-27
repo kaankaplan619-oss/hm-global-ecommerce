@@ -20,7 +20,10 @@ export type PrintFinish       = "mat" | "brillant" | "premium";
 export type PrintFaces        = "recto" | "recto-verso";
 export type PrintOrientation  = "landscape" | "portrait";
 export type PrintCorners      = "standard" | "rounded";
-export type BusinessCardQty   = 100 | 250 | 500 | 1000;
+// V1.1 (2026-05-27) : retrait 100 ex. (pas assez de marge sur petits volumes),
+// ajout 2500 ex. (volume B2B utile pour les opés commerciales / agences /
+// salons). 4 paliers cohérents avec les standards Pixartprinting / Print&Stat.
+export type BusinessCardQty   = 250 | 500 | 1000 | 2500;
 
 export interface PrintProductConfig {
   id:          string;
@@ -34,24 +37,36 @@ export interface PrintProductConfig {
 // ─── Tarifs cartes de visite — prix du LOT TTC ───────────────────────────────
 // TVA 20 % incluse. Frais d'expédition confirmés au devis selon adresse.
 
+// V1.1 (2026-05-27) — matrice tarifaire HM Global cartes de visite TTC.
+// Dégressivité calée sur le marché B2B (Pixartprinting / Print&Stat / Vistaprint
+// haute volumétrie) avec marge HM Global maintenue à chaque palier :
+//   - Mat 250 → 1000 : -34% prix/unité (palier classique)
+//   - 1000 → 2500   : -25% prix/unité (volume agence)
+//   - Premium reste premium-only (350g→400g satiné velours, marge plus haute)
+//
+// Côté production V1, ces prix sont en mode "devis HM Global" (production
+// après validation BAT manuel). En V2 quand Gelato API sera branché sur le
+// checkout direct, le coût Gelato fournira un plancher → si Gelato < HM Global
+// prix manuel, on garde HM Global (marge supérieure). Sinon on bascule sur
+// Gelato pour rester compétitif.
 const BASE_LOT_PRICES: Record<PrintFinish, Record<BusinessCardQty, number>> = {
   mat: {
-    100:   24.90,
-    250:   34.90,
-    500:   52.90,
-    1000:  79.90,
+    250:   34.90,   //  0.140 €/u
+    500:   52.90,   //  0.106 €/u (-24%)
+    1000:  79.90,   //  0.080 €/u (-25%)
+    2500: 159.90,   //  0.064 €/u (-20%) — palier B2B volume
   },
   brillant: {
-    100:   27.90,
     250:   39.90,
     500:   58.90,
     1000:  89.90,
+    2500: 179.90,
   },
   premium: {
-    100:   34.90,
     250:   49.90,
     500:   69.90,
     1000: 109.90,
+    2500: 219.90,
   },
 };
 
@@ -112,10 +127,10 @@ export const BUSINESS_CARD_OPTIONS = {
     { value: "rounded"  as PrintCorners, label: "Coins arrondis", surcharge: 5 },
   ],
   quantities: [
-    { value: 100  as BusinessCardQty, label: "100 ex." },
     { value: 250  as BusinessCardQty, label: "250 ex." },
     { value: 500  as BusinessCardQty, label: "500 ex." },
     { value: 1000 as BusinessCardQty, label: "1 000 ex." },
+    { value: 2500 as BusinessCardQty, label: "2 500 ex.", badge: "Volume B2B" },
   ],
 } as const;
 

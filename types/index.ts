@@ -212,7 +212,7 @@ export interface PrintConfig {
   finish:           "mat" | "brillant" | "premium";
   corners:          "standard" | "rounded";
   /** Nombre d'exemplaires imprimés — ex : 250. Ne pas multiplier par lotPriceTTC. */
-  quantity:         100 | 250 | 500 | 1000;
+  quantity:         250 | 500 | 1000 | 2500;
   /** Prix du lot TTC — total de la commande pour ce lot. */
   lotPriceTTC:      number;
   /** URL Supabase Storage du fichier recto (PDF ou PNG haute résolution). */
