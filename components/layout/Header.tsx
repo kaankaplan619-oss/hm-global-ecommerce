@@ -12,9 +12,18 @@ const NAV_ITEMS = [
   {
     label: "Catalogue",
     href: "/catalogue",
+    // V1.1 (2026-05-27) — Menu étendu aux 7 catégories actives du site
+    // (vs 2 auparavant : T-shirts + Hoodies seulement). Chaque entrée mène
+    // à /catalogue/{category} qui est une route dynamique déjà fonctionnelle
+    // (vérifié HTTP 200 sur toutes). Ordre : du plus vendu au plus niche.
     children: [
-      { label: "T-shirts", href: "/catalogue/tshirts" },
-      { label: "Hoodies & Sweats", href: "/catalogue/hoodies" },
+      { label: "T-shirts",            href: "/catalogue/tshirts" },
+      { label: "Hoodies & Sweats",    href: "/catalogue/hoodies" },
+      { label: "Polos",               href: "/catalogue/polos" },
+      { label: "Sacs & Tote bags",    href: "/catalogue/sacs" },
+      { label: "Goodies & Mugs",      href: "/catalogue/goodies" },
+      { label: "Casquettes",          href: "/catalogue/casquettes" },
+      { label: "Vêtements enfants",   href: "/catalogue/enfants" },
       { label: "Voir tout le catalogue →", href: "/catalogue" },
     ],
   },
