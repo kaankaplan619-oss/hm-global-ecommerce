@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, FileText, Image as ImageIcon, CreditCard, Frame, BookOpen, Palette, ShieldCheck, Brush, Package, MapPin } from "lucide-react";
 import { getGelatoProducts, isGelatoConfigured } from "@/lib/gelato";
 import PrintImageStage, { type PrintFamily } from "@/components/print/PrintImageStage";
+import PrintCardThumbnail, { type PrintThumbnailFamily } from "@/components/print/PrintCardThumbnail";
 import { getMockupsByFamily, resolveMockupFamily } from "@/data/printMockupTemplates";
 
 export const metadata: Metadata = {
@@ -348,25 +349,18 @@ export default async function ImpressionPage() {
                             />
                           )}
 
-                          {/* Image en pleine largeur — variante alternée + différenciation famille via PrintImageStage */}
+                          {/* V1.2 (2026-05-27) — Vignette CSS pur (PrintCardThumbnail)
+                             à la place du mockup Mockups Design "Pastel" qui
+                             était visible sur la grille catalogue. Look B2B
+                             premium, pas de "Free mockup" / "mockups-design.com"
+                             visible. Les fiches produit individuelles gardent
+                             les vrais mockups Mockups Design pour le moteur
+                             preview overlay (cf BusinessCardConfigurator). */}
                           <div className="relative aspect-[4/3] overflow-hidden">
-                            {variantImage ? (
-                              <PrintImageStage
-                                src={variantImage}
-                                alt={`${cat.label} ${dimLabel}`}
-                                family={fallback?.family ?? "cards"}
-                                variant="catalog"
-                                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 95vw"
-                              />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center"
-                                   style={{ background: "linear-gradient(180deg,#f7f6f4 0%,#ebe9e5 100%)" }}>
-                                <div className={`relative ${isLandscape ? "h-14 w-20" : "h-20 w-14"} rounded-[3px] bg-white shadow-[0_8px_18px_rgba(0,0,0,0.15)] ring-1 ring-black/5`}>
-                                  <span className="absolute left-2 right-4 top-2 block h-1 rounded-full bg-[var(--hm-primary)]/35" />
-                                  <span className="absolute left-2 right-6 top-4 block h-0.5 rounded-full bg-[var(--hm-text-soft)]/30" />
-                                </div>
-                              </div>
-                            )}
+                            <PrintCardThumbnail
+                              family={(cat.uid as PrintThumbnailFamily)}
+                              formatLabel={dimLabel || undefined}
+                            />
                           </div>
 
                           <div className="flex flex-1 flex-col p-5">
@@ -423,15 +417,14 @@ export default async function ImpressionPage() {
                 ) : fallback ? (
                   /* ── Fallback statique — card visuelle dominante 60% / specs 40% ── */
                   <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
-                    {/* Carte principale avec image grande — PrintImageStage */}
+                    {/* Carte principale — vignette CSS pur (cf PrintCardThumbnail).
+                       V1.2 (2026-05-27) : remplace PrintImageStage qui chargeait
+                       les mockups Mockups Design avec design démo "Pastel" visible. */}
                     <article className="group flex flex-col overflow-hidden rounded-[1.8rem] border border-[var(--hm-line)] bg-white shadow-[0_14px_32px_rgba(63,45,88,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.22)] hover:shadow-[0_22px_50px_rgba(63,45,88,0.10)]">
                       <div className="relative aspect-[16/10] overflow-hidden">
-                        <PrintImageStage
-                          src={fallback.image}
-                          alt={cat.label}
-                          family={fallback.family}
-                          variant="catalog"
-                          sizes="(min-width: 1024px) 55vw, 95vw"
+                        <PrintCardThumbnail
+                          family={(cat.uid as PrintThumbnailFamily)}
+                          formatLabel={fallback.formats[0]}
                         />
                       </div>
                       <div className="flex flex-1 flex-col gap-3 p-6">

@@ -34,22 +34,32 @@ const ALLOWED_TYPES  = ["application/pdf", "image/png", "image/jpeg", "image/jpg
 
 export async function POST(req: NextRequest) {
   try {
-    // ── Auth — l'upload print nécessite d'être connecté ────────────────────
+    // V1.2 (2026-05-27) — Upload invité autorisé. Auth est désormais optionnel :
+    //   - User connecté → path "customers/{userId}/..." (continuité historique)
+    //   - User invité   → path "guests/{sessionId}/..." (la session vient du
+    //                     navigateur via FormData, voir BusinessCardConfigurator)
+    // L'utilisateur peut configurer + uploader son fichier sans inscription
+    // préalable. Au moment du checkout Stripe, l'auth devient obligatoire et
+    // les fichiers "guests/{sessionId}" peuvent être réassociés au compte
+    // créé par migration côté webhook (V1.3 — pas dans ce périmètre).
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Vous devez être connecté pour uploader un fichier." },
-        { status: 401 }
-      );
-    }
 
     // ── Parse FormData ──────────────────────────────────────────────────────
     const formData = await req.formData();
     const file        = formData.get("file")        as File | null;
     const face        = formData.get("face")        as string | null;
     const productType = formData.get("productType") as string | null;
+    const sessionId   = formData.get("sessionId")   as string | null;
+
+    // Garde-fou : si pas connecté et pas de sessionId, on refuse pour éviter
+    // les uploads anonymes sans aucune traçabilité (orphelins dans le bucket).
+    if (!user && !sessionId) {
+      return NextResponse.json(
+        { error: "sessionId requis pour les uploads invités." },
+        { status: 400 }
+      );
+    }
 
     if (!file || !face || !productType) {
       return NextResponse.json(
@@ -89,11 +99,19 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Construction du chemin de stockage ─────────────────────────────────
-    // Format : print-files/{userId}/{timestamp}-{face}-{nom}.ext
+    // V1.2 (2026-05-27) — Path différencié selon auth :
+    //   User connecté → "customers/{userId}/{timestamp}-{face}-{nom}.ext"
+    //   User invité   → "guests/{sessionId}/{timestamp}-{face}-{nom}.ext"
+    // Permet de retrouver les fichiers d'un visiteur à la création de compte
+    // post-checkout (script de migration guests → customers en V1.3).
     const ext       = file.name.split(".").pop() ?? "pdf";
     const safeName  = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").substring(0, 80);
     const timestamp = Date.now();
-    const path      = `${user.id}/${timestamp}-${face}-${safeName}`;
+    const ownerPrefix = user
+      ? `customers/${user.id}`
+      : `guests/${sessionId}`;
+    const path      = `${ownerPrefix}/${timestamp}-${face}-${safeName}`;
+    void ext; // (extension utilisée dans safeName, conservée pour évolutions futures)
 
     // ── Upload vers Supabase Storage ───────────────────────────────────────
     const bytes  = await file.arrayBuffer();

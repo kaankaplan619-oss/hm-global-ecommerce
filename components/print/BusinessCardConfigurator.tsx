@@ -98,10 +98,26 @@ export default function BusinessCardConfigurator() {
     setUploadError(null);
 
     try {
+      // V1.2 (2026-05-27) — Récupère le session ID navigateur stable, utilisé
+      // comme fallback path si l'utilisateur n'est pas connecté (upload invité).
+      // Permet au client de configurer + uploader son fichier sans inscription
+      // préalable (comme sur Pixartprinting / Vistaprint). La connexion sera
+      // demandée à l'étape paiement Stripe.
+      let sessionId = "ssr";
+      if (typeof window !== "undefined") {
+        sessionId = sessionStorage.getItem("hm_session_id")
+          ?? (() => {
+            const id = crypto.randomUUID();
+            sessionStorage.setItem("hm_session_id", id);
+            return id;
+          })();
+      }
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("face", face);
       formData.append("productType", "business_card");
+      formData.append("sessionId", sessionId);
 
       const res = await fetch("/api/orders/upload-print-file", {
         method: "POST",
