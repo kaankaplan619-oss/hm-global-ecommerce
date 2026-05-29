@@ -71,6 +71,12 @@ export default function BusinessCardConfigurator() {
   const [corners,     setCorners]     = useState<PrintCorners>("standard");
   const [quantity,    setQuantity]    = useState<BusinessCardQty>(250);
 
+  // V1.2 (2026-05-27) — Toggle pour basculer entre l'aperçu technique
+  // (BusinessCardVisualizer flat avec safe zones) et l'aperçu en situation
+  // (1 scène mockup réaliste avec overlay carte blanche pour masquer le
+  // démo Pastel). Par défaut : aperçu technique (style Pixartprinting B2B).
+  const [showInSituation, setShowInSituation] = useState(false);
+
   // ── Fichiers uploadés ──────────────────────────────────────────────────────
   const [frontFile,   setFrontFile]   = useState<UploadedFile | null>(null);
   const [backFile,    setBackFile]    = useState<UploadedFile | null>(null);
@@ -537,39 +543,68 @@ export default function BusinessCardConfigurator() {
                 </div>
               </div>
 
-              {/* ── Aperçu en situation (V1.1 — moteur preview mockup) ────────
-                 Mockup réaliste (pile de cartes sur table, perspective, ombre)
-                 avec OVERLAY du design client live. Le client voit son visuel
-                 sur le papier 350g comme s'il avait reçu son colis. Switch
-                 entre 3 scènes différentes pour montrer plusieurs angles.
-                 Complète le BusinessCardVisualizer flat ci-dessous qui sert
-                 lui à vérifier la zone de sécurité technique. */}
-              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                    Aperçu en situation
-                  </p>
-                  <span className="text-[10px] text-[var(--hm-text-muted)]">
-                    Cliquez les miniatures pour changer d&apos;angle
-                  </span>
+              {/* V1.2 (2026-05-27) — Refonte step 3 style Pixartprinting :
+                 BLOC PRINCIPAL = BusinessCardVisualizer flat avec safe zones,
+                 fond perdu, zone de sécurité — c'est ce qui sert au client à
+                 valider techniquement son BAT (focus produit pur).
+                 BLOC SECONDAIRE (optionnel via toggle) = 1 scène lifestyle
+                 réaliste avec overlay carte blanche pour masquer le démo
+                 "Pastel" du mockup Mockups Design. Sert juste à rassurer
+                 visuellement, n'apparaît pas par défaut. */}
+
+              {/* BLOC PRINCIPAL — Aperçu technique BAT */}
+              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                      Aperçu BAT — Vérification technique
+                    </p>
+                    <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">
+                      Zone verte = sécurité (texte/logo). Zone rouge = fond perdu (couper).
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowInSituation((v) => !v)}
+                    className="rounded-xl border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+                  >
+                    {showInSituation ? "Vue technique" : "Voir en situation"}
+                  </button>
                 </div>
-                <PrintMockupViewer
-                  family="business-cards"
-                  frontDesignUrl={frontFile?.url ?? null}
-                  backDesignUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
-                  alt="Aperçu carte de visite en situation"
-                />
+                <div className="flex justify-center bg-[var(--hm-surface)] rounded-xl p-6">
+                  <BusinessCardVisualizer
+                    orientation={orientation}
+                    frontFileUrl={frontFile?.url ?? null}
+                    backFileUrl={backFile?.url ?? null}
+                    showToggle={faces === "recto-verso"}
+                    displayWidth={340}
+                  />
+                </div>
               </div>
 
-              <div className="flex justify-center rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-8">
-                <BusinessCardVisualizer
-                  orientation={orientation}
-                  frontFileUrl={frontFile?.url ?? null}
-                  backFileUrl={backFile?.url ?? null}
-                  showToggle={faces === "recto-verso"}
-                  displayWidth={300}
-                />
-              </div>
+              {/* BLOC SECONDAIRE — Aperçu en situation (optionnel via toggle).
+                 Affiche 1 scène mockup (pile sur table) avec OVERLAY CARTE
+                 BLANCHE pour masquer le Pastel. Le design client se plaque
+                 par-dessus la carte blanche → aucun design tiers visible. */}
+              {showInSituation && (
+                <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                      Aperçu en situation
+                    </p>
+                    <span className="text-[10px] text-[var(--hm-text-muted)]">
+                      Cliquez les miniatures pour changer d&apos;angle
+                    </span>
+                  </div>
+                  <PrintMockupViewer
+                    family="business-cards"
+                    frontDesignUrl={frontFile?.url ?? null}
+                    backDesignUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
+                    whiteCardOverlay
+                    alt="Aperçu carte de visite en situation"
+                  />
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <button

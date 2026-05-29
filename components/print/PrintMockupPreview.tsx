@@ -53,6 +53,12 @@ export interface PrintMockupPreviewProps {
   /** URL du design client uploadé (PNG/JPG/preview PDF). Si null, l'overlay
    *  n'est pas rendu et le mockup brut s'affiche tel quel. */
   clientDesignUrl?: string | null;
+  /** V1.2 (2026-05-27) — Si true, plaque un RECTANGLE BLANC sur la printArea
+   *  AVANT le design client. Sert à masquer le démo "Pastel" du mockup
+   *  Mockups Design quand le design client ne remplit pas tout le cadre
+   *  (logo centré avec marges, PDF transparent…). Recommandé en mode B2B
+   *  Pixartprinting pour ne jamais laisser apparaître de design tiers. */
+  whiteCardOverlay?: boolean;
   /** Texte alt pour l'image scène (accessibilité). */
   alt: string;
   /** Classe Tailwind additionnelle pour le wrapper. */
@@ -65,6 +71,7 @@ export default function PrintMockupPreview({
   sceneHeight,
   printArea,
   clientDesignUrl,
+  whiteCardOverlay = false,
   alt,
   className = "",
 }: PrintMockupPreviewProps) {
@@ -90,6 +97,28 @@ export default function PrintMockupPreview({
         loading="lazy"
         decoding="async"
       />
+
+      {/* V1.2 (2026-05-27) — Couche 1.5 : carte blanche pleine sur la printArea.
+         Activée quand whiteCardOverlay=true. Sert à MASQUER COMPLÈTEMENT le
+         design de démo "Pastel" du mockup Mockups Design avant que le design
+         client soit overlayé. Garantit qu'aucune marque tierce ne reste
+         visible, même si le design client a des marges blanches/transparentes.
+         Placé EN DESSOUS du design client mais AU-DESSUS de la scène mockup. */}
+      {whiteCardOverlay && (
+        <div
+          className="absolute bg-white"
+          style={{
+            left:            `${leftPct}%`,
+            top:             `${topPct}%`,
+            width:           `${widthPct}%`,
+            height:          `${heightPct}%`,
+            transform:       `rotate(${rotate}deg)`,
+            transformOrigin: "center center",
+            boxShadow:       "0 2px 8px rgba(0,0,0,0.08)",
+          }}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Couche 2 — design client overlay (visible UNIQUEMENT si uploadé).
          Masque le design de démo "Pastel" du mockup d'origine. Position

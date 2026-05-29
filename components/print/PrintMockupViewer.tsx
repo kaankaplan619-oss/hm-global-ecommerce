@@ -54,6 +54,9 @@ export interface PrintMockupViewerProps {
   /** URL Supabase Storage du design verso. Null si le client n'a pas uploadé
    *  de verso, OU si la famille n'a pas de verso (canvas, sticker, mug…). */
   backDesignUrl?: string | null;
+  /** V1.2 — Si true, plaque une carte blanche sur la printArea avant le
+   *  design client (masque le démo "Pastel" du mockup Mockups Design). */
+  whiteCardOverlay?: boolean;
   /** Texte alt de base pour les images scène. */
   alt?: string;
 }
@@ -62,6 +65,7 @@ export default function PrintMockupViewer({
   family,
   frontDesignUrl,
   backDesignUrl,
+  whiteCardOverlay = false,
   alt = "Aperçu mockup",
 }: PrintMockupViewerProps) {
   const scenes: PrintMockupTemplate[] = useMemo(
@@ -96,6 +100,7 @@ export default function PrintMockupViewer({
         sceneHeight={dims.height}
         printArea={activeScene.printArea}
         clientDesignUrl={overlayUrl}
+        whiteCardOverlay={whiteCardOverlay}
         alt={`${alt} — ${activeScene.recommendedUse}`}
       />
 
