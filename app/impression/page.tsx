@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, FileText, Image as ImageIcon, CreditCard, Frame, BookOpen, Palette, ShieldCheck, Brush, Package, MapPin } from "lucide-react";
 import { getGelatoProducts, isGelatoConfigured } from "@/lib/gelato";
-import PrintImageStage, { type PrintFamily } from "@/components/print/PrintImageStage";
-import PrintCardThumbnail, { type PrintThumbnailFamily } from "@/components/print/PrintCardThumbnail";
-import { getMockupsByFamily, resolveMockupFamily } from "@/data/printMockupTemplates";
+import { type PrintFamily } from "@/components/print/PrintImageStage";
 
 export const metadata: Metadata = {
   title: "Impression — Cartes de visite, Flyers, Affiches",
@@ -136,25 +134,41 @@ const STATIC_FALLBACK: Record<string, {
 //
 // La rotation `index % length` du helper getPrintProductVisual garantit
 // qu'aucune image adjacente ne se répète dans la grille.
-const IMAGE_VARIANTS_BY_CATEGORY: Record<string, string[]> = (() => {
-  const map: Record<string, string[]> = {};
-  for (const uid of ["business-cards", "flyer", "poster", "canvas", "cards"] as const) {
-    const family = resolveMockupFamily(uid);
-    if (!family) continue;
-    const list = getMockupsByFamily(family).map((m) => m.sceneImage);
-    // Pour "cards" (cartes & invitations), V1 utilise les mockups brochure trifold
-    // car aucun mockup carte/invitation A6 dédié n'est encore dans le catalogue
-    // (TODO V1.1 : sourcer un mockup invitation pliée ou carrée A6). En attendant,
-    // on ajoute une variante business-card face pour aérer la grille catalogue
-    // — une carte d'invitation et une carte de visite ont une présentation
-    // visuelle suffisamment proche pour éviter la répétition stricte.
-    if (uid === "cards") {
-      list.push("/mockups/print/business-card/business-card-stack-02.webp");
-    }
-    map[uid] = list;
-  }
-  return map;
-})();
+// Vignettes "studio maison" par famille (rendu 100% HM via SVG→WebP, cf
+// _gen-showcases.js + _gen-print-showcases.js — designs fictifs élégants,
+// aucun watermark / "Pastel" / marque tierce). Servies en object-cover 4:3
+// sur la grille catalogue → look agence premium, un coup d'œil = un support.
+const FAMILY_SHOWCASES: Record<string, string[]> = {
+  "business-cards": [
+    "/mockups/print/business-card/showcase-01.webp",
+    "/mockups/print/business-card/showcase-02.webp",
+    "/mockups/print/business-card/showcase-03.webp",
+  ],
+  flyer: [
+    "/mockups/print/flyer/showcase-01.webp",
+    "/mockups/print/flyer/showcase-02.webp",
+    "/mockups/print/flyer/showcase-03.webp",
+  ],
+  poster: [
+    "/mockups/print/poster/showcase-01.webp",
+    "/mockups/print/poster/showcase-02.webp",
+    "/mockups/print/poster/showcase-03.webp",
+  ],
+  canvas: [
+    "/mockups/print/canvas/showcase-01.webp",
+    "/mockups/print/canvas/showcase-02.webp",
+    "/mockups/print/canvas/showcase-03.webp",
+  ],
+  cards: [
+    "/mockups/print/cards/showcase-01.webp",
+    "/mockups/print/cards/showcase-02.webp",
+    "/mockups/print/cards/showcase-03.webp",
+  ],
+};
+
+// On sert exclusivement les vignettes studio maison (les anciens mockups
+// Mockups Design portaient le watermark "mockups-design.com" + démo "Pastel").
+const IMAGE_VARIANTS_BY_CATEGORY: Record<string, string[]> = FAMILY_SHOWCASES;
 
 /**
  * getPrintProductVisual — Sélectionne le visuel d'une card produit print.
@@ -356,10 +370,16 @@ export default async function ImpressionPage() {
                              visible. Les fiches produit individuelles gardent
                              les vrais mockups Mockups Design pour le moteur
                              preview overlay (cf BusinessCardConfigurator). */}
-                          <div className="relative aspect-[4/3] overflow-hidden">
-                            <PrintCardThumbnail
-                              family={(cat.uid as PrintThumbnailFamily)}
-                              formatLabel={dimLabel || undefined}
+                          {/* Vignette studio maison (cf FAMILY_SHOWCASES) —
+                             rendu 100% HM, object-cover 4:3 sans recadrage. */}
+                          <div className="relative aspect-[4/3] overflow-hidden bg-[var(--hm-surface)]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={variantImage}
+                              alt={`${cat.label} ${dimLabel || ""} — aperçu HM Global`}
+                              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                              loading="lazy"
+                              decoding="async"
                             />
                           </div>
 
@@ -421,10 +441,14 @@ export default async function ImpressionPage() {
                        V1.2 (2026-05-27) : remplace PrintImageStage qui chargeait
                        les mockups Mockups Design avec design démo "Pastel" visible. */}
                     <article className="group flex flex-col overflow-hidden rounded-[1.8rem] border border-[var(--hm-line)] bg-white shadow-[0_14px_32px_rgba(63,45,88,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.22)] hover:shadow-[0_22px_50px_rgba(63,45,88,0.10)]">
-                      <div className="relative aspect-[16/10] overflow-hidden">
-                        <PrintCardThumbnail
-                          family={(cat.uid as PrintThumbnailFamily)}
-                          formatLabel={fallback.formats[0]}
+                      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--hm-surface)]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={(FAMILY_SHOWCASES[cat.uid] ?? [fallback.image])[0]}
+                          alt={`${cat.label} — aperçu HM Global`}
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                          loading="lazy"
+                          decoding="async"
                         />
                       </div>
                       <div className="flex flex-1 flex-col gap-3 p-6">
