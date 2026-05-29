@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Clock3, MapPin, Phone, Mail } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, MapPin, Phone, Mail, GraduationCap, Globe2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "À propos",
@@ -110,6 +110,52 @@ export default function AboutPage() {
               <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--hm-text-soft)] font-semibold mb-1">Email</p>
               <p className="text-sm text-[var(--hm-text)]">contact@hmga.fr</p>
             </div>
+          </div>
+        </section>
+
+        <section className="mb-14 grid lg:grid-cols-[0.95fr_1.05fr] gap-8 items-stretch">
+          <div className="rounded-3xl border border-[var(--hm-line)] bg-[var(--hm-accent-soft-rose)] p-8 flex flex-col">
+            <span className="w-10 h-10 rounded-full bg-white text-[var(--hm-rose)] flex items-center justify-center mb-4">
+              <GraduationCap size={20} />
+            </span>
+            <h2 className="text-2xl font-semibold text-[var(--hm-text)] mb-4">
+              Une agence engagée, ancrée et ouverte
+            </h2>
+            <p className="text-sm text-[var(--hm-text-soft)] leading-7 mb-6">
+              HM Global ne se limite pas à la production. Nous croyons à la transmission du
+              métier et à l&apos;ouverture : dans le cadre d&apos;échanges Erasmus, nous avons
+              accueilli <strong className="text-[var(--hm-text)]">410 élèves venus de
+              Turquie</strong> dans notre atelier. Une entreprise locale peut aussi
+              s&apos;inscrire dans une dynamique européenne.
+            </p>
+            <Link
+              href="/engagements"
+              className="btn-outline self-start gap-2 mt-auto"
+            >
+              Découvrir nos engagements
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="rounded-3xl border border-[var(--hm-line)] bg-white shadow-[0_18px_48px_rgba(63,45,88,0.06)] p-8 flex flex-col">
+            <span className="w-10 h-10 rounded-full bg-[var(--hm-accent-soft-blue)] text-[var(--hm-rose)] flex items-center justify-center mb-4">
+              <Globe2 size={20} />
+            </span>
+            <h2 className="text-2xl font-semibold text-[var(--hm-text)] mb-4">
+              Nos réalisations parlent pour nous
+            </h2>
+            <p className="text-sm text-[var(--hm-text-soft)] leading-7 mb-6">
+              Du textile personnalisé à la signalétique, en passant par l&apos;habillage de
+              véhicule et la communication visuelle : découvrez des projets concrets produits
+              dans notre atelier pour des entreprises, associations et collectivités.
+            </p>
+            <Link
+              href="/realisations"
+              className="btn-outline self-start gap-2 mt-auto"
+            >
+              Voir les réalisations
+              <ArrowRight size={16} />
+            </Link>
           </div>
         </section>
 

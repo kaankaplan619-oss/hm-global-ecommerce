@@ -49,6 +49,7 @@ const NAV_EXPERTISES = [
 
 const NAV_AGENCE = [
   { label: "À propos",      href: "/a-propos" },
+  { label: "Nos engagements", href: "/engagements" },
   { label: "Réalisations",  href: "/realisations" },
   { label: "Contact",       href: "/contact" },
 ];
