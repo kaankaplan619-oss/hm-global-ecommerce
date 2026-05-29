@@ -332,7 +332,6 @@ export default async function ImpressionPage() {
                       const dimLabel    = getDimensionLabel(product.dimensions ?? []);
                       const paperLabel  = getPaperLabel(product.productUid);
                       const finishLabel = getFinishLabel(product.productUid);
-                      const isLandscape = product.productUid.includes("_hor");
                       // Anti-répétition visuelle : deux cards voisines d'une même
                       // section catégorie ne partagent jamais la même image quand
                       // une alternative existe dans IMAGE_VARIANTS_BY_CATEGORY.
@@ -342,26 +341,28 @@ export default async function ImpressionPage() {
                         cat.uid,
                         fallback?.image ?? "",
                       );
+                      // CTA unifié "Personnaliser maintenant" : cartes de visite
+                      // → configurateur live ; autres familles → devis pré-rempli
+                      // (configurateurs flyers/affiches/toiles à venir en V1.2).
+                      const personalizeHref =
+                        cat.uid === "business-cards"
+                          ? "/impression/cartes-de-visite"
+                          : `/contact?sujet=impression&produit=${encodeURIComponent(product.productUid)}&format=${encodeURIComponent(dimLabel)}`;
 
                       return (
                         <article
                           key={product.id}
-                          className={`group relative flex flex-col overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)] bg-white shadow-[0_12px_30px_rgba(63,45,88,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.20)] hover:shadow-[0_20px_42px_rgba(63,45,88,0.10)]${
-                            cat.uid === "business-cards" ? " cursor-pointer" : ""
-                          }`}
+                          className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)] bg-white shadow-[0_12px_30px_rgba(63,45,88,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(177,63,116,0.20)] hover:shadow-[0_20px_42px_rgba(63,45,88,0.10)]"
                         >
-                          {/* V1.1 (2026-05-27) — Card cliquable comme les t-shirts.
-                             Overlay <Link> sur toute la surface pour business-cards
-                             uniquement → mène au configurateur. Les autres familles
-                             gardent le comportement "bouton seul" qui ouvre /contact.
+                          {/* V1.2 (2026-05-29) — Carte entièrement cliquable pour
+                             TOUTES les familles (overlay <Link> z-10). Cartes de
+                             visite → configurateur ; autres → devis pré-rempli.
                              aria-label décrit l'action pour les screen readers. */}
-                          {cat.uid === "business-cards" && (
-                            <Link
-                              href="/impression/cartes-de-visite"
-                              aria-label={`Personnaliser cette carte de visite ${dimLabel}`}
-                              className="absolute inset-0 z-10"
-                            />
-                          )}
+                          <Link
+                            href={personalizeHref}
+                            aria-label={`Personnaliser ${cat.label} ${dimLabel}`}
+                            className="absolute inset-0 z-10"
+                          />
 
                           {/* V1.2 (2026-05-27) — Vignette CSS pur (PrintCardThumbnail)
                              à la place du mockup Mockups Design "Pastel" qui
@@ -384,51 +385,35 @@ export default async function ImpressionPage() {
                           </div>
 
                           <div className="flex flex-1 flex-col p-5">
-                            <p className="text-[14px] font-semibold text-[var(--hm-text)] leading-tight">
+                            <p className="text-[15px] font-semibold leading-tight text-[var(--hm-text)]">
                               {dimLabel || cat.label}
                             </p>
-                            <div className="mt-2.5 flex flex-wrap gap-1.5">
+                            <div className="mb-4 mt-3 flex flex-wrap gap-2">
                               {paperLabel && (
-                                <span className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--hm-text-muted)]">
+                                <span className="rounded-full border border-[var(--hm-line)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--hm-text-soft)]">
                                   {paperLabel}
                                 </span>
                               )}
                               {finishLabel && (
-                                <span className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--hm-text-muted)]">
+                                <span className="rounded-full border border-[var(--hm-line)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--hm-text-soft)]">
                                   {finishLabel}
-                                </span>
-                              )}
-                              {isLandscape && (
-                                <span className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--hm-text-muted)]">
-                                  Paysage
                                 </span>
                               )}
                             </div>
 
-                            {/* V1.1 (2026-05-27) — CTA différencié par catégorie :
-                               - Cartes de visite : configurateur direct
-                                 /impression/cartes-de-visite (upload + preview live)
-                               - Autres familles (flyer, poster, canvas, cards) :
-                                 devis manuel via /contact (configurateurs à venir
-                                 en V1.2). On garde le format dans l'URL devis pour
-                                 contexte commercial. */}
-                            {cat.uid === "business-cards" ? (
-                              <Link
-                                href="/impression/cartes-de-visite"
-                                className="mt-auto flex items-center justify-between rounded-xl border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-3 py-2.5 text-[11px] font-bold text-[var(--hm-primary)] transition-all group-hover:border-[var(--hm-primary)] group-hover:bg-[var(--hm-primary)] group-hover:text-white pt-3"
-                              >
-                                Personnaliser maintenant
-                                <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
-                              </Link>
-                            ) : (
-                              <Link
-                                href={`/contact?sujet=impression&produit=${encodeURIComponent(product.productUid)}&format=${encodeURIComponent(dimLabel)}`}
-                                className="mt-auto flex items-center justify-between rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2.5 text-[11px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)] pt-3"
-                              >
-                                Demander un devis
-                                <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
-                              </Link>
-                            )}
+                            {/* V1.2 (2026-05-29) — CTA unifié "Personnaliser
+                               maintenant" pour toutes les familles (look premium
+                               cohérent). Cartes → configurateur live ; flyers /
+                               affiches / toiles → devis pré-rempli (configurateurs
+                               dédiés à venir). z-20 pour passer au-dessus de
+                               l'overlay carte. */}
+                            <Link
+                              href={personalizeHref}
+                              className="relative z-20 mt-auto flex items-center justify-between rounded-xl border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-3.5 py-3 text-[12px] font-bold text-[var(--hm-primary)] transition-all group-hover:border-[var(--hm-primary)] group-hover:bg-[var(--hm-primary)] group-hover:text-white"
+                            >
+                              Personnaliser maintenant
+                              <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                            </Link>
                           </div>
                         </article>
                       );
@@ -462,31 +447,25 @@ export default async function ImpressionPage() {
                           {[...fallback.formats, ...fallback.specs].map((tag) => (
                             <span
                               key={tag}
-                              className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--hm-text-muted)]"
+                              className="rounded-full border border-[var(--hm-line)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--hm-text-soft)]"
                             >
                               {tag}
                             </span>
                           ))}
                         </div>
-                        {/* V1.1 — pareil que la grille produits : configurateur
-                           direct pour les cartes de visite, devis pour le reste. */}
-                        {cat.uid === "business-cards" ? (
-                          <Link
-                            href="/impression/cartes-de-visite"
-                            className="mt-auto inline-flex items-center justify-between gap-2 rounded-xl border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-4 py-2.5 text-[12px] font-bold text-[var(--hm-primary)] transition-all group-hover:border-[var(--hm-primary)] group-hover:bg-[var(--hm-primary)] group-hover:text-white"
-                          >
-                            Personnaliser maintenant
-                            <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-                          </Link>
-                        ) : (
-                          <Link
-                            href={`/contact?sujet=impression&categorie=${encodeURIComponent(cat.uid)}`}
-                            className="mt-auto inline-flex items-center justify-between gap-2 rounded-xl border border-[var(--hm-line)] bg-white px-4 py-2.5 text-[12px] font-bold text-[var(--hm-text-soft)] transition-all group-hover:border-[var(--hm-primary)] group-hover:text-[var(--hm-primary)]"
-                          >
-                            Demander un devis pour ce support
-                            <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-                          </Link>
-                        )}
+                        {/* V1.2 (2026-05-29) — CTA unifié premium : cartes →
+                           configurateur, autres familles → devis pré-rempli. */}
+                        <Link
+                          href={
+                            cat.uid === "business-cards"
+                              ? "/impression/cartes-de-visite"
+                              : `/contact?sujet=impression&categorie=${encodeURIComponent(cat.uid)}`
+                          }
+                          className="mt-auto inline-flex items-center justify-between gap-2 rounded-xl border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-4 py-3 text-[12px] font-bold text-[var(--hm-primary)] transition-all group-hover:border-[var(--hm-primary)] group-hover:bg-[var(--hm-primary)] group-hover:text-white"
+                        >
+                          Personnaliser maintenant
+                          <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                        </Link>
                       </div>
                     </article>
 
