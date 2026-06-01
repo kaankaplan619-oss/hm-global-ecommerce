@@ -462,6 +462,7 @@ const SOFTSHELL_SIZES = [
 
 export const PRODUCT_JUI62: Product = {
   id: "jui62",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "softshell-bc-homme",
   reference: "B&C JUI62",
   name: "Softshell B&C Homme",
@@ -504,6 +505,7 @@ export const PRODUCT_JUI62: Product = {
 
 export const PRODUCT_JWI63: Product = {
   id: "jwi63",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "softshell-bc-femme",
   reference: "B&C JWI63",
   name: "Softshell B&C Femme",
@@ -736,6 +738,7 @@ const POLO_CONSEIL = "💡 Conseil HM Global : Sur les polos piqués, la broderi
 
 export const PRODUCT_K262: Product = {
   id: "k262",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "polo-jersey-homme-kariban",
   reference: "Kariban K262",
   toptexRef: "K262",
@@ -773,6 +776,7 @@ export const PRODUCT_K262: Product = {
 
 export const PRODUCT_K256: Product = {
   id: "k256",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "polo-pique-manches-longues-homme",
   reference: "Kariban K256",
   toptexRef: "K256",
@@ -810,6 +814,7 @@ export const PRODUCT_K256: Product = {
 
 export const PRODUCT_K239: Product = {
   id: "k239",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "polo-pique-mc-homme-kariban",
   reference: "Kariban K239",
   toptexRef: "K239",
@@ -851,6 +856,7 @@ export const PRODUCT_K239: Product = {
 
 export const PRODUCT_K240: Product = {
   id: "k240",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "polo-pique-mc-femme-kariban",
   reference: "Kariban K240",
   toptexRef: "K240",
@@ -1157,6 +1163,7 @@ const POLAIRE_CONSEIL = "💡 Conseil HM Global : Sur les vestes et polaires, la
 
 export const PRODUCT_IB900: Product = {
   id: "ib900",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "veste-polaire-ideal",
   reference: "iDeal Basic Brand IB900",
   toptexRef: "IB900",
@@ -1207,6 +1214,7 @@ export const PRODUCT_IB900: Product = {
 
 export const PRODUCT_IB6175: Product = {
   id: "ib6175",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "doudoune-matelassee-homme-ideal",
   reference: "iDeal Basic Brand IB6175",
   toptexRef: "IB6175",
@@ -1248,6 +1256,7 @@ export const PRODUCT_IB6175: Product = {
 
 export const PRODUCT_IB6176: Product = {
   id: "ib6176",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "doudoune-matelassee-femme-ideal",
   reference: "iDeal Basic Brand IB6176",
   toptexRef: "IB6176",
@@ -1295,6 +1304,7 @@ export const PRODUCT_IB6176: Product = {
 
 export const PRODUCT_WK904: Product = {
   id: "wk904",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "micropolaire-bicolore-eco-wk",
   reference: "WK WK904",
   toptexRef: "WK904",
@@ -1343,6 +1353,7 @@ const CASQUETTE_SIZES = [{ label: "One size", available: true }];
 
 export const PRODUCT_KP157: Product = {
   id: "kp157",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "casquette-polyester-5-panneaux-kup",
   reference: "K-up KP157",
   toptexRef: "KP157",
@@ -1387,6 +1398,7 @@ export const PRODUCT_KP157: Product = {
 
 export const PRODUCT_KP162: Product = {
   id: "kp162",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "casquette-coton-epais-5-panneaux-kup",
   reference: "K-up KP162",
   toptexRef: "KP162",
@@ -1431,6 +1443,7 @@ export const PRODUCT_KP162: Product = {
 
 export const PRODUCT_KP165: Product = {
   id: "kp165",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "casquette-vintage-6-panneaux-kup",
   reference: "K-up KP165",
   toptexRef: "KP165",
@@ -1474,6 +1487,7 @@ export const PRODUCT_KP165: Product = {
 
 export const PRODUCT_KP185: Product = {
   id: "kp185",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "casquette-sandwich-6-panneaux-kup",
   reference: "K-up KP185",
   toptexRef: "KP185",
@@ -1574,6 +1588,7 @@ export const PRODUCT_KI0262: Product = {
 
 export const PRODUCT_KI0252: Product = {
   id: "ki0252",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "sac-cabas-coton-bio-kimood",
   reference: "Kimood KI0252",
   toptexRef: "KI0252",
@@ -1615,6 +1630,7 @@ export const PRODUCT_KI0252: Product = {
 
 export const PRODUCT_KI0275: Product = {
   id: "ki0275",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "sac-cabas-bicolore-kimood",
   reference: "Kimood KI0275",
   toptexRef: "KI0275",
@@ -1653,6 +1669,7 @@ export const PRODUCT_KI0275: Product = {
 
 export const PRODUCT_KI0274: Product = {
   id: "ki0274",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "sac-jute-grand-kimood",
   reference: "Kimood KI0274",
   toptexRef: "KI0274",
@@ -1703,6 +1720,7 @@ const ENFANT_SIZES = [
 
 export const PRODUCT_IB322: Product = {
   id: "ib322",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "tshirt-enfant-ideal-190",
   reference: "iDeal Basic Brand IB322",
   toptexRef: "IB322",
@@ -1738,6 +1756,7 @@ export const PRODUCT_IB322: Product = {
 
 export const PRODUCT_IB401: Product = {
   id: "ib401",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "sweat-col-rond-enfant-ideal",
   reference: "iDeal Basic Brand IB401",
   toptexRef: "IB401",
@@ -1777,6 +1796,7 @@ export const PRODUCT_IB401: Product = {
 
 export const PRODUCT_IB403: Product = {
   id: "ib403",
+  visible: true, // activé catalogue V1.2 — images TopTex existantes
   slug: "hoodie-enfant-ideal",
   reference: "iDeal Basic Brand IB403",
   toptexRef: "IB403",
@@ -2837,6 +2857,10 @@ const _ALL_PRODUCTS: Product[] = [
   PRODUCT_NS400,
   PRODUCT_NS401,
   PRODUCT_NS408,
+
+  // ── Softshells B&C — CDN
+  PRODUCT_JUI62,
+  PRODUCT_JWI63,
 
   // ── Polos Kariban — CDN
   PRODUCT_K262,
