@@ -706,6 +706,42 @@ export const MUG_11OZ_DTF_VOLUME: VolumePricingTier[] = [
   { from: 25,         unitPrice: 14.90 }, // -25%
 ];
 
+// ─── Casquettes Printful (broderie front) ────────────────────────────────────
+// Base Printful : Flexfit 6277 ~13.80€ + broderie ; Yupoong 6006 ~11.30€ + broderie.
+// Marge HM Global incluse. Technique unique : broderie (finition standard casquette).
+export const CASQUETTE_PLACEMENT_SURCHARGES = {
+  coeur:        0,
+  dos:          0,
+  "coeur-dos":  0,
+} as const;
+
+export const CASQUETTE_FLEXFIT_6277_PRICES = {
+  dtf:      0,
+  dtflex:   0,
+  flex:     0,
+  broderie: 24.90,
+} as const;
+
+export const CASQUETTE_YUPOONG_6006_PRICES = {
+  dtf:      0,
+  dtflex:   0,
+  flex:     0,
+  broderie: 21.90,
+} as const;
+
+// Remises broderie casquette : -12% à 10 pcs, -24% à 25 pcs
+export const CASQUETTE_FLEXFIT_6277_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 24.90 },
+  { from: 10, to: 24, unitPrice: 21.90 },
+  { from: 25,         unitPrice: 18.90 },
+];
+
+export const CASQUETTE_YUPOONG_6006_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 21.90 },
+  { from: 10, to: 24, unitPrice: 18.90 },
+  { from: 25,         unitPrice: 15.90 },
+];
+
 /**
  * Retourne le prix unitaire TTC selon le palier de quantité.
  * Renvoie le prix du premier palier si quantité inférieure au minimum.

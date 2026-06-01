@@ -52,6 +52,11 @@ import {
   MUG_11OZ_PRICES,
   MUG_11OZ_PLACEMENT_SURCHARGES,
   MUG_11OZ_DTF_VOLUME,
+  CASQUETTE_PLACEMENT_SURCHARGES,
+  CASQUETTE_FLEXFIT_6277_PRICES,
+  CASQUETTE_YUPOONG_6006_PRICES,
+  CASQUETTE_FLEXFIT_6277_BRODERIE_VOLUME,
+  CASQUETTE_YUPOONG_6006_BRODERIE_VOLUME,
 } from "./pricing";
 
 function buildProductImages(productId: string, images: string[]) {
@@ -2822,6 +2827,116 @@ export const PRODUCT_MUG_11OZ: Product = {
   },
 };
 
+// ─── Printful POD — Casquettes (broderie front) ──────────────────────────────
+// Personnalisables + commande directe : supplierName "printful", broderie front,
+// flux upload simple (comme goodies, pas de studio Fabric). Variant_id mappés
+// dans lib/printfulVariantMap.ts. Images : photos front Printful officielles
+// téléchargées en local (public/mockups/casquettes/...).
+export const PRODUCT_CASQUETTE_FLEXFIT_6277: Product = {
+  id: "casquette-flexfit-6277",
+  slug: "casquette-flexfit-6277",
+  reference: "Flexfit 6277",
+  name: "Casquette Flexfit 6277 brodée",
+  shortName: "Casquette Flexfit",
+  category: "casquettes",
+  gender: "unisex",
+  tier: "premium",
+  description:
+    "Casquette baseball structurée Flexfit 6277, ajustement stretch sans fermeture (S/M et L/XL). 6 panneaux, visière pré-incurvée, sergé de coton brossé. Broderie front sur-mesure de votre logo. Production et expédition UE. Délai 7-12 jours ouvrés après BAT.",
+  composition: "63% coton / 34% polyester / 3% élasthanne",
+  weight: "—",
+  images: [],
+  colors: [
+    { id: "noir",       label: "Noir",       hex: "#1b1b1b", available: true },
+    { id: "marine",     label: "Marine",     hex: "#171822", available: true },
+    { id: "gris",       label: "Gris",       hex: "#717171", available: true },
+    { id: "kaki",       label: "Kaki",       hex: "#bdaa97", available: true },
+    { id: "rouge",      label: "Rouge",      hex: "#bf0a1b", available: true },
+    { id: "bleu-royal", label: "Bleu Royal", hex: "#0b3466", available: true },
+    { id: "blanc",      label: "Blanc",      hex: "#ffffff", available: true },
+  ],
+  sizes: [
+    { label: "S/M",  available: true },
+    { label: "L/XL", available: true },
+  ],
+  techniques: ["broderie"],
+  placements: ["coeur"],
+  pricing: {
+    dtf:      CASQUETTE_FLEXFIT_6277_PRICES.dtf,
+    dtflex:   CASQUETTE_FLEXFIT_6277_PRICES.dtflex,
+    flex:     CASQUETTE_FLEXFIT_6277_PRICES.flex,
+    broderie: CASQUETTE_FLEXFIT_6277_PRICES.broderie,
+    placements: CASQUETTE_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: CASQUETTE_PLACEMENT_SURCHARGES,
+  },
+  featured: false,
+  visible: true,
+  badge: "Broderie incluse",
+  supplierName: "printful",
+  ideaPour: ["Équipes", "Événementiel", "Marques"],
+  conseil:
+    "La casquette structurée la plus populaire pour un logo brodé net et durable. Ajustement Flexfit confortable, finition premium. À partir de 18,90 € l'unité dès 25 pièces.",
+  volumePricing: CASQUETTE_FLEXFIT_6277_BRODERIE_VOLUME,
+  hmMockupImages: {
+    "noir":       "/mockups/casquettes/flexfit-6277/noir-front.jpg",
+    "marine":     "/mockups/casquettes/flexfit-6277/marine-front.jpg",
+    "gris":       "/mockups/casquettes/flexfit-6277/gris-front.jpg",
+    "kaki":       "/mockups/casquettes/flexfit-6277/kaki-front.jpg",
+    "rouge":      "/mockups/casquettes/flexfit-6277/rouge-front.jpg",
+    "bleu-royal": "/mockups/casquettes/flexfit-6277/bleu-royal-front.jpg",
+    "blanc":      "/mockups/casquettes/flexfit-6277/blanc-front.jpg",
+  },
+};
+
+export const PRODUCT_CASQUETTE_YUPOONG_6006: Product = {
+  id: "casquette-yupoong-6006",
+  slug: "casquette-yupoong-6006",
+  reference: "Yupoong 6006",
+  name: "Casquette Yupoong 6006 brodée",
+  shortName: "Casquette Yupoong",
+  category: "casquettes",
+  gender: "unisex",
+  tier: "standard",
+  description:
+    "Casquette trucker 5 panneaux Yupoong 6006 (Flexfit), devant mousse profilé, dos en filet respirant, fermeture snapback réglable (taille unique). Broderie front sur-mesure de votre logo. Production et expédition UE. Délai 7-12 jours ouvrés après BAT.",
+  composition: "Devant 60% coton / 40% polyester · filet 100% polyester",
+  weight: "—",
+  images: [],
+  colors: [
+    { id: "noir",       label: "Noir",       hex: "#24292f", available: true },
+    { id: "anthracite", label: "Anthracite", hex: "#554b56", available: true },
+    { id: "marine",     label: "Marine",     hex: "#36435d", available: true },
+    { id: "blanc",      label: "Blanc",      hex: "#ffffff", available: true },
+  ],
+  sizes: [
+    { label: "One size", available: true },
+  ],
+  techniques: ["broderie"],
+  placements: ["coeur"],
+  pricing: {
+    dtf:      CASQUETTE_YUPOONG_6006_PRICES.dtf,
+    dtflex:   CASQUETTE_YUPOONG_6006_PRICES.dtflex,
+    flex:     CASQUETTE_YUPOONG_6006_PRICES.flex,
+    broderie: CASQUETTE_YUPOONG_6006_PRICES.broderie,
+    placements: CASQUETTE_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: CASQUETTE_PLACEMENT_SURCHARGES,
+  },
+  featured: false,
+  visible: true,
+  badge: "Broderie incluse",
+  supplierName: "printful",
+  ideaPour: ["Associations", "Food trucks", "Événementiel"],
+  conseil:
+    "La trucker classique au style décontracté, dos filet aéré. Idéale pour un logo brodé sur le devant mousse. À partir de 15,90 € l'unité dès 25 pièces.",
+  volumePricing: CASQUETTE_YUPOONG_6006_BRODERIE_VOLUME,
+  hmMockupImages: {
+    "noir":       "/mockups/casquettes/yupoong-6006/noir-front.jpg",
+    "anthracite": "/mockups/casquettes/yupoong-6006/anthracite-front.jpg",
+    "marine":     "/mockups/casquettes/yupoong-6006/marine-front.jpg",
+    "blanc":      "/mockups/casquettes/yupoong-6006/blanc-front.jpg",
+  },
+};
+
 // ─── All products ─────────────────────────────────────────────────────────────
 // ─── Catalogue complet (toutes catégories) ────────────────────────────────────
 // Convention V1 Printful : seuls les produits avec visible: true sont exposés.
@@ -2891,6 +3006,10 @@ const _ALL_PRODUCTS: Product[] = [
   // ── Spreadshirt — tarification dégressive dès 10 pièces ──────────────────
   PRODUCT_SPREADSHIRT_GILDAN_TSHIRT,   // 13.90–19.90 € TTC selon palier
   PRODUCT_SPREADSHIRT_HOODIE,          // 35.90–44.90 € TTC selon palier
+
+  // ── Casquettes — Printful POD (broderie incluse, commande directe) ───────
+  PRODUCT_CASQUETTE_FLEXFIT_6277,      // Flexfit/Yupoong 6277 — broderie frontale
+  PRODUCT_CASQUETTE_YUPOONG_6006,      // Yupoong 6006 trucker — broderie frontale
 ];
 
 // V1 Printful : seuls les produits avec visible: true explicite sont exposés.

@@ -160,6 +160,42 @@ const GILDAN_18500_VARIANTS: Record<string, number> = {
   "gris-sport__2XL": 5614,
 };
 
+// ─── Casquette Flexfit 6277 (product_id: 140) ─────────────────────────────────
+// Couleurs HM Global → Printful color name
+//   noir       → Black          marine → Navy        gris → Dark Grey
+//   kaki       → Khaki          rouge  → Red          bleu-royal → Royal
+//   blanc      → White
+// Tailles : S/M et L/XL (pas de normalisation, clé exacte)
+
+const CASQUETTE_FLEXFIT_6277_VARIANTS: Record<string, number> = {
+  "noir__S/M":        5276,
+  "noir__L/XL":       5277,
+  "marine__S/M":      5278,
+  "marine__L/XL":     5279,
+  "gris__S/M":        5282,
+  "gris__L/XL":       5283,
+  "kaki__S/M":        5292,
+  "kaki__L/XL":       5293,
+  "rouge__S/M":       5288,
+  "rouge__L/XL":      5289,
+  "bleu-royal__S/M":  5286,
+  "bleu-royal__L/XL": 5287,
+  "blanc__S/M":       5274,
+  "blanc__L/XL":      5275,
+};
+
+// ─── Casquette Yupoong 6006 trucker (product_id: 100) ─────────────────────────
+// Couleurs HM Global → Printful color name
+//   noir → Black   anthracite → Charcoal   marine → Navy   blanc → White
+// Taille unique : "One size"
+
+const CASQUETTE_YUPOONG_6006_VARIANTS: Record<string, number> = {
+  "noir__One size":       4811,
+  "anthracite__One size": 4814,
+  "marine__One size":     4816,
+  "blanc__One size":      4810,
+};
+
 // ─── Map par product_id ───────────────────────────────────────────────────────
 
 const PRODUCT_VARIANT_MAP: Record<string, Record<string, number>> = {
@@ -167,6 +203,8 @@ const PRODUCT_VARIANT_MAP: Record<string, Record<string, number>> = {
   "bella-3001":   BELLA_3001_VARIANTS,
   "gildan-18000": GILDAN_18000_VARIANTS,
   "gildan-18500": GILDAN_18500_VARIANTS,
+  "casquette-flexfit-6277": CASQUETTE_FLEXFIT_6277_VARIANTS,
+  "casquette-yupoong-6006": CASQUETTE_YUPOONG_6006_VARIANTS,
 };
 
 // ─── Printful product catalog IDs ────────────────────────────────────────────
@@ -176,6 +214,8 @@ export const PRINTFUL_PRODUCT_IDS: Record<string, number> = {
   "bella-3001":   71,
   "gildan-18000": 145,
   "gildan-18500": 146,
+  "casquette-flexfit-6277": 140,
+  "casquette-yupoong-6006": 100,
 };
 
 // ─── Lookup public ────────────────────────────────────────────────────────────
