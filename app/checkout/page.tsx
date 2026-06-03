@@ -12,12 +12,15 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
+  Landmark,
 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
 import { formatPrice } from "@/data/pricing";
 import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
 import { uploadLogoToSupabase } from "@/lib/uploadLogo";
+import AddressAutocomplete from "@/components/checkout/AddressAutocomplete";
+import CompanyAutocomplete from "@/components/checkout/CompanyAutocomplete";
 
 // ─── Auth gate ────────────────────────────────────────────────────────────────
 
@@ -364,19 +367,71 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   // Forces re-render after login to re-check logo states
   const [loginDone, setLoginDone] = useState(false);
+  // Méthode de paiement choisie : Stripe (CB/Link) ou virement bancaire V1 manuel.
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "bank_transfer">("stripe");
 
   const [billingAddress, setBillingAddress] = useState({
     email:      user?.email ?? "",
     firstName:  user?.firstName ?? "",
     lastName:   user?.lastName ?? "",
     company:    user?.company ?? "",
+    siret:      "",           // entreprises FR uniquement
+    vatNumber:  "",           // TVA intracommunautaire (optionnel pour FR, requis UE)
     street:     "",
     city:       "",
     postalCode: "",
     country:    "FR",
     phone:      user?.phone ?? "",
   });
+  // Type de facturation : "particulier" (B2C, default) ou "entreprise" (B2B).
+  // Conditionne l'affichage des champs Société/SIRET/TVA et la validation.
+  // Sauvé aussi dans localStorage avec le reste pour pré-remplir au retour.
+  const [accountType, setAccountType] = useState<"particulier" | "entreprise">("particulier");
   const [sameShipping, setSameShipping] = useState(true);
+  // Sauvegarde locale (localStorage) des coordonnées pour faciliter les
+  // commandes récurrentes. RGPD friendly : 100% côté client, jamais envoyé
+  // serveur sans action utilisateur explicite (la case doit être cochée).
+  const [saveAddress, setSaveAddress] = useState(false);
+
+  // Charge l'adresse sauvegardée au mount si dispo. Priorité plus basse que les
+  // infos auth.user (qui sont rechargées dans un autre useEffect).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem("hm_saved_billing_address");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      // Garde-fou : si le contenu n'est pas un objet (corrompu / null / array),
+      // on purge silencieusement et on laisse le formulaire vierge plutôt que
+      // de crash plus tard sur du `.length` undefined.
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+        localStorage.removeItem("hm_saved_billing_address");
+        return;
+      }
+      const saved: Record<string, string> = parsed;
+      // Patch uniquement les champs vides (pas écraser auth.user data si présent)
+      setBillingAddress((prev) => ({
+        email:      prev.email      || saved.email      || "",
+        firstName:  prev.firstName  || saved.firstName  || "",
+        lastName:   prev.lastName   || saved.lastName   || "",
+        company:    prev.company    || saved.company    || "",
+        siret:      prev.siret      || saved.siret      || "",
+        vatNumber:  prev.vatNumber  || saved.vatNumber  || "",
+        street:     prev.street     || saved.street     || "",
+        city:       prev.city       || saved.city       || "",
+        postalCode: prev.postalCode || saved.postalCode || "",
+        country:    prev.country    || saved.country    || "FR",
+        phone:      prev.phone      || saved.phone      || "",
+      }));
+      // Si une adresse est déjà sauvegardée, on coche la case par défaut
+      // (l'utilisateur veut visiblement qu'on retienne ses infos).
+      setSaveAddress(true);
+      // Restaure le type de compte si sauvegardé
+      if (saved.accountType === "entreprise") setAccountType("entreprise");
+    } catch {
+      // localStorage corrupted or parse error → ignore silently
+    }
+  }, []);
 
   // Stable session ID for Supabase Storage paths
   const sessionId = useMemo(() => {
@@ -448,35 +503,67 @@ export default function CheckoutPage() {
 
   // ── Place order ────────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
+    // Sauvegarde locale au moment du submit (cas où l'utilisateur a coché la
+    // case puis modifié les champs ensuite — on récupère l'état final).
+    if (saveAddress && typeof window !== "undefined") {
+      try {
+        localStorage.setItem(
+          "hm_saved_billing_address",
+          JSON.stringify({ ...billingAddress, accountType }),
+        );
+      } catch {/* quota or disabled */}
+    }
     setLoading(true);
     try {
+      const payload = {
+        items: items.map((i) => ({
+          productId:    i.productId,
+          quantity:     i.quantity,
+          size:         i.size,
+          colorId:      i.color.id,
+          colorLabel:   i.color.label,
+          colorHex:     i.color.hex,
+          technique:    i.technique,
+          placement:    i.placement,
+          logoFileName: i.logoFile?.name  ?? null,
+          logoFileUrl:  i.logoFile?.url   ?? null,
+          logoFilePath: i.logoFile?.path  ?? null,
+          logoFileType: i.logoFile?.type  ?? null,
+          logoFileSize: i.logoFile?.size  ?? null,
+          logoEffect:              i.logoEffect              ?? null,
+          logoPlacementTransform:  i.logoPlacementTransform  ?? null,
+          batRef:                  i.batRef                  ?? null,
+          // Print — transmis uniquement pour les commandes impression
+          printConfig: i.printConfig ?? null,
+        })),
+        billingAddress,
+        shippingAddress: sameShipping ? billingAddress : undefined,
+      };
+
+      // ── Branche virement bancaire ─────────────────────────────────────────
+      // V1 manuel : on crée la commande en awaiting_bank_transfer puis on
+      // redirige vers la page de confirmation qui affiche IBAN/BIC/référence.
+      // Aucun appel Stripe — la production ne démarre qu'après réception.
+      if (paymentMethod === "bank_transfer") {
+        const res = await fetch("/api/orders/create-bank-transfer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Erreur création commande virement");
+        const { orderId, orderNumber } = await res.json();
+        useCartStore.getState().clearCart();
+        router.push(
+          `/commande-confirmee?orderId=${encodeURIComponent(orderId)}&orderNumber=${encodeURIComponent(orderNumber ?? "")}&method=bank_transfer`
+        );
+        return;
+      }
+
+      // ── Branche Stripe (CB / Link / Apple Pay / Google Pay) ───────────────
       const res = await fetch("/api/stripe/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            productId:    i.productId,
-            quantity:     i.quantity,
-            size:         i.size,
-            colorId:      i.color.id,
-            colorLabel:   i.color.label,
-            colorHex:     i.color.hex,
-            technique:    i.technique,
-            placement:    i.placement,
-            logoFileName: i.logoFile?.name  ?? null,
-            logoFileUrl:  i.logoFile?.url   ?? null,
-            logoFilePath: i.logoFile?.path  ?? null,
-            logoFileType: i.logoFile?.type  ?? null,
-            logoFileSize: i.logoFile?.size  ?? null,
-            logoEffect:              i.logoEffect              ?? null,
-            logoPlacementTransform:  i.logoPlacementTransform  ?? null,
-            batRef:                  i.batRef                  ?? null,
-            // Print — transmis uniquement pour les commandes impression
-            printConfig: i.printConfig ?? null,
-          })),
-          billingAddress,
-          shippingAddress: sameShipping ? billingAddress : undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Erreur lors de la création du paiement");
@@ -495,10 +582,18 @@ export default function CheckoutPage() {
   const canSubmit =
     allLogosReady &&
     allPrintConfigsReady &&
-    billingAddress.email.includes("@") &&
-    billingAddress.firstName.trim().length > 0 &&
-    billingAddress.street.trim().length > 0 &&
-    billingAddress.city.trim().length > 0;
+    (billingAddress.email ?? "").includes("@") &&
+    (billingAddress.firstName ?? "").trim().length > 0 &&
+    (billingAddress.street ?? "").trim().length > 0 &&
+    (billingAddress.city ?? "").trim().length > 0 &&
+    // Validation B2B : si Entreprise, nom de société + SIRET valide (14 chiffres) requis.
+    // Le n° TVA reste optionnel (uniquement utile UE hors France).
+    // Optional chaining partout : protège contre du localStorage stale (HMR ou
+    // ancien schéma) où company/siret pourraient être undefined.
+    (accountType === "particulier" || (
+      (billingAddress.company ?? "").trim().length > 0 &&
+      (billingAddress.siret ?? "").length === 14
+    ));
 
   return (
     <div className="pb-20 pt-24">
@@ -548,6 +643,107 @@ export default function CheckoutPage() {
                 </span>
                 Adresse de facturation
               </h2>
+
+              {/* ── Toggle Particulier / Entreprise ─────────────────────
+                 Préalable au remplissage des coordonnées. Une entreprise a
+                 besoin de fournir : Nom de société + SIRET (obligatoire FR)
+                 + N° TVA intracommunautaire (optionnel mais utile pour les
+                 entreprises EU hors FR — facturation HT possible). Les champs
+                 sont conditionnels : ils n'apparaissent QUE si "Entreprise"
+                 est sélectionné, pour ne pas alourdir le checkout B2C. */}
+              <div className="mb-5 flex gap-2 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-1">
+                {[
+                  { id: "particulier" as const, label: "Particulier", icon: "👤" },
+                  { id: "entreprise"  as const, label: "Entreprise",  icon: "🏢" },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setAccountType(opt.id)}
+                    className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
+                      accountType === opt.id
+                        ? "bg-white text-[var(--hm-primary)] shadow-sm"
+                        : "text-[var(--hm-text-soft)] hover:text-[var(--hm-text)]"
+                    }`}
+                  >
+                    <span className="mr-2">{opt.icon}</span>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Champs spécifiques Entreprise — visible uniquement en B2B */}
+              {accountType === "entreprise" && (
+                <div className="mb-4 grid grid-cols-1 gap-4 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-accent-soft-rose)]/30 p-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="label">
+                      Nom de la société *
+                      <span className="ml-1 text-[10px] font-normal text-[var(--hm-text-muted)]">
+                        — tape le nom ou le SIRET, on remplit le reste
+                      </span>
+                    </label>
+                    {/* Autocomplete via recherche-entreprises.api.gouv.fr.
+                       Au clic sur une suggestion : remplit company + siret +
+                       street + postalCode + city d'un coup (un seul setState
+                       pour éviter le bug de state batching qu'on avait sur
+                       AddressAutocomplete). */}
+                    <CompanyAutocomplete
+                      value={billingAddress.company ?? ""}
+                      onChange={(company) =>
+                        setBillingAddress({ ...billingAddress, company })
+                      }
+                      onSelect={({ company, siret, street, postcode, city }) =>
+                        setBillingAddress({
+                          ...billingAddress,
+                          company,
+                          siret,
+                          street:     street   || billingAddress.street,
+                          postalCode: postcode || billingAddress.postalCode,
+                          city:       city     || billingAddress.city,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="label">SIRET *</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={billingAddress.siret ?? ""}
+                      onChange={(e) => {
+                        // Filtre tout caractère non-numérique + limite 14 chiffres
+                        const cleaned = e.target.value.replace(/\D/g, "").slice(0, 14);
+                        setBillingAddress({ ...billingAddress, siret: cleaned });
+                      }}
+                      placeholder="14 chiffres"
+                      inputMode="numeric"
+                      pattern="[0-9]{14}"
+                      maxLength={14}
+                    />
+                    {(billingAddress.siret?.length ?? 0) > 0 && (billingAddress.siret?.length ?? 0) !== 14 && (
+                      <p className="mt-1 text-[10px] text-[var(--hm-primary)]">
+                        {billingAddress.siret?.length ?? 0}/14 chiffres
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="label">
+                      TVA intracommunautaire
+                      <span className="ml-1 text-[10px] font-normal text-[var(--hm-text-muted)]">
+                        (optionnel — UE hors FR)
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={billingAddress.vatNumber ?? ""}
+                      onChange={(e) => setBillingAddress({ ...billingAddress, vatNumber: e.target.value.toUpperCase() })}
+                      placeholder="FR12345678901"
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
@@ -613,13 +809,24 @@ export default function CheckoutPage() {
 
                 <div className="sm:col-span-2">
                   <label className="label">Adresse *</label>
-                  <input
-                    type="text"
-                    className="input"
+                  {/* Autocomplete via api-adresse.data.gouv.fr (Base Adresse
+                     Nationale, gratuit, sans clé). Au clic sur une suggestion,
+                     code postal + ville se remplissent automatiquement. Si
+                     l'API ne répond pas, la saisie manuelle reste fonctionnelle. */}
+                  <AddressAutocomplete
                     value={billingAddress.street}
-                    onChange={(e) => setBillingAddress({ ...billingAddress, street: e.target.value })}
-                    placeholder="12 rue de la Paix"
-                    autoComplete="street-address"
+                    onChange={(street) =>
+                      setBillingAddress({ ...billingAddress, street })
+                    }
+                    onSelect={({ street, postcode, city }) =>
+                      setBillingAddress({
+                        ...billingAddress,
+                        street,
+                        postalCode: postcode || billingAddress.postalCode,
+                        city: city || billingAddress.city,
+                      })
+                    }
+                    placeholder="12 rue de la Paix — commencez à taper…"
                   />
                 </div>
                 <div>
@@ -672,6 +879,48 @@ export default function CheckoutPage() {
                   Adresse de livraison identique à la facturation
                 </label>
               </div>
+
+              {/* ── Sauvegarde locale des coordonnées ───────────────────
+                 Case optionnelle qui sauve toutes les infos saisies dans
+                 localStorage. Au prochain checkout, les champs seront
+                 pré-remplis automatiquement. RGPD friendly : 100% local,
+                 effacable depuis les params navigateur. Le client peut
+                 décocher pour purger immédiatement. */}
+              <div className="mt-3 flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="save-address"
+                  checked={saveAddress}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setSaveAddress(checked);
+                    if (typeof window === "undefined") return;
+                    if (!checked) {
+                      // Décoche → purge immédiate
+                      localStorage.removeItem("hm_saved_billing_address");
+                    } else {
+                      // Coche → sauvegarde l'état actuel du formulaire
+                      // + le type de compte (Particulier / Entreprise)
+                      try {
+                        localStorage.setItem(
+                          "hm_saved_billing_address",
+                          JSON.stringify({ ...billingAddress, accountType }),
+                        );
+                      } catch {/* quota or disabled */}
+                    }
+                  }}
+                  className="h-4 w-4 accent-[var(--hm-primary)]"
+                />
+                <label
+                  htmlFor="save-address"
+                  className="cursor-pointer text-sm text-[var(--hm-text-soft)]"
+                >
+                  Enregistrer mes coordonnées pour mes prochaines commandes
+                  <span className="ml-2 text-[10px] text-[var(--hm-text-muted)]">
+                    (stocké localement sur votre appareil)
+                  </span>
+                </label>
+              </div>
             </div>
 
             {/* Section paiement */}
@@ -683,32 +932,116 @@ export default function CheckoutPage() {
                 Paiement sécurisé
               </h2>
 
-              <div className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
-                <Lock size={14} className="shrink-0 text-[#4ade80]" />
-                <div>
-                  <p className="text-xs font-semibold text-[var(--hm-text)]">
-                    Paiement 100% sécurisé
+              {/* ── Sélecteur méthode de paiement ─────────────────────────
+                 Deux options : Stripe (CB/Link/Apple Pay/Google Pay, instantané)
+                 ou virement bancaire (V1 manuel, la production démarre après
+                 réception). Visuellement deux cartes cliquables, état actif
+                 surligné avec la couleur accent HM. */}
+              <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {[
+                  {
+                    id: "stripe" as const,
+                    label: "Carte bancaire",
+                    sub: "CB, Apple Pay, Google Pay, Link",
+                    icon: <CreditCard size={16} />,
+                  },
+                  {
+                    id: "bank_transfer" as const,
+                    label: "Virement bancaire",
+                    sub: "Production après réception",
+                    icon: <Landmark size={16} />,
+                  },
+                ].map((opt) => {
+                  const active = paymentMethod === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(opt.id)}
+                      className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+                        active
+                          ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]/40 shadow-sm"
+                          : "border-[var(--hm-line)] bg-white hover:border-[var(--hm-text-soft)]/40"
+                      }`}
+                    >
+                      <span
+                        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                          active
+                            ? "bg-[var(--hm-primary)] text-white"
+                            : "bg-[var(--hm-surface)] text-[var(--hm-text-soft)]"
+                        }`}
+                      >
+                        {opt.icon}
+                      </span>
+                      <span className="flex flex-col">
+                        <span className="text-sm font-bold text-[var(--hm-text)]">
+                          {opt.label}
+                        </span>
+                        <span className="text-[11px] text-[var(--hm-text-muted)]">
+                          {opt.sub}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {paymentMethod === "stripe" ? (
+                <>
+                  <div className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
+                    <Lock size={14} className="shrink-0 text-[#4ade80]" />
+                    <div>
+                      <p className="text-xs font-semibold text-[var(--hm-text)]">
+                        Paiement 100% sécurisé
+                      </p>
+                      <p className="text-[10px] text-[var(--hm-text-muted)]">
+                        Carte bancaire, Apple Pay, Google Pay, Stripe Link — Propulsé par Stripe
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mb-4 text-xs text-[var(--hm-text-muted)]">
+                    Vous serez redirigé vers la page de paiement sécurisée Stripe après validation.
                   </p>
-                  <p className="text-[10px] text-[var(--hm-text-muted)]">
-                    Carte bancaire, Apple Pay, Google Pay — Propulsé par Stripe
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {[
+                      { label: "Visa",       sub: "Mastercard" },
+                      { label: "Apple Pay",  sub: null },
+                      { label: "Google Pay", sub: null },
+                      { label: "Link",       sub: "by Stripe" },
+                    ].map((badge) => (
+                      <div
+                        key={badge.label}
+                        className="flex h-9 items-center gap-1.5 rounded-lg border border-[var(--hm-line)] bg-white px-3 shadow-sm"
+                      >
+                        <CreditCard size={14} className="text-[var(--hm-text-soft)]" />
+                        <span className="text-[11px] font-semibold text-[var(--hm-text)]">
+                          {badge.label}
+                        </span>
+                        {badge.sub && (
+                          <span className="text-[10px] font-medium text-[var(--hm-text-muted)]">
+                            · {badge.sub}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 text-xs text-[var(--hm-text-soft)]">
+                  <p className="flex items-start gap-2 text-[var(--hm-text)]">
+                    <Landmark size={14} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
+                    <span className="font-semibold">
+                      Après validation, vous recevrez les coordonnées bancaires (IBAN/BIC) et votre référence de commande.
+                    </span>
+                  </p>
+                  <p className="text-[11px] leading-relaxed">
+                    La production démarre <strong>après réception du virement</strong> sur notre compte.
+                    Indiquez bien votre référence de commande dans le libellé du virement.
                   </p>
                 </div>
-              </div>
-
-              <p className="mb-4 text-xs text-[var(--hm-text-muted)]">
-                Vous serez redirigé vers la page de paiement sécurisée Stripe après validation.
-              </p>
-
-              <div className="flex gap-2">
-                {["💳 CB", "🍎 Pay", "G Pay"].map((icon) => (
-                  <div
-                    key={icon}
-                    className="flex h-8 min-w-[60px] items-center justify-center rounded-lg border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 text-[11px] font-semibold text-[var(--hm-text-soft)]"
-                  >
-                    {icon}
-                  </div>
-                ))}
-              </div>
+              )}
             </div>
 
             {/* CGV */}
@@ -799,6 +1132,11 @@ export default function CheckoutPage() {
               >
                 {loading ? (
                   "Traitement en cours..."
+                ) : paymentMethod === "bank_transfer" ? (
+                  <>
+                    <Landmark size={14} />
+                    Valider et obtenir les coordonnées bancaires
+                  </>
                 ) : (
                   <>
                     <CreditCard size={14} />

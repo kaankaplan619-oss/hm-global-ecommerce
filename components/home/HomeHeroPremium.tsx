@@ -54,34 +54,31 @@ export default function HomeHeroPremium() {
                 color: "var(--hm-text-main)",
               }}
             >
-              Votre communication,{" "}
-              <span style={{ color: "var(--hm-violet)" }}>
-                de l&apos;idée au support final
-              </span>
-              .
+              Textile personnalisé, print et communication pour entreprises.
             </h1>
 
             <p
               className="mt-5 max-w-[38rem] text-[14.5px] leading-[1.65] sm:text-[15px]"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Textile personnalisé, impression, signalétique et supports de
-              marque pour donner une image professionnelle à votre entreprise.
+              HM Global vous accompagne de la création du visuel jusqu&apos;à la
+              production : textiles professionnels, supports imprimés,
+              signalétique et BAT avant fabrication.
             </p>
 
             <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
               <Link
-                href="/catalogue"
+                href="/devis-rapide"
                 className="btn-hm-magenta w-full justify-center sm:w-auto"
               >
-                Commander un textile
+                Demander un devis rapide
                 <ArrowRight size={16} />
               </Link>
               <Link
-                href="/contact?sujet=devis"
+                href="#packs-textile"
                 className="btn-hm-violet-outline w-full justify-center sm:w-auto"
               >
-                Demander un devis global
+                Voir les packs textile
               </Link>
             </div>
 

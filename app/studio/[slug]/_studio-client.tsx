@@ -92,17 +92,19 @@ export default function StudioClient({ product }: Props) {
     );
   }, [product, selectedColor]);
 
-  // Packshot dos — assets HM propres en priorité, sinon hmMockupImagesBack produit
+  // Packshot dos — assets HM propres en priorité, sinon hmMockupImagesBack produit.
+  // Note (2026-05-26) : la branche non-printful initiale n'utilisait QUE
+  // getHMTextileBackPath, ce qui faisait que les produits Falk&Ross/TopTex avec un
+  // hmMockupImagesBack défini dans data/products.ts (ex. WG004 stock agence avec
+  // /mockups/falkross-cropped/wg004/noir-back.jpg) voyaient leur champ ignoré,
+  // et le Studio tombait sur le fallback MOCKUP_FILES.noir.back = t-shirt
+  // générique → bug visuel. Maintenant les 2 branches lisent les 2 sources.
   const packshotBack = useMemo(() => {
-    if (product.supplierName === "printful") {
-      return (
-        getHMTextileBackPath(product.id, selectedColor?.id) ??
-        product.hmMockupImagesBack?.[selectedColor?.id ?? ""] ??
-        null
-      );
-    }
-    // Assets HM propres pour le dos (non-printful)
-    return getHMTextileBackPath(product.id, selectedColor?.id) ?? null;
+    return (
+      getHMTextileBackPath(product.id, selectedColor?.id) ??
+      product.hmMockupImagesBack?.[selectedColor?.id ?? ""] ??
+      null
+    );
   }, [product, selectedColor]);
 
   const handleAddObject = useCallback((obj: StudioObject) => {
@@ -203,6 +205,8 @@ export default function StudioClient({ product }: Props) {
               colorId={selectedColor?.id ?? ""}
               placement={placement}
               productCategory={product.category}
+              productId={product.id}
+              placements={product.placements}
               packshot={packshot || undefined}
               packshotBack={packshotBack || undefined}
               objects={objects}

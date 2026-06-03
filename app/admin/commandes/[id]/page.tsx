@@ -9,11 +9,13 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { getSupplierInfo } from "@/lib/supplierMap";
-import type { Order, OrderStatus, OrderItem } from "@/types";
+import { getProductCatalogImage } from "@/lib/product-image-utils";
+import type { Order, OrderStatus, OrderItem, SupplierMode } from "@/types";
 
 // ─── All 16 statuses (ordered by workflow) ────────────────────────────────────
 
 const ALL_STATUSES: { value: OrderStatus; label: string }[] = [
+  { value: "awaiting_bank_transfer",       label: "Attente virement bancaire" },
   { value: "commande_a_valider",           label: "À valider" },
   { value: "paiement_recu",               label: "Paiement reçu" },
   { value: "fichier_a_verifier",          label: "Fichier à vérifier" },
@@ -69,6 +71,8 @@ function getNextAction(status: OrderStatus): {
   urgency: "urgent" | "info" | "done" | "none";
 } {
   switch (status) {
+    case "awaiting_bank_transfer":
+      return { text: "Attente du virement bancaire — marquer comme payé une fois reçu", urgency: "urgent" };
     case "commande_a_valider":
     case "paiement_recu":
       return { text: "Vérifier le paiement et valider la commande", urgency: "urgent" };
@@ -141,7 +145,10 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const [newStatus, setNewStatus] = useState<OrderStatus>("paiement_recu");
   const [adminNote, setAdminNote] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
-  const [supplierMode, setSupplierMode] = useState<"fournisseur" | "secours_interne">("fournisseur");
+  // Default = production_interne (le mode le plus fréquent pour HM : commande
+  // textile à Falk&Ross/TopTex/NewWave puis perso au studio). Les commandes
+  // legacy avec "fournisseur" / "secours_interne" sont supportées en lecture.
+  const [supplierMode, setSupplierMode] = useState<SupplierMode>("production_interne");
   const [supplierNote, setSupplierNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [refundLoading, setRefundLoading] = useState(false);
@@ -150,6 +157,7 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const [validateError, setValidateError] = useState<string | null>(null);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [advancing, setAdvancing] = useState(false);
+  const [markingPaid, setMarkingPaid] = useState(false);
 
   useEffect(() => {
     if (!_hasHydrated) return;
@@ -163,7 +171,7 @@ export default function AdminCommandeDetailPage({ params }: Props) {
             setNewStatus(data.order.status);
             setAdminNote(data.order.adminNote ?? "");
             setTrackingNumber(data.order.trackingNumber ?? "");
-            setSupplierMode(data.order.supplierMode ?? "fournisseur");
+            setSupplierMode(data.order.supplierMode ?? "production_interne");
             setSupplierNote(data.order.supplierNote ?? "");
           }
           setLoading(false);
@@ -190,6 +198,34 @@ export default function AdminCommandeDetailPage({ params }: Props) {
       console.error(err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Marque une commande virement comme payée : passe le statut DB de
+  // awaiting_bank_transfer → paiement_recu pour qu'elle réintègre le
+  // workflow standard de production. V1 manuel — pas de réconciliation bancaire.
+  const handleMarkBankTransferPaid = async () => {
+    if (!order) return;
+    const confirmed = window.confirm(
+      "Confirmez avoir reçu le virement de " +
+      fmtCurrency(order.totalTTC ?? 0) +
+      " pour la commande #" + order.orderNumber + " ?"
+    );
+    if (!confirmed) return;
+    setMarkingPaid(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}/admin-update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "paiement_recu" }),
+      });
+      if (!res.ok) throw new Error("Mise à jour échouée");
+      setOrder({ ...order, status: "paiement_recu" });
+      setNewStatus("paiement_recu");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setMarkingPaid(false);
     }
   };
 
@@ -576,6 +612,169 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                             </div>
                           ) : (
                             <>
+                              {/* ── TEXTILE : Aperçu visuel commande ────────
+                                 V1.1 (2026-05-26) : Si le BAT composite a été
+                                 uploadé au moment du ajout au panier (champs
+                                 composed_preview_url / composed_preview_back
+                                 persistés via migration 013), on affiche
+                                 directement les 2 aperçus tels que le client
+                                 les a validés — c'est ce qu'il veut voir en
+                                 ouvrant son récap, c'est ce que Kaan doit
+                                 valider avant d'envoyer le BAT.
+                                 Fallback V1 : si l'aperçu composite n'existe
+                                 pas (commandes antérieures à la migration ou
+                                 upload qui a foiré), on retombe sur
+                                 packshot + logo séparés. */}
+                              {(item.composedPreviewUrl || item.composedPreviewBack || item.logoFile?.url || item.product?.id) && (
+                                <div className="mt-3 p-3 bg-white border border-[var(--hm-line)] rounded-xl">
+                                  <p className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-3">
+                                    Aperçu commande — à revoir avant envoi BAT
+                                  </p>
+                                  {/* Si composed previews dispos → on les affiche
+                                     en priorité (le rendu validé par le client) */}
+                                  {(item.composedPreviewUrl || item.composedPreviewBack) ? (
+                                    <div className="grid grid-cols-2 gap-3">
+                                      {item.composedPreviewUrl && (
+                                        <div className="flex flex-col gap-1">
+                                          <span className="text-[9px] text-[var(--hm-text-muted)]">
+                                            BAT validé · Face
+                                          </span>
+                                          <a
+                                            href={item.composedPreviewUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="aspect-square overflow-hidden rounded-lg border border-[var(--hm-primary)]/30 bg-white"
+                                            title="Ouvrir l'aperçu en plein écran"
+                                          >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                              src={item.composedPreviewUrl}
+                                              alt="Aperçu BAT face"
+                                              className="h-full w-full object-contain transition hover:scale-105"
+                                            />
+                                          </a>
+                                        </div>
+                                      )}
+                                      {item.composedPreviewBack && (
+                                        <div className="flex flex-col gap-1">
+                                          <span className="text-[9px] text-[var(--hm-text-muted)]">
+                                            BAT validé · Dos
+                                          </span>
+                                          <a
+                                            href={item.composedPreviewBack}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="aspect-square overflow-hidden rounded-lg border border-[var(--hm-primary)]/30 bg-white"
+                                            title="Ouvrir l'aperçu en plein écran"
+                                          >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                              src={item.composedPreviewBack}
+                                              alt="Aperçu BAT dos"
+                                              className="h-full w-full object-contain transition hover:scale-105"
+                                            />
+                                          </a>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                  <div className="grid grid-cols-2 gap-3">
+                                    {/* Fallback packshot — pour commandes pré-migration 013 */}
+                                    {item.product && (() => {
+                                      const packshot = getProductCatalogImage(item.product, item.color?.id);
+                                      return packshot ? (
+                                        <div className="flex flex-col gap-1">
+                                          <span className="text-[9px] text-[var(--hm-text-muted)]">
+                                            Textile · {item.color?.label ?? "—"}
+                                          </span>
+                                          <div className="aspect-square overflow-hidden rounded-lg border border-[var(--hm-line)] bg-white">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                              src={packshot}
+                                              alt={`Packshot ${item.product.shortName} ${item.color?.label ?? ""}`}
+                                              className="h-full w-full object-contain"
+                                            />
+                                          </div>
+                                        </div>
+                                      ) : null;
+                                    })()}
+
+                                    {/* Fallback logo seul (sans composé) */}
+                                    {item.logoFile?.url && (
+                                      <div className="flex flex-col gap-1">
+                                        <span className="text-[9px] text-[var(--hm-text-muted)]">
+                                          Logo client · {item.placement ? item.placement : "—"}
+                                        </span>
+                                        <a
+                                          href={item.logoFile.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          title="Ouvrir en plein écran"
+                                          className="aspect-square overflow-hidden rounded-lg border border-[var(--hm-line)] bg-white"
+                                          style={{
+                                            backgroundImage:
+                                              "linear-gradient(45deg, #f5f5f4 25%, transparent 25%, transparent 75%, #f5f5f4 75%, #f5f5f4), linear-gradient(45deg, #f5f5f4 25%, transparent 25%, transparent 75%, #f5f5f4 75%, #f5f5f4)",
+                                            backgroundSize: "12px 12px",
+                                            backgroundPosition: "0 0, 6px 6px",
+                                          }}
+                                        >
+                                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                                          <img
+                                            src={item.logoFile.url}
+                                            alt={item.logoFile.name || "Logo"}
+                                            className="h-full w-full object-contain p-3 transition hover:scale-105"
+                                          />
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+                                  )}
+                                  {/* Métadonnées de placement (lecture seule).
+                                     Le LogoPlacementTransform stocke des coords
+                                     Fabric.js : left/top (coin haut-gauche du
+                                     logo dans le canvas Studio), scaleX/scaleY
+                                     (multiplicateur), angle (rotation). On les
+                                     formate ici en pourcentage du canvas pour
+                                     que l'admin comprenne sans connaître Fabric. */}
+                                  {item.logoPlacementTransform && (() => {
+                                    const t = item.logoPlacementTransform;
+                                    const canvas = t.canvasSize || 1; // évite /0
+                                    const leftPct = (t.left   / canvas) * 100;
+                                    const topPct  = (t.top    / canvas) * 100;
+                                    const wPct    = (t.width  / canvas) * 100;
+                                    const hPct    = (t.height / canvas) * 100;
+                                    return (
+                                      <div className="mt-3 pt-2 border-t border-[var(--hm-line)] grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
+                                        <div className="flex justify-between">
+                                          <span className="text-[var(--hm-text-soft)]">Position</span>
+                                          <span className="font-mono text-[var(--hm-text)]">
+                                            {leftPct.toFixed(1)}% / {topPct.toFixed(1)}%
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-[var(--hm-text-soft)]">Taille</span>
+                                          <span className="font-mono text-[var(--hm-text)]">
+                                            {wPct.toFixed(1)}% × {hPct.toFixed(1)}%
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-[var(--hm-text-soft)]">Échelle</span>
+                                          <span className="font-mono text-[var(--hm-text)]">
+                                            ×{t.scaleX.toFixed(2)} / ×{t.scaleY.toFixed(2)}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-[var(--hm-text-soft)]">Rotation</span>
+                                          <span className="font-mono text-[var(--hm-text)]">
+                                            {t.angle.toFixed(0)}°
+                                          </span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              )}
+
                               {/* ── TEXTILE : Logo & BAT bloc ──────────────── */}
                               {(item.logoFile || item.batRef || item.logoEffect) && (
                                 <div className="mt-3 p-3 bg-[var(--hm-surface)] border border-[var(--hm-line)] rounded-xl">
@@ -584,8 +783,8 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                   </p>
 
                                   {item.logoFile && (
-                                    <div className="mb-2">
-                                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                                    <div className="mb-3">
+                                      <div className="flex items-center justify-between gap-2 mb-2">
                                         <a
                                           href={item.logoFile.url}
                                           target="_blank"
@@ -605,6 +804,40 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                            : "À vérifier"}
                                         </span>
                                       </div>
+                                      {/* ── Aperçu visuel du logo ─────────────────
+                                         Affichage du logo réel envoyé par le
+                                         client pour que l'admin puisse JUGER
+                                         visuellement le fichier sans avoir à
+                                         ouvrir l'URL Supabase Storage.
+                                         Limité à 96 px de haut + fond damier
+                                         transparent pour les PNG, clic = ouvre
+                                         en plein écran via l'URL Supabase. */}
+                                      {item.logoFile.url && (
+                                        <a
+                                          href={item.logoFile.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block overflow-hidden rounded-lg border border-[var(--hm-line)] bg-white"
+                                          title="Cliquer pour voir en plein écran"
+                                          style={{
+                                            // Damier subtil pour visualiser la
+                                            // transparence des PNG. Cohérent
+                                            // avec ce que voient les designers
+                                            // dans Photoshop/Figma.
+                                            backgroundImage:
+                                              "linear-gradient(45deg, #f5f5f4 25%, transparent 25%, transparent 75%, #f5f5f4 75%, #f5f5f4), linear-gradient(45deg, #f5f5f4 25%, transparent 25%, transparent 75%, #f5f5f4 75%, #f5f5f4)",
+                                            backgroundSize: "12px 12px",
+                                            backgroundPosition: "0 0, 6px 6px",
+                                          }}
+                                        >
+                                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                                          <img
+                                            src={item.logoFile.url}
+                                            alt={item.logoFile.name || "Logo client"}
+                                            className="mx-auto block max-h-24 w-auto object-contain p-2 transition hover:scale-105"
+                                          />
+                                        </a>
+                                      )}
                                     </div>
                                   )}
 
@@ -799,6 +1032,43 @@ export default function AdminCommandeDetailPage({ params }: Props) {
           {/* ── Right column ────────────────────────────────────────────────── */}
           <div className="flex flex-col gap-4">
 
+            {/* Bloc virement bancaire — visible seulement pour les commandes
+               payées par virement (V1 manuel : on attend que l'admin confirme
+               la réception sur le compte bancaire HM). Une fois marqué,
+               status → paiement_recu et la commande rejoint le workflow standard. */}
+            {order.paymentMethod === "bank_transfer" && (
+              <div className={`p-5 rounded-2xl border ${
+                order.status === "awaiting_bank_transfer"
+                  ? "border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)]/40"
+                  : "border-green-200 bg-green-50"
+              }`}>
+                <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-3">
+                  Paiement par virement
+                </h2>
+                {order.status === "awaiting_bank_transfer" ? (
+                  <>
+                    <p className="text-xs text-[var(--hm-text-soft)] mb-3">
+                      En attente de réception du virement sur le compte HM Global.
+                      Référence client : <span className="font-mono font-bold text-[var(--hm-text)]">{order.orderNumber}</span>.
+                    </p>
+                    <button
+                      onClick={handleMarkBankTransferPaid}
+                      disabled={markingPaid}
+                      className="btn-primary w-full text-xs gap-2"
+                    >
+                      <CheckCircle size={12} />
+                      {markingPaid ? "Mise à jour…" : "Marquer comme payé par virement"}
+                    </button>
+                  </>
+                ) : (
+                  <p className="flex items-center gap-2 text-xs text-green-700">
+                    <CheckCircle size={12} />
+                    Virement reçu — commande dans le workflow production.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Status update */}
             <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
               <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider mb-4">
@@ -841,16 +1111,43 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                 <label className="label">Mode de traitement</label>
                 <select
                   value={supplierMode}
-                  onChange={(e) => setSupplierMode(e.target.value as "fournisseur" | "secours_interne")}
+                  onChange={(e) => setSupplierMode(e.target.value as SupplierMode)}
                   className="input"
                 >
-                  <option value="fournisseur">Fournisseur (Falk & Ross / TopTex)</option>
-                  <option value="secours_interne">Secours interne</option>
+                  {/* ── Modes principaux (V1+) ── */}
+                  <optgroup label="Modes principaux">
+                    <option value="production_interne">
+                      🏭 Production interne — Falk&Ross / TopTex / NewWave (commande manuelle, perso au studio)
+                    </option>
+                    <option value="printify">
+                      🤖 Printify — POD automatisé (Gildan, Bella, mugs)
+                    </option>
+                    <option value="gelato">
+                      🎨 Gelato — POD automatisé (mugs, posters, accessoires)
+                    </option>
+                    <option value="stock_interne">
+                      📦 Stock interne — Produit déjà en stock à l'agence (WG004 V1, etc.)
+                    </option>
+                  </optgroup>
+                  {/* ── Legacy (lecture seule pour vieilles commandes) ── */}
+                  {(supplierMode === "fournisseur" || supplierMode === "secours_interne") && (
+                    <optgroup label="Anciennes valeurs (legacy)">
+                      <option value="fournisseur">⚠️ Fournisseur (legacy — remplacé par Production interne)</option>
+                      <option value="secours_interne">⚠️ Secours interne (legacy — remplacé par Stock interne)</option>
+                    </optgroup>
+                  )}
                 </select>
-                {supplierMode === "secours_interne" && (
+                {/* Note libre uniquement pour les modes qui nécessitent de tracer
+                   manuellement (production interne avec spécificités, ou stock
+                   interne pour préciser le lot d'origine). */}
+                {(supplierMode === "production_interne" || supplierMode === "stock_interne" || supplierMode === "secours_interne") && (
                   <textarea
                     className="input mt-2 h-16 resize-none"
-                    placeholder="Raison du traitement en interne"
+                    placeholder={
+                      supplierMode === "stock_interne"
+                        ? "Référence lot stock (ex: WG004 noir Falk&Ross 100pcs 2026-05)"
+                        : "Note interne (technique perso, particularité, etc.)"
+                    }
                     value={supplierNote}
                     onChange={(e) => setSupplierNote(e.target.value)}
                   />
@@ -943,9 +1240,21 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                 {order.stripePaymentIntentId && (
                   <div className="flex justify-between text-xs">
                     <span className="text-[var(--hm-text-soft)]">ID Stripe</span>
-                    <span className="font-mono text-[10px] text-[var(--hm-text-soft)] truncate max-w-[120px]">
-                      {order.stripePaymentIntentId}
-                    </span>
+                    {/* Lien direct vers le dashboard Stripe. L'URL canonique
+                       `dashboard.stripe.com/payments/<pi>` est intelligente :
+                       Stripe détecte automatiquement si l'ID est test ou live
+                       et redirige vers la bonne vue (ex: /test/payments/...
+                       en mode test). Plus besoin de gérer test/live à la main. */}
+                    <a
+                      href={`https://dashboard.stripe.com/payments/${order.stripePaymentIntentId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-mono text-[10px] text-[var(--hm-primary)] underline decoration-dotted underline-offset-2 transition hover:text-[var(--hm-primary)] hover:decoration-solid"
+                      title="Ouvrir dans Stripe Dashboard"
+                    >
+                      <span className="truncate max-w-[110px]">{order.stripePaymentIntentId}</span>
+                      <ExternalLink size={10} className="shrink-0" />
+                    </a>
                   </div>
                 )}
                 {order.paidAt && !isNaN(new Date(order.paidAt).getTime()) && (

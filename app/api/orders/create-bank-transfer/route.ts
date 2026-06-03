@@ -1,0 +1,262 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
+import { generateOrderNumber } from "@/lib/utils";
+import { computeUnitPrice, computeCartTotals, ttcToHt } from "@/data/pricing";
+import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
+import { PRINT_PRODUCTS_LOOKUP, getBusinessCardLotPrice } from "@/data/print-products";
+import type { Technique, Placement, PrintConfig } from "@/types";
+
+interface CartItemInput {
+  productId:    string;
+  quantity:     number;
+  size:         string;
+  colorId:      string;
+  colorLabel:   string;
+  colorHex:     string;
+  technique:    Technique;
+  placement:    Placement;
+  logoFileName: string | null;
+  logoFileUrl:  string | null;
+  logoFilePath: string | null;
+  logoFileType: string | null;
+  logoFileSize: number | null;
+  logoEffect:             string | null;
+  logoPlacementTransform: Record<string, unknown> | null;
+  batRef:                 string | null;
+  composedPreviewUrl:  string | null;
+  composedPreviewBack: string | null;
+  printConfig: PrintConfig | null;
+}
+
+/**
+ * POST /api/orders/create-bank-transfer
+ *
+ * Crée une commande en `awaiting_bank_transfer` sans appeler Stripe.
+ * Logique de prix identique à /api/stripe/create-payment-intent — recompute
+ * server-side, jamais faire confiance aux montants client.
+ *
+ * V1 manuel : aucune réconciliation banque, l'admin marque la commande payée
+ * via PATCH /api/orders/[id]/admin-update une fois le virement reçu.
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const supabaseAuth = await createSupabaseServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    const supabase = await createSupabaseServiceClient();
+
+    const body = await req.json();
+    const { items, billingAddress, shippingAddress, guestEmail }: {
+      items:            CartItemInput[];
+      billingAddress:   Record<string, string>;
+      shippingAddress?: Record<string, string>;
+      guestEmail?:      string;
+    } = body;
+
+    if (!items?.length) {
+      return NextResponse.json({ error: "Panier vide" }, { status: 400 });
+    }
+
+    const effectiveEmail =
+      user?.email ??
+      guestEmail ??
+      billingAddress?.email ??
+      "";
+
+    if (!user && !effectiveEmail) {
+      return NextResponse.json(
+        { error: "Un email est requis pour passer commande sans compte." },
+        { status: 400 }
+      );
+    }
+
+    // Profile upsert — même garde-fou que create-payment-intent
+    if (user) {
+      await supabase.from("profiles").upsert(
+        {
+          id:         user.id,
+          email:      user.email ?? "",
+          first_name: billingAddress?.firstName ?? "",
+          last_name:  billingAddress?.lastName  ?? "",
+          role:       "client",
+          type:       "particulier",
+        },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+    }
+
+    // ── Recompute prices server-side (copie de create-payment-intent) ─────────
+    const computedItems = items.map((item) => {
+      if (item.technique === "print" || item.printConfig) {
+        const cfg = item.printConfig;
+        if (!cfg) throw new Error(`printConfig manquant pour l'item print: ${item.productId}`);
+
+        const printProduct = PRINT_PRODUCTS_LOOKUP[item.productId];
+        if (!printProduct) throw new Error(`Produit print inconnu: ${item.productId}`);
+
+        const lotPriceTTC = getBusinessCardLotPrice({
+          finish:   cfg.finish,
+          quantity: cfg.quantity,
+          faces:    cfg.faces,
+          corners:  cfg.corners,
+        });
+        const lotPriceHT = ttcToHt(lotPriceTTC);
+
+        return {
+          productId:        printProduct.id,
+          productReference: printProduct.id,
+          productName:      printProduct.shortName,
+          productSnapshot:  { id: printProduct.id, shortName: printProduct.shortName, printConfig: cfg },
+          quantity:         1,
+          size:             "—",
+          colorId:          "print",
+          colorLabel:       "Impression",
+          colorHex:         "#000000",
+          technique:        "print" as Technique,
+          placement:        "coeur" as Placement,
+          unitPriceHT:      lotPriceHT,
+          unitPriceTTC:     lotPriceTTC,
+          totalHT:          lotPriceHT,
+          totalTTC:         lotPriceTTC,
+          logoFileName:            "Fichier recto carte de visite",
+          logoFileUrl:             cfg.frontFileUrl ?? null,
+          logoFilePath:            null,
+          logoFileType:            null,
+          logoFileSize:            null,
+          logoEffect:              null,
+          logoPlacementTransform:  null,
+          batRef:                  null,
+          composedPreviewUrl:      null,
+          composedPreviewBack:     null,
+          printConfig:             cfg,
+        };
+      }
+
+      const product = PRODUCTS.find((p) => p.id === item.productId);
+      if (!product) throw new Error(`Produit inconnu: ${item.productId}`);
+
+      const basePrice    = product.pricing[item.technique as keyof typeof product.pricing] as number;
+      const unitPriceTTC = computeUnitPrice({
+        basePrice,
+        technique: item.technique as "dtf" | "dtflex" | "flex" | "broderie" | "broderie_illimitee",
+        placement: item.placement as "coeur" | "dos" | "coeur-dos",
+      });
+      const unitPriceHT  = ttcToHt(unitPriceTTC);
+      const totalTTC     = Math.round(unitPriceTTC * item.quantity * 100) / 100;
+      const totalHT      = Math.round(unitPriceHT  * item.quantity * 100) / 100;
+
+      const color = product.colors.find((c) => c.id === item.colorId);
+
+      return {
+        productId:        product.id,
+        productReference: product.reference,
+        productName:      product.shortName,
+        productSnapshot:  { ...product, images: [] },
+        quantity:         item.quantity,
+        size:             item.size,
+        colorId:          item.colorId,
+        colorLabel:       color?.label ?? item.colorLabel,
+        colorHex:         color?.hex   ?? item.colorHex,
+        technique:        item.technique,
+        placement:        item.placement,
+        unitPriceHT,
+        unitPriceTTC,
+        totalHT,
+        totalTTC,
+        logoFileName:            item.logoFileName            ?? null,
+        logoFileUrl:             item.logoFileUrl             ?? null,
+        logoFilePath:            item.logoFilePath            ?? null,
+        logoFileType:            item.logoFileType            ?? null,
+        logoFileSize:            item.logoFileSize            ?? null,
+        logoEffect:              item.logoEffect              ?? null,
+        logoPlacementTransform:  item.logoPlacementTransform  ?? null,
+        batRef:                  item.batRef                  ?? null,
+        composedPreviewUrl:      item.composedPreviewUrl      ?? null,
+        composedPreviewBack:     item.composedPreviewBack     ?? null,
+        printConfig:             null,
+      };
+    });
+
+    const totals = computeCartTotals({
+      items: computedItems.map((i) => ({ unitPrice: i.unitPriceTTC, quantity: i.quantity })),
+    });
+
+    const orderNumber = generateOrderNumber();
+
+    // ── Insert order — pas de Stripe, statut awaiting_bank_transfer ───────────
+    const { data: orderRow, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        order_number:     orderNumber,
+        user_id:          user?.id ?? null,
+        guest_email:      user ? null : effectiveEmail,
+        status:           "awaiting_bank_transfer",
+        payment_method:   "bank_transfer",
+        subtotal_ht:      totals.subtotalHT,
+        tva:              totals.tva,
+        subtotal_ttc:     totals.subtotalTTC,
+        shipping:         totals.shipping,
+        total_ttc:        totals.totalTTC,
+        free_shipping:    totals.freeShipping,
+        billing_address:  billingAddress,
+        shipping_address: shippingAddress ?? billingAddress,
+      })
+      .select("id, order_number")
+      .single();
+
+    if (orderError || !orderRow) {
+      console.error("[CreateBankTransfer] Order insert:", orderError);
+      return NextResponse.json({ error: "Erreur création commande" }, { status: 500 });
+    }
+
+    const itemRows = computedItems.map((item) => {
+      const productSnapshot = item.printConfig
+        ? { ...item.productSnapshot, printConfig: item.printConfig }
+        : item.productSnapshot;
+
+      return {
+        order_id:          orderRow.id,
+        product_id:        item.productId,
+        product_reference: item.productReference,
+        product_name:      item.productName,
+        product_snapshot:  productSnapshot,
+        quantity:          item.quantity,
+        size:              item.size,
+        color_id:          item.colorId,
+        color_label:       item.colorLabel,
+        color_hex:         item.colorHex,
+        technique:         item.technique,
+        placement:         item.placement,
+        unit_price_ht:     item.unitPriceHT,
+        unit_price_ttc:    item.unitPriceTTC,
+        total_ht:          item.totalHT,
+        total_ttc:         item.totalTTC,
+        logo_file_name:             item.logoFileName            ?? null,
+        logo_file_url:              item.logoFileUrl             ?? null,
+        logo_file_path:             item.logoFilePath            ?? null,
+        logo_file_type:             item.logoFileType            ?? null,
+        logo_file_size:             item.logoFileSize            ?? null,
+        logo_file_status:           item.logoFileUrl             ? "en_attente" : null,
+        logo_uploaded_at:           item.logoFileUrl             ? new Date().toISOString() : null,
+        logo_effect:                item.logoEffect              ?? null,
+        logo_placement_transform:   item.logoPlacementTransform  ?? null,
+        bat_ref:                    item.batRef                  ?? null,
+        composed_preview_url:       item.composedPreviewUrl      ?? null,
+        composed_preview_back:      item.composedPreviewBack     ?? null,
+      };
+    });
+
+    const { error: itemsError } = await supabase.from("order_items").insert(itemRows);
+    if (itemsError) {
+      console.error("[CreateBankTransfer] Items insert:", itemsError);
+    }
+
+    return NextResponse.json({
+      orderId:     orderRow.id,
+      orderNumber: orderRow.order_number,
+      totalTTC:    totals.totalTTC,
+    });
+  } catch (err) {
+    console.error("[CreateBankTransfer]", err);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}

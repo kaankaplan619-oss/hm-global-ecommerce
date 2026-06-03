@@ -58,8 +58,13 @@ export const COLOR_PACKSHOTS: Record<string, Record<string, string>> = {
   },
 
   // ── Sweat col rond B&C WG004 ─────────────────────────────────────────────────
+  // 2026-05-26 : noir basculé vers la version pre-cropped locale (fill 33% → 62%)
+  // pour agrandir visuellement le sweat dans le Studio et la fiche produit. Les
+  // autres coloris gardent l'URL CDN TopTex (pas pre-cropés en V1 car seul le noir
+  // est exposé — WG004_COLORS réduit à 1 entrée). Pattern aligné sur
+  // /mockups/printify-cropped/* déjà éprouvé pour Bella/Gildan.
   "wg004": {
-    "noir":          "https://cdn.toptex.com/packshots/PS_CGWG004_BLACK.png",
+    "noir":          "/mockups/falkross-cropped/wg004/noir-front.jpg",
     "blanc":         "https://cdn.toptex.com/packshots/PS_CGWG004_WHITE.png",
     "gris-melange":  "https://cdn.toptex.com/packshots/PS_CGWG004_SPORTGREY.png",
     "anthracite":    "https://cdn.toptex.com/packshots/PS_CGWG004_DARKGREY.png",

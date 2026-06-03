@@ -332,9 +332,45 @@ export type OrderStatus =
   | "commande_fournisseur_passee"
   | "attente_reception_textile"
   | "en_production"
-  | "prete_a_expedier";
+  | "prete_a_expedier"
+  // ─ Virement bancaire (migration 014) ─────────────────────────────────────────
+  | "awaiting_bank_transfer";
 
-export type SupplierMode = "fournisseur" | "secours_interne";
+/**
+ * Mode de traitement d'une commande côté admin HM Global.
+ *
+ *   "production_interne" → On a commandé le textile vierge chez un fournisseur
+ *     (Falk & Ross / TopTex / NewWave — ces 3 fournisseurs n'ont PAS d'API,
+ *     commande manuelle). On reçoit le blanc, on personnalise au studio HM,
+ *     on expédie depuis l'agence.
+ *
+ *   "printify" → POD automatisé. Le client passe commande, l'API Printify est
+ *     appelée, Printify produit (DTG, broderie, mug…) et expédie directement
+ *     au client final sans qu'on touche au produit. Surtout pour Gildan
+ *     5000/18000/18500 + Bella 3001 + mugs blueprint 441.
+ *
+ *   "gelato" → POD automatisé alternatif. Similaire à Printify mais meilleur
+ *     sur les mugs, posters, accessoires. Réservé pour les SKU dont Gelato
+ *     est l'unique fournisseur dispo.
+ *
+ *   "stock_interne" → Le produit est déjà en stock à l'agence (ex: WG004
+ *     V1 100 pièces). Pas besoin de commande fournisseur. On personnalise
+ *     puis on expédie (ou retrait agence).
+ *
+ *   Valeurs legacy gardées pour compat backward (ne plus utiliser pour les
+ *   nouvelles commandes) — un script de migration les remappera vers les
+ *   nouveaux modes dans une V1.1 :
+ *     "fournisseur"      → équivalent "production_interne"
+ *     "secours_interne"  → équivalent "stock_interne" ou "production_interne"
+ */
+export type SupplierMode =
+  | "production_interne"
+  | "printify"
+  | "gelato"
+  | "stock_interne"
+  // Legacy — supportés en lecture pour les commandes pré-2026-05-26
+  | "fournisseur"
+  | "secours_interne";
 
 // ─── Supplier Types ───────────────────────────────────────────────────────────
 
@@ -374,6 +410,16 @@ export interface OrderItem {
   logoEffect?: LogoEffect;
   batRef?: string;
   logoPlacementTransform?: LogoPlacementTransform;
+  /**
+   * Aperçus BAT composés (face + dos) — URLs publiques Supabase Storage.
+   * Persistés via migration 013_order_items_composed_preview.sql.
+   * Représentent EXACTEMENT le rendu validé par le client dans la modale
+   * Studio (packshot + logo overlayé). Affichés dans le récap panier,
+   * l'admin commande, et l'email de confirmation V2.
+   * Optionnels : null sur les commandes pré-migration ou si l'upload a foiré.
+   */
+  composedPreviewUrl?: string;
+  composedPreviewBack?: string;
   unitPriceHT: number;
   unitPriceTTC: number;
   totalHT: number;
@@ -403,6 +449,7 @@ export interface Order {
   totalTTC: number;
   freeShipping: boolean;
   // Payment
+  paymentMethod?: "stripe" | "bank_transfer";
   stripePaymentIntentId?: string;
   stripePaymentStatus?: "succeeded" | "pending" | "failed";
   paidAt?: string;

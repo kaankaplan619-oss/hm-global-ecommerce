@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/cart";
 import { formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
 import { getFeaturedProducts } from "@/data/products";
+import { getProductCatalogImage } from "@/lib/product-image-utils";
 import type { Placement, Product, ProductColor, Technique } from "@/types";
 
 function getQuickAddDefaults(product: Product): {
@@ -243,19 +244,36 @@ export default function CartDrawer() {
 
                     {/* ── Infos produit ── */}
                     <div className="flex gap-3 p-4">
-                      {/* Miniature produit */}
+                      {/* Miniature produit — priorité :
+                         1. composedPreviewUrl (BAT face composé : packshot + logo)
+                            → c'est exactement ce que le client a validé dans le
+                            Studio, donc le plus rassurant pour lui dans le récap
+                         2. getProductCatalogImage → packshot HM cropé propre
+                         3. item.product.images[0] → fallback légacy
+                         4. <Package> icon → ultime fallback */}
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white">
-                        {item.product.images?.[0] ? (
-                          <Image
-                            src={item.product.images[0]}
-                            alt={item.product.name}
-                            width={56}
-                            height={56}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <Package size={18} className="text-[var(--hm-text-muted)]" />
-                        )}
+                        {(() => {
+                          const thumbSrc =
+                            item.composedPreviewUrl
+                            || getProductCatalogImage(item.product, item.color.id)
+                            || item.product.images?.[0];
+                          return thumbSrc ? (
+                            <Image
+                              src={thumbSrc}
+                              alt={item.product.name}
+                              width={56}
+                              height={56}
+                              className="object-contain w-full h-full"
+                              // composedPreview est sur Supabase Storage (URL stable),
+                              // pas besoin de unoptimized. Si fallback sur images[0]
+                              // qui peut être un CDN externe non listé dans next.config,
+                              // next/image lance une erreur — on switch en unoptimized.
+                              unoptimized={!thumbSrc.startsWith("/")}
+                            />
+                          ) : (
+                            <Package size={18} className="text-[var(--hm-text-muted)]" />
+                          );
+                        })()}
                       </div>
 
                       {/* Détails */}
@@ -391,18 +409,26 @@ export default function CartDrawer() {
                           className="rounded-[1.3rem] border border-[var(--hm-line)] bg-white p-3 shadow-[0_10px_24px_rgba(63,45,88,0.05)]"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)]">
-                              {product.images?.[0] ? (
-                                <Image
-                                  src={product.images[0]}
-                                  alt={product.name}
-                                  width={56}
-                                  height={56}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <Package size={18} className="text-[var(--hm-text-muted)]" />
-                              )}
+                            {/* Miniature cross-sell — résout via getProductCatalogImage()
+                               pour tomber sur le mockup HM cropé propre (ex: Gildan 5000
+                               qui a `images: []` mais des packshots dans
+                               public/mockups/printify-cropped/gildan-5000/). Fallback sur
+                               images[0] uniquement si rien trouvé. */}
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white">
+                              {(() => {
+                                const thumbSrc = getProductCatalogImage(product, defaults.color.id) || product.images?.[0];
+                                return thumbSrc ? (
+                                  <Image
+                                    src={thumbSrc}
+                                    alt={product.name}
+                                    width={56}
+                                    height={56}
+                                    className="h-full w-full object-contain"
+                                  />
+                                ) : (
+                                  <Package size={18} className="text-[var(--hm-text-muted)]" />
+                                );
+                              })()}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-semibold text-[var(--hm-text)]">

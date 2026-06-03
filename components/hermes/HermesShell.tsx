@@ -15,7 +15,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  LayoutDashboard,
+  CalendarCheck,
   Inbox,
   CheckSquare,
   FolderKanban,
@@ -23,25 +23,53 @@ import {
   Sparkles,
   Bot,
   Send,
+  Target,
   Menu,
   X,
+  Compass,
+  MessageCircle,
 } from "lucide-react";
 
 interface NavItem {
   href:  string;
   label: string;
-  icon:  typeof LayoutDashboard;
+  icon:  typeof CalendarCheck;
 }
 
-const NAV: NavItem[] = [
-  { href: "/hermes",          label: "Dashboard", icon: LayoutDashboard },
-  { href: "/hermes/missions", label: "Missions IA", icon: Send },
-  { href: "/hermes/inbox",    label: "Inbox",     icon: Inbox },
-  { href: "/hermes/tasks",    label: "Tâches",    icon: CheckSquare },
-  { href: "/hermes/projects", label: "Projets",   icon: FolderKanban },
-  { href: "/hermes/agents",   label: "Agents",    icon: Bot },
-  { href: "/hermes/memory",   label: "Mémoire",   icon: BookOpen },
-  { href: "/hermes/prompts",  label: "Prompts",   icon: Sparkles },
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+  compact?: boolean;
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Mon cockpit",
+    items: [
+      { href: "/hermes",        label: "Aujourd'hui",     icon: CalendarCheck },
+      { href: "/hermes/master", label: "Hermès Master",   icon: MessageCircle },
+      { href: "/hermes/inbox",  label: "Rapports agents", icon: Inbox },
+      { href: "/hermes/tasks",  label: "Tâches",          icon: CheckSquare },
+    ],
+  },
+  {
+    label: "Mes projets",
+    items: [
+      { href: "/hermes/projects", label: "Projets",            icon: FolderKanban },
+      { href: "/hermes/vente",    label: "Clients & Prospects", icon: Target },
+      { href: "/hermes/agents",   label: "Agents",             icon: Bot },
+      { href: "/hermes/missions", label: "Lancer une mission",  icon: Send },
+    ],
+  },
+  {
+    label: "Ma base",
+    compact: true,
+    items: [
+      { href: "/hermes/memory",  label: "Base de connaissance", icon: BookOpen },
+      { href: "/hermes/prompts", label: "Modèles de messages",  icon: Sparkles },
+      { href: "/hermes/guide",   label: "Guide",                icon: Compass },
+    ],
+  },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -147,6 +175,20 @@ export default function HermesShell({
           {children}
         </div>
       </main>
+
+      {pathname !== "/hermes/master" && (
+        <Link
+          href="/hermes/master"
+          aria-label="Ouvrir Hermès Master"
+          className="fixed bottom-5 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-[0_18px_42px_rgba(193,60,138,0.34)] transition hover:translate-y-[-1px] lg:hidden"
+          style={{
+            background: "linear-gradient(135deg, #C13C8A 0%, #3B235A 100%)",
+            border:     "1px solid rgba(249,201,221,0.26)",
+          }}
+        >
+          <Sparkles size={22} strokeWidth={1.8} />
+        </Link>
+      )}
     </div>
   );
 }
@@ -174,29 +216,44 @@ function SidebarContent({
         </div>
       </div>
 
-      <nav className="flex-1 px-3 space-y-1">
-        {NAV.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(pathname, item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onLinkClick}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition"
-              style={{
-                background: active ? "rgba(177,63,116,0.12)" : "transparent",
-                color:      active ? "#f9c9dd" : "rgba(232,230,240,0.78)",
-                border:     active
-                  ? "1px solid rgba(177,63,116,0.25)"
-                  : "1px solid transparent",
-              }}
+      <nav className="flex-1 px-3 pb-4">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label} className="mb-5">
+            <div
+              className="mb-2 px-3 text-[9.5px] font-semibold uppercase tracking-[0.22em]"
+              style={{ color: "rgba(232,230,240,0.34)" }}
             >
-              <Icon size={16} strokeWidth={1.8} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+              {group.label}
+            </div>
+
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(pathname, item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onLinkClick}
+                    className="flex items-center gap-3 rounded-lg transition"
+                    style={{
+                      padding:    group.compact ? "0.55rem 0.75rem" : "0.68rem 0.75rem",
+                      fontSize:   group.compact ? "12.5px" : "14px",
+                      background: active ? "rgba(177,63,116,0.12)" : "transparent",
+                      color:      active ? "#f9c9dd" : group.compact ? "rgba(232,230,240,0.58)" : "rgba(232,230,240,0.78)",
+                      border:     active
+                        ? "1px solid rgba(177,63,116,0.25)"
+                        : "1px solid transparent",
+                    }}
+                  >
+                    <Icon size={group.compact ? 14 : 16} strokeWidth={1.8} />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       <div className="p-4 mt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>

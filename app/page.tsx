@@ -1,5 +1,6 @@
 import HomeHeroPremium from "../components/home/HomeHeroPremium";
 import HomeQuickEntries from "../components/home/HomeQuickEntries";
+import HomeNeedsPacks from "../components/home/HomeNeedsPacks";
 import HomeTextilePremium from "../components/home/HomeTextilePremium";
 import BestSellers from "../components/home/BestSellers";
 import HomeProcessBAT from "../components/home/HomeProcessBAT";
@@ -29,6 +30,7 @@ export default function HomePage() {
     <>
       <HomeHeroPremium />
       <HomeQuickEntries />
+      <HomeNeedsPacks />
       <HomeTextilePremium />
       <BestSellers />
       <HomeProcessBAT />

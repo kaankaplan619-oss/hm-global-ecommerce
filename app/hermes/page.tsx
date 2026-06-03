@@ -1,24 +1,26 @@
 import Link from "next/link";
-import { ArrowRight, Inbox, CheckSquare, FolderKanban, Sparkles, Send, ListChecks } from "lucide-react";
+import { ArrowRight, Inbox, CheckSquare, FolderKanban, Sparkles, Send, ListChecks, Target } from "lucide-react";
 import PageHeader from "@/components/hermes/PageHeader";
 import Card from "@/components/hermes/Card";
 import StatusBadge, { toneForReportStatus, toneForTaskStatus } from "@/components/hermes/StatusBadge";
 import {
   MOCK_PROJECTS,
   MOCK_REPORTS,
+  MOCK_SALES_PROSPECTS,
   MOCK_TASKS,
   MOCK_MEMORY,
 } from "@/lib/hermes/mock-data";
 import { REPORT_SOURCE_LABELS, REPORT_STATUS_LABELS, TASK_STATUS_LABELS } from "@/lib/hermes/types";
 
 export const metadata = {
-  title: "Dashboard",
+  title: "Aujourd'hui",
 };
 
-export default function HermesDashboardPage() {
+export default function HermesTodayPage() {
   const reportsToProcess = MOCK_REPORTS.filter((r) => r.status === "new" || r.status === "to_review");
   const openTasks      = MOCK_TASKS.filter((t) => t.status !== "done");
   const activeProjects = MOCK_PROJECTS.filter((p) => p.status === "active");
+  const hotProspects   = MOCK_SALES_PROSPECTS.filter((p) => p.priority === "hot");
 
   const recentReports = [...MOCK_REPORTS]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -33,11 +35,11 @@ export default function HermesDashboardPage() {
     <>
       <PageHeader
         eyebrow="Cockpit"
-        title="Bonjour Kaan."
+        title="Aujourd'hui"
         description="Pilote les agents IA, traite les rapports et ouvre les prochaines actions sans lire des murs de texte."
       />
 
-      <div className="grid gap-3 md:grid-cols-3 mb-6">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <QuickAction
           href="/hermes/missions"
           icon={<Send size={16} />}
@@ -48,9 +50,16 @@ export default function HermesDashboardPage() {
         <QuickAction
           href="/hermes/inbox"
           icon={<Inbox size={16} />}
-          title="Voir rapports à traiter"
+          title="Rapports agents"
           text={`${reportsToProcess.length} rapport(s) à décider.`}
           accent="#fde68a"
+        />
+        <QuickAction
+          href="/hermes/vente"
+          icon={<Target size={16} />}
+          title="Pipeline vente"
+          text={`${hotProspects.length} prospect(s) chauds à traiter.`}
+          accent="#86efac"
         />
         <QuickAction
           href="/hermes/tasks"
@@ -62,7 +71,7 @@ export default function HermesDashboardPage() {
       </div>
 
       {/* ── KPI tiles ──────────────────────────────────────────── */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-10">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-10">
         <KpiTile
           icon={<Inbox size={16} strokeWidth={1.8} />}
           label="Rapports à traiter"
@@ -88,8 +97,16 @@ export default function HermesDashboardPage() {
           accent="#86efac"
         />
         <KpiTile
+          icon={<Target size={16} strokeWidth={1.8} />}
+          label="Prospects chauds"
+          value={hotProspects.length}
+          subline="Vente Strasbourg"
+          href="/hermes/vente"
+          accent="#86efac"
+        />
+        <KpiTile
           icon={<Sparkles size={16} strokeWidth={1.8} />}
-          label="Mémoires utiles"
+          label="Base utile"
           value={MOCK_MEMORY.length}
           subline="Règles et décisions"
           href="/hermes/memory"
@@ -103,7 +120,7 @@ export default function HermesDashboardPage() {
           <SectionHeader
             title="Rapports récents"
             href="/hermes/inbox"
-            cta="Voir l'inbox"
+            cta="Voir les rapports"
           />
           <ul className="divide-y" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
             {recentReports.map((report) => (

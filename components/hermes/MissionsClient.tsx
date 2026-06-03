@@ -234,7 +234,7 @@ export default function MissionsClient({
             <div className="mt-5 flex flex-wrap gap-2">
               <CopyButton text={prepared.prompt} label="Copier prompt" />
               <LocalAction icon={<ClipboardList size={13} />} label="Créer tâche" doneLabel="Tâche créée" />
-              <LocalAction icon={<Inbox size={13} />} label="Envoyer dans Inbox" doneLabel="Envoyé Inbox" />
+              <LocalAction icon={<Inbox size={13} />} label="Envoyer en rapport" doneLabel="Rapport créé" />
               <LocalAction icon={<PlayCircle size={13} />} label="Marquer lancé" doneLabel="Mission lancée" onClick={() => setLocalState("launched")} />
               <LocalAction icon={<PauseCircle size={13} />} label="Attente retour agent" doneLabel="En attente agent" onClick={() => setLocalState("waiting")} />
             </div>

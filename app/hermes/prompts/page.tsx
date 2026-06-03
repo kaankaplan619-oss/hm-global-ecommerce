@@ -3,7 +3,7 @@ import PromptsClient from "@/components/hermes/PromptsClient";
 import { MOCK_PROMPTS } from "@/lib/hermes/mock-data";
 
 export const metadata = {
-  title: "Prompts",
+  title: "Modèles de messages",
 };
 
 export default function HermesPromptsPage() {
@@ -11,7 +11,7 @@ export default function HermesPromptsPage() {
     <>
       <PageHeader
         eyebrow="Bibliothèque"
-        title="Prompts"
+        title="Modèles de messages"
         description="Prompts prêts à copier, classés par agent. Le contenu complet reste masqué pour garder la bibliothèque lisible."
       />
       <PromptsClient prompts={MOCK_PROMPTS} />

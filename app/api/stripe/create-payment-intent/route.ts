@@ -26,6 +26,12 @@ interface CartItemInput {
   logoEffect:             string | null;
   logoPlacementTransform: Record<string, unknown> | null;
   batRef:                 string | null;
+  // Aperçus BAT composés (face + dos) — URLs publiques Supabase Storage
+  // uploadées par lib/uploadComposedPreview.ts au moment du ajout au panier.
+  // Persistés en DB (migration 013) pour que l'admin puisse les revoir et
+  // que le client retrouve son aperçu après refresh / dans le récap commande.
+  composedPreviewUrl:  string | null;
+  composedPreviewBack: string | null;
   /**
    * Print — présent uniquement pour les articles impression.
    * Si renseigné, le prix est lu depuis printConfig.lotPriceTTC (recomputed server-side).
@@ -147,6 +153,8 @@ export async function POST(req: NextRequest) {
           logoEffect:              null,
           logoPlacementTransform:  null,
           batRef:                  null,
+          composedPreviewUrl:      null,
+          composedPreviewBack:     null,
           printConfig:             cfg,
         };
       }
@@ -192,6 +200,8 @@ export async function POST(req: NextRequest) {
         logoEffect:              item.logoEffect              ?? null,
         logoPlacementTransform:  item.logoPlacementTransform  ?? null,
         batRef:                  item.batRef                  ?? null,
+        composedPreviewUrl:      item.composedPreviewUrl      ?? null,
+        composedPreviewBack:     item.composedPreviewBack     ?? null,
         printConfig:             null,
       };
     });
@@ -279,6 +289,10 @@ export async function POST(req: NextRequest) {
         logo_effect:                item.logoEffect              ?? null,
         logo_placement_transform:   item.logoPlacementTransform  ?? null,
         bat_ref:                    item.batRef                  ?? null,
+        // Aperçus BAT composés (face + dos) — URLs Supabase Storage
+        // (cf migration 013_order_items_composed_preview.sql)
+        composed_preview_url:       item.composedPreviewUrl      ?? null,
+        composed_preview_back:      item.composedPreviewBack     ?? null,
       };
     });
 

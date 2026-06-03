@@ -3,7 +3,7 @@ import InboxClient from "@/components/hermes/InboxClient";
 import { MOCK_REPORTS } from "@/lib/hermes/mock-data";
 
 export const metadata = {
-  title: "Inbox",
+  title: "Rapports agents",
 };
 
 export default function HermesInboxPage() {
@@ -11,7 +11,7 @@ export default function HermesInboxPage() {
     <>
       <PageHeader
         eyebrow="Rapports IA"
-        title="Inbox"
+        title="Rapports agents"
         description="Traite rapidement les rapports IA : source, résumé court, statut et actions. Le contenu complet reste masqué."
       />
       <InboxClient reports={MOCK_REPORTS} />

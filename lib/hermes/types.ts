@@ -17,6 +17,7 @@ export type AgentId =
   | "quote-agent"
   | "design-agent"
   | "admin-finance-agent"
+  | "sales-agent"
   | "personal-agent";
 
 export type ReportSource = "claude-code" | "chatgpt" | "discord" | "manuel";
@@ -37,6 +38,7 @@ export type ProjectCategory =
   | "discord"
   | "erasmus"
   | "instagram"
+  | "vente"
   | "client"
   | "administratif"
   | "finance"
@@ -72,6 +74,28 @@ export type MissionType =
 export type Priority = "P1" | "P2" | "P3";
 
 export type ReportType = "audit" | "execution" | "brief" | "decision" | "note";
+
+export type SalesProspectStatus =
+  | "new"
+  | "qualified"
+  | "to_call"
+  | "email_ready"
+  | "contacted"
+  | "interested"
+  | "not_relevant"
+  | "opted_out";
+
+export type SalesProspectPriority = "hot" | "warm" | "cold";
+
+export type SalesChannel = "phone" | "email" | "website" | "instagram" | "facebook" | "linkedin" | "google";
+
+export type SalesNeed =
+  | "textile-staff"
+  | "print"
+  | "signalétique"
+  | "événementiel"
+  | "cadeaux-pro"
+  | "rebranding";
 
 // ── Sections mémoire ─────────────────────────────────────────────────────────
 
@@ -174,6 +198,33 @@ export interface HermesPrompt {
   notes?:    string;
 }
 
+/**
+ * Un prospect B2B repéré à Strasbourg ou autour de HM Global.
+ */
+export interface HermesSalesProspect {
+  id: string;
+  companyName: string;
+  sector: string;
+  city: string;
+  address?: string;
+  googleMapsUrl?: string;
+  websiteUrl?: string;
+  instagramUrl?: string;
+  phone?: string;
+  email?: string;
+  status: SalesProspectStatus;
+  priority: SalesProspectPriority;
+  score: number;
+  needs: SalesNeed[];
+  signals: string[];
+  recommendedOffer: string;
+  nextAction: string;
+  channels: SalesChannel[];
+  source: "google_places" | "site_web" | "instagram" | "manuel";
+  lastContactAt?: string;
+  notes?: string;
+}
+
 // ── Helpers UI ─────────────────────────────────────────────────────────────
 
 export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
@@ -199,6 +250,7 @@ export const PROJECT_CATEGORY_LABELS: Record<ProjectCategory, string> = {
   "discord":       "Discord",
   "erasmus":       "Erasmus",
   "instagram":     "Instagram",
+  "vente":         "Vente",
   "client":        "Client",
   "administratif": "Administratif",
   "finance":       "Admin & finance",
@@ -230,7 +282,28 @@ export const AGENT_LABELS: Record<AgentId, string> = {
   "quote-agent":         "Agent Devis",
   "design-agent":        "Agent Design / DA",
   "admin-finance-agent": "Agent Admin / Finance",
+  "sales-agent":         "Agent Vente",
   "personal-agent":      "Agent Personnel",
+};
+
+export const SALES_PROSPECT_STATUS_LABELS: Record<SalesProspectStatus, string> = {
+  new:          "Nouveau",
+  qualified:   "Qualifié",
+  to_call:     "À appeler",
+  email_ready: "Email prêt",
+  contacted:   "Contacté",
+  interested:  "Intéressé",
+  not_relevant: "Pas pertinent",
+  opted_out:   "Opposition",
+};
+
+export const SALES_NEED_LABELS: Record<SalesNeed, string> = {
+  "textile-staff": "Textile équipe",
+  print:           "Print",
+  signalétique:    "Signalétique",
+  événementiel:    "Événementiel",
+  "cadeaux-pro":   "Cadeaux pro",
+  rebranding:      "Rebranding",
 };
 
 export const REPORT_SOURCE_LABELS: Record<ReportSource, string> = {

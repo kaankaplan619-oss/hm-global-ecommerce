@@ -5,7 +5,7 @@ import { MOCK_MEMORY } from "@/lib/hermes/mock-data";
 import { MEMORY_SECTION_LABELS, type MemorySection } from "@/lib/hermes/types";
 
 export const metadata = {
-  title: "Mémoire",
+  title: "Base de connaissance",
 };
 
 const SECTION_ORDER: MemorySection[] = [
@@ -32,7 +32,7 @@ export default function HermesMemoryPage() {
     <>
       <PageHeader
         eyebrow="Source de vérité"
-        title="Mémoire structurée"
+        title="Base de connaissance"
         description="Règles design, règles techniques, process, décisions validées. Chaque entrée est copiable pour usage dans une mission Claude Code ou un brief ChatGPT."
       />
 

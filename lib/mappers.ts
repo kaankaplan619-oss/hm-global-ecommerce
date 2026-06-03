@@ -59,6 +59,7 @@ export function mapDbOrderToOrder(row: any): Order {
     stripePaymentIntentId: row.stripe_payment_intent_id  ?? undefined,
     stripePaymentStatus:   row.stripe_payment_status     ?? undefined,
     paidAt:                row.paid_at                   ?? undefined,
+    paymentMethod:         row.payment_method            ?? "stripe",
 
     // Addresses (stored as JSON snapshots)
     shippingAddress: row.shipping_address ?? {},
@@ -147,6 +148,10 @@ export function mapDbOrderToOrder(row: any): Order {
       logoEffect:             item.logo_effect              ?? undefined,
       batRef:                 item.bat_ref                  ?? undefined,
       logoPlacementTransform: item.logo_placement_transform ?? undefined,
+      // Aperçus BAT composés (cf migration 013). Optionnel : null sur les
+      // anciennes commandes pré-migration, présent sur les nouvelles.
+      composedPreviewUrl:     item.composed_preview_url     ?? undefined,
+      composedPreviewBack:    item.composed_preview_back    ?? undefined,
       printfulVariantId:      item.printful_variant_id      ?? undefined,
       // Config impression — extraite du JSONB product_snapshot (pas de colonne dédiée)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

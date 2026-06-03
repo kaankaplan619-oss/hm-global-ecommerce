@@ -98,11 +98,20 @@ export interface OrderItemRow {
   total_ttc: number;
   logo_file_name: string | null;
   logo_file_url: string | null;
+  logo_file_path: string | null;
   logo_file_type: string | null;
   logo_file_size: number | null;
   logo_file_status: "en_attente" | "valide" | "invalide" | null;
   logo_uploaded_at: string | null;
   logo_rejection_reason: string | null;
+  logo_effect: string | null;
+  logo_placement_transform: Json | null;
+  bat_ref: string | null;
+  // Aperçus BAT composés (face + dos) — URLs publiques Supabase Storage.
+  // Ajoutées par migration 013_order_items_composed_preview.sql (2026-05-26).
+  composed_preview_url: string | null;
+  composed_preview_back: string | null;
+  printful_variant_id: number | null;
   created_at: string;
 }
 

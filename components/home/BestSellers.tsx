@@ -133,7 +133,15 @@ export default function BestSellers() {
                       mode={visualMode}
                       fill
                       sizes="(min-width: 1280px) 23vw, (min-width: 640px) 50vw, 100vw"
-                      imageClassName={`object-contain transition duration-500 group-hover:scale-[1.04]${visualMode === "hm" ? " p-5 relative z-10" : " p-3"}`}
+                      // WG004 — fond blanc pur (cf. ProductCard.tsx) pour
+                      // matcher visuellement le packshot 100% blanc et éviter
+                      // le halo gris #fafafa par défaut du mode supplier.
+                      bgColor={product.id === "wg004" ? "#ffffff" : undefined}
+                      imageClassName={`object-contain transition duration-500 group-hover:scale-[1.04]${
+                        product.id === "wg004"
+                          ? ""
+                          : visualMode === "hm" ? " p-5 relative z-10" : " p-3"
+                      }`}
                       showBadge={false}
                     />
                   )}

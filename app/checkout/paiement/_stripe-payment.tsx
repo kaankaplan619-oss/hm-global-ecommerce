@@ -161,7 +161,9 @@ function PaymentForm({
           wallets: {
             applePay: "auto",
             googlePay: "auto",
-            link: "never",        // désactive Stripe Link (sauvegarde infos)
+            link: "auto",         // Stripe Link activé (paiement 1-clic, fidélise les
+                                  // clients récurrents en sauvant CB + adresse côté
+                                  // Stripe — RGPD compliant). Demande Kaan 2026-05-26.
           },
           defaultValues: {
             billingDetails: {

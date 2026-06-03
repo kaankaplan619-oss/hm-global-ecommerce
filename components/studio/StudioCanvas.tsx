@@ -89,6 +89,16 @@ interface Props {
   colorId: string;
   placement: Placement;
   productCategory?: string;
+  /** ID du produit HM — utilisé pour les overrides ciblés (ex. WG004 stock agence
+   *  qui a un cadrage TopTex spécifique nécessitant une zone cœur ajustée). */
+  productId?: string;
+  /** Liste des placements autorisés pour ce produit (depuis data/products.ts).
+   *  Pilote l'affichage des boutons CŒUR / DOS du sélecteur de vue : si le
+   *  produit n'a que "coeur" dans ses placements, le bouton DOS est masqué
+   *  (évite d'afficher un fallback dos cassé pour les produits sans image dos
+   *  dédiée, ex. WG004). Si non fourni : les 2 boutons restent affichés
+   *  (comportement legacy pour rétrocompatibilité). */
+  placements?: Placement[];
   packshot?: string | null;
   packshotBack?: string | null;
   objects: StudioObject[];
@@ -96,6 +106,70 @@ interface Props {
   /** Appelé quand l'utilisateur bascule entre face et dos */
   onViewChange?: (view: "front" | "back") => void;
 }
+
+// ── Override zone produit-spécifique (WG004 stock agence V1+) ───────────────
+// WG004 utilise un packshot TopTex où le sweat occupe seulement ~33% de la
+// surface centrale (vs ~83% pour les Printify cropped Gildan/Bella). Du coup
+// la zone cœur calibrée pour les hoodies Printify (centre 0.46, 0.40) tombe
+// au-dessus du sweat WG004 visible (sur le col/épaule). Override produit
+// pour repositionner la zone cœur sur la poitrine gauche du sweat WG004.
+//
+// Format identique à ZONES_BY_CATEGORY (lib/textile-zones.ts) :
+// [left, top, width, height] en fractions du canvas 0..1.
+//
+// Ne touche PAS aux zones globales — uniquement appliqué quand productId
+// correspond. Pour ajouter un autre produit override, étendre cet objet.
+const ZONE_OVERRIDES_BY_PRODUCT_ID: Record<string, {
+  coeur?: [number, number, number, number];
+  dos?:   [number, number, number, number];
+}> = {
+  wg004: {
+    // Iter 8 (2026-05-26) : taille réduite à 0.12 × 0.12 pour matcher visuellement
+    // un logo 10 cm réel. Le calcul `pxPerCm` (lib/textile-zones.ts SHIRT_BODY_FILL
+    // 0.58 + SHIRT_BODY_CM 52) snape un logo 10 cm à 11.15 % de canvas. La zone
+    // visuelle doit donc être proche de cette taille (avec une petite marge de
+    // sécurité) pour éviter que la zone pointillée paraisse plus grande que le
+    // logo qu'elle est censée représenter. 12 % = ~10.75 cm avec calibration
+    // global — vraie représentation du 10 cm sur le client.
+    //
+    // Note : les zones globales hoodies/tshirts dans textile-zones.ts utilisent
+    // 0.14-0.16 (= 14 % canvas) ce qui sur-représente le 10 cm. Override WG004
+    // ici corrige uniquement pour WG004 sans toucher aux autres produits.
+    //
+    // Itérations :
+    //   v1: [0.42, 0.42, 0.14, 0.14] → centre (0.49, 0.49) — packshot CDN, centré
+    //   v2: [0.42, 0.46, 0.14, 0.14] → centre (0.49, 0.53) — packshot CDN, milieu torse
+    //   v3: [0.52, 0.34, 0.14, 0.14] → centre (0.59, 0.41) — packshot CDN, convention OK
+    //   v4: [0.58, 0.25, 0.14, 0.14] → centre (0.65, 0.32) — cropped 62%, trop droite
+    //   v5: [0.45, 0.28, 0.14, 0.14] → centre (0.52, 0.35) — cropped 62%, centré
+    //   v6: [0.48, 0.28, 0.14, 0.14] → centre (0.55, 0.35) — cropped 72%, +3% droite
+    //   v7: [0.47, 0.27, 0.16, 0.16] → centre (0.55, 0.35) — cropped 72%, taille "spec" mais visuellement +14cm
+    //   v8: [0.49, 0.29, 0.12, 0.12] → centre (0.55, 0.35) — cropped 72%, taille 10cm visuelle réelle
+    //   v9: [0.52, 0.29, 0.12, 0.12] → centre (0.58, 0.35) — +3% droite pour bien marquer côté gauche porteur
+    //   v10: [0.54, 0.26, 0.12, 0.12] → centre (0.60, 0.32) — packshot fill 80% (sweat top à 15.5% au lieu de 21.2%),
+    //        zone remontée pour rester sur le cœur anatomique du sweat agrandi
+    //   v11: [0.56, 0.23, 0.12, 0.12] → centre (0.62, 0.29) — packshot 97% W × 80% H (match Gildan height),
+    //        sweat top à 10%, zone repositionnée pour rester sur le cœur anatomique
+    coeur: [0.56, 0.23, 0.12, 0.12],
+    // Zone dos WG004 : ajoutée iter 10 (2026-05-26) suite au sourcing de la
+    // vraie photo back via designpartner.fr.
+    //
+    // Iter 11 (2026-05-26) : taille réduite pour matcher le vrai 27×32 cm
+    // visuel via la calibration globale SHIRT_BODY_FILL=0.58 / SHIRT_BODY_CM=52
+    // (1cm = 1.115% canvas). 27 cm = 0.30 canvas, 32 cm = 0.36 canvas. Centre
+    // conservé à (0.50, 0.45) — haut de dos centré sous le col. Cohérent avec
+    // l'approche coeur (iter 8 v9) qui représente fidèlement le 10×10 cm.
+    //
+    // Itérations :
+    //   v10: [0.27, 0.25, 0.46, 0.42] → centre (0.50, 0.46), zone visuelle ~41×38 cm (trop grande)
+    //   v11: [0.35, 0.27, 0.30, 0.36] → centre (0.50, 0.45), zone visuelle 27×32 cm pile (encore trop)
+    //   v12: [0.37, 0.29, 0.26, 0.32] → centre (0.50, 0.45), zone visuelle ~23×29 cm (placement réaliste
+    //        en-dessous du max 27×32, plus représentatif du print habituel)
+    //   v13: [0.37, 0.28, 0.26, 0.32] → centre (0.50, 0.44), aligné sur packshot fill 80%
+    //   v14: [0.37, 0.27, 0.26, 0.32] → centre (0.50, 0.43), aligné sur packshot 97%×80% (sweat top à 10%)
+    dos: [0.37, 0.27, 0.26, 0.32],
+  },
+};
 
 // ── Zones de placement ─────────────────────────────────────────────────────────
 // Les centres (cx, cy) sont dérivés du rectangle [l, t, w, h] source de vérité
@@ -137,7 +211,7 @@ const GUIDE_META_DEFAULT = {
 // ── Composant ─────────────────────────────────────────────────────────────────
 
 const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas(
-  { colorId, placement, productCategory, packshot, packshotBack, objects, onObjectsChange, onViewChange },
+  { colorId, placement, productCategory, productId, placements, packshot, packshotBack, objects, onObjectsChange, onViewChange },
   ref,
 ) {
   const containerRef     = useRef<HTMLDivElement>(null);
@@ -181,14 +255,41 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     ? (packshot     ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg")
     : (packshotBack ?? mockups?.back  ?? packshot ?? "/mockups/tshirt/blanc-back.png");
 
+  // ── Helpers zone avec override produit (WG004 stock agence V1+) ─────────
+  // Si productId a un override dans ZONE_OVERRIDES_BY_PRODUCT_ID, on utilise
+  // le rectangle override. Sinon fallback sur ZONES_BY_CATEGORY via les helpers
+  // zonesGetCenter / zonesGetSize (lib/textile-zones.ts). Aucun produit autre
+  // que WG004 n'est impacté actuellement.
+  const getProductZoneCenter = useCallback(
+    (place: "coeur" | "dos"): [number, number] => {
+      const override = productId ? ZONE_OVERRIDES_BY_PRODUCT_ID[productId]?.[place] : undefined;
+      if (override) {
+        const [l, t, w, h] = override;
+        return [l + w / 2, t + h / 2];
+      }
+      return zonesGetCenter(productCategory, place);
+    },
+    [productId, productCategory],
+  );
+  const getProductZoneSize = useCallback(
+    (place: "coeur" | "dos"): { wFrac: number; hFrac: number } => {
+      const override = productId ? ZONE_OVERRIDES_BY_PRODUCT_ID[productId]?.[place] : undefined;
+      if (override) {
+        return { wFrac: override[2], hFrac: override[3] };
+      }
+      return zonesGetSize(productCategory, place);
+    },
+    [productId, productCategory],
+  );
+
   // ── Zone centre (dérivé du rectangle source de vérité — textile-zones) ──
   const getZoneCenter = useCallback((): [number, number] => {
-    return zonesGetCenter(productCategory, view === "back" ? "dos" : "coeur");
-  }, [view, productCategory]);
+    return getProductZoneCenter(view === "back" ? "dos" : "coeur");
+  }, [view, getProductZoneCenter]);
 
   // ── Guide zone actif (dimensions: rectangle SoV ; méta: cm Printful) ────
   const guidePlacement = view === "back" ? "dos" : "coeur";
-  const guideSize = zonesGetSize(productCategory, guidePlacement);
+  const guideSize = getProductZoneSize(guidePlacement);
   const guideMeta = (productCategory ? GUIDE_META[productCategory] : null)?.[guidePlacement]
     ?? GUIDE_META_DEFAULT[guidePlacement];
   const guideZone = { ...guideSize, ...guideMeta };
@@ -198,7 +299,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
   const handleSnapToZone = useCallback(() => {
     const cSize     = containerSizeRef.current || 480;
     const placement = view === "back" ? "dos" : "coeur";
-    const [cx, cy]  = zonesGetCenter(productCategory, placement);
+    const [cx, cy]  = getProductZoneCenter(placement);
     const meta      = (productCategory ? GUIDE_META[productCategory] : null)?.[placement]
       ?? GUIDE_META_DEFAULT[placement];
     const defaultCm = meta.defaultCm;
@@ -226,7 +327,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     setCmInput(defaultCm.toFixed(1));
     setSnapFeedback(true);
     setTimeout(() => setSnapFeedback(false), 700);
-  }, [selectedId, getZoneCenter, view, productCategory]);
+  }, [selectedId, getProductZoneCenter, view, productCategory]);
 
   // ── exportPNG / exportComposed ───────────────────────────────────────────
   useImperativeHandle(ref, () => ({
@@ -524,7 +625,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
       const cSize = containerSizeRef.current || 480;
 
       // Résoudre la zone cible en fonction de la FACE de l'objet, pas de la vue courante
-      const [cx, cy] = zonesGetCenter(productCategory, obj.face === "back" ? "dos" : "coeur");
+      const [cx, cy] = getProductZoneCenter(obj.face === "back" ? "dos" : "coeur");
 
       // Tailles par défaut calées sur les specs Printful DTG/DTF
       const defaultCm = obj.face === "back" ? 21 : 10;
@@ -540,7 +641,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
         )
       );
     },
-    [productCategory],
+    [getProductZoneCenter],
   );
 
   // ── Helpers toolbar ───────────────────────────────────────────────────────
@@ -627,7 +728,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     onObjectsChangeRef.current(
       objects.map((o) => {
         if (o.type !== "text" || o.fabricState?.cx !== undefined) return o;
-        const [cx, cy] = zonesGetCenter(productCategory, o.face === "back" ? "dos" : "coeur");
+        const [cx, cy] = getProductZoneCenter(o.face === "back" ? "dos" : "coeur");
         return { ...o, fabricState: { cx, cy, scale: 1, angle: 0, nw: 0, nh: 0 } };
       })
     );
@@ -729,8 +830,9 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
           const angle = fs?.angle ?? 0;
           const isSel = selectedId === obj.id;
 
+          // React 19 / Next 16 : `key` ne peut PAS être passé via spread.
+          // On le sépare des autres props et on le passe directement sur <div key={obj.id} ...>.
           const sharedWrapperProps = {
-            key: obj.id,
             onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => handleLogoPointerDown(e, obj),
             onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => handleLogoPointerMove(e, obj),
             onPointerUp: handleLogoDragEnd,
@@ -743,6 +845,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
             const scaledSize = (obj.fontSize ?? 24) * scale;
             return (
               <div
+                key={obj.id}
                 {...sharedWrapperProps}
                 className="absolute"
                 style={{
@@ -813,6 +916,7 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
 
           return (
             <div
+              key={obj.id}
               {...sharedWrapperProps}
               className="absolute"
               style={{
@@ -1005,20 +1109,29 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
         )
       )}
 
-      {/* ── Vue selector style PrintOclock (miniatures) + toggle guide ── */}
+      {/* ── Vue selector style PrintOclock (miniatures) + toggle guide ──
+            Boutons CŒUR (front) / DOS (back) filtrés selon product.placements :
+              - placements contient "coeur" ou "coeur-dos" → bouton front affiché
+              - placements contient "dos" ou "coeur-dos" → bouton back affiché
+              - placements absent (rétrocompat) → les 2 boutons affichés
+            Évite d'afficher un bouton dos cassé pour les produits sans image dos
+            dédiée (ex. WG004 stock agence avec placements=["coeur"] uniquement
+            → fallback Studio renverrait un t-shirt noir générique trompeur). */}
       <div className="flex items-end gap-2">
         {([
           {
             v:     "front" as const,
-            label: "CŒUR ♥",
+            label: "FACE",
             img:   packshot ?? mockups?.front ?? "/mockups/tshirt/blanc-front.jpg",
+            show:  !placements || placements.some((p) => p === "coeur" || p === "coeur-dos"),
           },
           {
             v:     "back" as const,
             label: "DOS",
             img:   packshotBack ?? mockups?.back ?? packshot ?? "/mockups/tshirt/blanc-back.png",
+            show:  !placements || placements.some((p) => p === "dos" || p === "coeur-dos"),
           },
-        ]).map(({ v, label, img }) => (
+        ]).filter(({ show }) => show).map(({ v, label, img }) => (
           <button
             key={v}
             type="button"

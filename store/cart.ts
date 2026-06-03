@@ -221,18 +221,21 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "hm-global-cart",
-      // Ne pas persister isOpen ni les images base64 (composedPreviewUrl/Back — trop lourdes)
+      // Persiste isOpen=false (toujours), printConfig nettoyé (sans base64),
+      // composedPreviewUrl/Back conservés UNIQUEMENT si ce sont des URLs Supabase
+      // (https://). Les data URL base64 sont jetés (trop lourdes pour
+      // localStorage qui a une limite ~5 MB par origine).
       partialize: (state) => ({
         items: state.items.map((item) => {
-          // Exclure du localStorage :
-          // - composedPreviewUrl/Back : images base64 volumineuses (studio textile)
-          // - printConfig.frontPreviewUrl/backPreviewUrl : si base64 (data:...), on les retire.
-          //   Si ce sont des URLs Supabase (https://...), on les conserve.
-          //   Tous les autres champs printConfig sont persistés : sans eux, le checkout
-          //   reçoit printConfig=null et plante côté serveur (create-payment-intent).
+          // Conserve les previews uniquement si ce sont des URLs Supabase
+          // Storage (uploadComposedPreviewToSupabase les transforme en URL avant
+          // l'ajout au panier). Si l'upload a échoué et qu'on a encore du base64,
+          // on les jette pour éviter de saturer le localStorage.
+          const keepIfSupabaseUrl = (s?: string) =>
+            s && !s.startsWith("data:") ? s : undefined;
           const { composedPreviewUrl, composedPreviewBack, printConfig, ...rest } = item;
-          void composedPreviewUrl;
-          void composedPreviewBack;
+          const safeComposedFace = keepIfSupabaseUrl(composedPreviewUrl);
+          const safeComposedBack = keepIfSupabaseUrl(composedPreviewBack);
 
           const safePrintConfig = printConfig
             ? {
@@ -248,7 +251,12 @@ export const useCartStore = create<CartState>()(
               }
             : undefined;
 
-          return { ...rest, printConfig: safePrintConfig };
+          return {
+            ...rest,
+            composedPreviewUrl:  safeComposedFace,
+            composedPreviewBack: safeComposedBack,
+            printConfig: safePrintConfig,
+          };
         }),
       }),
       // Empêche la réhydratation automatique pendant le rendu React (SSR/CSR).

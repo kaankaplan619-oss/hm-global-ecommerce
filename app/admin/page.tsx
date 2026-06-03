@@ -164,6 +164,14 @@ export default function AdminPage() {
       countLabel: "total",
     },
     {
+      href: "/admin/devis",
+      icon: FileText,
+      title: "Devis rapides",
+      description: "Demandes entrantes, statut, fichier client",
+      count: "—",
+      countLabel: "à traiter",
+    },
+    {
       href: "/admin/clients",
       icon: Users,
       title: "Clients",

@@ -29,10 +29,13 @@ export const STATUS_META: Record<OrderStatus, { label: string; badge: string; gr
   attente_reception_textile:   { label: "Attente textile",        badge: "badge-info",    group: "active" },
   en_production:               { label: "En production",          badge: "badge-info",    group: "active" },
   prete_a_expedier:            { label: "Prête à expédier",       badge: "badge-success", group: "urgent" },
+  // Virement bancaire (migration 014)
+  awaiting_bank_transfer:      { label: "Attente virement",       badge: "badge-warning", group: "urgent" },
 };
 
 function getNextAction(status: OrderStatus): string {
   switch (status) {
+    case "awaiting_bank_transfer":      return "Attente virement — marquer payé une fois reçu";
     case "paiement_recu":
     case "commande_a_valider":          return "Valider la commande";
     case "fichier_a_verifier":          return "Vérifier le fichier logo";
@@ -107,7 +110,7 @@ interface RawOrder {
 const FILTER_GROUPS = [
   {
     label: "Urgences",
-    statuses: ["commande_a_valider", "paiement_recu", "fichier_a_verifier", "bat_a_preparer", "a_commander_fournisseur", "prete_a_expedier"] as OrderStatus[],
+    statuses: ["commande_a_valider", "paiement_recu", "awaiting_bank_transfer", "fichier_a_verifier", "bat_a_preparer", "a_commander_fournisseur", "prete_a_expedier"] as OrderStatus[],
   },
   {
     label: "En cours",
@@ -170,7 +173,7 @@ export default function AdminCommandesPage() {
     // Filtre statut
     if (filter === "urgent") {
       const urgentStatuses: OrderStatus[] = [
-        "commande_a_valider", "paiement_recu", "fichier_a_verifier",
+        "commande_a_valider", "paiement_recu", "awaiting_bank_transfer", "fichier_a_verifier",
         "bat_a_preparer", "a_commander_fournisseur", "prete_a_expedier",
       ];
       if (!urgentStatuses.includes(o.status)) return false;

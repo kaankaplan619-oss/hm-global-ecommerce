@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { LogoUploadResult } from "@/lib/uploadLogo";
 import type { LogoPlacementTransform } from "@/lib/bat-utils";
 import dynamic from "next/dynamic";
 import type { MockupViewerProps } from "@/components/product/MockupViewer";
 import Link from "next/link";
-import { Info } from "lucide-react";
+import { ArrowRight, Info } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
 import LightMockupPreview from "@/components/product/LightMockupPreview";
@@ -24,7 +24,6 @@ import { getPrintifyGallery } from "@/lib/suppliers/printify/mockups-local";
 import {
   getDisplayedColors,
   isPrintifyV1Product,
-  getPrintifyColorIdForHM,
 } from "@/lib/suppliers/printify/printify-colors";
 import { getV1PrintifyImage, getV1PrintifyGallery } from "@/lib/suppliers/printify/v1-image";
 import HMProductVisual from "@/components/product/HMProductVisual";
@@ -58,6 +57,45 @@ const BatPreviewStudio = dynamic(
 type Props = {
   product: Product;
 };
+
+const CATEGORY_USAGE: Record<string, string> = {
+  tshirts:    "Équipes, événements, associations",
+  hoodies:    "Marque, équipe, merch premium",
+  softshells: "Terrain, chantier, nettoyage",
+  polos:      "Entreprise, restaurant, accueil",
+  polaires:   "Extérieur, logistique, équipe terrain",
+  casquettes: "Événement, club, staff",
+  sacs:       "Goodies, boutique, événement",
+  goodies:    "Cadeaux clients, séminaires",
+  enfants:    "Écoles, clubs, sorties",
+};
+
+const TECHNIQUE_LABELS_SHORT: Record<Technique, string> = {
+  dtf:                "DTF",
+  dtflex:             "DTFlex",
+  flex:               "Flex",
+  broderie:           "Broderie",
+  broderie_illimitee: "Broderie couleur illimitée",
+  print:              "Print",
+};
+
+function getRecommendedTechnique(product: Product): string {
+  const preferred = product.techniqueRecommandee ?? product.techniques[0];
+  return TECHNIQUE_LABELS_SHORT[preferred] ?? preferred.toUpperCase();
+}
+
+function getRecommendedMinimum(product: Product): string {
+  if (product.quoteOnly) return "Sur devis";
+  return `${product.minOrderQty ?? 10} pièces`;
+}
+
+function getIndicativeDelay(product: Product): string {
+  if (product.category === "goodies") return "3 à 7 jours ouvrés après BAT";
+  if (product.techniques.includes("broderie") || product.techniques.includes("broderie_illimitee")) {
+    return "7 à 12 jours ouvrés après BAT";
+  }
+  return "5 à 10 jours ouvrés après BAT";
+}
 
 export default function ProductDetailClient({ product }: Props) {
   const searchParams = useSearchParams();
@@ -491,23 +529,20 @@ export default function ProductDetailClient({ product }: Props) {
                   priority
                   showBadge={!studioComposedUrl && !isPOD}
                   className="w-full"
-                  bgColor={studioComposedUrl ? "#ffffff" : isPOD ? "#ffffff" : undefined}
+                  bgColor={studioComposedUrl ? "#ffffff" : isPOD ? "#ffffff" : product.id === "wg004" ? "#ffffff" : undefined}
                   imageClassName={
                     studioComposedUrl
                       ? "object-contain w-full transition-opacity duration-300"
                       : `object-contain w-full transition-opacity duration-300${
-                          // WG004 stock agence : packshot TopTex à 33% fill → scale 1.25
-                          // + object-top + p-2 pour agrandir l'image dans la fiche tout en
-                          // gardant col/manches visibles (marge horizontale ~10%, marge top
-                          // ~3%). Pattern aligné iter 3 cards catalogue (ProductCard.tsx)
-                          // mais ratio plus doux car container fiche plus carré que cards.
                           visualMode === "hm"
                             ? " p-4 relative z-10"
-                            : isPOD
-                              ? " scale-[1.10] p-3"
-                              : product.id === "wg004"
-                                ? " scale-[1.25] p-2 object-top"
-                                : " p-6"
+                            : product.category === "polos"
+                              ? " p-6"
+                              : isPOD
+                                ? " scale-[1.10] p-3"
+                                : product.id === "wg004"
+                                  ? ""
+                                  : " p-6"
                         }`
                   }
                 />
@@ -641,7 +676,7 @@ export default function ProductDetailClient({ product }: Props) {
                  utilisent la navigation par dots simples du carousel principal
                  (ligne 629-655). Pour les ajouter aux non-textiles, il faudra
                  introduire des SVG dédiés par famille. */}
-            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && product.category !== "goodies" && (() => {
+            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && product.category !== "goodies" && product.category !== "casquettes" && (() => {
               const sc   = selectedColor?.hex ?? "#111111";
               // Contour visible uniquement sur les coloris très clairs
               const lum  = parseInt(sc.replace("#",""), 16);
@@ -752,7 +787,7 @@ export default function ProductDetailClient({ product }: Props) {
                  Printify) reste affichée telle quelle, et le client comprend que
                  l'équipe HM Global préparera le rendu mug avant production
                  (cf. encart info dans le ProductConfigurator). */}
-            {logoFile && product.category !== "goodies" && (
+            {logoFile && product.category !== "goodies" && product.category !== "casquettes" && (
               <LightMockupPreview
                 imageUrl={currentImageUrl}
                 logoFile={logoFile}
@@ -764,7 +799,14 @@ export default function ProductDetailClient({ product }: Props) {
               />
             )}
 
-            {/* ── Galerie fournisseur (TopTex) — section secondaire ── */}
+            {/* ── Galerie fournisseur (TopTex) — section secondaire ──
+                 Masqué pour WG004 stock agence : product.images est rempli avec
+                 5 URLs CDN TopTex qui sont en réalité la même photo dupliquée
+                 (front packshot 180 KB + 4× 20 KB placeholders/thumbs). Le bloc
+                 affiche donc 5× le même visuel ce qui donne une impression mal
+                 finie. Les autres produits (Bella, Gildan, Kariban etc.) gardent
+                 la galerie qui contient de vraies vues alternatives utiles. */}
+            {product.id !== "wg004" && (
             <details className="group rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)]">
               <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--hm-text-soft)]">
@@ -791,6 +833,7 @@ export default function ProductDetailClient({ product }: Props) {
                 />
               </div>
             </details>
+            )}
           </>
         )}
 
@@ -865,6 +908,61 @@ export default function ProductDetailClient({ product }: Props) {
               <TopTexStockBadge toptexRef={product.toptexRef} />
             </div>
           )}
+          <div className="mb-5 grid gap-2 rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 sm:grid-cols-2">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">Usage conseillé</p>
+              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">
+                {product.ideaPour?.[0] ?? CATEGORY_USAGE[product.category] ?? "Projet textile professionnel"}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">Technique recommandée</p>
+              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getRecommendedTechnique(product)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">Minimum conseillé</p>
+              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getRecommendedMinimum(product)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">Délai indicatif</p>
+              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getIndicativeDelay(product)}</p>
+            </div>
+          </div>
+          {/* CTA principal — comportement par catégorie :
+               - Goodies (mug) : V1 personnalisable. Le bouton scroll vers le
+                 ProductConfigurator (id="mug-commander") où se trouvent l'upload
+                 et le vrai bouton "Ajouter mon mug au panier". Pas de redirect
+                 /devis-rapide qui serait incohérent avec un flow panier direct.
+               - Textile + quoteOnly (polo) : raccourci historique vers le
+                 formulaire devis rapide pré-rempli pour le slug produit. */}
+          {product.category === "goodies" || product.category === "casquettes" || product.id === "wg004" ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("mug-commander")?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
+            >
+              {product.id === "wg004"
+                ? "Commander ce sweat"
+                : product.category === "casquettes"
+                ? "Commander ma casquette"
+                : "Commander mon mug"}
+              <ArrowRight size={16} />
+            </button>
+          ) : (
+            <Link
+              href={`/devis-rapide?produit=${encodeURIComponent(product.slug)}`}
+              className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
+            >
+              Demander un devis rapide
+              <ArrowRight size={16} />
+            </Link>
+          )}
           {product.volumePricing ? (
             <div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
@@ -902,7 +1000,13 @@ export default function ProductDetailClient({ product }: Props) {
         {/* Bascule devis-only : si product.quoteOnly = true, on remplace
             entièrement le ProductConfigurator (et donc le bouton "Ajouter
             au panier") par un CTA "Demander un devis". Aucune logique
-            panier / Stripe / API n'est appelée pour ces produits. */}
+            panier / Stripe / API n'est appelée pour ces produits.
+
+            id="mug-commander" : cible du scroll-anchor depuis le CTA principal
+            "Commander mon mug" rendu en haut de la colonne droite (cf. ligne ~911).
+            Présent pour tous les produits mais utilisé uniquement par les goodies
+            — anodin pour les textile/quoteOnly qui n'ont pas de lien vers cet id. */}
+        <div id="mug-commander" className="scroll-mt-24">
         {product.quoteOnly ? (
           <QuoteOnlyBlock product={product} />
         ) : (
@@ -926,23 +1030,21 @@ export default function ProductDetailClient({ product }: Props) {
           logoPlacementTransform={logoPlacementTransform}
           batRef={batData?.batRef}
           studioLogoPreset={studioLogoPreset ?? undefined}
-          hideLogoUpload={product.category !== "goodies"}
+          hideLogoUpload={product.category !== "goodies" && product.category !== "casquettes"}
           requirePersonalization={product.supplierName === "printful"}
           studioComposedFront={studioComposedFront}
           studioComposedBack={studioComposedBack}
           studioCTA={
-            product.category === "goodies" ? (
+            product.category === "goodies" || product.category === "casquettes" ? (
               /* Goodies (mugs) — V1 personnalisable simple :
                  - L'upload logo est activé dans ProductConfigurator (hideLogoUpload=false ci-dessus)
                  - Pas de Studio Fabric.js (réservé textile)
                  - Pas de bouton studio CTA — on laisse le bouton "Ajouter au panier"
                    par défaut du ProductConfigurator s'afficher (gère lui-même
-                   l'état logo/taille/quantité + label "Ajoutez votre visuel pour
-                   commander" → "Ajouter mon mug au panier")
+                   l'état logo/taille/quantité + label "Uploadez votre design d'abord"
+                   → "Ajouter mon mug au panier")
                  - Lien secondaire "Demander un devis" rendu DANS le ProductConfigurator
-                   (sous le bouton, lien discret). L'encart d'info ci-dessus
-                   explique que l'équipe HM Global prépare le rendu mug avant
-                   production. */
+                   (sous le bouton, lien discret) */
               undefined
             ) : size ? (
               <Link
@@ -967,6 +1069,7 @@ export default function ProductDetailClient({ product }: Props) {
           }
         />
         )}
+        </div>
       </div>
 
       {/* ── BAT Preview Studio (portal body) — t-shirts B&C uniquement ── */}

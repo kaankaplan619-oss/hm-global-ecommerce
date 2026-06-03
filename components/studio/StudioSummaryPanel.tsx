@@ -229,7 +229,7 @@ export default function StudioSummaryPanel({
   };
 
   // ── Étape 2 : confirmation → ajouter directement au panier ──────────────
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!preview || !modalSize || !selectedColor) return;
     setConfirming(true);
     try {
@@ -247,7 +247,37 @@ export default function StudioSummaryPanel({
             }
           : undefined;
 
-      // Ajouter au panier directement — pas de passage par la fiche produit
+      // ── Upload des aperçus BAT composés (face + dos) vers Supabase Storage ──
+      // On a deux data URL base64 (du Fabric canvas). On les uploade EN PARALLÈLE
+      // dans le bucket customer-logos sous previews/ pour récupérer 2 URLs
+      // publiques courtes. C'est ces URLs qui voyagent ensuite dans le cart →
+      // checkout → DB → admin, plutôt que les base64 lourds (qui sautaient
+      // le localStorage et qu'on perdait au refresh).
+      //
+      // Session ID stable côté browser (utilisée par uploadLogo aussi). On a la
+      // garantie que c'est le même que dans le checkout, donc tous les uploads
+      // d'un parcours client tombent sous le même dossier.
+      let sessionId = "ssr";
+      if (typeof window !== "undefined") {
+        sessionId = sessionStorage.getItem("hm_session_id")
+          ?? (() => {
+            const id = crypto.randomUUID();
+            sessionStorage.setItem("hm_session_id", id);
+            return id;
+          })();
+      }
+      const { uploadBothComposedPreviews } = await import("@/lib/uploadComposedPreview");
+      const { faceUrl, backUrl } = await uploadBothComposedPreviews(
+        preview.composedFront || undefined,
+        preview.composedBack  || undefined,
+        sessionId,
+      );
+
+      // Ajouter au panier directement — pas de passage par la fiche produit.
+      // On stocke EN PRIORITÉ les URLs uploadées (légères, persistables). Si
+      // l'upload a foiré (auth manquante, réseau), on tombe en fallback sur
+      // les data URL base64 — affichage en session sans persistance, le client
+      // peut quand même finaliser sa commande sans bloquer.
       addItem({
         product,
         quantity:  modalQty,
@@ -258,8 +288,8 @@ export default function StudioSummaryPanel({
         logoFile,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         logoPlacementTransform: (sr.logoPlacementTransform as any) ?? undefined,
-        composedPreviewUrl:  preview.composedFront  || undefined,
-        composedPreviewBack: preview.composedBack   || undefined,
+        composedPreviewUrl:  faceUrl ?? preview.composedFront ?? undefined,
+        composedPreviewBack: backUrl ?? preview.composedBack  ?? undefined,
       });
 
       // Navigation client-side → store Zustand conservé en mémoire avec les images
@@ -284,8 +314,8 @@ export default function StudioSummaryPanel({
           pour échapper au stacking context de la sidebar overflow-y-auto.
           ════════════════════════════════════════════════════════════════════ */}
       {preview && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="flex w-full max-w-2xl flex-col gap-0 overflow-hidden rounded-3xl bg-white shadow-[0_32px_80px_rgba(0,0,0,0.35)]">
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm sm:items-center">
+          <div className="flex max-h-[92vh] w-full max-w-4xl flex-col gap-0 overflow-hidden rounded-3xl bg-white shadow-[0_32px_80px_rgba(0,0,0,0.35)]">
 
             {/* ── En-tête ── */}
             <div className="flex items-center justify-between border-b border-[var(--hm-line)] px-6 py-4">
@@ -309,14 +339,22 @@ export default function StudioSummaryPanel({
             {/* ── Corps — image + récap ── */}
             <div className="flex flex-col gap-0 sm:flex-row">
 
-              {/* Image composée */}
-              <div className="relative flex flex-col items-center justify-center gap-3 bg-[#f7f6f4] p-6 sm:w-[55%]">
+              {/* Image composée — la colonne occupe 55% de la modale élargie
+                  (max-w-4xl). Les packshots WG004 ont été re-croppés offline à
+                  ~85% de remplissage (sharp trim + padding 7.5% chaque côté).
+                  Fond blanc (bg-white) pour fusionner parfaitement avec le
+                  blanc natif du packshot : pas de cadre gris visible, l'aperçu
+                  semble flotter directement dans la modale. Hauteur max
+                  alignée sur la colonne récap pour que les boutons Face/Dos
+                  restent visibles. Le BAT envoyé à l'atelier n'est pas touché
+                  (généré à part). */}
+              <div className="relative flex flex-col items-center justify-center gap-3 overflow-hidden bg-white p-3 sm:w-[55%] sm:p-4">
                 {previewSrc ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={previewSrc}
                     alt="Aperçu personnalisation"
-                    className="h-auto max-h-72 w-full object-contain"
+                    className="h-auto max-h-[480px] w-full object-contain"
                   />
                 ) : (
                   <div className="flex h-56 w-full items-center justify-center rounded-2xl bg-[var(--hm-bg)] text-[var(--hm-text-muted)] text-xs">
