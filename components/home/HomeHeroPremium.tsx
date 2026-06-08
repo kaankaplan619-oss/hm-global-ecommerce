@@ -75,10 +75,10 @@ export default function HomeHeroPremium() {
                 <ArrowRight size={16} />
               </Link>
               <Link
-                href="#packs-textile"
+                href="/catalogue"
                 className="btn-hm-violet-outline w-full justify-center sm:w-auto"
               >
-                Voir les packs textile
+                Voir le catalogue
               </Link>
             </div>
 

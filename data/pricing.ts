@@ -742,6 +742,23 @@ export const CASQUETTE_YUPOONG_6006_BRODERIE_VOLUME: VolumePricingTier[] = [
   { from: 25,         unitPrice: 15.90 },
 ];
 
+// ─── Polo Gildan 64800 Printful (broderie cœur) ──────────────────────────────
+// Base Printful ~13.80€ (S-XL) + broderie. Broderie uniquement (pas de DTF/flex
+// sur ce piqué côté Printful). Commande directe. Remises -10% à 10 pcs, -20% à 25.
+export const POLO_GILDAN_64800_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 29.90 },
+  { from: 10, to: 24, unitPrice: 26.90 },
+  { from: 25,         unitPrice: 23.90 },
+];
+
+// Broderie via Printify : cœur OU dos inclus dans le prix de base ;
+// cœur + dos = 2 emplacements brodés → +8 €.
+export const POLO_GILDAN_64800_PLACEMENT_SURCHARGES = {
+  coeur:       0,
+  dos:         0,
+  "coeur-dos": 8,
+} as const;
+
 /**
  * Retourne le prix unitaire TTC selon le palier de quantité.
  * Renvoie le prix du premier palier si quantité inférieure au minimum.

@@ -160,6 +160,37 @@ const GILDAN_18500_VARIANTS: Record<string, number> = {
   "gris-sport__2XL": 5614,
 };
 
+// ─── Polo Gildan 64800 piqué (product_id: 670) ────────────────────────────────
+// Broderie uniquement (Printful : embroidery_chest_left + manches).
+// Couleurs HM Global → Printful : noir → Black, marine → Navy,
+// gris-sport → Sport Grey, blanc → White. Tailles S–XXL (XXL → 2XL normalisé).
+
+const GILDAN_64800_VARIANTS: Record<string, number> = {
+  "noir__S":   16752,
+  "noir__M":   16753,
+  "noir__L":   16754,
+  "noir__XL":  16755,
+  "noir__2XL": 16756,
+
+  "marine__S":   16759,
+  "marine__M":   16760,
+  "marine__L":   16761,
+  "marine__XL":  16762,
+  "marine__2XL": 16763,
+
+  "gris-sport__S":   16766,
+  "gris-sport__M":   16767,
+  "gris-sport__L":   16768,
+  "gris-sport__XL":  16784,
+  "gris-sport__2XL": 16769,
+
+  "blanc__S":   16772,
+  "blanc__M":   16773,
+  "blanc__L":   16774,
+  "blanc__XL":  16775,
+  "blanc__2XL": 16776,
+};
+
 // ─── Casquette Flexfit 6277 (product_id: 140) ─────────────────────────────────
 // Couleurs HM Global → Printful color name
 //   noir       → Black          marine → Navy        gris → Dark Grey
@@ -203,6 +234,9 @@ const PRODUCT_VARIANT_MAP: Record<string, Record<string, number>> = {
   "bella-3001":   BELLA_3001_VARIANTS,
   "gildan-18000": GILDAN_18000_VARIANTS,
   "gildan-18500": GILDAN_18500_VARIANTS,
+  // gildan-64800 (polo) : retiré de l'auto-fulfillment Printful — Printful ne fait
+  // que la broderie cœur, pas le dos. Le polo (cœur + dos) passe par Printify en
+  // traitement atelier manuel. GILDAN_64800_VARIANTS conservé pour référence.
   "casquette-flexfit-6277": CASQUETTE_FLEXFIT_6277_VARIANTS,
   "casquette-yupoong-6006": CASQUETTE_YUPOONG_6006_VARIANTS,
 };

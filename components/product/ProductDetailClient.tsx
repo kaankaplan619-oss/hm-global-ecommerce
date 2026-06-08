@@ -676,7 +676,7 @@ export default function ProductDetailClient({ product }: Props) {
                  utilisent la navigation par dots simples du carousel principal
                  (ligne 629-655). Pour les ajouter aux non-textiles, il faudra
                  introduire des SVG dédiés par famille. */}
-            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && product.category !== "goodies" && product.category !== "casquettes" && (() => {
+            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && product.category !== "goodies" && product.category !== "casquettes" && product.category !== "polos" && (() => {
               const sc   = selectedColor?.hex ?? "#111111";
               // Contour visible uniquement sur les coloris très clairs
               const lum  = parseInt(sc.replace("#",""), 16);
@@ -787,7 +787,7 @@ export default function ProductDetailClient({ product }: Props) {
                  Printify) reste affichée telle quelle, et le client comprend que
                  l'équipe HM Global préparera le rendu mug avant production
                  (cf. encart info dans le ProductConfigurator). */}
-            {logoFile && product.category !== "goodies" && product.category !== "casquettes" && (
+            {logoFile && product.category !== "goodies" && product.category !== "casquettes" && product.category !== "polos" && (
               <LightMockupPreview
                 imageUrl={currentImageUrl}
                 logoFile={logoFile}
@@ -935,7 +935,7 @@ export default function ProductDetailClient({ product }: Props) {
                  /devis-rapide qui serait incohérent avec un flow panier direct.
                - Textile + quoteOnly (polo) : raccourci historique vers le
                  formulaire devis rapide pré-rempli pour le slug produit. */}
-          {product.category === "goodies" || product.category === "casquettes" || product.id === "wg004" ? (
+          {product.category === "goodies" || product.category === "casquettes" || product.category === "polos" || product.id === "wg004" ? (
             <button
               type="button"
               onClick={(e) => {
@@ -951,6 +951,8 @@ export default function ProductDetailClient({ product }: Props) {
                 ? "Commander ce sweat"
                 : product.category === "casquettes"
                 ? "Commander ma casquette"
+                : product.category === "polos"
+                ? "Commander mon polo"
                 : "Commander mon mug"}
               <ArrowRight size={16} />
             </button>

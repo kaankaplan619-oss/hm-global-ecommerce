@@ -10,25 +10,27 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   {
-    label: "Catalogue",
+    label: "Textile",
     href: "/catalogue",
     // V1.1 (2026-05-27) — Menu étendu aux 7 catégories actives du site
     // (vs 2 auparavant : T-shirts + Hoodies seulement). Chaque entrée mène
     // à /catalogue/{category} qui est une route dynamique déjà fonctionnelle
     // (vérifié HTTP 200 sur toutes). Ordre : du plus vendu au plus niche.
+    // V1.2 — Menu réduit aux catégories qui ont réellement des produits
+    // (T-shirts, Hoodies, Polos, Casquettes, Goodies). Sacs & Enfants masqués
+    // tant qu'ils sont vides (évite les pages catalogue vides + désencombre le
+    // menu). À réactiver quand ces catégories auront des produits visibles.
     children: [
-      { label: "T-shirts",            href: "/catalogue/tshirts" },
-      { label: "Hoodies & Sweats",    href: "/catalogue/hoodies" },
-      { label: "Polos",               href: "/catalogue/polos" },
-      { label: "Sacs & Tote bags",    href: "/catalogue/sacs" },
-      { label: "Goodies & Mugs",      href: "/catalogue/goodies" },
-      { label: "Casquettes",          href: "/catalogue/casquettes" },
-      { label: "Vêtements enfants",   href: "/catalogue/enfants" },
-      { label: "Voir tout le catalogue →", href: "/catalogue" },
+      { label: "T-shirts",       href: "/catalogue/tshirts" },
+      { label: "Hoodies",        href: "/catalogue/hoodies" },
+      { label: "Polos",          href: "/catalogue/polos" },
+      { label: "Casquettes",     href: "/catalogue/casquettes" },
+      { label: "Goodies & Mugs", href: "/catalogue/goodies" },
+      { label: "Voir tout →",    href: "/catalogue" },
     ],
   },
   {
-    label: "Impression",
+    label: "Print",
     href: "/impression",
     children: [
       { label: "Cartes de visite", href: "/impression#business-cards" },
@@ -49,6 +51,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const { toggleCart, getTotalItems } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
 
@@ -65,6 +68,13 @@ export default function Header() {
   }, []);
 
   const totalItems = mounted ? getTotalItems() : 0;
+
+  // Bloque le scroll de la page derrière le menu mobile ouvert (sinon le geste
+  // de glissement fait défiler la page au lieu du menu).
+  useEffect(() => {
+    document.body.style.overflow = isMobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobileOpen]);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);
@@ -148,12 +158,10 @@ export default function Header() {
           <div className="flex shrink-0 items-center gap-1 md:gap-1.5">
             <Link
               href={isAuthenticated ? "/mon-compte" : "/connexion"}
-              className="btn-ghost hidden rounded-full border border-transparent px-3 lg:flex"
+              className="hidden items-center gap-1.5 rounded-full border border-[var(--hm-line)] bg-white/80 px-3.5 py-2 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)] lg:inline-flex"
             >
-              <User size={16} />
-              <span className="hidden text-xs xl:block">
-                {isAuthenticated ? user?.firstName : "Connexion"}
-              </span>
+              <User size={15} />
+              <span>{isAuthenticated ? (user?.firstName ?? "Mon compte") : "Connexion"}</span>
             </Link>
 
             {isAuthenticated && user?.role === "admin" && (
@@ -198,51 +206,64 @@ export default function Header() {
       </div>
 
       {isMobileOpen && (
-        <div className="border-t border-[rgba(63,45,88,0.08)] bg-white/92 backdrop-blur-xl xl:hidden">
+        <div className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain border-t border-[rgba(63,45,88,0.08)] bg-white/92 backdrop-blur-xl xl:hidden">
           <nav className="container py-5">
             <div className="rounded-[2rem] border border-[rgba(63,45,88,0.08)] bg-white p-5 shadow-[0_22px_45px_rgba(63,45,88,0.10)]">
-            <div className="mb-5 rounded-[1.5rem] border border-[var(--hm-line)] bg-[linear-gradient(135deg,rgba(95,168,210,0.10),rgba(255,255,255,0.92),rgba(177,63,116,0.08))] px-4 py-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--hm-primary)]">
-                Commander sans friction
-              </p>
-              <p className="mt-2 max-w-[26ch] text-sm leading-6 text-[var(--hm-text-soft)]">
-                Accès direct au catalogue ou accompagnement sur devis selon votre besoin.
-              </p>
-            </div>
+            {/* Compte / connexion mis en avant en haut du menu */}
+            <Link
+              href={isAuthenticated ? "/mon-compte" : "/connexion"}
+              onClick={() => setIsMobileOpen(false)}
+              className="mb-4 flex items-center justify-center gap-2 rounded-2xl border border-[var(--hm-primary)] px-4 py-3 text-sm font-bold text-[var(--hm-primary)] transition-colors hover:bg-[rgba(177,63,116,0.07)]"
+            >
+              <User size={16} />
+              {isAuthenticated ? "Mon compte" : "Connexion / Créer un compte"}
+            </Link>
+
             <div className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
-              <div key={item.label}>
+            {NAV_ITEMS.map((item) =>
+              item.children ? (
+                <div key={item.label}>
+                  <button
+                    type="button"
+                    onClick={() => setMobileExpanded(mobileExpanded === item.label ? null : item.label)}
+                    aria-expanded={mobileExpanded === item.label}
+                    className="flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-base font-bold text-[var(--hm-text)] transition-colors hover:bg-[rgba(177,63,116,0.07)]"
+                  >
+                    {item.label}
+                    <ChevronDown
+                      size={18}
+                      className={`text-[var(--hm-text-soft)] transition-transform ${mobileExpanded === item.label ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {mobileExpanded === item.label && (
+                    <div className="ml-4 border-l-2 border-[var(--hm-line)] pl-3">
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.label}
+                          href={child.href}
+                          onClick={() => setIsMobileOpen(false)}
+                          className="block rounded-xl px-3 py-3 text-[15px] font-medium text-[var(--hm-text-soft)] transition-colors hover:bg-[rgba(177,63,116,0.06)] hover:text-[var(--hm-purple)]"
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
                 <Link
+                  key={item.label}
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
-                  className="block rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--hm-text-soft)] transition-colors hover:bg-[rgba(177,63,116,0.07)] hover:text-[var(--hm-rose)]"
+                  className="block rounded-2xl px-4 py-3.5 text-base font-bold text-[var(--hm-text)] transition-colors hover:bg-[rgba(177,63,116,0.07)] hover:text-[var(--hm-rose)]"
                 >
                   {item.label}
                 </Link>
-                {item.children && (
-                  <div className="ml-5 border-l border-[var(--hm-line)] pl-4">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.label}
-                        href={child.href}
-                        onClick={() => setIsMobileOpen(false)}
-                        className="block px-2 py-2 text-xs font-medium text-[var(--hm-text-soft)] transition-colors hover:text-[var(--hm-purple)]"
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+              )
+            )}
             </div>
-            <div className="mt-5 border-t border-[var(--hm-line)] pt-5">
-              <div className="mb-4 grid grid-cols-3 gap-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--hm-text-muted)]">
-                <span className="rounded-full bg-[var(--hm-surface)] px-2 py-2">Alsace</span>
-                <span className="rounded-full bg-[var(--hm-surface)] px-2 py-2">BAT validé</span>
-                <span className="rounded-full bg-[var(--hm-surface)] px-2 py-2">Dès 10 pcs</span>
-              </div>
-              <div className="flex flex-col gap-2">
+
+            <div className="mt-5 flex flex-col gap-2 border-t border-[var(--hm-line)] pt-5">
               <Link
                 href="/contact?sujet=devis"
                 onClick={() => setIsMobileOpen(false)}
@@ -251,25 +272,11 @@ export default function Header() {
                 Demander un devis
               </Link>
               <Link
-                href="/catalogue/tshirts"
+                href="/contact"
                 onClick={() => setIsMobileOpen(false)}
                 className="btn-outline w-full text-center"
               >
-                Voir le catalogue textile
-              </Link>
-              <Link
-                href="/contact"
-                onClick={() => setIsMobileOpen(false)}
-                className="block w-full text-center text-xs font-semibold text-[var(--hm-text-soft)] underline-offset-2 hover:text-[var(--hm-rose)] hover:underline"
-              >
-                Contact rapide
-              </Link>
-              <Link
-                href={isAuthenticated ? "/mon-compte" : "/connexion"}
-                onClick={() => setIsMobileOpen(false)}
-                className="mt-1 block text-center text-[11px] text-[var(--hm-text-muted)] hover:text-[var(--hm-purple)]"
-              >
-                {isAuthenticated ? "Mon compte" : "Connexion / inscription"}
+                Contact
               </Link>
               {isAuthenticated && user?.role === "admin" && (
                 <Link
@@ -281,7 +288,6 @@ export default function Header() {
                   Commandes admin
                 </Link>
               )}
-            </div>
             </div>
             </div>
           </nav>

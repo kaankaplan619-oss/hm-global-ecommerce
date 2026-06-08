@@ -581,7 +581,8 @@ export default function ProductConfigurator({
            Masqué pour les goodies (mugs) : 1 seule zone d'impression
            wraparound, pas de choix utilisateur cœur/dos/coeur-dos.
            Les textiles conservent le bloc intact.
-           Casquettes : broderie front unique → pas de choix d'emplacement. */}
+           Casquettes : broderie front unique → pas de choix d'emplacement.
+           Polos : cœur / dos / cœur+dos (broderie Printify) → sélecteur affiché. */}
       {product.category !== "goodies" && product.category !== "casquettes" && (
       <div>
         <label className="label">Emplacement du marquage</label>
@@ -708,13 +709,13 @@ export default function ProductConfigurator({
            Affiché uniquement pour les goodies (mugs). Explique au client le
            workflow honnête : upload → vérification équipe HM Global → rendu
            préparé avant production. Pas de Studio textile, pas de BAT live. */}
-      {!hideLogoUpload && (product.category === "goodies" || product.category === "casquettes") && (
+      {!hideLogoUpload && (product.category === "goodies" || product.category === "casquettes" || product.category === "polos") && (
         <div className="rounded-2xl border border-[var(--hm-primary)]/20 bg-[var(--hm-accent-soft-rose)] px-4 py-3">
           <p className="text-[11px] leading-relaxed text-[var(--hm-text)]">
             <span className="font-semibold text-[var(--hm-primary)]">Ajoutez votre logo ou visuel.</span>{" "}
-            {product.category === "casquettes"
-              ? "Notre équipe vérifie votre fichier et prépare le rendu de la broderie front avant production."
-              : "Notre équipe vérifie votre fichier et prépare le rendu mug avant production."}
+            {product.category === "goodies"
+              ? "Notre équipe vérifie votre fichier et prépare le rendu mug avant production."
+              : "Notre équipe vérifie votre fichier et prépare le rendu de la broderie front avant production."}
           </p>
         </div>
       )}
@@ -969,13 +970,15 @@ export default function ProductConfigurator({
             {!size
               ? "Sélectionnez une taille"
               : requirePersonalization && !hasLogo
-              ? (product.category === "goodies" || product.category === "casquettes"
+              ? (product.category === "goodies" || product.category === "casquettes" || product.category === "polos"
                   ? "Ajoutez votre visuel pour commander"
                   : "Personnalisez d'abord votre article")
               : (product.category === "goodies"
                   ? "Ajouter mon mug au panier"
                   : product.category === "casquettes"
                   ? "Ajouter ma casquette au panier"
+                  : product.category === "polos"
+                  ? "Ajouter mon polo au panier"
                   : "Ajouter au panier")}
           </>
         )}
@@ -992,9 +995,9 @@ export default function ProductConfigurator({
           Pour les mugs personnalisés, nous vérifions votre visuel avant production
           afin d&apos;assurer un rendu propre sur la zone d&apos;impression.
         </p>
-      ) : product.category === "casquettes" ? (
+      ) : product.category === "casquettes" || product.category === "polos" ? (
         <p className="text-center text-[10px] text-[var(--hm-text-soft)] leading-snug">
-          Pour les casquettes brodées, nous vérifions votre visuel avant production
+          Pour les articles brodés, nous vérifions votre visuel avant production
           afin d&apos;assurer une broderie nette sur le devant.
         </p>
       ) : requirePersonalization && !hasLogo ? (
@@ -1011,9 +1014,9 @@ export default function ProductConfigurator({
            Le mug bp 441 / OPT OnDemand est limité à 1 zone unique. Pour les
            clients qui ont besoin d'un volume important (50+ pcs) ou d'une
            validation BAT avant production, le devis manuel reste pertinent. */}
-      {(product.category === "goodies" || product.category === "casquettes") && (
+      {(product.category === "goodies" || product.category === "casquettes" || product.category === "polos") && (
         <a
-          href={product.category === "casquettes" ? "/contact?sujet=devis-casquette" : "/contact?sujet=devis-mug"}
+          href={product.category === "casquettes" ? "/contact?sujet=devis-casquette" : product.category === "polos" ? "/contact?sujet=devis-polo" : "/contact?sujet=devis-mug"}
           className="block text-center text-[11px] text-[var(--hm-text-soft)] underline-offset-2 transition hover:text-[var(--hm-primary)] hover:underline"
         >
           Besoin d&apos;une grande quantité ? Demander un devis

@@ -57,6 +57,8 @@ import {
   CASQUETTE_YUPOONG_6006_PRICES,
   CASQUETTE_FLEXFIT_6277_BRODERIE_VOLUME,
   CASQUETTE_YUPOONG_6006_BRODERIE_VOLUME,
+  POLO_GILDAN_64800_BRODERIE_VOLUME,
+  POLO_GILDAN_64800_PLACEMENT_SURCHARGES,
 } from "./pricing";
 
 function buildProductImages(productId: string, images: string[]) {
@@ -467,7 +469,7 @@ const SOFTSHELL_SIZES = [
 
 export const PRODUCT_JUI62: Product = {
   id: "jui62",
-  visible: true, // activé catalogue V1.2 — images TopTex existantes
+  visible: false, // 2026-06-03 retiré — softshell TopTex non personnalisable (Studio = image fournisseur + dos absent ; aucun équivalent softshell sur Printful). Validé Kaan.
   slug: "softshell-bc-homme",
   reference: "B&C JUI62",
   name: "Softshell B&C Homme",
@@ -510,7 +512,7 @@ export const PRODUCT_JUI62: Product = {
 
 export const PRODUCT_JWI63: Product = {
   id: "jwi63",
-  visible: true, // activé catalogue V1.2 — images TopTex existantes
+  visible: false, // 2026-06-03 retiré — softshell TopTex non personnalisable (Studio = image fournisseur + dos absent ; aucun équivalent softshell sur Printful). Validé Kaan.
   slug: "softshell-bc-femme",
   reference: "B&C JWI63",
   name: "Softshell B&C Femme",
@@ -2438,15 +2440,15 @@ export const PRODUCT_GILDAN_64800: Product = {
   category: "polos",
   gender: "unisex",
   tier: "standard",
-  description: "Polo piqué unisexe à l'allure propre et professionnelle. Une base simple pour les équipes, l'accueil, la restauration et les usages corporate avec personnalisation coeur ou dos.",
-  composition: "Maille piquée coton/polyester",
+  description: "Polo piqué unisexe à l'allure propre et professionnelle, base idéale pour les équipes, l'accueil, la restauration et les usages corporate. Broderie front sur-mesure de votre logo. Production et expédition UE. Délai 7-12 jours ouvrés après BAT.",
+  composition: "100% coton piqué softstyle",
   weight: "Maille piquée",
   images: [],
   colors: [
-    { id: "blanc",  label: "Blanc",  hex: "#FFFFFF", available: true },
-    { id: "noir",   label: "Noir",   hex: "#111111", available: true },
-    { id: "marine", label: "Marine", hex: "#1E3A5F", available: true },
-    { id: "gris",   label: "Gris",   hex: "#B7BCC4", available: true },
+    { id: "noir",       label: "Noir",       hex: "#1b1b1b", available: true },
+    { id: "marine",     label: "Marine",     hex: "#1E3A5F", available: true },
+    { id: "gris-sport", label: "Gris sport", hex: "#9ea1a3", available: true },
+    { id: "blanc",      label: "Blanc",      hex: "#FFFFFF", available: true },
   ],
   sizes: [
     { label: "S",   available: true },
@@ -2455,48 +2457,41 @@ export const PRODUCT_GILDAN_64800: Product = {
     { label: "XL",  available: true },
     { label: "XXL", available: true },
   ],
-  techniques: ["flex", "broderie"],
+  techniques: ["broderie"],
   techniqueRecommandee: "broderie",
   placements: ["coeur", "dos", "coeur-dos"],
   pricing: {
-    dtf:      POLO_PRICES.pique.dtf,
-    dtflex:   POLO_PRICES.pique.dtflex,
-    flex:     POLO_PRICES.pique.flex,
+    dtf:      0,
+    dtflex:   0,
+    flex:     0,
     broderie: POLO_PRICES.pique.broderie,
-    placements: PLACEMENT_SURCHARGES.flex,
-    broDeriePlacementSurcharge: PLACEMENT_SURCHARGES.broderie,
+    placements: POLO_GILDAN_64800_PLACEMENT_SURCHARGES,
+    broDeriePlacementSurcharge: POLO_GILDAN_64800_PLACEMENT_SURCHARGES,
   },
   featured: false,
   visible: true,
-  badge: "Sur devis",
+  badge: "Broderie incluse",
   supplierName: "printful",
-  // Bascule devis-only (mai 2026) : ce polo broderie n'est rentable qu'en
-  // volume et n'a pas de provider Printify EU exploitable (cf
-  // docs/audits/printify-equivalents-cotton-polo.md). On garde la fiche
-  // visible mais on remplace "Ajouter au panier" par un CTA devis broderie.
-  quoteOnly: true,
-  quoteOnlySubject: "devis-broderie",
-  quoteOnlyMessage:
-    "Polo brodé professionnel disponible sur devis pour équipes, accueil, restaurants et événements.",
   ideaPour: ["Corporate", "Restauration", "Accueil & événements"],
-  conseil: "Un polo simple et lisible pour les équipes terrain et l'image entreprise. La broderie reste l'option la plus propre sur ce type de maille.",
+  conseil: "Le polo broderie le plus net pour l'image entreprise : maille piquée durable, logo brodé front premium. À partir de 23,90 € l'unité dès 25 pièces.",
+  volumePricing: POLO_GILDAN_64800_BRODERIE_VOLUME,
   hmMockupImages: {
-    "blanc":  "/mockups/gildan-64800/blanc-front.jpg",
-    "noir":   "/mockups/gildan-64800/noir-front.jpg",
-    "marine": "/mockups/gildan-64800/marine-front.jpg",
-    "gris":   "/mockups/gildan-64800/gris-front.jpg",
+    "noir":       "/mockups/polo-gildan-64800/noir-flat.jpg",
+    "marine":     "/mockups/polo-gildan-64800/marine-flat.jpg",
+    "gris-sport": "/mockups/polo-gildan-64800/gris-sport-flat.jpg",
+    "blanc":      "/mockups/polo-gildan-64800/blanc-flat.jpg",
   },
   hmMockupImagesBack: {
-    "blanc":  "/mockups/gildan-64800/blanc-back.jpg",
-    "noir":   "/mockups/gildan-64800/noir-back.jpg",
-    "marine": "/mockups/gildan-64800/marine-back.jpg",
-    "gris":   "/mockups/gildan-64800/gris-back.jpg",
+    "noir":       "/mockups/polo-gildan-64800/noir-back.jpg",
+    "marine":     "/mockups/polo-gildan-64800/marine-back.jpg",
+    "gris-sport": "/mockups/polo-gildan-64800/gris-sport-back.jpg",
+    "blanc":      "/mockups/polo-gildan-64800/blanc-back.jpg",
   },
   hmMockupGallery: {
-    "blanc":  ["/mockups/gildan-64800/blanc-front.jpg",  "/mockups/gildan-64800/blanc-back.jpg",  "/mockups/gildan-64800/blanc-detail.jpg"],
-    "noir":   ["/mockups/gildan-64800/noir-front.jpg",   "/mockups/gildan-64800/noir-back.jpg",   "/mockups/gildan-64800/noir-detail.jpg"],
-    "marine": ["/mockups/gildan-64800/marine-front.jpg", "/mockups/gildan-64800/marine-back.jpg", "/mockups/gildan-64800/marine-detail.jpg"],
-    "gris":   ["/mockups/gildan-64800/gris-front.jpg",   "/mockups/gildan-64800/gris-back.jpg",   "/mockups/gildan-64800/gris-detail.jpg"],
+    "noir":       ["/mockups/polo-gildan-64800/noir-flat.jpg",       "/mockups/polo-gildan-64800/noir-back.jpg",       "/mockups/polo-gildan-64800/noir-alt.jpg"],
+    "marine":     ["/mockups/polo-gildan-64800/marine-flat.jpg",     "/mockups/polo-gildan-64800/marine-back.jpg",     "/mockups/polo-gildan-64800/marine-alt.jpg"],
+    "gris-sport": ["/mockups/polo-gildan-64800/gris-sport-flat.jpg", "/mockups/polo-gildan-64800/gris-sport-back.jpg", "/mockups/polo-gildan-64800/gris-sport-alt.jpg"],
+    "blanc":      ["/mockups/polo-gildan-64800/blanc-flat.jpg",      "/mockups/polo-gildan-64800/blanc-back.jpg",      "/mockups/polo-gildan-64800/blanc-alt.jpg"],
   },
 };
 

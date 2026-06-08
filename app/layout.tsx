@@ -4,7 +4,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/layout/CartDrawer";
 import QuoteAssistant from "@/components/assistant/QuoteAssistant";
-import MobileQuoteSticky from "@/components/layout/MobileQuoteSticky";
 
 export const metadata: Metadata = {
   title: {
@@ -69,7 +68,6 @@ export default function RootLayout({
         <main className="min-h-screen">{children}</main>
         <Footer />
         <QuoteAssistant />
-        <MobileQuoteSticky />
       </body>
     </html>
   );

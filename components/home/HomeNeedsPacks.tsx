@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BadgeCheck,
   BriefcaseBusiness,
   GraduationCap,
   Hammer,
@@ -65,27 +64,6 @@ const NEEDS: NeedCard[] = [
   },
 ];
 
-const PACKS = [
-  {
-    name: "Essentiel",
-    usage: "Tenues simples pour équipe, association ou événement.",
-    minimum: "À partir de 10 pièces",
-    points: ["1 produit textile", "1 zone de marquage", "BAT avant production"],
-  },
-  {
-    name: "Premium",
-    usage: "Image plus professionnelle avec finitions et choix textile.",
-    minimum: "À partir de 25 pièces",
-    points: ["Textile sélectionné", "DTF ou broderie conseillée", "Suivi devis + BAT"],
-  },
-  {
-    name: "Sur mesure",
-    usage: "Projet complet : textile, print, signalétique ou lancement marque.",
-    minimum: "Selon besoin",
-    points: ["Sélection fournisseur", "Packs multi-supports", "Accompagnement humain"],
-  },
-];
-
 const METHOD = [
   "Vous envoyez votre besoin",
   "Nous vérifions le logo et la technique adaptée",
@@ -136,50 +114,6 @@ export default function HomeNeedsPacks() {
         </div>
       </section>
 
-      <section id="packs-textile" className="py-12 sm:py-16" style={{ background: "#ffffff" }}>
-        <div className="container">
-          <div className="mb-8 max-w-2xl">
-            <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--hm-magenta)" }}>
-              Packs textile
-            </p>
-            <h2 className="font-semibold leading-[1.1] tracking-[-0.02em]" style={{ fontSize: "clamp(1.5rem, 2.4vw + 0.4rem, 2.2rem)", color: "var(--hm-text-main)" }}>
-              Trois niveaux pour avancer vite.
-            </h2>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            {PACKS.map((pack, index) => (
-              <div
-                key={pack.name}
-                className="flex h-full flex-col rounded-[1.4rem] border border-[var(--hm-line)] bg-white p-6 shadow-[0_12px_30px_rgba(63,45,88,0.05)]"
-              >
-                <div className="mb-5 flex items-center justify-between gap-3">
-                  <h3 className="text-xl font-semibold tracking-[-0.02em] text-[var(--hm-text)]">{pack.name}</h3>
-                  <span className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
-                    Pack {index + 1}
-                  </span>
-                </div>
-                <p className="text-[13px] leading-6 text-[var(--hm-text-soft)]">{pack.usage}</p>
-                <p className="mt-4 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-2 text-[12px] font-semibold text-[var(--hm-text)]">
-                  Minimum indicatif : {pack.minimum}
-                </p>
-                <ul className="mt-5 flex flex-1 flex-col gap-2.5">
-                  {pack.points.map((point) => (
-                    <li key={point} className="flex items-start gap-2.5 text-[12.5px] leading-6 text-[var(--hm-text-soft)]">
-                      <BadgeCheck size={15} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href={`/devis-rapide?pack=${pack.name.toLowerCase().replaceAll(" ", "-")}`} className="btn-hm-magenta mt-6 w-full justify-center">
-                  Demander un devis
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="py-12 sm:py-16" style={{ background: "#FAFBFC" }}>
         <div className="container">
           <div className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-6 shadow-[0_12px_30px_rgba(63,45,88,0.05)] sm:p-8">
@@ -192,13 +126,16 @@ export default function HomeNeedsPacks() {
                 <h2 className="text-2xl font-semibold tracking-[-0.02em] text-[var(--hm-text)]">Un BAT validé avant fabrication.</h2>
               </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-5">
+            <div className="grid gap-2.5 sm:grid-cols-5 sm:gap-3">
               {METHOD.map((step, index) => (
-                <div key={step} className="rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
-                  <span className="mb-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-[11px] font-bold text-[var(--hm-primary)] shadow-sm">
+                <div
+                  key={step}
+                  className="flex items-center gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-3 sm:flex-col sm:items-start sm:p-4"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[12px] font-bold text-[var(--hm-primary)] shadow-sm sm:mb-3 sm:h-7 sm:w-7 sm:text-[11px]">
                     {index + 1}
                   </span>
-                  <p className="text-[12.5px] font-semibold leading-5 text-[var(--hm-text)]">{step}</p>
+                  <p className="text-[14px] font-semibold leading-5 text-[var(--hm-text)] sm:text-[12.5px]">{step}</p>
                 </div>
               ))}
             </div>

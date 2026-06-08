@@ -38,6 +38,12 @@ export const ZONES_BY_CATEGORY: Record<
   // de 0.48 qui paraissait trop center-torso). Top/width/height inchanges.
   hoodies:    { coeur: [0.38, 0.32, 0.16, 0.16], dos: [0.25, 0.22, 0.50, 0.42] },
   softshells: { coeur: [0.42, 0.30, 0.15, 0.15], dos: [0.26, 0.22, 0.48, 0.40] },
+  // polos calibré sur le packshot Printful Gildan 64800 (broderie cœur 10×10 cm).
+  // Cœur descendu/recentré vs fallback tshirts (zone précédente trop haute/à droite
+  // sur le packshot polo). Broderie front uniquement → dos rarement utilisé.
+  // Dos calibré sur le placement Printify large_back_embroidery = 3000×1800 px
+  // ≈ 25×15 cm (broderie dos paysage), PAS 28×35 (qui est la taille DTF t-shirt).
+  polos:      { coeur: [0.54, 0.27, 0.11, 0.11], dos: [0.345, 0.305, 0.31, 0.19] },
 };
 
 // ── Fallback statique pour packshots B&C Exact 190 (B3.2-A2 validé) ──────────

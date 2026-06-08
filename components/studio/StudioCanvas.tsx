@@ -200,6 +200,11 @@ const GUIDE_META: Record<string, {
     coeur: { defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
     dos:   { defaultCm: 21, label: "Dos · max 27×32 cm" },
   },
+  // Polos : broderie Printify — cœur 10×10 cm, dos large_back_embroidery 25×15 cm.
+  polos: {
+    coeur: { defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
+    dos:   { defaultCm: 18, label: "Dos · max 25×15 cm" },
+  },
 };
 const GUIDE_META_DEFAULT = {
   coeur: { defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
@@ -294,6 +299,19 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     ?? GUIDE_META_DEFAULT[guidePlacement];
   const guideZone = { ...guideSize, ...guideMeta };
   const [guideCx, guideCy] = getZoneCenter();
+
+  // ── Verrouillage du logo dans la zone (broderie Printify : emplacements fixes) ──
+  // Pour les polos, la broderie Printify ne se fait que dans les emplacements
+  // standard (cœur / dos) → on contraint le centre du logo à rester dans le
+  // rectangle de zone et on plafonne sa taille à la zone. Les autres catégories
+  // (t-shirts/hoodies/softshells DTF) gardent le placement libre (zone = guide).
+  const zoneClampRef = useRef({ lock: false, cx: 0.5, cy: 0.5, w: 1, h: 1 });
+  useEffect(() => {
+    zoneClampRef.current = {
+      lock: productCategory === "polos",
+      cx: guideCx, cy: guideCy, w: guideSize.wFrac, h: guideSize.hFrac,
+    };
+  });
 
   // ── Snap au centre de la zone avec taille standard ───────────────────────
   const handleSnapToZone = useCallback(() => {
@@ -558,8 +576,14 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
     (e: React.PointerEvent<HTMLDivElement>, obj: StudioObject) => {
       if (!dragRef.current.active || dragRef.current.objId !== obj.id) return;
       const cSize = containerSizeRef.current || 480;
-      const newCx = dragRef.current.startCx + (e.clientX - dragRef.current.startClientX) / cSize;
-      const newCy = dragRef.current.startCy + (e.clientY - dragRef.current.startClientY) / cSize;
+      let newCx = dragRef.current.startCx + (e.clientX - dragRef.current.startClientX) / cSize;
+      let newCy = dragRef.current.startCy + (e.clientY - dragRef.current.startClientY) / cSize;
+      // Verrouillage zone (broderie polos) : le centre du logo reste dans la zone.
+      const z = zoneClampRef.current;
+      if (z.lock) {
+        newCx = Math.min(Math.max(newCx, z.cx - z.w / 2), z.cx + z.w / 2);
+        newCy = Math.min(Math.max(newCy, z.cy - z.h / 2), z.cy + z.h / 2);
+      }
       onObjectsChangeRef.current(
         objectsRef.current.map((o) =>
           o.id !== obj.id ? o : { ...o, fabricState: { ...(o.fabricState ?? {}), cx: newCx, cy: newCy } }
@@ -604,7 +628,15 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
       const dx   = e.clientX - r.centerViewX;
       const dy   = e.clientY - r.centerViewY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const newScale = Math.max(0.04, r.startScale * (dist / r.startDist));
+      let newScale = Math.max(0.04, r.startScale * (dist / r.startDist));
+      // Verrouillage zone (broderie polos) : la taille du logo ne dépasse pas la zone.
+      const z = zoneClampRef.current;
+      if (z.lock) {
+        const cSize = containerSizeRef.current || 480;
+        const nw = obj.fabricState?.nw ?? 200;
+        const maxScale = (z.w * cSize) / Math.max(nw, 1);
+        newScale = Math.min(newScale, maxScale);
+      }
       onObjectsChangeRef.current(
         objectsRef.current.map((o) =>
           o.id !== obj.id ? o : { ...o, fabricState: { ...(o.fabricState ?? {}), scale: newScale } }

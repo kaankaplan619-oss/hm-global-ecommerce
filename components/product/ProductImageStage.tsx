@@ -79,16 +79,16 @@ function getSizing(category: string, variant: "catalog" | "best-sellers") {
       scale: variant === "catalog" ? 1.02 : 0.98,
     };
   }
-  // Polos : Gildan 64800 — mockups Printful cropés serré (1200×1310, produit
-  // collé aux bords du JPG). Padding plus généreux + léger scale down pour
-  // que le polo respire et reste lisible sur la card catalogue.
+  // Polos : Gildan 64800 — mockups flat Printify (1200×1200) avec marge blanche
+  // autour du produit. On réduit le padding et on agrandit pour que le polo
+  // ait la même présence visuelle que les t-shirts/sweats sur la card.
   if (category === "polos") {
     return {
       padding:
         variant === "best-sellers"
-          ? "pt-14 px-5 pb-5 sm:pt-16 sm:px-6 sm:pb-6"
-          : "p-6 sm:p-8",
-      scale: variant === "catalog" ? 0.95 : 0.92,
+          ? "pt-12 px-3 pb-3 sm:pt-14 sm:px-4 sm:pb-4"
+          : "p-2 sm:p-4",
+      scale: variant === "catalog" ? 1.12 : 1.06,
     };
   }
   // Goodies / autres
