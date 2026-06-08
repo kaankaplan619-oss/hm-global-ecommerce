@@ -70,6 +70,11 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Désactive par défaut les API sensibles du navigateur (rien n'en a besoin).
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+          // Force HTTPS pendant 1 an (sans preload pour rester réversible).
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+          { key: "X-DNS-Prefetch-Control", value: "on" },
         ],
       },
       {
