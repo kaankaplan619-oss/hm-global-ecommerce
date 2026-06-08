@@ -19,6 +19,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import QRCode from "qrcode";
+import { renderPdfFileToPngs } from "@/lib/pdf-preview";
 import {
   Type, ImagePlus, Trash2, X, Check, Box, RotateCw,
   Square, Circle, Minus, QrCode, LayoutTemplate, Copy,
@@ -114,6 +115,7 @@ export default function PrintEditor({
   const [histBack, setHistBack]   = useState<EditorObject[][]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
 
   // ─── Aperçu 3D rotatif ──────────────────────────────────────────────────
@@ -216,9 +218,34 @@ export default function PrintEditor({
     setShowTemplates(false);
   };
 
-  const onPickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
+
+    // PDF : on rend les pages et on les pose en fond du plan de travail
+    // (page 1 = recto, page 2 = verso si recto-verso). Le client voit son
+    // fichier réel et peut éditer par-dessus.
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    if (isPdf) {
+      setImporting(true);
+      try {
+        const pages = await renderPdfFileToPngs(file, 1100);
+        if (!pages.length) return;
+        const bg = (url: string): EditorObject => ({ id: nextId(), type: "image", x: 0, y: 0, w: 1, h: 1, url });
+        snapshot();
+        // Prépend → l'import sert de fond (sous les éléments déjà placés).
+        setFront((a) => [bg(pages[0]), ...a]);
+        if (faces === "recto-verso" && pages[1]) setBack((a) => [bg(pages[1]), ...a]);
+        setFace("front");
+        setSelected(null);
+      } finally {
+        setImporting(false);
+      }
+      return;
+    }
+
+    // Image (PNG/JPG/SVG) : objet centré dimensionné selon son ratio.
     const reader = new FileReader();
     reader.onload = () => {
       const url = reader.result as string;
@@ -232,7 +259,6 @@ export default function PrintEditor({
       img.src = url;
     };
     reader.readAsDataURL(file);
-    e.target.value = "";
   };
 
   // ─── Drag / resize (pointer) ────────────────────────────────────────────
@@ -415,7 +441,7 @@ export default function PrintEditor({
 
         {/* Barre d'outils */}
         <div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--hm-line)] px-5 py-2.5">
-          <ToolBtn icon={<ImagePlus size={14} />} label="Image" onClick={() => fileRef.current?.click()} />
+          <ToolBtn icon={<ImagePlus size={14} />} label={importing ? "Import…" : "Image / PDF"} onClick={() => fileRef.current?.click()} disabled={importing} />
           <ToolBtn icon={<Type size={14} />} label="Texte" onClick={addText} />
           <ToolBtn icon={<Square size={14} />} label="Rect." onClick={addRect} />
           <ToolBtn icon={<Circle size={14} />} label="Ellipse" onClick={addEllipse} />
@@ -463,7 +489,7 @@ export default function PrintEditor({
               ))}
             </div>
           )}
-          <input ref={fileRef} type="file" accept=".png,.jpg,.jpeg,.svg" className="hidden" onChange={onPickImage} />
+          <input ref={fileRef} type="file" accept=".png,.jpg,.jpeg,.svg,.pdf,application/pdf" className="hidden" onChange={onPickImage} />
         </div>
 
         {/* Plan de travail */}
