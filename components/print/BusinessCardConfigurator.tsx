@@ -357,21 +357,33 @@ export default function BusinessCardConfigurator() {
                 <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
                   Quantité
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  {BUSINESS_CARD_OPTIONS.quantities.map((q) => (
-                    <button
-                      key={q.value}
-                      type="button"
-                      onClick={() => setQuantity(q.value)}
-                      className={`rounded-xl border px-5 py-3 text-sm font-semibold transition ${
-                        quantity === q.value
-                          ? "border-[var(--hm-primary)] bg-[var(--hm-primary)] text-white"
-                          : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
-                      }`}
-                    >
-                      {q.label}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {BUSINESS_CARD_OPTIONS.quantities.map((q) => {
+                    const p = getBusinessCardLotPrice({ finish, quantity: q.value, faces, corners });
+                    const active = quantity === q.value;
+                    return (
+                      <button
+                        key={q.value}
+                        type="button"
+                        onClick={() => setQuantity(q.value)}
+                        className={`flex flex-col items-start gap-0.5 rounded-xl border px-4 py-3 text-left transition ${
+                          active
+                            ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]"
+                            : "border-[var(--hm-line)] bg-white hover:border-[var(--hm-primary)]/40"
+                        }`}
+                      >
+                        <span className={`text-sm font-bold ${active ? "text-[var(--hm-primary)]" : "text-[var(--hm-text)]"}`}>
+                          {q.value.toLocaleString("fr-FR")} ex.
+                        </span>
+                        <span className={`text-[13px] font-semibold ${active ? "text-[var(--hm-primary)]" : "text-[var(--hm-text-soft)]"}`}>
+                          {p.toFixed(2)} €
+                        </span>
+                        <span className="text-[10px] text-[var(--hm-text-muted)]">
+                          soit {(p / q.value).toFixed(3).replace(".", ",")} €/carte
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

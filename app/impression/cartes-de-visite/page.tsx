@@ -34,8 +34,6 @@ export default function CartesDeVisitePage() {
         {/* ── Bandeau réassurance compact ───────────────────────────────── */}
         <div className="mb-10 flex flex-wrap gap-2">
           {[
-            "📐 85×55 mm — Format standard",
-            "📄 Papier 350 g/m²",
             "🎨 PDF · PNG · JPG acceptés",
             "✅ BAT validé avant impression",
             "📦 Production après validation",
