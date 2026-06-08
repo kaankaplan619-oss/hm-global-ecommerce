@@ -32,6 +32,7 @@ const FINISH_SWATCH: Record<string, string> = {
 import { useCartStore } from "@/store/cart";
 import BusinessCardVisualizer from "@/components/print/BusinessCardVisualizer";
 import PrintEditor from "@/components/print/PrintEditor";
+import SignaturePad from "@/components/print/SignaturePad";
 import { renderPdfPageToPng, isPdfUrl } from "@/lib/pdf-preview";
 import PrintMockupViewer from "@/components/print/PrintMockupViewer";
 import {
@@ -131,6 +132,12 @@ export default function BusinessCardConfigurator() {
 
   // Verso fourni : fichier verso dédié OU page 2 d'un PDF recto-verso.
   const versoProvided = !!backFile || (frontPdfPages ?? 0) >= 2;
+
+  // Un PDF de 2 pages = recto + verso → on passe automatiquement la commande
+  // en recto-verso (affichage du verso dans l'aperçu BAT + tarif correct).
+  useEffect(() => {
+    if ((frontPdfPages ?? 0) >= 2) setFaces("recto-verso");
+  }, [frontPdfPages]);
   // Par défaut : un SEUL fichier (PDF recto-verso). Le client peut, s'il le
   // veut, déposer un verso séparé (recto + verso en 2 images distinctes).
   const [separateVerso, setSeparateVerso] = useState(false);
@@ -143,6 +150,8 @@ export default function BusinessCardConfigurator() {
   // Signature du Bon à Tirer (BAT) — approbation du visuel avant production.
   const [batName, setBatName] = useState("");
   const [batApproved, setBatApproved] = useState(false);
+  // Signature manuscrite tracée (uploadée → URL https persistée dans la commande).
+  const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
 
   // ── Étape UI ───────────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -231,6 +240,13 @@ export default function BusinessCardConfigurator() {
     return up?.url ?? null;
   }, [uploadFile]);
 
+  // Signature manuscrite : on upload le PNG dès qu'elle est tracée (→ URL https).
+  const handleSignatureChange = useCallback(async (dataUrl: string | null) => {
+    if (!dataUrl) { setSignatureUrl(null); return; }
+    const url = await uploadPreviewPng(dataUrl, "signature-bat.png", "front");
+    setSignatureUrl(url);
+  }, [uploadPreviewPng]);
+
   // Dérive une URL d'aperçu affichable depuis un fichier :
   //   - image (PNG/JPG)  → l'URL elle-même (déjà affichable dans un <img>)
   //   - PDF              → rendu d'une page → PNG → upload → URL https
@@ -311,7 +327,7 @@ export default function BusinessCardConfigurator() {
           : null,
         // BAT signé par le client → vaut bon à tirer (renonciation rétractation).
         batStatus:      "valide",
-        batSignature:   { name: batName.trim(), date: new Date().toISOString() },
+        batSignature:   { name: batName.trim(), date: new Date().toISOString(), signatureUrl: signatureUrl ?? undefined },
       };
 
       // Le produit print utilise des valeurs neutres pour les champs textile.
@@ -332,7 +348,7 @@ export default function BusinessCardConfigurator() {
     } catch {
       setAdding(false);
     }
-  }, [addItem, frontFile, backFile, frontPreviewUrl, backPreviewUrl, orientation, faces, finish, corners, quantity, projectName, batName, lotPrice, router]);
+  }, [addItem, frontFile, backFile, frontPreviewUrl, backPreviewUrl, orientation, faces, finish, corners, quantity, projectName, batName, signatureUrl, lotPrice, router]);
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -348,7 +364,7 @@ export default function BusinessCardConfigurator() {
               orientation={orientation}
               frontFileUrl={frontFile?.url ?? null}
               backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
-              showToggle={faces === "recto-verso"}
+              showToggle={versoProvided}
               hasBack={versoProvided}
               displayWidth={248}
             />
@@ -805,7 +821,7 @@ export default function BusinessCardConfigurator() {
                     orientation={orientation}
                     frontFileUrl={frontFile?.url ?? null}
                     backFileUrl={backFile?.url ?? null}
-                    showToggle={faces === "recto-verso"}
+                    showToggle={versoProvided}
                     hasBack={versoProvided}
                     displayWidth={340}
                   />
@@ -850,9 +866,18 @@ export default function BusinessCardConfigurator() {
                   type="text"
                   value={batName}
                   onChange={(e) => setBatName(e.target.value)}
-                  placeholder="Votre nom et prénom (signature)"
+                  placeholder="Votre nom et prénom"
                   className="mt-3 w-full rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--hm-primary)]"
                 />
+                {/* Signature manuscrite (souris ou doigt) */}
+                <div className="mt-3">
+                  <p className="mb-1.5 text-[11px] font-semibold text-[var(--hm-text-soft)]">
+                    Votre signature {signatureUrl
+                      ? <span className="font-medium text-green-600">✓ signée</span>
+                      : <span className="text-[var(--hm-text-muted)]">(souris ou doigt)</span>}
+                  </p>
+                  <SignaturePad onChange={handleSignatureChange} />
+                </div>
                 <label className="mt-3 flex cursor-pointer items-start gap-2 text-[12px] text-[var(--hm-text)]">
                   <input
                     type="checkbox"
@@ -942,7 +967,7 @@ export default function BusinessCardConfigurator() {
                       orientation={orientation}
                       frontFileUrl={frontFile?.url ?? null}
                       backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
-                      showToggle={faces === "recto-verso"}
+                      showToggle={versoProvided}
                       hasBack={versoProvided}
                       displayWidth={320}
                     />

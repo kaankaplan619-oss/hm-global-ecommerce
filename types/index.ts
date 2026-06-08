@@ -234,8 +234,9 @@ export interface PrintConfig {
    *  Pour les produits personnalisés, l'approbation du BAT vaut renonciation au
    *  droit de rétractation (art. L221-28 C. conso). */
   batSignature?: {
-    name: string;        // nom tapé par le client (signature)
+    name: string;        // nom tapé par le client
     date: string;        // ISO date de signature
+    signatureUrl?: string; // URL de la signature manuscrite (PNG) si tracée
   };
 }
 

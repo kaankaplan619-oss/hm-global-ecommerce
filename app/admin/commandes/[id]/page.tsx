@@ -612,6 +612,14 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                     </span>
                                   </div>
                                 )}
+                                {item.printConfig.batSignature?.signatureUrl && (
+                                  <div className="mt-1">
+                                    <p className="text-[9px] text-[var(--hm-text-muted)] mb-0.5">Signature manuscrite</p>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={item.printConfig.batSignature.signatureUrl} alt="Signature client"
+                                      className="h-12 rounded border border-[var(--hm-line)] bg-white" />
+                                  </div>
+                                )}
                               </div>
 
                               {/* Aperçu visuel de la carte (PNG éditeur / rendu PDF) */}
