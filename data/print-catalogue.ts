@@ -69,26 +69,8 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         href: CONFIG_HREF,
         badge: "Commande directe",
       },
-      {
-        id: "bc-square",
-        name: "Carte de visite carrée",
-        sizeLabel: "55 × 55 mm",
-        description:
-          "Format carré pour se démarquer. Idéal logos forts et identités créatives. 350 g/m², coins droits ou arrondis.",
-        priceLabel: "Sur devis",
-        direct: false,
-        href: devisHref("carte-carree", "55 × 55 mm"),
-      },
-      {
-        id: "bc-folded",
-        name: "Carte de visite pliée",
-        sizeLabel: "85 × 55 mm pliée",
-        description:
-          "Deux fois plus de surface, format portefeuille. Parfaite pour cartes de fidélité, agendas ou mini-menus.",
-        priceLabel: "Sur devis",
-        direct: false,
-        href: devisHref("carte-pliee", "85 × 55 mm pliée"),
-      },
+      // Cartes carrée / pliée retirées (étaient "Sur devis") — on ne propose que
+      // la commande directe sur les cartes de visite (standard + coins arrondis).
     ],
   },
   {
