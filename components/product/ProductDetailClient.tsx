@@ -957,13 +957,20 @@ export default function ProductDetailClient({ product }: Props) {
               <ArrowRight size={16} />
             </button>
           ) : (
-            <Link
-              href={`/devis-rapide?produit=${encodeURIComponent(product.slug)}`}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("mug-commander")?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
               className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
             >
-              Demander un devis rapide
+              🎨 Personnaliser mon article
               <ArrowRight size={16} />
-            </Link>
+            </button>
           )}
           {product.volumePricing ? (
             <div>

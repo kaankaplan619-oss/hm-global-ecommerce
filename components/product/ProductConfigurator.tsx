@@ -1010,16 +1010,16 @@ export default function ProductConfigurator({
         </p>
       )}
 
-      {/* ── Lien secondaire devis volume — uniquement pour les goodies ─────
-           Le mug bp 441 / OPT OnDemand est limité à 1 zone unique. Pour les
-           clients qui ont besoin d'un volume important (50+ pcs) ou d'une
-           validation BAT avant production, le devis manuel reste pertinent. */}
-      {(product.category === "goodies" || product.category === "casquettes" || product.category === "polos") && (
+      {/* ── Lien secondaire devis volume (discret, sous le CTA principal) ──
+           La personnalisation/commande directe est mise en avant ; le devis
+           reste disponible en bas pour les gros volumes ou besoins spécifiques.
+           Présent sur tous les produits pour une infrastructure cohérente. */}
+      {!product.quoteOnly && (
         <a
-          href={product.category === "casquettes" ? "/contact?sujet=devis-casquette" : product.category === "polos" ? "/contact?sujet=devis-polo" : "/contact?sujet=devis-mug"}
+          href={`/devis-rapide?produit=${encodeURIComponent(product.slug)}`}
           className="block text-center text-[11px] text-[var(--hm-text-soft)] underline-offset-2 transition hover:text-[var(--hm-primary)] hover:underline"
         >
-          Besoin d&apos;une grande quantité ? Demander un devis
+          Besoin d&apos;un gros volume ? Demander un devis
         </a>
       )}
     </div>
