@@ -24,7 +24,8 @@ import type { PrintOrientation } from "@/data/print-products";
 import { PRINT_ORIENTATION_LABELS } from "@/data/print-products";
 import PrintSupportVisualizer from "@/components/print/PrintSupportVisualizer";
 import { useCartStore } from "@/store/cart";
-import { isPrintDirect, getPrintQtyOptions, getPrintDirectPrice, getPrintGelatoUid } from "@/data/print-pricing";
+import { isPrintDirect, getPrintQtyOptions, getPrintDirectPrice, getPrintGelatoUid, getPrintFacesAvailable } from "@/data/print-pricing";
+import type { PrintFace } from "@/data/print-pricing";
 import type { PrintConfig } from "@/types";
 
 interface UploadedFile { url: string; name: string; size: number; type: string; }
@@ -42,8 +43,16 @@ export default function PrintConfigurator({
   const initialOrientation: PrintOrientation =
     spec.widthMm >= spec.heightMm ? "landscape" : "portrait";
 
+  // Faces réellement commandables (ex. flyer A4 = recto-verso uniquement).
+  const directFaces = getPrintFacesAvailable(product.id);
+  const availableFaces: PrintFace[] = directFaces.length
+    ? directFaces
+    : (spec.faces ? ["recto", "recto-verso"] : ["recto"]);
+
   const [orientation, setOrientation] = useState<PrintOrientation>(initialOrientation);
-  const [faces, setFaces] = useState<"recto" | "recto-verso">("recto");
+  const [faces, setFaces] = useState<PrintFace>(
+    availableFaces.includes("recto") ? "recto" : availableFaces[0],
+  );
   const [frontFile, setFrontFile] = useState<UploadedFile | null>(null);
   const [backFile,  setBackFile]  = useState<UploadedFile | null>(null);
   const [uploading, setUploading] = useState<null | "front" | "back">(null);
@@ -53,11 +62,22 @@ export default function PrintConfigurator({
   // prix baké Gelato × 2,2 (data/print-pricing). Sinon, fin = demande de devis.
   const { addItem } = useCartStore();
   const direct = isPrintDirect(product.id);
-  const qtyOptions = getPrintQtyOptions(product.id);
-  const [quantity, setQuantity] = useState<number>(qtyOptions[0]?.quantity ?? 1);
+  const qtyOptions = getPrintQtyOptions(product.id, faces);
+  const [quantity, setQuantity] = useState<number>(
+    getPrintQtyOptions(product.id, faces)[0]?.quantity ?? 1,
+  );
   const [adding, setAdding] = useState(false);
   const [projectName, setProjectName] = useState("");
-  const price = direct ? getPrintDirectPrice(product.id, quantity) : null;
+  const price = direct ? getPrintDirectPrice(product.id, quantity, faces) : null;
+
+  // Changer de faces : garder une quantité valide pour la nouvelle grille.
+  const pickFaces = (next: PrintFace) => {
+    setFaces(next);
+    const opts = getPrintQtyOptions(product.id, next);
+    if (opts.length && !opts.some((o) => o.quantity === quantity)) {
+      setQuantity(opts[0].quantity);
+    }
+  };
   const productType: PrintConfig["productType"] =
     product.id.startsWith("poster") ? "poster"
       : product.id.startsWith("canvas") ? "canvas"
@@ -122,7 +142,7 @@ export default function PrintConfigurator({
         orientation,
         faces:           spec.faces ? faces : "recto",
         quantity,
-        gelatoUid:       getPrintGelatoUid(product.id) ?? undefined,
+        gelatoUid:       getPrintGelatoUid(product.id, faces) ?? undefined,
         projectName:     projectName.trim() || undefined,
         lotPriceTTC:     price,
         frontFileUrl:    frontFile.url,
@@ -201,23 +221,23 @@ export default function PrintConfigurator({
           </div>
         )}
 
-        {/* Faces */}
-        {spec.faces && (
+        {/* Faces — affiché seulement s'il y a un vrai choix (A4 = recto-verso seul) */}
+        {spec.faces && availableFaces.length > 1 && (
           <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
             <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Impression</p>
             <div className="flex flex-wrap gap-3">
-              {([["recto", "Recto seul"], ["recto-verso", "Recto-verso"]] as const).map(([v, label]) => (
+              {availableFaces.map((v) => (
                 <button
                   key={v}
                   type="button"
-                  onClick={() => setFaces(v)}
+                  onClick={() => pickFaces(v)}
                   className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                     faces === v
                       ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
                       : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
                   }`}
                 >
-                  {label}
+                  {v === "recto-verso" ? "Recto-verso" : "Recto seul"}
                 </button>
               ))}
             </div>

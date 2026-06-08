@@ -109,9 +109,9 @@ export async function POST(req: NextRequest) {
           productRef  = printProduct.id;
           productName = printProduct.shortName;
         } else {
-          const price = getPrintDirectPrice(item.productId, cfg.quantity);
+          const price = getPrintDirectPrice(item.productId, cfg.quantity, cfg.faces);
           if (price == null) {
-            throw new Error(`Combinaison prix print invalide : ${item.productId} ×${cfg.quantity}`);
+            throw new Error(`Combinaison prix print invalide : ${item.productId} ×${cfg.quantity} (${cfg.faces})`);
           }
           lotPriceTTC = price;
           const found = getPrintProduct(item.productId);

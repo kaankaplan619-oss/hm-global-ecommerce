@@ -132,11 +132,12 @@ export async function POST(req: NextRequest) {
           productRef  = printProduct.id;
           productName = printProduct.shortName;
         } else {
-          // Posters / toiles / invitations : prix baké Gelato × 2,2 (data/print-pricing).
+          // Flyers / posters / toiles / invitations : prix baké Gelato × 2,2 (data/print-pricing).
+          // Le prix flyer dépend des faces → on passe cfg.faces.
           // getPrintDirectPrice rejette toute combinaison non autorisée → anti-tampering.
-          const price = getPrintDirectPrice(item.productId, cfg.quantity);
+          const price = getPrintDirectPrice(item.productId, cfg.quantity, cfg.faces);
           if (price == null) {
-            throw new Error(`Combinaison prix print invalide : ${item.productId} ×${cfg.quantity}`);
+            throw new Error(`Combinaison prix print invalide : ${item.productId} ×${cfg.quantity} (${cfg.faces})`);
           }
           lotPriceTTC = price;
           const found = getPrintProduct(item.productId);

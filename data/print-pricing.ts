@@ -25,17 +25,86 @@ export interface PrintQtyPrice {
   priceTTC: number;
 }
 
+export type PrintFace = "recto" | "recto-verso";
+
+/** Tarif d'une face donnée (UID Gelato + paliers qty→prix). */
+interface FacePricing {
+  gelatoUid: string;
+  tiers:     PrintQtyPrice[];
+}
+
 interface DirectPrintPricing {
-  gelatoUid:     string;
+  /** UID Gelato (produits sans variante de faces : posters, toiles, invitations). */
+  gelatoUid?:    string;
   /** Prix unitaire TTC (posters/toiles : prix = unitaire × quantité). */
   unitPriceTTC?: number;
   /** Paliers explicites (invitations : tarif non linéaire). */
   tiers?:        PrintQtyPrice[];
   /** Quantités proposées dans le sélecteur. */
-  quantities:    number[];
+  quantities?:   number[];
+  /**
+   * Tarif DÉPENDANT des faces (flyers : recto et recto-verso = UID + coûts
+   * Gelato différents). Si présent, il est PRIORITAIRE sur gelatoUid/tiers.
+   * Un produit peut ne proposer qu'une face (ex. A4 = recto-verso uniquement).
+   */
+  byFaces?: Partial<Record<PrintFace, FacePricing>>;
 }
 
 export const DIRECT_PRINT_PRICING: Record<string, DirectPrintPricing> = {
+  // ── Flyers (Gelato 170 g couché silk · coûts relevés 2026-06-08 · ×2,2) ──
+  // recto = 4-0, recto-verso = 4-4 → UID + coûts différents. A4 = R/V only.
+  "flyer-a6": {
+    byFaces: {
+      "recto": {
+        gelatoUid: "flyers_pf_a6_pt_170-gsm-coated-silk_cl_4-0_ver",
+        tiers: [
+          { quantity: 50, priceTTC: 31.90 }, { quantity: 100, priceTTC: 41.90 },
+          { quantity: 250, priceTTC: 65.90 }, { quantity: 500, priceTTC: 89.90 },
+          { quantity: 1000, priceTTC: 137.90 },
+        ],
+      },
+      "recto-verso": {
+        gelatoUid: "flyers_pf_a6_pt_170-gsm-coated-silk_cl_4-4_ver",
+        tiers: [
+          { quantity: 50, priceTTC: 33.90 }, { quantity: 100, priceTTC: 45.90 },
+          { quantity: 250, priceTTC: 74.90 }, { quantity: 500, priceTTC: 104.90 },
+          { quantity: 1000, priceTTC: 161.90 },
+        ],
+      },
+    },
+  },
+  "flyer-a5": {
+    byFaces: {
+      "recto": {
+        gelatoUid: "flyers_pf_a5_pt_170-gsm-coated-silk_cl_4-0_ver",
+        tiers: [
+          { quantity: 50, priceTTC: 41.90 }, { quantity: 100, priceTTC: 61.90 },
+          { quantity: 250, priceTTC: 110.90 }, { quantity: 500, priceTTC: 185.90 },
+          { quantity: 1000, priceTTC: 259.90 },
+        ],
+      },
+      "recto-verso": {
+        gelatoUid: "flyers_pf_a5_pt_170-gsm-coated-silk_cl_4-4_ver",
+        tiers: [
+          { quantity: 50, priceTTC: 45.90 }, { quantity: 100, priceTTC: 68.90 },
+          { quantity: 250, priceTTC: 127.90 }, { quantity: 500, priceTTC: 218.90 },
+          { quantity: 1000, priceTTC: 308.90 },
+        ],
+      },
+    },
+  },
+  "flyer-a4": {
+    byFaces: {
+      "recto-verso": {
+        gelatoUid: "flyers_pf_a4_pt_170-gsm-coated-silk_cl_4-4_ver",
+        tiers: [
+          { quantity: 50, priceTTC: 43.90 }, { quantity: 100, priceTTC: 72.90 },
+          { quantity: 250, priceTTC: 147.90 }, { quantity: 500, priceTTC: 217.90 },
+          { quantity: 1000, priceTTC: 372.90 },
+        ],
+      },
+    },
+  },
   // ── Posters (POD à l'unité, prix linéaire) ──
   "poster-50x70": {
     gelatoUid: "large-posters_pf_500x700-mm_pt_170-gsm-coated-silk_cl_4-0_ver",
@@ -75,31 +144,60 @@ export function isPrintDirect(productId: string): boolean {
   return productId in DIRECT_PRINT_PRICING;
 }
 
+/** Faces commandables pour ce produit (ex. flyer-a4 = ["recto-verso"] seul). */
+export function getPrintFacesAvailable(productId: string): PrintFace[] {
+  const p = DIRECT_PRINT_PRICING[productId];
+  if (!p?.byFaces) return [];
+  return (Object.keys(p.byFaces) as PrintFace[]).filter((f) => p.byFaces![f]);
+}
+
+/** Normalise la face demandée vers une face réellement disponible. */
+function resolveFace(p: DirectPrintPricing, faces?: PrintFace): FacePricing | null {
+  if (!p.byFaces) return null;
+  if (faces && p.byFaces[faces]) return p.byFaces[faces]!;
+  // Repli : première face disponible (ex. A4 → recto-verso).
+  const first = (Object.keys(p.byFaces) as PrintFace[]).find((f) => p.byFaces![f]);
+  return first ? p.byFaces[first]! : null;
+}
+
 /**
- * Prix TTC pour (produit, quantité). Retourne null si la combinaison n'est pas
- * autorisée — le serveur DOIT rejeter dans ce cas (anti-tampering).
+ * Prix TTC pour (produit, quantité, faces). Retourne null si la combinaison
+ * n'est pas autorisée — le serveur DOIT rejeter dans ce cas (anti-tampering).
  */
-export function getPrintDirectPrice(productId: string, quantity: number): number | null {
+export function getPrintDirectPrice(productId: string, quantity: number, faces?: PrintFace): number | null {
   const p = DIRECT_PRINT_PRICING[productId];
   if (!p) return null;
+  // Tarif dépendant des faces (flyers) — prioritaire.
+  if (p.byFaces) {
+    const fp = resolveFace(p, faces);
+    const tier = fp?.tiers.find((t) => t.quantity === quantity);
+    return tier ? tier.priceTTC : null;
+  }
   if (p.tiers) {
     const tier = p.tiers.find((t) => t.quantity === quantity);
     return tier ? tier.priceTTC : null;
   }
-  if (p.unitPriceTTC != null && p.quantities.includes(quantity)) {
+  if (p.unitPriceTTC != null && p.quantities?.includes(quantity)) {
     return Math.round(p.unitPriceTTC * quantity * 100) / 100;
   }
   return null;
 }
 
 /** Liste { quantité, prix } proposée dans le sélecteur du configurateur. */
-export function getPrintQtyOptions(productId: string): PrintQtyPrice[] {
+export function getPrintQtyOptions(productId: string, faces?: PrintFace): PrintQtyPrice[] {
   const p = DIRECT_PRINT_PRICING[productId];
   if (!p) return [];
-  return p.quantities.map((q) => ({ quantity: q, priceTTC: getPrintDirectPrice(productId, q) ?? 0 }));
+  if (p.byFaces) {
+    const fp = resolveFace(p, faces);
+    return fp ? fp.tiers.map((t) => ({ quantity: t.quantity, priceTTC: t.priceTTC })) : [];
+  }
+  return (p.quantities ?? []).map((q) => ({ quantity: q, priceTTC: getPrintDirectPrice(productId, q) ?? 0 }));
 }
 
 /** UID Gelato pour la production (stocké dans printConfig pour le fulfillment). */
-export function getPrintGelatoUid(productId: string): string | null {
-  return DIRECT_PRINT_PRICING[productId]?.gelatoUid ?? null;
+export function getPrintGelatoUid(productId: string, faces?: PrintFace): string | null {
+  const p = DIRECT_PRINT_PRICING[productId];
+  if (!p) return null;
+  if (p.byFaces) return resolveFace(p, faces)?.gelatoUid ?? null;
+  return p.gelatoUid ?? null;
 }
