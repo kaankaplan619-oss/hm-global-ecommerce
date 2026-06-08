@@ -7,6 +7,7 @@ import {
   MapPin, Plus, ChevronLeft, CheckCircle2, AlertCircle, Loader2, X, Pencil,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
+import AddressAutocomplete from "@/components/checkout/AddressAutocomplete";
 
 // ── Gradient signature HM Global ──────────────────────────────────────────────
 const HM_GRADIENT = "linear-gradient(135deg, #5BC4D8, #7B4FA6, #C4387A)";
@@ -286,11 +287,13 @@ export default function AdressesPage() {
 
               <div>
                 <label className="label">Adresse *</label>
-                <input type="text" className="input" required
+                <AddressAutocomplete
                   value={editForm.street}
-                  onChange={(e) => setEditForm((f) => ({ ...f, street: e.target.value }))}
+                  onChange={(street) => setEditForm((f) => ({ ...f, street }))}
+                  onSelect={({ street, postcode, city }) =>
+                    setEditForm((f) => ({ ...f, street, postalCode: postcode, city }))
+                  }
                   placeholder="12 rue de la Paix"
-                  autoComplete="street-address"
                 />
               </div>
 
