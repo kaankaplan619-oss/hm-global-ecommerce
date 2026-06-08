@@ -136,15 +136,26 @@ export default function BusinessCardVisualizer({
                 className="h-full w-full object-contain"
               />
             )
+          ) : face === "front" ? (
+            /* ── État vide : carte d'exemple (au lieu d'un placeholder vide) ── */
+            <div className="relative flex h-full w-full flex-col justify-between bg-white px-[8%] py-[9%]">
+              <span className="absolute right-1.5 top-1.5 rounded bg-[var(--hm-surface)] px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-[var(--hm-text-muted)]">Exemple</span>
+              <div>
+                <p className="text-[11px] font-bold leading-tight text-[var(--hm-text)]">Prénom Nom</p>
+                <p className="text-[8px] font-semibold text-[var(--hm-primary)]">Fonction · Société</p>
+              </div>
+              <div className="h-px w-1/2 bg-[var(--hm-line)]" />
+              <div className="text-[8px] leading-relaxed text-[var(--hm-text-soft)]">
+                <p>contact@exemple.fr</p>
+                <p>06 12 34 56 78</p>
+                <p>www.exemple.fr</p>
+              </div>
+            </div>
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#f9f8fb]">
-              <div className="h-px w-1/3 bg-[rgba(177,63,116,0.2)]" />
-              <p className="text-center text-[10px] leading-relaxed text-[var(--hm-text-muted)]">
-                {face === "front"
-                  ? "Déposez votre fichier recto"
-                  : "Déposez votre fichier verso"}
-              </p>
-              <div className="h-px w-1/3 bg-[rgba(177,63,116,0.2)]" />
+            <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-white">
+              <span className="rounded bg-[var(--hm-surface)] px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-[var(--hm-text-muted)]">Exemple verso</span>
+              <p className="text-[10px] font-bold text-[var(--hm-text)]">Votre logo</p>
+              <p className="text-[8px] text-[var(--hm-text-soft)]">Slogan / accroche</p>
             </div>
           )}
 

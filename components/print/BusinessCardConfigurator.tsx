@@ -578,10 +578,10 @@ export default function BusinessCardConfigurator() {
 
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={() => { setStep(2); setEditorOpen(true); }}
                 className="btn-primary w-full gap-2"
               >
-                Continuer — Déposer mes fichiers
+                Continuer vers l&apos;atelier
                 <ChevronRight size={16} />
               </button>
             </>
@@ -590,28 +590,14 @@ export default function BusinessCardConfigurator() {
           {/* ════════════ ÉTAPE 2 — Upload fichiers ════════════ */}
           {step === 2 && (
             <>
-              {/* ── Option principale : créer dans l'atelier (mise en avant) ── */}
+              {/* L'atelier s'ouvre automatiquement à l'arrivée sur cette étape.
+                 Ce bouton permet de le ré-ouvrir si le client l'a fermé. */}
               <button
                 type="button"
                 onClick={() => setEditorOpen(true)}
-                className="group relative w-full overflow-hidden rounded-2xl border border-[var(--hm-primary)]/30 bg-gradient-to-br from-[var(--hm-accent-soft-rose)] to-white p-5 text-left transition hover:border-[var(--hm-primary)] hover:shadow-md"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--hm-primary)] px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--hm-primary)] text-white shadow-sm">
-                    <Sparkles size={22} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="flex items-center gap-2 text-sm font-black text-[var(--hm-text)]">
-                      Créer ma carte en ligne
-                      <span className="rounded-full bg-[var(--hm-primary)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">Recommandé</span>
-                    </p>
-                    <p className="mt-0.5 text-[12px] leading-snug text-[var(--hm-text-soft)]">
-                      Logo, texte, QR, modèles — composez et visualisez en 3D, sans logiciel.
-                      Vous avez déjà un PDF ? Importez-le dans l&apos;atelier pour l&apos;ajuster.
-                    </p>
-                  </div>
-                  <ChevronRight size={18} className="shrink-0 text-[var(--hm-primary)] transition group-hover:translate-x-0.5" />
-                </div>
+                <Sparkles size={16} /> Ouvrir l&apos;atelier de création
               </button>
 
               {/* Séparateur */}
