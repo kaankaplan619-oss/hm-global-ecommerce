@@ -142,6 +142,15 @@ export default function CommandeDetailPage({ params }: Props) {
     <div className="min-h-screen bg-[#f8f9fb] pt-24 pb-20">
       <div className="container max-w-3xl">
 
+        {/* Bouton retour visible (mobile-first) */}
+        <Link
+          href="/mon-compte/commandes"
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
+        >
+          <ChevronLeft size={16} />
+          Retour aux commandes
+        </Link>
+
         {/* Breadcrumb */}
         <nav className="mb-6 flex items-center gap-2 text-xs text-[#6e6280]">
           <Link href="/mon-compte" className="hover:text-[#7B4FA6] transition-colors">
