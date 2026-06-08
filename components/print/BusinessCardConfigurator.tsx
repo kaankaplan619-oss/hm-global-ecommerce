@@ -987,7 +987,7 @@ export default function BusinessCardConfigurator() {
                   "✅ BAT vérifié par HM Global",
                   "📦 Livraison France incluse",
                   "🎨 PDF vectoriel recommandé",
-                  "⚡ Impression via Gelato",
+                  "⚡ Production par notre atelier d'impression",
                 ].map((item) => (
                   <p key={item} className="text-[11px] text-[var(--hm-text-soft)]">{item}</p>
                 ))}
