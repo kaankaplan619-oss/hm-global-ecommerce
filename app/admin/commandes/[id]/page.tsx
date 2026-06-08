@@ -532,24 +532,67 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                   const supplierLine = buildSupplierLine(item, order.orderNumber);
                   const isCopied = copiedItemId === item.id;
 
+                  // Vignette comme dans le panier client (aperçu réel en priorité).
+                  const thumb = item.composedPreviewUrl
+                    || item.printConfig?.frontPreviewUrl
+                    || getProductCatalogImage(item.product, item.color?.id)
+                    || item.product?.images?.[0];
+
                   return (
                     <div key={item.id} className="pb-6 border-b border-[var(--hm-line)] last:border-0 last:pb-0">
+                      {/* En-tête article — lecture "comme le panier" : vignette +
+                         nom + options + quantité × prix = total. */}
+                      <div className="mb-3 flex items-start gap-3 rounded-xl bg-[var(--hm-surface)] p-3">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[var(--hm-line)] bg-white">
+                          {thumb ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={thumb} alt={item.product?.shortName ?? "Article"} className="h-full w-full object-contain p-0.5" />
+                          ) : (
+                            <Package size={18} className="text-[var(--hm-text-soft)]" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-[var(--hm-text)]">
+                                {item.product?.shortName ?? "—"}
+                                {item.printConfig && <span className="ml-1.5 rounded-full bg-[var(--hm-accent-soft-rose)] px-1.5 py-0.5 text-[8px] font-bold text-[var(--hm-primary)]">IMPRESSION</span>}
+                              </p>
+                              <p className="text-[10px] font-mono text-[var(--hm-text-soft)]">
+                                {item.product?.reference ?? "—"}
+                              </p>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <p className="text-sm font-black text-[var(--hm-text)]">{fmtCurrency(item.totalTTC)}</p>
+                              <p className="text-[9px] text-[var(--hm-text-muted)]">
+                                {item.printConfig
+                                  ? `${item.printConfig.quantity} ex. · ${item.printConfig.faces === "recto" ? "recto" : "R/V"}`
+                                  : `${item.quantity} × ${fmtCurrency(item.unitPriceTTC)}`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            {item.printConfig ? (
+                              <>
+                                <span className="badge badge-neutral text-[9px]">{item.printConfig.format}</span>
+                                <span className="badge badge-neutral text-[9px]">
+                                  {item.printConfig.finish === "mat" ? "Mat" : item.printConfig.finish === "brillant" ? "Brillant" : "Premium"}
+                                </span>
+                                {item.printConfig.corners === "rounded" && <span className="badge badge-neutral text-[9px]">Coins arrondis</span>}
+                              </>
+                            ) : (
+                              <>
+                                <span className="badge badge-neutral text-[9px]">Taille {item.size ?? "—"}</span>
+                                <span className="badge badge-neutral text-[9px]">{item.color?.label ?? "—"}</span>
+                                <span className="badge badge-neutral text-[9px]">{item.technique?.toUpperCase() ?? "—"}</span>
+                                <span className="badge badge-neutral text-[9px]">{item.placement ?? "—"}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                       <div className="flex items-start gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[var(--hm-text)]">
-                            {item.product?.shortName ?? "—"}
-                          </p>
-                          <p className="text-[10px] font-mono text-[var(--hm-text-soft)]">
-                            {item.product?.reference ?? "—"}
-                          </p>
-                          <div className="flex flex-wrap gap-1.5 mt-1.5">
-                            <span className="badge badge-neutral text-[9px]">Taille {item.size ?? "—"}</span>
-                            <span className="badge badge-neutral text-[9px]">{item.color?.label ?? "—"}</span>
-                            <span className="badge badge-neutral text-[9px]">
-                              {item.technique?.toUpperCase() ?? "—"}
-                            </span>
-                            <span className="badge badge-neutral text-[9px]">{item.placement ?? "—"}</span>
-                          </div>
 
                           {/* ── PRINT : Fichiers recto / verso ──────────────── */}
                           {item.printConfig ? (
