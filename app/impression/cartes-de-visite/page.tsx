@@ -31,22 +31,7 @@ export default function CartesDeVisitePage() {
           </p>
         </div>
 
-        {/* ── Bandeau réassurance compact ───────────────────────────────── */}
-        <div className="mb-10 flex flex-wrap gap-2">
-          {[
-            "🎨 PDF · PNG · JPG acceptés",
-            "✅ BAT validé avant impression",
-            "📦 Production après validation",
-            "🖌️ Accompagnement PAO possible",
-          ].map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-1.5 text-[11px] font-semibold text-[var(--hm-text-soft)]"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
+        {/* Bandeau réassurance retiré (Kaan) → plus de place pour l'aperçu. */}
 
         {/* ── Configurateur ─────────────────────────────────────────────── */}
         <BusinessCardPageClient />

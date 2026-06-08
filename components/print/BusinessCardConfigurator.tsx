@@ -113,6 +113,9 @@ export default function BusinessCardConfigurator() {
 
   // Verso fourni : fichier verso dédié OU page 2 d'un PDF recto-verso.
   const versoProvided = !!backFile || (frontPdfPages ?? 0) >= 2;
+  // Par défaut : un SEUL fichier (PDF recto-verso). Le client peut, s'il le
+  // veut, déposer un verso séparé (recto + verso en 2 images distinctes).
+  const [separateVerso, setSeparateVerso] = useState(false);
 
   // ── Étape UI ───────────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -250,7 +253,7 @@ export default function BusinessCardConfigurator() {
               frontFileUrl={frontFile?.url ?? null}
               backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
               showToggle={faces === "recto-verso" && (!!frontFile || !!backFile)}
-              displayWidth={200}
+              displayWidth={248}
             />
           </div>
         </div>
@@ -284,7 +287,7 @@ export default function BusinessCardConfigurator() {
         })}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
+      <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
 
         {/* ── Colonne gauche — contenu étape ────────────────────────────── */}
         <div className="flex flex-col gap-6">
@@ -468,8 +471,13 @@ export default function BusinessCardConfigurator() {
 
               {/* Upload recto */}
               <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
-                <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                  Fichier recto <span className="text-[var(--hm-rose)]">*</span>
+                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                  Votre fichier d&apos;impression <span className="text-[var(--hm-rose)]">*</span>
+                </p>
+                <p className="mb-3 text-[11px] leading-snug text-[var(--hm-text-muted)]">
+                  {faces === "recto-verso"
+                    ? "Recto-verso : un seul PDF de 2 pages suffit (page 1 = recto, page 2 = verso)."
+                    : "PDF, PNG ou JPG haute résolution."}
                 </p>
                 {frontFile ? (
                   <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
@@ -528,13 +536,7 @@ export default function BusinessCardConfigurator() {
                         <p className="truncate text-sm font-semibold text-green-700">{backFile.name}</p>
                         <p className="text-[10px] text-green-600">{Math.round(backFile.size / 1024)} Ko</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setBackFile(null)}
-                        className="text-[10px] font-semibold text-green-600 hover:text-red-500 transition"
-                      >
-                        Changer
-                      </button>
+                      <button type="button" onClick={() => { setBackFile(null); setSeparateVerso(false); }} className="text-[10px] font-semibold text-green-600 hover:text-red-500 transition">Retirer</button>
                     </div>
                   ) : (frontPdfPages ?? 0) >= 2 ? (
                     <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
@@ -543,15 +545,8 @@ export default function BusinessCardConfigurator() {
                         <p className="text-sm font-semibold text-green-700">Verso = page 2 de votre PDF ✓</p>
                         <p className="text-[10px] text-green-600">Votre PDF contient recto + verso — rien d&apos;autre à faire.</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => backInputRef.current?.click()}
-                        className="shrink-0 text-[10px] font-semibold text-[var(--hm-primary)] hover:underline"
-                      >
-                        Autre fichier
-                      </button>
                     </div>
-                  ) : (
+                  ) : separateVerso ? (
                     <button
                       type="button"
                       onClick={() => backInputRef.current?.click()}
@@ -564,10 +559,19 @@ export default function BusinessCardConfigurator() {
                         <Upload size={24} className="text-[var(--hm-primary)]" />
                       )}
                       <p className="text-sm font-semibold text-[var(--hm-text)]">
-                        {uploadingBack ? "Upload en cours…" : "Déposer le fichier verso"}
+                        {uploadingBack ? "Upload en cours…" : "Déposer le verso (fichier séparé)"}
                       </p>
                       <p className="text-[11px] text-[var(--hm-text-soft)]">PDF, PNG, JPG — max 20 Mo</p>
                     </button>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-4 text-center">
+                      <p className="text-[12px] leading-snug text-[var(--hm-text-soft)]">
+                        Déposez un <strong>PDF de 2 pages</strong> ci-dessus — la page 2 servira de verso.
+                      </p>
+                      <button type="button" onClick={() => setSeparateVerso(true)} className="mt-1.5 text-[11px] font-semibold text-[var(--hm-primary)] hover:underline">
+                        Mes recto / verso sont en 2 fichiers séparés →
+                      </button>
+                    </div>
                   )}
                   <input
                     ref={backInputRef}
@@ -752,7 +756,7 @@ export default function BusinessCardConfigurator() {
                     frontFileUrl={frontFile?.url ?? null}
                     backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
                     showToggle={faces === "recto-verso" && (!!frontFile || !!backFile)}
-                    displayWidth={232}
+                    displayWidth={320}
                   />
                 </div>
                 <p className="mt-2.5 text-center text-[10px] leading-snug text-[var(--hm-text-muted)]">
