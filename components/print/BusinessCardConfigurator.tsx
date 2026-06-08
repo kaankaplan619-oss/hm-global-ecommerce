@@ -17,7 +17,7 @@
  *   - printConfig stocké dans le panier Zustand, non persisté en localStorage.
  */
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Check, AlertCircle, ShoppingCart, Loader2, ChevronRight, Info, PenLine, Sparkles } from "lucide-react";
 
@@ -92,6 +92,27 @@ export default function BusinessCardConfigurator() {
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack,  setUploadingBack]  = useState(false);
   const [uploadError,    setUploadError]    = useState<string | null>(null);
+
+  // Nombre de pages du PDF recto → si ≥ 2, le verso = page 2 automatiquement
+  // (un seul PDF recto-verso, le client n'a pas à uploader 2 fichiers).
+  const [frontPdfPages, setFrontPdfPages] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const url = frontFile?.url;
+    if (!url || !/\.pdf($|\?)/i.test(url)) { setFrontPdfPages(null); return; }
+    (async () => {
+      try {
+        const pdfjs = await import("pdfjs-dist");
+        pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+        const doc = await pdfjs.getDocument({ url }).promise;
+        if (!cancelled) setFrontPdfPages(doc.numPages);
+      } catch { if (!cancelled) setFrontPdfPages(null); }
+    })();
+    return () => { cancelled = true; };
+  }, [frontFile?.url]);
+
+  // Verso fourni : fichier verso dédié OU page 2 d'un PDF recto-verso.
+  const versoProvided = !!backFile || (frontPdfPages ?? 0) >= 2;
 
   // ── Étape UI ───────────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -496,7 +517,9 @@ export default function BusinessCardConfigurator() {
               {faces === "recto-verso" && (
                 <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
                   <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                    Fichier verso <span className="text-[var(--hm-rose)]">*</span>
+                    Fichier verso {versoProvided
+                      ? <span className="text-[10px] font-medium normal-case text-green-600">✓ inclus</span>
+                      : <span className="text-[var(--hm-rose)]">*</span>}
                   </p>
                   {backFile ? (
                     <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
@@ -511,6 +534,21 @@ export default function BusinessCardConfigurator() {
                         className="text-[10px] font-semibold text-green-600 hover:text-red-500 transition"
                       >
                         Changer
+                      </button>
+                    </div>
+                  ) : (frontPdfPages ?? 0) >= 2 ? (
+                    <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+                      <Check size={14} className="shrink-0 text-green-600" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-green-700">Verso = page 2 de votre PDF ✓</p>
+                        <p className="text-[10px] text-green-600">Votre PDF contient recto + verso — rien d&apos;autre à faire.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => backInputRef.current?.click()}
+                        className="shrink-0 text-[10px] font-semibold text-[var(--hm-primary)] hover:underline"
+                      >
+                        Autre fichier
                       </button>
                     </div>
                   ) : (
@@ -581,7 +619,7 @@ export default function BusinessCardConfigurator() {
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  disabled={!frontFile || (faces === "recto-verso" && !backFile)}
+                  disabled={!frontFile || (faces === "recto-verso" && !versoProvided)}
                   className="btn-primary flex-1 gap-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Voir l&apos;aperçu BAT
