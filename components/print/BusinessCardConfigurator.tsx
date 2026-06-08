@@ -19,7 +19,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Check, AlertCircle, ShoppingCart, Loader2, ChevronRight, Info } from "lucide-react";
+import { Upload, Check, AlertCircle, ShoppingCart, Loader2, ChevronRight, Info, PenLine, Sparkles } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import BusinessCardVisualizer from "@/components/print/BusinessCardVisualizer";
 import PrintMockupViewer from "@/components/print/PrintMockupViewer";
@@ -497,6 +497,27 @@ export default function BusinessCardConfigurator() {
                   />
                 </div>
               )}
+
+              {/* Alternatives à l'upload (façon Pixartprinting "Gérez votre fichier") */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <a
+                  href="/contact?sujet=pao"
+                  className="group flex items-start gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
+                >
+                  <PenLine size={18} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
+                  <span>
+                    <span className="block text-[13px] font-semibold text-[var(--hm-text)]">Confier à notre studio</span>
+                    <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Pas de fichier prêt ? Notre équipe PAO crée ou adapte votre carte.</span>
+                  </span>
+                </a>
+                <div className="flex items-start gap-3 rounded-xl border border-dashed border-[var(--hm-line)] bg-white p-4 opacity-70">
+                  <Sparkles size={18} className="mt-0.5 shrink-0 text-[var(--hm-text-muted)]" />
+                  <span>
+                    <span className="block text-[13px] font-semibold text-[var(--hm-text-soft)]">Éditer en ligne</span>
+                    <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Bientôt — éditeur de visuel intégré.</span>
+                  </span>
+                </div>
+              </div>
 
               {/* Erreur upload */}
               {uploadError && (
