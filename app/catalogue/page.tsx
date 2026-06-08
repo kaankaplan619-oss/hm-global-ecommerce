@@ -9,16 +9,18 @@ export const metadata: Metadata = {
     "T-shirts, polos, hoodies et softshells personnalisés. DTF, flex ou broderie. Commandez en ligne avec HM Global Agence.",
 };
 
+// Catégories NON proposées (HM Global ne les fabrique pas / marge insuffisante).
+// Masquées du catalogue, des filtres et des routes (cf. [category]/page.tsx).
+const HIDDEN_CATEGORIES = new Set(["polaires", "enfants"]);
+
 const CATEGORY_LABELS: Record<string, string> = {
   tshirts:    "T-shirts personnalisés",
   polos:      "Polos",
   hoodies:    "Hoodies & Sweats",
   softshells: "Softshells & Vestes",
-  polaires:   "Polaires & Doudounes",
   casquettes: "Casquettes & Bonnets",
   sacs:       "Sacs & Tote bags",
   goodies:    "Mugs & Goodies",
-  enfants:    "Vêtements enfants",
 };
 
 export default function CataloguePage() {
@@ -64,7 +66,7 @@ export default function CataloguePage() {
             et ne doivent pas être mis en avant aux côtés du catalogue achetable.
             Ils restent visibles dans leur page catégorie dédiée /catalogue/[cat]
             où la signalétique "Sur devis" est claire. */}
-        {order.map((catId) => {
+        {order.filter((catId) => !HIDDEN_CATEGORIES.has(catId)).map((catId) => {
           const products = ALL_PRODUCTS.filter(
             (p) => p.category === catId && !p.quoteOnly,
           );

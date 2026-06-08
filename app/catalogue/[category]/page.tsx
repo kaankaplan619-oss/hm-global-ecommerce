@@ -30,12 +30,6 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
     description:
       "Vestes softshell imperméables personnalisées. Broderie premium recommandée. Gamme B&C 3 couches.",
   },
-  polaires: {
-    label: "Polaires & Doudounes personnalisées",
-    short: "Polaires",
-    description:
-      "Polaires légères, doudounes et micropolaires éco personnalisées en flex ou broderie. Idéal pour les équipes terrain, BTP et outdoor.",
-  },
   casquettes: {
     label: "Casquettes personnalisées",
     short: "Casquettes",
@@ -54,27 +48,19 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
     description:
       "Mugs et objets publicitaires personnalisés avec votre logo. Impression sublimation pleine couleur. Idéal pour les séminaires, cadeaux d'entreprise et événements.",
   },
-  enfants: {
-    label: "Vêtements enfants personnalisés",
-    short: "Enfants",
-    description:
-      "T-shirts, sweats et hoodies enfants personnalisés en DTF ou flex. Matières douces certifiées, tailles 3–12 ans.",
-  },
 };
 
-// Ordre du sous-menu de navigation catégorie : essentiels → outdoor → accessoires → enfants.
-// Inclut les catégories sans produits aujourd'hui (softshells, polaires, casquettes, enfants) —
-// la page catégorie affiche un état "Bientôt disponible" si products.length === 0.
+// Ordre du sous-menu de navigation catégorie : essentiels → outdoor → accessoires.
+// Les catégories Polaires & Doudounes et Vêtements enfants ne sont pas proposées
+// (non fabriquées / marge insuffisante) → retirées du menu et des routes.
 const PUBLIC_CATEGORY_IDS = [
   "tshirts",
   "polos",
   "hoodies",
   "softshells",
-  "polaires",
   "casquettes",
   "sacs",
   "goodies",
-  "enfants",
 ] as const;
 
 type Props = {
@@ -92,7 +78,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  return Object.keys(PRODUCTS_BY_CATEGORY).map((category) => ({ category }));
+  // Ne génère que les catégories proposées (exclut polaires / enfants).
+  return Object.keys(PRODUCTS_BY_CATEGORY)
+    .filter((category) => category in CATEGORY_META)
+    .map((category) => ({ category }));
 }
 
 export default async function CategoryPage({ params }: Props) {
