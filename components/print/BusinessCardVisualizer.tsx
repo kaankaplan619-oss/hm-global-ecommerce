@@ -98,18 +98,10 @@ export default function BusinessCardVisualizer({
         <div
           className="absolute inset-0 rounded-sm"
           style={{
-            border: "1.5px dashed rgba(239,68,68,0.7)",
+            border: "1.5px dashed rgba(239,68,68,0.55)",
             pointerEvents: "none",
           }}
         />
-
-        {/* Légende fond perdu */}
-        <span
-          className="absolute text-[8px] font-semibold text-red-400 leading-none"
-          style={{ top: 2, left: bleedPx }}
-        >
-          Fond perdu
-        </span>
 
         {/* Zone format fini — contour continu */}
         <div
@@ -155,26 +147,10 @@ export default function BusinessCardVisualizer({
               left:   safePx,
               right:  safePx,
               bottom: safePx,
-              border: "1px dashed rgba(34,197,94,0.6)",
+              border: "1px dashed rgba(34,197,94,0.5)",
             }}
           />
         </div>
-
-        {/* Légende format fini */}
-        <span
-          className="absolute text-[8px] font-semibold text-[var(--hm-text-muted)] leading-none"
-          style={{ bottom: bleedPx - 12, left: bleedPx }}
-        >
-          85×55 mm
-        </span>
-
-        {/* Légende zone de sécurité */}
-        <span
-          className="absolute text-[8px] text-green-500 font-semibold leading-none"
-          style={{ bottom: bleedPx + safePx + 2, right: bleedPx + safePx }}
-        >
-          Zone sécurité
-        </span>
       </div>
 
       {/* ── Légende zones ────────────────────────────────────────────────── */}

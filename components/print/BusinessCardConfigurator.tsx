@@ -19,7 +19,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Check, AlertCircle, ShoppingCart, Loader2, ChevronRight, Info, PenLine, Sparkles } from "lucide-react";
+import { Upload, Check, AlertCircle, ShoppingCart, Loader2, ChevronRight, Info, Sparkles } from "lucide-react";
 
 // Swatch visuel par finition (rend la différence mat / brillant / premium
 // visible, au lieu d'un simple libellé texte). Mat = surface douce diffuse,
@@ -569,6 +569,37 @@ export default function BusinessCardConfigurator() {
           {/* ════════════ ÉTAPE 2 — Upload fichiers ════════════ */}
           {step === 2 && (
             <>
+              {/* ── Option principale : créer dans l'atelier (mise en avant) ── */}
+              <button
+                type="button"
+                onClick={() => setEditorOpen(true)}
+                className="group relative w-full overflow-hidden rounded-2xl border border-[var(--hm-primary)]/30 bg-gradient-to-br from-[var(--hm-accent-soft-rose)] to-white p-5 text-left transition hover:border-[var(--hm-primary)] hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--hm-primary)] text-white shadow-sm">
+                    <Sparkles size={22} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="flex items-center gap-2 text-sm font-black text-[var(--hm-text)]">
+                      Créer ma carte en ligne
+                      <span className="rounded-full bg-[var(--hm-primary)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">Recommandé</span>
+                    </p>
+                    <p className="mt-0.5 text-[12px] leading-snug text-[var(--hm-text-soft)]">
+                      Logo, texte, QR, modèles — composez et visualisez en 3D, sans logiciel.
+                      Vous avez déjà un PDF ? Importez-le dans l&apos;atelier pour l&apos;ajuster.
+                    </p>
+                  </div>
+                  <ChevronRight size={18} className="shrink-0 text-[var(--hm-primary)] transition group-hover:translate-x-0.5" />
+                </div>
+              </button>
+
+              {/* Séparateur */}
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-[var(--hm-line)]" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-muted)]">ou j&apos;ai déjà mon fichier prêt</span>
+                <div className="h-px flex-1 bg-[var(--hm-line)]" />
+              </div>
+
               <div className="rounded-2xl border border-[var(--hm-accent-soft-blue)] bg-blue-50 p-4">
                 <div className="flex gap-2 text-xs text-blue-700">
                   <Info size={14} className="mt-0.5 shrink-0" />
@@ -695,31 +726,6 @@ export default function BusinessCardConfigurator() {
                   />
                 </div>
               )}
-
-              {/* Alternatives à l'upload (façon Pixartprinting "Gérez votre fichier") */}
-              <div className="grid gap-3 sm:grid-cols-2">
-                <a
-                  href="/contact?sujet=pao"
-                  className="group flex items-start gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
-                >
-                  <PenLine size={18} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
-                  <span>
-                    <span className="block text-[13px] font-semibold text-[var(--hm-text)]">Confier à notre studio</span>
-                    <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Pas de fichier prêt ? Notre équipe PAO crée ou adapte votre carte.</span>
-                  </span>
-                </a>
-                <button
-                  type="button"
-                  onClick={() => setEditorOpen(true)}
-                  className="group flex items-start gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 text-left transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
-                >
-                  <Sparkles size={18} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
-                  <span>
-                    <span className="block text-[13px] font-semibold text-[var(--hm-text)]">Créer en ligne</span>
-                    <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Composez votre carte dans l&apos;atelier (logo + texte), sans logiciel.</span>
-                  </span>
-                </button>
-              </div>
 
               {/* Erreur upload */}
               {uploadError && (
