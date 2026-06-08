@@ -61,11 +61,24 @@ const EXPERTISES = [
   "Communication visuelle",
 ];
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Retour contextuel : si on arrive depuis le print (devis cartes/flyers/…),
+  // on revient au print, pas à l'accueil (cohérence des couches de navigation).
+  const params = await searchParams;
+  const sujet = typeof params.sujet === "string" ? params.sujet : "";
+  const back =
+    sujet === "impression"
+      ? { href: "/impression", label: "Retour au print" }
+      : { href: "/", label: "Retour à l'accueil" };
+
   return (
     <div className="pt-24 pb-20 bg-white">
       <div className="container">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href={back.href} label={back.label} />
 
         <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,rgba(248,249,251,0.95)_0%,rgba(255,255,255,1)_72%)] px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
           <div className="max-w-3xl">

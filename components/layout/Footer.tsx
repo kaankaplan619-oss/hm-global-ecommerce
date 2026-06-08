@@ -37,6 +37,7 @@ function IconFacebook() {
 const NAV_COMMANDER = [
   { label: "Textile personnalisé",      href: "/catalogue" },
   { label: "Impression",                href: "/impression" },
+  { label: "Suivi de commande",         href: "/mon-compte/commandes" },
   { label: "Demander un devis global",  href: "/contact?sujet=devis" },
 ];
 
@@ -81,7 +82,7 @@ export default function Footer() {
         }}
       />
 
-      <div className="mx-auto w-full max-w-7xl px-6 pb-8 pt-12 sm:px-10 lg:px-16 lg:pb-10 lg:pt-16">
+      <div className="mx-auto w-full max-w-7xl px-6 pb-24 pt-12 sm:px-10 sm:pb-8 lg:px-16 lg:pb-10 lg:pt-16">
 
         {/* ── Grille principale ───────────────────────────────────────── */}
         <div className="grid gap-10 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr] lg:gap-12">
@@ -247,7 +248,7 @@ export default function Footer() {
             className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px]"
             style={{ color: "var(--hm-text-muted-2)" }}
           >
-            <span>© {new Date().getFullYear()} HM Global Agence</span>
+            <span>© 2018 HM Global Agence</span>
             <Link
               href="/cgv"
               className="transition hover:opacity-80"
