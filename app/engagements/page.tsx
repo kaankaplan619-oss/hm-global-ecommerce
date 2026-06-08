@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BackLink from "@/components/ui/BackLink";
 import {
   ArrowRight,
   GraduationCap,
@@ -51,13 +52,7 @@ export default function EngagementsPage() {
   return (
     <div className="pt-24 pb-20 bg-white">
       <div className="container">
-        <nav className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] mb-8">
-          <Link href="/" className="hover:text-[var(--hm-rose)]">Accueil</Link>
-          <span>/</span>
-          <Link href="/a-propos" className="hover:text-[var(--hm-rose)]">À propos</Link>
-          <span>/</span>
-          <span className="text-[var(--hm-text)]">Nos engagements</span>
-        </nav>
+        <BackLink href="/a-propos" label="Retour à À propos" />
 
         <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,rgba(248,249,251,0.95)_0%,rgba(255,255,255,1)_72%)] px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
           <p className="section-tag">Nos engagements</p>

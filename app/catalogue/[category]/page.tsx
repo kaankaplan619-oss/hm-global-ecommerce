@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import BackLink from "@/components/ui/BackLink";
 import ProductCard from "@/components/product/ProductCard";
 import { PRODUCTS_BY_CATEGORY } from "@/data/products";
 
@@ -105,13 +106,7 @@ export default async function CategoryPage({ params }: Props) {
     <div className="pt-24 pb-20">
       <div className="container">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] mb-8">
-          <Link href="/" className="hover:text-[var(--hm-text)] transition-colors">Accueil</Link>
-          <span>/</span>
-          <Link href="/catalogue" className="hover:text-[var(--hm-text)] transition-colors">Catalogue</Link>
-          <span>/</span>
-          <span className="text-[var(--hm-text)] font-medium">{meta.label}</span>
-        </nav>
+        <BackLink href="/catalogue" label="Retour au catalogue" />
 
         {/* Header */}
         <div className="mb-10">

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import BackLink from "@/components/ui/BackLink";
 import BusinessCardPageClient from "./BusinessCardPageClient";
 
 export const metadata: Metadata = {
@@ -17,14 +16,7 @@ export default function CartesDeVisitePage() {
       <div className="container">
 
         {/* ── Fil d'Ariane ─────────────────────────────────────────────── */}
-        <div className="mb-8 flex items-center gap-2 text-[11px] text-[var(--hm-text-muted)]">
-          <Link href="/impression" className="flex items-center gap-1 hover:text-[var(--hm-primary)] transition-colors">
-            <ArrowLeft size={11} />
-            Impression
-          </Link>
-          <span>/</span>
-          <span className="font-semibold text-[var(--hm-text-soft)]">Cartes de visite</span>
-        </div>
+        <BackLink href="/impression" label="Retour au print" />
 
         {/* ── En-tête ──────────────────────────────────────────────────── */}
         <div className="mb-10">

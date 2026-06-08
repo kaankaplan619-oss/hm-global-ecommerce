@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BackLink from "@/components/ui/BackLink";
 import { ArrowRight, BadgeCheck, FileCheck2, Layers3, ShieldCheck, Sparkles } from "lucide-react";
 import QuickQuoteForm from "@/components/quote/QuickQuoteForm";
 
@@ -32,11 +33,7 @@ export default async function QuickQuotePage({ searchParams }: Props) {
   return (
     <div className="bg-white pb-24 pt-24">
       <div className="container">
-        <nav className="mb-8 flex items-center gap-2 text-xs text-[var(--hm-text-soft)]">
-          <Link href="/" className="hover:text-[var(--hm-rose)]">Accueil</Link>
-          <span>/</span>
-          <span className="font-medium text-[var(--hm-text)]">Devis rapide</span>
-        </nav>
+        <BackLink href="/" label="Retour à l'accueil" />
 
         <section className="mb-8 rounded-[2rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,rgba(248,249,251,0.95)_0%,rgba(255,255,255,1)_72%)] px-5 py-7 sm:px-8 sm:py-10 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
