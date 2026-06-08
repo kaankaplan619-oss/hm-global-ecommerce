@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { mapDbOrderToOrder } from "@/lib/mappers";
 
 /**
  * GET /api/orders
@@ -69,7 +70,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
     }
 
-    return NextResponse.json({ orders: orders ?? [] });
+    // Mappe les lignes Supabase (snake_case) vers le type Order (camelCase)
+    // attendu par la page /mon-compte/commandes (createdAt, orderNumber,
+    // totalTTC, items…). Sans ça ces champs étaient undefined → crash formatDate.
+    return NextResponse.json({ orders: (orders ?? []).map(mapDbOrderToOrder) });
   } catch (err) {
     console.error("[Orders GET]", err);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
