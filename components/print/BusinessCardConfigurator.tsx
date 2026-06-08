@@ -31,6 +31,7 @@ const FINISH_SWATCH: Record<string, string> = {
 };
 import { useCartStore } from "@/store/cart";
 import BusinessCardVisualizer from "@/components/print/BusinessCardVisualizer";
+import PrintEditor from "@/components/print/PrintEditor";
 import PrintMockupViewer from "@/components/print/PrintMockupViewer";
 import {
   BUSINESS_CARD_OPTIONS,
@@ -119,6 +120,9 @@ export default function BusinessCardConfigurator() {
   // Nom du projet (façon "Item name" Pixartprinting) — utile en admin.
   const [projectName, setProjectName] = useState("");
 
+  // Atelier d'édition en ligne (Phase 1). Handler défini après uploadFile.
+  const [editorOpen, setEditorOpen] = useState(false);
+
   // ── Étape UI ───────────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [adding, setAdding] = useState(false);
@@ -197,6 +201,28 @@ export default function BusinessCardConfigurator() {
     e.target.value = "";
   }, [uploadFile]);
 
+  // ── Atelier d'édition en ligne — validation du rendu (Phase 1) ──────────────
+  // Convertit les data URLs PNG exportées par l'éditeur en File, les upload via
+  // le même endpoint que l'upload manuel, puis passe à l'étape récap (3).
+  const dataUrlToFile = (dataUrl: string, name: string): File => {
+    const [meta, b64] = dataUrl.split(",");
+    const mime = /:(.*?);/.exec(meta)?.[1] ?? "image/png";
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new File([arr], name, { type: mime });
+  };
+  const handleEditorValidate = useCallback(async (recto: string, verso: string | null) => {
+    setEditorOpen(false);
+    const rf = await uploadFile(dataUrlToFile(recto, "carte-recto.png"), "front");
+    if (rf) setFrontFile(rf);
+    if (verso) {
+      const bf = await uploadFile(dataUrlToFile(verso, "carte-verso.png"), "back");
+      if (bf) setBackFile(bf);
+    }
+    setStep(3);
+  }, [uploadFile]);
+
   // ── Ajout au panier ────────────────────────────────────────────────────────
   const handleAddToCart = useCallback(() => {
     if (!frontFile) return;
@@ -239,7 +265,7 @@ export default function BusinessCardConfigurator() {
     } catch {
       setAdding(false);
     }
-  }, [addItem, frontFile, backFile, orientation, faces, finish, corners, quantity, lotPrice, router]);
+  }, [addItem, frontFile, backFile, orientation, faces, finish, corners, quantity, projectName, lotPrice, router]);
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -615,13 +641,17 @@ export default function BusinessCardConfigurator() {
                     <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Pas de fichier prêt ? Notre équipe PAO crée ou adapte votre carte.</span>
                   </span>
                 </a>
-                <div className="flex items-start gap-3 rounded-xl border border-dashed border-[var(--hm-line)] bg-white p-4 opacity-70">
-                  <Sparkles size={18} className="mt-0.5 shrink-0 text-[var(--hm-text-muted)]" />
+                <button
+                  type="button"
+                  onClick={() => setEditorOpen(true)}
+                  className="group flex items-start gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 text-left transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
+                >
+                  <Sparkles size={18} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
                   <span>
-                    <span className="block text-[13px] font-semibold text-[var(--hm-text-soft)]">Éditer en ligne</span>
-                    <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Bientôt — éditeur de visuel intégré.</span>
+                    <span className="block text-[13px] font-semibold text-[var(--hm-text)]">Créer en ligne</span>
+                    <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Composez votre carte dans l&apos;atelier (logo + texte), sans logiciel.</span>
                   </span>
-                </div>
+                </button>
               </div>
 
               {/* Erreur upload */}
@@ -870,6 +900,18 @@ export default function BusinessCardConfigurator() {
           </div>
         </div>
       </div>
+
+      {/* ── Atelier d'édition en ligne (plein écran) ──────────────────────── */}
+      {editorOpen && (
+        <PrintEditor
+          widthMm={orientation === "landscape" ? 85 : 55}
+          heightMm={orientation === "landscape" ? 55 : 85}
+          bleedMm={3}
+          faces={faces}
+          onValidate={handleEditorValidate}
+          onClose={() => setEditorOpen(false)}
+        />
+      )}
     </div>
   );
 }
