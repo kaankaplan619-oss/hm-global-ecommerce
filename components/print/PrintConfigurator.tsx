@@ -18,7 +18,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart } from "lucide-react";
+import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart, PenLine, Sparkles } from "lucide-react";
 import type { CuratedPrintProduct, PrintSpec } from "@/data/print-catalogue";
 import type { PrintOrientation } from "@/data/print-products";
 import { PRINT_ORIENTATION_LABELS } from "@/data/print-products";
@@ -200,26 +200,55 @@ export default function PrintConfigurator({
           </div>
         )}
 
-        {/* Upload recto */}
-        <FileDrop
-          label={spec.faces ? "Visuel recto" : "Votre visuel"}
-          required
-          file={frontFile}
-          uploading={uploading === "front"}
-          onPick={onPick("front")}
-          onClear={() => setFrontFile(null)}
-        />
+        {/* ── Gérez votre fichier (flux Pixartprinting) ─────────────────── */}
+        <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+          <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Gérez votre fichier</p>
+          <p className="mb-4 mt-1 text-[12px] leading-relaxed text-[var(--hm-text-muted)]">
+            Déposez votre visuel prêt à imprimer, ou confiez la création à notre studio.
+          </p>
 
-        {/* Upload verso */}
-        {spec.faces && faces === "recto-verso" && (
           <FileDrop
-            label="Visuel verso"
-            file={backFile}
-            uploading={uploading === "back"}
-            onPick={onPick("back")}
-            onClear={() => setBackFile(null)}
+            label={spec.faces ? "Visuel recto" : "Votre visuel"}
+            required
+            file={frontFile}
+            uploading={uploading === "front"}
+            onPick={onPick("front")}
+            onClear={() => setFrontFile(null)}
           />
-        )}
+
+          {spec.faces && faces === "recto-verso" && (
+            <div className="mt-3">
+              <FileDrop
+                label="Visuel verso"
+                file={backFile}
+                uploading={uploading === "back"}
+                onPick={onPick("back")}
+                onClear={() => setBackFile(null)}
+              />
+            </div>
+          )}
+
+          {/* Alternatives à l'upload (studio PAO + éditeur à venir) */}
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <a
+              href="/contact?sujet=pao"
+              className="group flex items-start gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
+            >
+              <PenLine size={18} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
+              <span>
+                <span className="block text-[13px] font-semibold text-[var(--hm-text)]">Confier à notre studio</span>
+                <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Pas de fichier prêt ? Notre équipe PAO crée ou adapte votre visuel.</span>
+              </span>
+            </a>
+            <div className="flex items-start gap-3 rounded-xl border border-dashed border-[var(--hm-line)] bg-white p-4 opacity-70">
+              <Sparkles size={18} className="mt-0.5 shrink-0 text-[var(--hm-text-muted)]" />
+              <span>
+                <span className="block text-[13px] font-semibold text-[var(--hm-text-soft)]">Éditer en ligne</span>
+                <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Bientôt — éditeur de visuel intégré.</span>
+              </span>
+            </div>
+          </div>
+        </div>
 
         {error && (
           <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
