@@ -359,23 +359,26 @@ export default function BusinessCardConfigurator() {
 
       {/* ── Aperçu mobile en HAUT (sticky) — le client voit la carte + son
          visuel se mettre à jour en direct, sans scroller. Desktop = colonne
-         droite. ── */}
-      <div className="sticky top-[4.5rem] z-20 -mx-1 mb-6 lg:hidden">
-        <div className="rounded-2xl border border-[var(--hm-line)] bg-white/95 p-3 backdrop-blur">
-          <div className="flex items-center justify-center rounded-xl bg-[var(--hm-surface)] p-3">
-            <BusinessCardVisualizer
-              orientation={orientation}
-              rounded={corners === "rounded"}
-              finish={finish}
-              frontFileUrl={frontFile?.url ?? null}
-              backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
-              showToggle={versoProvided}
-              hasBack={versoProvided}
-              displayWidth={248}
-            />
+         droite. Masqué à l'étape 3 : le grand aperçu BAT est déjà affiché,
+         inutile de le doubler. ── */}
+      {step !== 3 && (
+        <div className="sticky top-[4.5rem] z-20 -mx-1 mb-6 lg:hidden">
+          <div className="rounded-2xl border border-[var(--hm-line)] bg-white/95 p-3 backdrop-blur">
+            <div className="flex items-center justify-center rounded-xl bg-[var(--hm-surface)] p-3">
+              <BusinessCardVisualizer
+                orientation={orientation}
+                rounded={corners === "rounded"}
+                finish={finish}
+                frontFileUrl={frontFile?.url ?? null}
+                backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
+                showToggle={versoProvided}
+                hasBack={versoProvided}
+                displayWidth={248}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* ── Stepper ──────────────────────────────────────────────────────── */}
       <div className="mb-10 flex items-center gap-0">
