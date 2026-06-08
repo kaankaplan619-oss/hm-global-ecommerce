@@ -154,6 +154,26 @@ export default function PrintConfigurator({
       {/* ── Colonne gauche — options + upload ─────────────────────────────── */}
       <div className="flex flex-col gap-6">
 
+        {/* Aperçu mobile en HAUT (sticky) — visible pendant toute la config,
+           mis à jour dès le dépôt du visuel. Desktop = colonne droite. */}
+        <div className="sticky top-[4.5rem] z-20 -mx-1 lg:hidden">
+          <div className="rounded-2xl border border-[var(--hm-line)] bg-white/95 p-3 backdrop-blur">
+            <div className="flex items-center justify-center rounded-xl bg-[var(--hm-surface)] p-3">
+              <PrintSupportVisualizer
+                widthMm={spec.widthMm}
+                heightMm={spec.heightMm}
+                sizeLabel={product.sizeLabel}
+                orientation={orientation}
+                frontFileUrl={frontFile?.url ?? null}
+                backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
+                showToggle={spec.faces && faces === "recto-verso" && (!!frontFile || !!backFile)}
+                bleedMm={spec.bleedMm}
+                displayWidth={196}
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Orientation */}
         {spec.orientationToggle && (
           <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
@@ -319,7 +339,7 @@ export default function PrintConfigurator({
       {/* ── Colonne droite — aperçu live + récap ──────────────────────────── */}
       <div className="flex flex-col gap-4">
         <div className="sticky top-24 flex flex-col gap-4">
-          <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4">
+          <div className="hidden rounded-2xl border border-[var(--hm-line)] bg-white p-4 lg:block">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Aperçu en direct</p>
             <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
               <PrintSupportVisualizer

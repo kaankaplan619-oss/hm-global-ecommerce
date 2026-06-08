@@ -218,6 +218,23 @@ export default function BusinessCardConfigurator() {
   return (
     <div className="mx-auto max-w-5xl">
 
+      {/* ── Aperçu mobile en HAUT (sticky) — le client voit la carte + son
+         visuel se mettre à jour en direct, sans scroller. Desktop = colonne
+         droite. ── */}
+      <div className="sticky top-[4.5rem] z-20 -mx-1 mb-6 lg:hidden">
+        <div className="rounded-2xl border border-[var(--hm-line)] bg-white/95 p-3 backdrop-blur">
+          <div className="flex items-center justify-center rounded-xl bg-[var(--hm-surface)] p-3">
+            <BusinessCardVisualizer
+              orientation={orientation}
+              frontFileUrl={frontFile?.url ?? null}
+              backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
+              showToggle={faces === "recto-verso" && (!!frontFile || !!backFile)}
+              displayWidth={200}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* ── Stepper ──────────────────────────────────────────────────────── */}
       <div className="mb-10 flex items-center gap-0">
         {(["Options", "Fichiers", "Aperçu BAT"] as const).map((label, i) => {
@@ -687,7 +704,7 @@ export default function BusinessCardConfigurator() {
                et le visuel s'y plaque au fur et à mesure). Au step 3, l'aperçu
                BAT technique détaillé prend le relais → on évite le doublon. */}
             {step !== 3 && (
-              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4">
+              <div className="hidden rounded-2xl border border-[var(--hm-line)] bg-white p-4 lg:block">
                 <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
                   Aperçu en direct
                 </p>
