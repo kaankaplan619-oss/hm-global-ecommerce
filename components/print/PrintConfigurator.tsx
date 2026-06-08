@@ -56,6 +56,7 @@ export default function PrintConfigurator({
   const qtyOptions = getPrintQtyOptions(product.id);
   const [quantity, setQuantity] = useState<number>(qtyOptions[0]?.quantity ?? 1);
   const [adding, setAdding] = useState(false);
+  const [projectName, setProjectName] = useState("");
   const price = direct ? getPrintDirectPrice(product.id, quantity) : null;
   const productType: PrintConfig["productType"] =
     product.id.startsWith("poster") ? "poster"
@@ -106,6 +107,7 @@ export default function PrintConfigurator({
     if (faces === "recto-verso") params.set("faces", "Recto-verso");
     if (frontFile) params.set("visuel", frontFile.url);
     if (faces === "recto-verso" && backFile) params.set("visuelVerso", backFile.url);
+    if (projectName.trim()) params.set("projet", projectName.trim());
     router.push(`/contact?${params.toString()}`);
   };
 
@@ -121,6 +123,7 @@ export default function PrintConfigurator({
         faces:           spec.faces ? faces : "recto",
         quantity,
         gelatoUid:       getPrintGelatoUid(product.id) ?? undefined,
+        projectName:     projectName.trim() || undefined,
         lotPriceTTC:     price,
         frontFileUrl:    frontFile.url,
         backFileUrl:     spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null,
@@ -269,6 +272,21 @@ export default function PrintConfigurator({
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Nom du projet (façon "Item name" Pixartprinting) */}
+        <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+          <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+            Nom du projet <span className="font-medium normal-case text-[var(--hm-text-muted)]">(optionnel)</span>
+          </p>
+          <input
+            type="text"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            maxLength={80}
+            placeholder="Ex. Affiche soldes été"
+            className="mt-2 w-full rounded-xl border border-[var(--hm-line)] bg-white px-4 py-3 text-sm text-[var(--hm-text)] outline-none transition focus:border-[var(--hm-primary)]"
+          />
         </div>
 
         {error && (

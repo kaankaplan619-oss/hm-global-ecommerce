@@ -116,6 +116,8 @@ export default function BusinessCardConfigurator() {
   // Par défaut : un SEUL fichier (PDF recto-verso). Le client peut, s'il le
   // veut, déposer un verso séparé (recto + verso en 2 images distinctes).
   const [separateVerso, setSeparateVerso] = useState(false);
+  // Nom du projet (façon "Item name" Pixartprinting) — utile en admin.
+  const [projectName, setProjectName] = useState("");
 
   // ── Étape UI ───────────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -210,6 +212,7 @@ export default function BusinessCardConfigurator() {
         finish,
         corners,
         quantity,
+        projectName:    projectName.trim() || undefined,
         lotPriceTTC:    lotPrice,
         frontFileUrl:   frontFile.url,
         backFileUrl:    faces === "recto-verso" ? (backFile?.url ?? null) : null,
@@ -441,6 +444,22 @@ export default function BusinessCardConfigurator() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Nom du projet (façon "Item name" Pixartprinting) */}
+              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                  Nom du projet <span className="font-medium normal-case text-[var(--hm-text-muted)]">(optionnel)</span>
+                </p>
+                <p className="mb-3 text-[11px] text-[var(--hm-text-muted)]">Pour vous y retrouver dans vos commandes.</p>
+                <input
+                  type="text"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  maxLength={80}
+                  placeholder="Ex. Cartes équipe commerciale"
+                  className="w-full rounded-xl border border-[var(--hm-line)] bg-white px-4 py-3 text-sm text-[var(--hm-text)] outline-none transition focus:border-[var(--hm-primary)]"
+                />
               </div>
 
               <button

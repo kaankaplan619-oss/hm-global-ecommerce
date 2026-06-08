@@ -217,6 +217,8 @@ export interface PrintConfig {
   quantity:         number;
   /** UID produit Gelato pour le fulfillment (posters/toiles/invitations). */
   gelatoUid?:       string;
+  /** Nom du projet donné par le client (ex. "Cartes Miguel") — affiché admin. */
+  projectName?:     string;
   /** Prix du lot TTC — total de la commande pour ce lot. */
   lotPriceTTC:      number;
   /** URL Supabase Storage du fichier recto (PDF ou PNG haute résolution). */
