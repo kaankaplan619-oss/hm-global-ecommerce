@@ -209,14 +209,13 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* ── Colonne 2 — Commander ─────────────────────────────────── */}
-          <FooterColumn title="Commander" links={NAV_COMMANDER} highlightLast />
-
-          {/* ── Colonne 3 — Expertises ────────────────────────────────── */}
-          <FooterColumn title="Expertises" links={NAV_EXPERTISES} />
-
-          {/* ── Colonne 4 — Agence ────────────────────────────────────── */}
-          <FooterColumn title="Agence" links={NAV_AGENCE} />
+          {/* ── Colonnes nav — 2 colonnes sur mobile (plus compact),
+                 puis intégrées à la grille 4-col en desktop (lg:contents) ── */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:contents">
+            <FooterColumn title="Commander" links={NAV_COMMANDER} highlightLast />
+            <FooterColumn title="Expertises" links={NAV_EXPERTISES} />
+            <FooterColumn title="Agence" links={NAV_AGENCE} />
+          </div>
         </div>
 
         {/* ── Ligne confiance ─────────────────────────────────────────── */}
