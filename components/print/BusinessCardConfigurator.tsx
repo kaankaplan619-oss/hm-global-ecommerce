@@ -635,6 +635,31 @@ export default function BusinessCardConfigurator() {
         <div className="flex flex-col gap-4">
           <div className="sticky top-24 flex flex-col gap-4">
 
+            {/* Aperçu live — visible dès les étapes Options / Fichiers (même
+               logique que le Studio textile : on voit la carte paysage/portrait
+               et le visuel s'y plaque au fur et à mesure). Au step 3, l'aperçu
+               BAT technique détaillé prend le relais → on évite le doublon. */}
+            {step !== 3 && (
+              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4">
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                  Aperçu en direct
+                </p>
+                <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
+                  <BusinessCardVisualizer
+                    orientation={orientation}
+                    frontFileUrl={frontFile?.url ?? null}
+                    backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
+                    showToggle={faces === "recto-verso" && (!!frontFile || !!backFile)}
+                    displayWidth={232}
+                  />
+                </div>
+                <p className="mt-2.5 text-center text-[10px] leading-snug text-[var(--hm-text-muted)]">
+                  {PRINT_ORIENTATION_LABELS[orientation]}
+                  {frontFile ? " · votre visuel" : " · déposez votre visuel à l'étape Fichiers"}
+                </p>
+              </div>
+            )}
+
             {/* Config résumé */}
             <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
               <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
