@@ -35,7 +35,7 @@ import PrintEditor from "@/components/print/PrintEditor";
 import SignaturePad from "@/components/print/SignaturePad";
 import Card3DViewer from "@/components/print/Card3DViewer";
 import { renderPdfPageToPng, isPdfUrl } from "@/lib/pdf-preview";
-import PrintMockupViewer from "@/components/print/PrintMockupViewer";
+import CardSituationPreview from "@/components/print/CardSituationPreview";
 import {
   BUSINESS_CARD_OPTIONS,
   BUSINESS_CARD_PRODUCT,
@@ -835,25 +835,19 @@ export default function BusinessCardConfigurator() {
               </div>
 
               {/* BLOC SECONDAIRE — Aperçu en situation (optionnel via toggle).
-                 Affiche 1 scène mockup (pile sur table) avec OVERLAY CARTE
-                 BLANCHE pour masquer le Pastel. Le design client se plaque
-                 par-dessus la carte blanche → aucun design tiers visible. */}
+                 Scène 100 % maison (CSS) : UNE seule carte, surface neutre aux
+                 couleurs de la marque, aucune image tierce / watermark. */}
               {showInSituation && (
                 <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
                   <div className="mb-3 flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
                       Aperçu en situation
                     </p>
-                    <span className="text-[10px] text-[var(--hm-text-muted)]">
-                      Cliquez les miniatures pour changer d&apos;angle
-                    </span>
                   </div>
-                  <PrintMockupViewer
-                    family="business-cards"
-                    frontDesignUrl={frontFile?.url ?? null}
-                    backDesignUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
-                    whiteCardOverlay
-                    alt="Aperçu carte de visite en situation"
+                  <CardSituationPreview
+                    frontUrl={frontPreviewUrl}
+                    backUrl={faces === "recto-verso" ? backPreviewUrl : null}
+                    rounded={corners === "rounded"}
                   />
                 </div>
               )}
