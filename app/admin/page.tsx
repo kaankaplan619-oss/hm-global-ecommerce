@@ -7,6 +7,7 @@ import {
   Package, Users, FileText, Settings,
   AlertTriangle, CheckCircle, Clock,
   TrendingUp, Truck, Factory, ShoppingCart, Eye,
+  Wallet, Banknote, ExternalLink,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 
@@ -16,6 +17,11 @@ interface Stats {
   counts: Record<string, number>;
   totalRevenueTTC: number;
   monthRevenueTTC: number;
+  encaisseTTC?: number;
+  monthEncaisseTTC?: number;
+  enAttenteTTC?: number;
+  paidCount?: number;
+  pendingCount?: number;
   total: number;
 }
 
@@ -212,7 +218,62 @@ export default function AdminPage() {
           </p>
         </div>
 
+        {/* ── Trésorerie (encaissé / en attente) ─────────────────────────── */}
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Trésorerie</h2>
+          <a
+            href="https://dashboard.stripe.com/payments"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[var(--hm-primary)] hover:underline"
+          >
+            Voir sur Stripe <ExternalLink size={11} />
+          </a>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[
+            {
+              icon: Wallet,
+              label: "Encaissé (total)",
+              value: loadingStats ? "…" : fmt(stats?.encaisseTTC ?? stats?.totalRevenueTTC ?? 0),
+              sub: loadingStats ? "" : `${stats?.paidCount ?? 0} commande${(stats?.paidCount ?? 0) > 1 ? "s" : ""} payée${(stats?.paidCount ?? 0) > 1 ? "s" : ""}`,
+              color: "#16a34a",
+            },
+            {
+              icon: TrendingUp,
+              label: "Encaissé ce mois",
+              value: loadingStats ? "…" : fmt(stats?.monthEncaisseTTC ?? stats?.monthRevenueTTC ?? 0),
+              sub: "TTC · mois en cours",
+              color: "#22c55e",
+            },
+            {
+              icon: Clock,
+              label: "En attente d'encaissement",
+              value: loadingStats ? "…" : fmt(stats?.enAttenteTTC ?? 0),
+              sub: loadingStats ? "" : `${stats?.pendingCount ?? 0} commande${(stats?.pendingCount ?? 0) > 1 ? "s" : ""} en attente`,
+              color: "#f59e0b",
+            },
+            {
+              icon: Banknote,
+              label: "Total commandes",
+              value: loadingStats ? "…" : (stats?.total ?? 0),
+              sub: "hors annulées",
+              color: "var(--hm-primary)",
+            },
+          ].map(({ icon: Icon, label, value, sub, color }) => (
+            <div key={label} className="p-4 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon size={14} style={{ color }} />
+                <span className="text-[10px] text-[var(--hm-text-soft)] uppercase tracking-wider font-semibold leading-tight">{label}</span>
+              </div>
+              <div className="text-2xl font-black" style={{ color }}>{value}</div>
+              {sub && <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">{sub}</p>}
+            </div>
+          ))}
+        </div>
+
         {/* KPIs rapides */}
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">À traiter</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             {
@@ -234,9 +295,9 @@ export default function AdminPage() {
               color: "#60a5fa",
             },
             {
-              icon: TrendingUp,
-              label: "CA ce mois (TTC)",
-              value: loadingStats ? "…" : fmt(stats?.monthRevenueTTC ?? 0),
+              icon: Truck,
+              label: "Prêtes / à expédier",
+              value: loadingStats ? "…" : sumStatuses(c, ["prete_a_expedier", "expediee"]),
               color: "#22c55e",
             },
           ].map(({ icon: Icon, label, value, color }) => (

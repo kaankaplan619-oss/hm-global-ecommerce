@@ -25,10 +25,10 @@ export async function GET() {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
 
-    // Toutes les commandes (status + total_ttc + created_at)
+    // Toutes les commandes (hors annulées)
     const { data: rows, error } = await supabase
       .from("orders")
-      .select("status, total_ttc, created_at, stripe_payment_status")
+      .select("status, total_ttc, created_at, stripe_payment_status, payment_method")
       .neq("status", "annulee");
 
     if (error) {
@@ -36,29 +36,49 @@ export async function GET() {
       return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
     }
 
-    // Count par statut
+    // Argent réellement ENCAISSÉ :
+    //   - CB / Link  → Stripe "succeeded"
+    //   - virement   → encaissé dès que l'admin a quitté "awaiting_bank_transfer"
+    //                  (= virement reçu et commande validée)
+    const isPaid = (row: { stripe_payment_status?: string | null; payment_method?: string | null; status: string }) =>
+      row.stripe_payment_status === "succeeded" ||
+      (row.payment_method === "bank_transfer" && row.status !== "awaiting_bank_transfer");
+
     const counts: Record<string, number> = {};
-    let totalRevenueTTC = 0;
-    let monthRevenueTTC = 0;
+    let encaisseTTC = 0;
+    let monthEncaisseTTC = 0;
+    let enAttenteTTC = 0;
+    let paidCount = 0;
+    let pendingCount = 0;
 
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
     for (const row of rows ?? []) {
       counts[row.status] = (counts[row.status] ?? 0) + 1;
-
-      if (row.stripe_payment_status === "succeeded" && row.total_ttc) {
-        totalRevenueTTC += Number(row.total_ttc);
-        if (row.created_at >= startOfMonth) {
-          monthRevenueTTC += Number(row.total_ttc);
-        }
+      const ttc = Number(row.total_ttc ?? 0);
+      if (isPaid(row)) {
+        paidCount++;
+        encaisseTTC += ttc;
+        if (row.created_at >= startOfMonth) monthEncaisseTTC += ttc;
+      } else {
+        pendingCount++;
+        enAttenteTTC += ttc;
       }
     }
 
+    const r2 = (n: number) => Math.round(n * 100) / 100;
     return NextResponse.json({
       counts,
-      totalRevenueTTC: Math.round(totalRevenueTTC * 100) / 100,
-      monthRevenueTTC: Math.round(monthRevenueTTC * 100) / 100,
+      // Trésorerie
+      encaisseTTC:      r2(encaisseTTC),
+      monthEncaisseTTC: r2(monthEncaisseTTC),
+      enAttenteTTC:     r2(enAttenteTTC),
+      paidCount,
+      pendingCount,
+      // Rétro-compat (= encaissé)
+      totalRevenueTTC:  r2(encaisseTTC),
+      monthRevenueTTC:  r2(monthEncaisseTTC),
       total: (rows ?? []).length,
     });
   } catch (err) {
