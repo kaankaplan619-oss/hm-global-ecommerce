@@ -155,8 +155,9 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         sizeLabel: "50 × 70 cm",
         description:
           "Le grand format signalétique le plus visible. Impression 4/0 haute définition sur papier 200 g/m².",
-        priceLabel: "Sur devis",
-        direct: false,
+        priceLabel: "dès 18,90 €",
+        direct: true,
+        badge: "Commande directe",
         href: devisHref("affiche-50x70", "50 × 70 cm"),
       },
       {
@@ -180,8 +181,9 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         sizeLabel: "30 × 40 cm",
         description:
           "Petit format déco pour bureau ou accueil. Toile tendue sur châssis bois FSC, prête à accrocher.",
-        priceLabel: "Sur devis",
-        direct: false,
+        priceLabel: "dès 67,90 €",
+        direct: true,
+        badge: "Commande directe",
         href: devisHref("toile-30x40", "30 × 40 cm"),
       },
       {
@@ -190,8 +192,9 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         sizeLabel: "40 × 60 cm",
         description:
           "Le format mural polyvalent. Impression sur toile mate, cadre bois FSC 2 cm, finition galerie.",
-        priceLabel: "Sur devis",
-        direct: false,
+        priceLabel: "dès 75,90 €",
+        direct: true,
+        badge: "Commande directe",
         href: devisHref("toile-40x60", "40 × 60 cm"),
       },
       {
@@ -200,8 +203,9 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         sizeLabel: "50 × 50 cm",
         description:
           "Format carré contemporain. Idéal logos, visuels d'ambiance et murs d'images. Toile tendue cadre bois.",
-        priceLabel: "Sur devis",
-        direct: false,
+        priceLabel: "dès 76,90 €",
+        direct: true,
+        badge: "Commande directe",
         href: devisHref("toile-50x50", "50 × 50 cm"),
       },
       {
@@ -225,8 +229,9 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         sizeLabel: "10,5 × 14,8 cm",
         description:
           "Le format invitation classique. Papier 350 g/m² couché satiné, option dorure ou pelliculage brillant.",
-        priceLabel: "Sur devis",
-        direct: false,
+        priceLabel: "dès 23,90 €",
+        direct: true,
+        badge: "Commande directe",
         href: devisHref("invitation-a6", "A6 · 10,5 × 14,8 cm"),
       },
       {

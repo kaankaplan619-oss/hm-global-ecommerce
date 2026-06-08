@@ -204,15 +204,19 @@ export interface Product {
  *   Dans order_items : quantity=1, unit_price_ttc=lotPriceTTC, total_ttc=lotPriceTTC.
  */
 export interface PrintConfig {
-  productType:      "business_card";
-  supplier:         "gelato";            // prêt pour envoi Gelato — pas activé en V1
-  format:           "85x55mm";
+  productType:      "business_card" | "poster" | "canvas" | "invitation";
+  supplier:         "gelato";            // prêt pour envoi Gelato
+  format:           string;              // ex "85x55mm", "50x70cm", "A6"
   orientation:      "landscape" | "portrait";
   faces:            "recto" | "recto-verso";
-  finish:           "mat" | "brillant" | "premium";
-  corners:          "standard" | "rounded";
-  /** Nombre d'exemplaires imprimés — ex : 250. Ne pas multiplier par lotPriceTTC. */
-  quantity:         250 | 500 | 1000 | 2500;
+  /** Cartes de visite uniquement. */
+  finish?:          "mat" | "brillant" | "premium";
+  /** Cartes de visite uniquement. */
+  corners?:         "standard" | "rounded";
+  /** Nombre d'exemplaires (cartes/invitations) ou d'unités (posters/toiles). */
+  quantity:         number;
+  /** UID produit Gelato pour le fulfillment (posters/toiles/invitations). */
+  gelatoUid?:       string;
   /** Prix du lot TTC — total de la commande pour ce lot. */
   lotPriceTTC:      number;
   /** URL Supabase Storage du fichier recto (PDF ou PNG haute résolution). */

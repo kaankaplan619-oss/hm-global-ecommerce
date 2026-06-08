@@ -18,11 +18,14 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2 } from "lucide-react";
+import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart } from "lucide-react";
 import type { CuratedPrintProduct, PrintSpec } from "@/data/print-catalogue";
 import type { PrintOrientation } from "@/data/print-products";
 import { PRINT_ORIENTATION_LABELS } from "@/data/print-products";
 import PrintSupportVisualizer from "@/components/print/PrintSupportVisualizer";
+import { useCartStore } from "@/store/cart";
+import { isPrintDirect, getPrintQtyOptions, getPrintDirectPrice, getPrintGelatoUid } from "@/data/print-pricing";
+import type { PrintConfig } from "@/types";
 
 interface UploadedFile { url: string; name: string; size: number; type: string; }
 
@@ -45,6 +48,19 @@ export default function PrintConfigurator({
   const [backFile,  setBackFile]  = useState<UploadedFile | null>(null);
   const [uploading, setUploading] = useState<null | "front" | "back">(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Commande directe (posters / toiles / invitations) : sélecteur quantité →
+  // prix baké Gelato × 2,2 (data/print-pricing). Sinon, fin = demande de devis.
+  const { addItem } = useCartStore();
+  const direct = isPrintDirect(product.id);
+  const qtyOptions = getPrintQtyOptions(product.id);
+  const [quantity, setQuantity] = useState<number>(qtyOptions[0]?.quantity ?? 1);
+  const [adding, setAdding] = useState(false);
+  const price = direct ? getPrintDirectPrice(product.id, quantity) : null;
+  const productType: PrintConfig["productType"] =
+    product.id.startsWith("poster") ? "poster"
+      : product.id.startsWith("canvas") ? "canvas"
+      : "invitation";
 
   const upload = useCallback(async (file: File, face: "front" | "back") => {
     setUploading(face);
@@ -91,6 +107,45 @@ export default function PrintConfigurator({
     if (frontFile) params.set("visuel", frontFile.url);
     if (faces === "recto-verso" && backFile) params.set("visuelVerso", backFile.url);
     router.push(`/contact?${params.toString()}`);
+  };
+
+  const addToCart = () => {
+    if (!frontFile || price == null) { setError("Déposez votre visuel pour commander."); return; }
+    setAdding(true);
+    try {
+      const config: PrintConfig = {
+        productType,
+        supplier:        "gelato",
+        format:          product.sizeLabel,
+        orientation,
+        faces:           spec.faces ? faces : "recto",
+        quantity,
+        gelatoUid:       getPrintGelatoUid(product.id) ?? undefined,
+        lotPriceTTC:     price,
+        frontFileUrl:    frontFile.url,
+        backFileUrl:     spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null,
+        frontPreviewUrl: null,
+        backPreviewUrl:  null,
+        batStatus:       "a_verifier",
+      };
+      addItem({
+        product: {
+          id: product.id, name: product.name, shortName: product.name,
+          format: product.sizeLabel, description: product.description,
+        } as unknown as Parameters<typeof addItem>[0]["product"],
+        quantity:          1,
+        size:              "unique",
+        color:             { id: "print", label: "—", hex: "#ffffff", available: true },
+        technique:         "print",
+        placement:         "coeur",
+        overrideUnitPrice: price,
+        printConfig:       config,
+      });
+      router.push("/panier");
+    } catch {
+      setAdding(false);
+      setError("Erreur lors de l'ajout au panier.");
+    }
   };
 
   return (
@@ -170,17 +225,66 @@ export default function PrintConfigurator({
           <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
         )}
 
-        <button
-          type="button"
-          onClick={finalize}
-          className="btn-primary gap-2"
-        >
-          Finaliser ma demande
-          <ArrowRight size={15} />
-        </button>
-        <p className="-mt-2 text-center text-[11px] text-[var(--hm-text-muted)]">
-          On valide le BAT avec vous, puis on confirme délai et tarif au devis.
-        </p>
+        {direct ? (
+          <>
+            {/* Quantité → prix live (modèle Pixartprinting) */}
+            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Quantité</p>
+              <div className="flex flex-wrap gap-2">
+                {qtyOptions.map((o) => (
+                  <button
+                    key={o.quantity}
+                    type="button"
+                    onClick={() => setQuantity(o.quantity)}
+                    className={`flex items-baseline gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+                      quantity === o.quantity
+                        ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                        : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
+                    }`}
+                  >
+                    {o.quantity}{o.quantity >= 25 ? " ex." : o.quantity > 1 ? " unités" : " unité"}
+                    <span className="text-[11px] font-bold text-[var(--hm-text-muted)]">{o.priceTTC.toFixed(2)} €</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Prix TTC du choix courant */}
+            <div className="rounded-2xl border border-[var(--hm-primary)]/25 bg-[var(--hm-accent-soft-rose)] px-5 py-4">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Prix TTC</p>
+              <p className="text-2xl font-black text-[var(--hm-primary)]">{price != null ? price.toFixed(2) : "—"} €</p>
+              <p className="text-[10px] text-[var(--hm-text-muted)]">Port confirmé au paiement · BAT validé avant production</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={addToCart}
+              disabled={adding || !frontFile}
+              className="btn-primary gap-2 disabled:opacity-60"
+            >
+              {adding ? (
+                <><Loader2 size={15} className="animate-spin" /> Ajout…</>
+              ) : (
+                <><ShoppingCart size={15} /> Ajouter au panier — {price != null ? price.toFixed(2) : "—"} €</>
+              )}
+            </button>
+            {!frontFile && (
+              <p className="-mt-2 text-center text-[11px] text-[var(--hm-text-muted)]">
+                Déposez votre visuel pour pouvoir commander.
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <button type="button" onClick={finalize} className="btn-primary gap-2">
+              Finaliser ma demande
+              <ArrowRight size={15} />
+            </button>
+            <p className="-mt-2 text-center text-[11px] text-[var(--hm-text-muted)]">
+              On valide le BAT avec vous, puis on confirme délai et tarif au devis.
+            </p>
+          </>
+        )}
       </div>
 
       {/* ── Colonne droite — aperçu live + récap ──────────────────────────── */}

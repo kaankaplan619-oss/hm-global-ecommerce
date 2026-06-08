@@ -5,6 +5,8 @@ import { generateOrderNumber } from "@/lib/utils";
 import { computeUnitPrice, computeCartTotals, ttcToHt, PRICING_CONFIG } from "@/data/pricing";
 import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
 import { PRINT_PRODUCTS_LOOKUP, getBusinessCardLotPrice } from "@/data/print-products";
+import { getPrintDirectPrice } from "@/data/print-pricing";
+import { getPrintProduct } from "@/data/print-catalogue";
 import type { Technique, Placement, PrintConfig } from "@/types";
 
 interface CartItemInput {
@@ -113,24 +115,41 @@ export async function POST(req: NextRequest) {
         const cfg = item.printConfig;
         if (!cfg) throw new Error(`printConfig manquant pour l'item print: ${item.productId}`);
 
-        const printProduct = PRINT_PRODUCTS_LOOKUP[item.productId];
-        if (!printProduct) throw new Error(`Produit print inconnu: ${item.productId}`);
+        // Recompute server-side — ne jamais faire confiance au lotPriceTTC client.
+        let lotPriceTTC: number;
+        let productRef:  string;
+        let productName: string;
 
-        // Recompute server-side depuis le barème — ne jamais faire confiance au lotPriceTTC client
-        const lotPriceTTC = getBusinessCardLotPrice({
-          finish:   cfg.finish,
-          quantity: cfg.quantity,
-          faces:    cfg.faces,
-          corners:  cfg.corners,
-        });
+        if (cfg.productType === "business_card") {
+          const printProduct = PRINT_PRODUCTS_LOOKUP[item.productId];
+          if (!printProduct) throw new Error(`Produit print inconnu: ${item.productId}`);
+          lotPriceTTC = getBusinessCardLotPrice({
+            finish:   cfg.finish ?? "mat",
+            quantity: (cfg.quantity as 250 | 500 | 1000 | 2500),
+            faces:    cfg.faces,
+            corners:  cfg.corners ?? "standard",
+          });
+          productRef  = printProduct.id;
+          productName = printProduct.shortName;
+        } else {
+          // Posters / toiles / invitations : prix baké Gelato × 2,2 (data/print-pricing).
+          // getPrintDirectPrice rejette toute combinaison non autorisée → anti-tampering.
+          const price = getPrintDirectPrice(item.productId, cfg.quantity);
+          if (price == null) {
+            throw new Error(`Combinaison prix print invalide : ${item.productId} ×${cfg.quantity}`);
+          }
+          lotPriceTTC = price;
+          const found = getPrintProduct(item.productId);
+          productRef  = item.productId;
+          productName = found?.product.name ?? item.productId;
+        }
         const lotPriceHT = ttcToHt(lotPriceTTC);
 
         return {
-          productId:        printProduct.id,
-          productReference: printProduct.id,
-          productName:      printProduct.shortName,
-          // printConfig stocké dans product_snapshot (pas de migration schema)
-          productSnapshot:  { id: printProduct.id, shortName: printProduct.shortName, printConfig: cfg },
+          productId:        productRef,
+          productReference: productRef,
+          productName:      productName,
+          productSnapshot:  { id: productRef, shortName: productName, printConfig: cfg },
           quantity:         1,       // toujours 1 lot en DB
           size:             "—",     // non applicable pour l'impression
           colorId:          "print",
