@@ -252,7 +252,8 @@ export default function BusinessCardConfigurator() {
               orientation={orientation}
               frontFileUrl={frontFile?.url ?? null}
               backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
-              showToggle={faces === "recto-verso" && (!!frontFile || !!backFile)}
+              showToggle={faces === "recto-verso"}
+              hasBack={versoProvided}
               displayWidth={248}
             />
           </div>
@@ -683,6 +684,7 @@ export default function BusinessCardConfigurator() {
                     frontFileUrl={frontFile?.url ?? null}
                     backFileUrl={backFile?.url ?? null}
                     showToggle={faces === "recto-verso"}
+                    hasBack={versoProvided}
                     displayWidth={340}
                   />
                 </div>
@@ -755,7 +757,8 @@ export default function BusinessCardConfigurator() {
                     orientation={orientation}
                     frontFileUrl={frontFile?.url ?? null}
                     backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
-                    showToggle={faces === "recto-verso" && (!!frontFile || !!backFile)}
+                    showToggle={faces === "recto-verso"}
+                    hasBack={versoProvided}
                     displayWidth={320}
                   />
                 </div>

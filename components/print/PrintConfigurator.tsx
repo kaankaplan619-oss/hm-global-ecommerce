@@ -166,7 +166,8 @@ export default function PrintConfigurator({
                 orientation={orientation}
                 frontFileUrl={frontFile?.url ?? null}
                 backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
-                showToggle={spec.faces && faces === "recto-verso" && (!!frontFile || !!backFile)}
+                showToggle={spec.faces && faces === "recto-verso"}
+                hasBack={!!backFile}
                 bleedMm={spec.bleedMm}
                 displayWidth={196}
               />
@@ -349,7 +350,8 @@ export default function PrintConfigurator({
                 orientation={orientation}
                 frontFileUrl={frontFile?.url ?? null}
                 backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
-                showToggle={spec.faces && faces === "recto-verso" && (!!frontFile || !!backFile)}
+                showToggle={spec.faces && faces === "recto-verso"}
+                hasBack={!!backFile}
                 bleedMm={spec.bleedMm}
                 displayWidth={232}
               />

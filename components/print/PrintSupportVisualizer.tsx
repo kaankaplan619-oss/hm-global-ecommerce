@@ -37,6 +37,7 @@ interface Props {
   backFileUrl:   string | null;
   /** Fond perdu en mm (défaut 3). */
   bleedMm?:      number;
+  hasBack?:      boolean;
   /** Affiche le toggle recto/verso. */
   showToggle?:   boolean;
   /** Largeur d'affichage du format fini, en px. */
@@ -53,6 +54,7 @@ export default function PrintSupportVisualizer({
   backFileUrl,
   bleedMm      = 3,
   showToggle   = true,
+  hasBack      = false,
   displayWidth = 300,
   className    = "",
 }: Props) {
@@ -145,7 +147,7 @@ export default function PrintSupportVisualizer({
       </div>
 
       {/* Toggle recto/verso */}
-      {showToggle && backFileUrl && (
+      {showToggle && hasBack && (
         <div className="flex gap-2">
           <button type="button" onClick={() => setFace("front")} className={`rounded-xl border px-4 py-1.5 text-[11px] font-bold transition ${face === "front" ? "border-[var(--hm-primary)] bg-[var(--hm-primary)] text-white" : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"}`}>Recto</button>
           <button type="button" onClick={() => setFace("back")} className={`rounded-xl border px-4 py-1.5 text-[11px] font-bold transition ${face === "back" ? "border-[var(--hm-primary)] bg-[var(--hm-primary)] text-white" : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"}`}>Verso</button>

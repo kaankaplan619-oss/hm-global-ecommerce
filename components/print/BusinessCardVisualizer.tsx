@@ -35,6 +35,8 @@ interface Props {
   backFileUrl:    string | null;
   /** Si true, affiche le toggle face/dos */
   showToggle?:    boolean;
+  /** Un verso existe (fichier verso séparé OU page 2 d'un PDF recto-verso). */
+  hasBack?:       boolean;
   /** Taille d'affichage en px — width de la carte (hauteur déduite du ratio) */
   displayWidth?:  number;
   className?:     string;
@@ -45,6 +47,7 @@ export default function BusinessCardVisualizer({
   frontFileUrl,
   backFileUrl,
   showToggle    = true,
+  hasBack       = false,
   displayWidth  = 340,
   className     = "",
 }: Props) {
@@ -186,7 +189,7 @@ export default function BusinessCardVisualizer({
       </div>
 
       {/* ── Toggle face/dos ───────────────────────────────────────────────── */}
-      {showToggle && backFileUrl && (
+      {showToggle && hasBack && (
         <div className="flex gap-2">
           <button
             type="button"
