@@ -18,7 +18,7 @@
  */
 
 import { useCallback, useRef, useState } from "react";
-import { Type, ImagePlus, Trash2, X, Check } from "lucide-react";
+import { Type, ImagePlus, Trash2, X, Check, Box, RotateCw } from "lucide-react";
 
 export interface EditorObject {
   id:       string;
@@ -58,6 +58,13 @@ export default function PrintEditor({
   const [back, setBack]   = useState<EditorObject[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+
+  // ─── Aperçu 3D rotatif ──────────────────────────────────────────────────
+  const [view3D, setView3D] = useState(false);
+  const [png3D, setPng3D] = useState<{ front: string; back: string | null } | null>(null);
+  const [angle, setAngle] = useState(0);          // rotation Y en degrés
+  const [dragging3D, setDragging3D] = useState(false);
+  const drag3DRef = useRef<{ x: number; a: number } | null>(null);
 
   const objects = face === "front" ? front : back;
   const setObjects = face === "front" ? setFront : setBack;
@@ -186,6 +193,39 @@ export default function PrintEditor({
     }
   };
 
+  // ─── Aperçu 3D : génère les PNG puis ouvre l'overlay ────────────────────
+  const open3D = async () => {
+    setExporting(true);
+    try {
+      const f = await renderFace(front);
+      const b = faces === "recto-verso" ? await renderFace(back) : null;
+      setPng3D({ front: f, back: b });
+      setAngle(0);
+      setView3D(true);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const on3DDown = (e: React.PointerEvent) => {
+    drag3DRef.current = { x: e.clientX, a: angle };
+    setDragging3D(true);
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
+  const on3DMove = (e: React.PointerEvent) => {
+    const d = drag3DRef.current;
+    if (!d) return;
+    setAngle(d.a + (e.clientX - d.x) * 0.6);
+  };
+  const on3DUp = () => { drag3DRef.current = null; setDragging3D(false); };
+
+  // Dimensions de la carte 3D (largeur fixe, hauteur selon ratio).
+  const CARD3D_W = Math.min(380, Math.round(widthMm * 4.2));
+  const CARD3D_H = Math.round(CARD3D_W / ratio);
+  // Face actuellement vue (pour l'étiquette) — recto si |angle mod 360| < 90.
+  const norm = ((angle % 360) + 360) % 360;
+  const showingFront = norm < 90 || norm > 270;
+
   const selObj = objects.find((o) => o.id === selected) || null;
 
   return (
@@ -211,6 +251,9 @@ export default function PrintEditor({
               <Trash2 size={14} /> Supprimer
             </button>
           )}
+          <button type="button" onClick={open3D} disabled={exporting || front.length === 0} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--hm-line)] px-3 py-1.5 text-[12px] font-semibold text-[var(--hm-text)] hover:border-[var(--hm-primary)] disabled:opacity-50">
+            <Box size={14} /> Aperçu 3D
+          </button>
           {faces === "recto-verso" && (
             <div className="ml-auto flex gap-1 rounded-lg bg-[var(--hm-surface)] p-1">
               {(["front", "back"] as const).map((f) => (
@@ -293,6 +336,69 @@ export default function PrintEditor({
             <Check size={15} /> {exporting ? "Génération…" : "Valider ma carte"}
           </button>
         </div>
+
+        {/* ── Overlay Aperçu 3D ─────────────────────────────────────────── */}
+        {view3D && png3D && (
+          <div className="absolute inset-0 z-10 flex flex-col bg-[#1a1622]/95 sm:rounded-2xl">
+            <div className="flex items-center justify-between px-5 py-3">
+              <p className="text-sm font-bold text-white">Aperçu 3D — {showingFront ? "Recto" : "Verso"}</p>
+              <button type="button" onClick={() => setView3D(false)} className="rounded-full p-1.5 text-white/70 hover:bg-white/10"><X size={18} /></button>
+            </div>
+
+            {/* Scène 3D */}
+            <div
+              className="flex flex-1 select-none items-center justify-center overflow-hidden"
+              style={{ perspective: "1400px", cursor: dragging3D ? "grabbing" : "grab" }}
+              onPointerDown={on3DDown}
+              onPointerMove={on3DMove}
+              onPointerUp={on3DUp}
+              onPointerLeave={on3DUp}
+            >
+              <div
+                style={{
+                  width: CARD3D_W,
+                  height: CARD3D_H,
+                  transformStyle: "preserve-3d",
+                  transform: `rotateY(${angle}deg)`,
+                  transition: dragging3D ? "none" : "transform 0.8s cubic-bezier(0.4,0,0.2,1)",
+                }}
+              >
+                {/* Recto */}
+                <div
+                  className="absolute inset-0 overflow-hidden rounded-xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+                  style={{ backfaceVisibility: "hidden" }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={png3D.front} alt="Recto" className="h-full w-full object-cover" draggable={false} />
+                </div>
+                {/* Verso (retourné de 180°) */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+                  style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+                >
+                  {png3D.back ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={png3D.back} alt="Verso" className="h-full w-full object-cover" draggable={false} />
+                  ) : (
+                    <span className="text-[11px] font-semibold text-[var(--hm-text-muted)]">Verso vierge</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Contrôles */}
+            <div className="flex items-center justify-center gap-2 px-5 py-4">
+              <button type="button" onClick={() => setAngle(0)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">Recto</button>
+              {faces === "recto-verso" && (
+                <button type="button" onClick={() => setAngle(180)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">Verso</button>
+              )}
+              <button type="button" onClick={() => setAngle((a) => a + 360)} className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">
+                <RotateCw size={13} /> Tour complet
+              </button>
+              <span className="ml-2 text-[11px] text-white/50">Glissez pour tourner</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
