@@ -33,6 +33,7 @@ import { useCartStore } from "@/store/cart";
 import BusinessCardVisualizer from "@/components/print/BusinessCardVisualizer";
 import PrintEditor from "@/components/print/PrintEditor";
 import SignaturePad from "@/components/print/SignaturePad";
+import Card3DViewer from "@/components/print/Card3DViewer";
 import { renderPdfPageToPng, isPdfUrl } from "@/lib/pdf-preview";
 import PrintMockupViewer from "@/components/print/PrintMockupViewer";
 import {
@@ -146,6 +147,8 @@ export default function BusinessCardConfigurator() {
 
   // Atelier d'édition en ligne (Phase 1). Handler défini après uploadFile.
   const [editorOpen, setEditorOpen] = useState(false);
+  // Aperçu 3D de l'étape BAT (fichiers uploadés).
+  const [view3DOpen, setView3DOpen] = useState(false);
 
   // Signature du Bon à Tirer (BAT) — approbation du visuel avant production.
   const [batName, setBatName] = useState("");
@@ -808,13 +811,23 @@ export default function BusinessCardConfigurator() {
                       Zone verte = sécurité (texte/logo). Zone rouge = fond perdu (couper).
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowInSituation((v) => !v)}
-                    className="rounded-xl border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
-                  >
-                    {showInSituation ? "Vue technique" : "Voir en situation"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setView3DOpen(true)}
+                      disabled={!frontPreviewUrl}
+                      className="rounded-xl border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)] disabled:opacity-40"
+                    >
+                      Aperçu 3D
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowInSituation((v) => !v)}
+                      className="rounded-xl border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+                    >
+                      {showInSituation ? "Vue technique" : "Voir en situation"}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex justify-center bg-[var(--hm-surface)] rounded-xl p-6">
                   <BusinessCardVisualizer
@@ -1039,6 +1052,17 @@ export default function BusinessCardConfigurator() {
           faces={faces}
           onValidate={handleEditorValidate}
           onClose={() => setEditorOpen(false)}
+        />
+      )}
+
+      {/* Aperçu 3D de l'étape BAT (fichiers uploadés) */}
+      {view3DOpen && frontPreviewUrl && (
+        <Card3DViewer
+          rectoUrl={frontPreviewUrl}
+          versoUrl={faces === "recto-verso" ? backPreviewUrl : null}
+          widthMm={orientation === "landscape" ? 85 : 55}
+          heightMm={orientation === "landscape" ? 55 : 85}
+          onClose={() => setView3DOpen(false)}
         />
       )}
     </div>
