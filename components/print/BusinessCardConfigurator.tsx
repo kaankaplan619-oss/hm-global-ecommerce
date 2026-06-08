@@ -98,7 +98,7 @@ export default function BusinessCardConfigurator() {
   // (BusinessCardVisualizer flat avec safe zones) et l'aperçu en situation
   // (1 scène mockup réaliste avec overlay carte blanche pour masquer le
   // démo Pastel). Par défaut : aperçu technique (style Pixartprinting B2B).
-  const [showInSituation, setShowInSituation] = useState(false);
+  const [showInSituation, setShowInSituation] = useState(true);
 
   // ── Fichiers uploadés ──────────────────────────────────────────────────────
   const [frontFile,   setFrontFile]   = useState<UploadedFile | null>(null);
@@ -791,66 +791,70 @@ export default function BusinessCardConfigurator() {
                  "Pastel" du mockup Mockups Design. Sert juste à rassurer
                  visuellement, n'apparaît pas par défaut. */}
 
-              {/* BLOC PRINCIPAL — Aperçu technique BAT */}
-              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-6">
-                <div className="mb-4 flex items-center justify-between">
+              {/* BLOC APERÇU — un seul à la fois (En situation par défaut, ou
+                 Vue technique). Bascule par segment, + bouton Aperçu 3D. */}
+              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5 sm:p-6">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                      Aperçu BAT — Vérification technique
+                      Aperçu BAT
                     </p>
                     <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">
-                      Zone verte = sécurité (texte/logo). Zone rouge = fond perdu (couper).
+                      {showInSituation
+                        ? "Votre carte en situation."
+                        : "Zone verte = sécurité (texte/logo). Zone rouge = fond perdu (couper)."}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setView3DOpen(true)}
                       disabled={!frontPreviewUrl}
-                      className="rounded-xl border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)] disabled:opacity-40"
+                      className="rounded-lg border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)] disabled:opacity-40"
                     >
                       Aperçu 3D
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowInSituation((v) => !v)}
-                      className="rounded-xl border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
-                    >
-                      {showInSituation ? "Vue technique" : "Voir en situation"}
-                    </button>
+                    {/* Bascule segmentée En situation / Technique */}
+                    <div className="flex gap-1 rounded-lg bg-[var(--hm-surface)] p-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowInSituation(true)}
+                        className={`rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition ${showInSituation ? "bg-white text-[var(--hm-primary)] shadow-sm" : "text-[var(--hm-text-soft)]"}`}
+                      >
+                        En situation
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowInSituation(false)}
+                        className={`rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition ${!showInSituation ? "bg-white text-[var(--hm-primary)] shadow-sm" : "text-[var(--hm-text-soft)]"}`}
+                      >
+                        Technique
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex justify-center bg-[var(--hm-surface)] rounded-xl p-6">
-                  <BusinessCardVisualizer
-                    orientation={orientation}
-              rounded={corners === "rounded"}
-              finish={finish}
-                    frontFileUrl={frontFile?.url ?? null}
-                    backFileUrl={backFile?.url ?? null}
-                    showToggle={versoProvided}
-                    hasBack={versoProvided}
-                    displayWidth={340}
-                  />
-                </div>
-              </div>
 
-              {/* BLOC SECONDAIRE — Aperçu en situation (optionnel via toggle).
-                 Scène 100 % maison (CSS) : UNE seule carte, surface neutre aux
-                 couleurs de la marque, aucune image tierce / watermark. */}
-              {showInSituation && (
-                <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
-                  <div className="mb-3 flex items-center justify-between">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                      Aperçu en situation
-                    </p>
-                  </div>
+                {showInSituation ? (
                   <CardSituationPreview
                     frontUrl={frontPreviewUrl}
                     backUrl={faces === "recto-verso" ? backPreviewUrl : null}
                     rounded={corners === "rounded"}
                   />
-                </div>
-              )}
+                ) : (
+                  <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-6">
+                    <BusinessCardVisualizer
+                      orientation={orientation}
+                      rounded={corners === "rounded"}
+                      finish={finish}
+                      frontFileUrl={frontFile?.url ?? null}
+                      backFileUrl={backFile?.url ?? null}
+                      showToggle={versoProvided}
+                      hasBack={versoProvided}
+                      displayWidth={340}
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Signature du Bon à Tirer (BAT) */}
               <div className="rounded-2xl border border-[var(--hm-primary)]/25 bg-[var(--hm-accent-soft-rose)] p-5">
@@ -895,10 +899,10 @@ export default function BusinessCardConfigurator() {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => { setStep(2); setEditorOpen(true); }}
                   className="btn-outline flex-1"
                 >
-                  Modifier les fichiers
+                  Modifier ma carte
                 </button>
                 <button
                   type="button"
