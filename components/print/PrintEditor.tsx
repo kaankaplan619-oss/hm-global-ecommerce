@@ -23,7 +23,7 @@ import { renderPdfFileToPngs } from "@/lib/pdf-preview";
 import {
   Type, ImagePlus, Trash2, X, Check, Box, RotateCw,
   Square, Circle, Minus, QrCode, LayoutTemplate, Copy,
-  ArrowUp, ArrowDown, Undo2, Bold, Eraser,
+  ArrowUp, ArrowDown, Undo2, Bold, Eraser, AlertTriangle,
 } from "lucide-react";
 
 type ObjType = "image" | "text" | "rect" | "ellipse" | "line" | "qr";
@@ -136,12 +136,28 @@ export default function PrintEditor({
   const fileRef  = useRef<HTMLInputElement>(null);
 
   const ratio = widthMm / heightMm;
-  const STAGE_W = 520;
+  // Largeur du plan de travail responsive : 520 px max, sinon s'adapte à
+  // l'écran (mobile) en gardant des marges.
+  const [vw, setVw] = useState(520);
+  useEffect(() => {
+    const f = () => setVw(Math.min(520, Math.max(260, (window.innerWidth || 520) - 48)));
+    f();
+    window.addEventListener("resize", f);
+    return () => window.removeEventListener("resize", f);
+  }, []);
+  const STAGE_W = vw;
   const STAGE_H = Math.round(STAGE_W / ratio);
   const bleedFrac = bleedMm / widthMm;
 
   // Verso disponible (option recto-verso OU PDF 2 pages importé).
   const hasVerso = faces === "recto-verso" || importedVerso;
+
+  // Zone de sécurité (marges) — alerte si un texte/QR déborde (risque de coupe).
+  const safeMX = bleedFrac;                          // fraction de la largeur
+  const safeMY = (bleedFrac * STAGE_W) / STAGE_H;    // fraction de la hauteur
+  const isUnsafe = (o: EditorObject) =>
+    (o.type === "text" || o.type === "qr") &&
+    (o.x < safeMX || o.y < safeMY || o.x + o.w > 1 - safeMX || o.y + o.h > 1 - safeMY);
 
   // Supprimer l'objet sélectionné via clavier (Suppr / Backspace), sauf en
   // cours de saisie de texte (input/textarea/champ éditable).
@@ -255,6 +271,10 @@ export default function PrintEditor({
   const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
+    await processFile(file);
+  };
+
+  const processFile = async (file: File | undefined | null) => {
     if (!file) return;
 
     // PDF : on rend les pages et on les pose en fond du plan de travail
@@ -302,6 +322,8 @@ export default function PrintEditor({
 
   // ─── Drag / resize (pointer) ────────────────────────────────────────────
   const dragRef = useRef<{ id: string; mode: "move" | "resize"; sx: number; sy: number; ox: EditorObject; moved: boolean } | null>(null);
+  // Repères d'alignement (centre vertical / horizontal) affichés au drag.
+  const [guides, setGuides] = useState<{ v: boolean; h: boolean }>({ v: false, h: false });
 
   const onPointerDown = (e: React.PointerEvent, o: EditorObject, mode: "move" | "resize") => {
     e.stopPropagation();
@@ -320,10 +342,15 @@ export default function PrintEditor({
       snapshot(); // capture l'état avant le déplacement (pour l'undo)
     }
     if (d.mode === "move") {
-      updateObj(d.id, {
-        x: Math.min(1 - d.ox.w, Math.max(-d.ox.w * 0.5, d.ox.x + dxF)),
-        y: Math.min(1 - d.ox.h, Math.max(-d.ox.h * 0.5, d.ox.y + dyF)),
-      });
+      let nx = Math.min(1 - d.ox.w, Math.max(-d.ox.w * 0.5, d.ox.x + dxF));
+      let ny = Math.min(1 - d.ox.h, Math.max(-d.ox.h * 0.5, d.ox.y + dyF));
+      // Aimantage au centre de la carte (± seuil) + affichage des repères.
+      const cx = nx + d.ox.w / 2, cy = ny + d.ox.h / 2;
+      let gv = false, gh = false;
+      if (Math.abs(cx - 0.5) < 0.015) { nx = 0.5 - d.ox.w / 2; gv = true; }
+      if (Math.abs(cy - 0.5) < 0.015) { ny = 0.5 - d.ox.h / 2; gh = true; }
+      setGuides({ v: gv, h: gh });
+      updateObj(d.id, { x: nx, y: ny });
     } else {
       updateObj(d.id, {
         w: Math.max(0.04, d.ox.w + dxF),
@@ -332,7 +359,7 @@ export default function PrintEditor({
     }
   };
 
-  const onPointerUp = () => { dragRef.current = null; };
+  const onPointerUp = () => { dragRef.current = null; setGuides({ v: false, h: false }); };
 
   // ─── Export PNG (face) — respecte l'ordre des calques ───────────────────
   const loadImage = (src: string) => new Promise<HTMLImageElement | null>((res) => {
@@ -468,6 +495,8 @@ export default function PrintEditor({
     return <div className="flex h-full w-full items-center"><div style={{ width: "100%", height: Math.max(1, (o.strokeW ?? 0.006) * STAGE_W), background: o.stroke, borderRadius: 999 }} /></div>;
   };
 
+  const unsafeCount = objects.filter(isUnsafe).length;
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-black/40 backdrop-blur-sm">
       <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col bg-white sm:my-6 sm:h-[calc(100%-3rem)] sm:rounded-2xl sm:shadow-2xl">
@@ -537,7 +566,12 @@ export default function PrintEditor({
         </div>
 
         {/* Plan de travail */}
-        <div className="flex flex-1 items-center justify-center overflow-auto bg-[var(--hm-surface)] p-6" onPointerDown={() => { setSelected(null); setShowTemplates(false); }}>
+        <div
+          className="flex flex-1 items-center justify-center overflow-auto bg-[var(--hm-surface)] p-4 sm:p-6"
+          onPointerDown={() => { setSelected(null); setShowTemplates(false); }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => { e.preventDefault(); processFile(e.dataTransfer.files?.[0]); }}
+        >
           <div
             className="relative bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)]"
             style={{ width: STAGE_W, height: STAGE_H }}
@@ -545,8 +579,12 @@ export default function PrintEditor({
             onPointerUp={onPointerUp}
           >
             {/* Fond perdu + zone sécurité */}
-            <div className="pointer-events-none absolute" style={{ inset: -bleedFrac * STAGE_W, border: "1.5px dashed rgba(239,68,68,0.7)" }} />
-            <div className="pointer-events-none absolute" style={{ inset: bleedFrac * STAGE_W, border: "1px dashed rgba(34,197,94,0.6)" }} />
+            <div className="pointer-events-none absolute" style={{ inset: -bleedFrac * STAGE_W, border: "1.5px dashed rgba(239,68,68,0.55)" }} />
+            <div className="pointer-events-none absolute" style={{ inset: bleedFrac * STAGE_W, border: "1px dashed rgba(34,197,94,0.5)" }} />
+
+            {/* Repères d'alignement (au centre) pendant le déplacement */}
+            {guides.v && <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[var(--hm-primary)]" />}
+            {guides.h && <div className="pointer-events-none absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-[var(--hm-primary)]" />}
 
             {/* Objets (ordre = z-order) */}
             {objects.map((o) => (
@@ -660,9 +698,17 @@ export default function PrintEditor({
           </div>
         )}
 
+        {/* Alerte zone de sécurité (texte/QR qui déborde → risque de coupe) */}
+        {unsafeCount > 0 && (
+          <div className="flex items-center gap-2 border-t border-amber-200 bg-amber-50 px-5 py-2 text-[11px] font-semibold text-amber-700">
+            <AlertTriangle size={14} className="shrink-0" />
+            {unsafeCount === 1 ? "1 élément dépasse" : `${unsafeCount} éléments dépassent`} la zone de sécurité (vert) — rentrez-les à l&apos;intérieur pour éviter qu&apos;ils soient coupés.
+          </div>
+        )}
+
         {/* Pied — valider */}
         <div className="flex items-center justify-between gap-3 border-t border-[var(--hm-line)] px-5 py-3">
-          <p className="hidden text-[11px] text-[var(--hm-text-muted)] sm:block">Double-cliquez un texte pour l&apos;éditer · touche Suppr ou ✕ pour retirer · rouge = fond perdu, vert = zone sécurité.</p>
+          <p className="hidden text-[11px] text-[var(--hm-text-muted)] sm:block">Double-cliquez un texte pour l&apos;éditer · glissez-déposez une image · Suppr ou ✕ pour retirer · l&apos;élément s&apos;aimante au centre.</p>
           <button type="button" onClick={validate} disabled={exporting || (front.length === 0)} className="btn-primary gap-2 disabled:opacity-60">
             <Check size={15} /> {exporting ? "Génération…" : "Valider ma carte"}
           </button>
@@ -728,7 +774,7 @@ export default function PrintEditor({
 // ─── Bouton de barre d'outils ───────────────────────────────────────────────
 function ToolBtn({ icon, label, onClick, disabled }: { icon: React.ReactNode; label: string; onClick: () => void; disabled?: boolean }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--hm-line)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--hm-text)] hover:border-[var(--hm-primary)] disabled:opacity-40">
+    <button type="button" onClick={onClick} disabled={disabled} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-[var(--hm-line)] px-3 py-2 text-[12px] font-semibold text-[var(--hm-text)] hover:border-[var(--hm-primary)] disabled:opacity-40 sm:px-2.5 sm:py-1.5">
       {icon} {label}
     </button>
   );
