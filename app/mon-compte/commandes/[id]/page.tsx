@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { validateLogoFile, formatFileSize, canCancelOrder, getRemainingCancelTime } from "@/lib/utils";
+import { getOrderItemImage } from "@/lib/order-image";
 import type { Order } from "@/types";
 
 // ── Gradient signature HM Global ──────────────────────────────────────────────
@@ -289,11 +290,22 @@ export default function CommandeDetailPage({ params }: Props) {
 
           <div className="p-5">
             <div className="flex flex-col gap-4">
-              {order.items.map((item) => (
+              {order.items.map((item) => {
+                const itemImg = getOrderItemImage(item.product?.id, item.color?.id);
+                return (
                 <div
                   key={item.id}
                   className="flex items-start gap-3 border-b border-[#f0f2f7] pb-4 last:border-0 last:pb-0"
                 >
+                  {/* Vignette produit */}
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e6e8ee] bg-white">
+                    {itemImg ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={itemImg} alt={item.product?.shortName ?? "Produit"} className="h-full w-full object-contain p-1" />
+                    ) : (
+                      <Package size={20} className="text-[#c4c0cf]" />
+                    )}
+                  </div>
                   {/* Color swatch */}
                   <div
                     className="mt-1 h-5 w-5 shrink-0 rounded-full border border-[#e6e8ee]"
@@ -329,7 +341,8 @@ export default function CommandeDetailPage({ params }: Props) {
                     </p>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Totaux */}

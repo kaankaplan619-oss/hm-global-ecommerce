@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Package, ChevronRight, ShoppingBag } from "lucide-react";
+import { Package, ChevronRight, ChevronLeft, ShoppingBag } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { formatDate } from "@/lib/utils";
 import { formatPrice } from "@/data/pricing";
+import { getOrderItemImage } from "@/lib/order-image";
 import type { Order } from "@/types";
 
 // ── Gradient signature HM Global ──────────────────────────────────────────────
@@ -44,14 +45,14 @@ export default function CommandesPage() {
     <div className="min-h-screen bg-[#f8f9fb] pt-24 pb-20">
       <div className="container max-w-3xl">
 
-        {/* Breadcrumb */}
-        <nav className="mb-6 flex items-center gap-2 text-xs text-[#6e6280]">
-          <Link href="/mon-compte" className="hover:text-[#7B4FA6] transition-colors">
-            Mon compte
-          </Link>
-          <span>/</span>
-          <span className="font-semibold text-[#3f2d58]">Mes commandes</span>
-        </nav>
+        {/* Bouton retour visible (mobile-first) */}
+        <Link
+          href="/mon-compte"
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
+        >
+          <ChevronLeft size={16} />
+          Retour sur mon compte
+        </Link>
 
         <h1 className="mb-8 text-2xl font-black text-[#3f2d58]">Mes commandes</h1>
 
@@ -84,18 +85,29 @@ export default function CommandesPage() {
           <div className="flex flex-col gap-3">
             {orders.map((order) => {
               const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.terminee;
+              const firstItem = order.items?.[0];
+              const itemImg = getOrderItemImage(firstItem?.product?.id, firstItem?.color?.id);
               return (
                 <Link
                   key={order.id}
                   href={`/mon-compte/commandes/${order.id}`}
                   className="group flex items-center gap-4 rounded-2xl border border-[#e6e8ee] bg-white p-5 shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-all duration-200 hover:border-[#c4c0cf] hover:shadow-[0_8px_24px_rgba(63,45,88,0.08)] hover:-translate-y-0.5"
                 >
-                  {/* Icône */}
+                  {/* Vignette produit (sinon icône colis) */}
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border"
-                    style={{ backgroundColor: cfg.bg, borderColor: cfg.border }}
+                    className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white"
+                    style={{ borderColor: cfg.border }}
                   >
-                    <Package size={18} style={{ color: cfg.color }} />
+                    {itemImg ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={itemImg}
+                        alt={firstItem?.product?.shortName ?? "Produit"}
+                        className="h-full w-full object-contain p-1"
+                      />
+                    ) : (
+                      <Package size={18} style={{ color: cfg.color }} />
+                    )}
                   </div>
 
                   <div className="min-w-0 flex-1">
