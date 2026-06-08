@@ -75,9 +75,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (productType !== "business_card") {
+    // Accepte les cartes ("business_card") ET tout produit print du catalogue
+    // (flyer-a6, poster-50x70, canvas-30x40, card-a6…). Le productType ne sert
+    // pas au chemin de stockage — on valide juste un slug sûr, non vide.
+    if (!/^[a-z0-9_-]{2,40}$/.test(productType)) {
       return NextResponse.json(
-        { error: "productType non supporté en V1. Valeur attendue : 'business_card'." },
+        { error: "productType invalide." },
         { status: 400 }
       );
     }

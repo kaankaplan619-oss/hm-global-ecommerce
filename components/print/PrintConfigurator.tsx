@@ -18,17 +18,30 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart, PenLine, Sparkles } from "lucide-react";
+import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart, Sparkles } from "lucide-react";
 import type { CuratedPrintProduct, PrintSpec } from "@/data/print-catalogue";
 import type { PrintOrientation } from "@/data/print-products";
 import { PRINT_ORIENTATION_LABELS } from "@/data/print-products";
 import PrintSupportVisualizer from "@/components/print/PrintSupportVisualizer";
+import PrintEditor from "@/components/print/PrintEditor";
+import SignaturePad from "@/components/print/SignaturePad";
+import { isPdfUrl } from "@/lib/pdf-preview";
 import { useCartStore } from "@/store/cart";
 import { isPrintDirect, getPrintQtyOptions, getPrintDirectPrice, getPrintGelatoUid, getPrintFacesAvailable } from "@/data/print-pricing";
 import type { PrintFace } from "@/data/print-pricing";
 import type { PrintConfig } from "@/types";
 
 interface UploadedFile { url: string; name: string; size: number; type: string; }
+
+/** Convertit un data:URL (export éditeur / signature) en File uploadable. */
+function dataUrlToFile(dataUrl: string, name: string): File {
+  const [meta, b64] = dataUrl.split(",");
+  const mime = /:(.*?);/.exec(meta)?.[1] ?? "image/png";
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new File([arr], name, { type: mime });
+}
 
 export default function PrintConfigurator({
   product,
@@ -70,6 +83,21 @@ export default function PrintConfigurator({
   const [projectName, setProjectName] = useState("");
   const price = direct ? getPrintDirectPrice(product.id, quantity, faces) : null;
 
+  // Atelier d'édition en ligne : activé sur les petits formats (flyers,
+  // invitations ≤ 320 mm). Les grands formats (affiches, toiles) restent en
+  // upload de fichier prêt. BAT + signature requis pour les commandes directes.
+  const atelierEnabled = Math.max(spec.widthMm, spec.heightMm) <= 320 && spec.faces;
+  const batEnabled = direct && atelierEnabled;
+
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [batName, setBatName] = useState("");
+  const [batApproved, setBatApproved] = useState(false);
+  const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
+
+  // Dimensions éditeur selon l'orientation choisie.
+  const editorW = orientation === "landscape" ? Math.max(spec.widthMm, spec.heightMm) : Math.min(spec.widthMm, spec.heightMm);
+  const editorH = orientation === "landscape" ? Math.min(spec.widthMm, spec.heightMm) : Math.max(spec.widthMm, spec.heightMm);
+
   // Changer de faces : garder une quantité valide pour la nouvelle grille.
   const pickFaces = (next: PrintFace) => {
     setFaces(next);
@@ -83,39 +111,72 @@ export default function PrintConfigurator({
       : product.id.startsWith("canvas") ? "canvas"
       : "invitation";
 
+  // Upload brut → renvoie le fichier uploadé (sans toucher l'état).
+  const postFile = useCallback(async (file: File, face: "front" | "back"): Promise<UploadedFile | null> => {
+    let sessionId = "ssr";
+    if (typeof window !== "undefined") {
+      sessionId = sessionStorage.getItem("hm_session_id")
+        ?? (() => { const id = crypto.randomUUID(); sessionStorage.setItem("hm_session_id", id); return id; })();
+    }
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("face", face);
+    fd.append("productType", product.id);
+    fd.append("sessionId", sessionId);
+    const res = await fetch("/api/orders/upload-print-file", { method: "POST", body: fd });
+    if (!res.ok) {
+      const b = await res.json().catch(() => ({}));
+      throw new Error(b.error ?? "Erreur lors de l'upload.");
+    }
+    const { url, name, size, type } = await res.json();
+    return { url, name, size, type };
+  }, [product.id]);
+
   const upload = useCallback(async (file: File, face: "front" | "back") => {
     setUploading(face);
     setError(null);
     try {
-      let sessionId = "ssr";
-      if (typeof window !== "undefined") {
-        sessionId = sessionStorage.getItem("hm_session_id")
-          ?? (() => { const id = crypto.randomUUID(); sessionStorage.setItem("hm_session_id", id); return id; })();
-      }
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("face", face);
-      fd.append("productType", product.id);
-      fd.append("sessionId", sessionId);
-      const res = await fetch("/api/orders/upload-print-file", { method: "POST", body: fd });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        throw new Error(b.error ?? "Erreur lors de l'upload.");
-      }
-      const { url, name, size, type } = await res.json();
-      const uploaded = { url, name, size, type };
-      if (face === "front") setFrontFile(uploaded); else setBackFile(uploaded);
+      const uploaded = await postFile(file, face);
+      if (uploaded) { if (face === "front") setFrontFile(uploaded); else setBackFile(uploaded); }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur upload.");
     } finally {
       setUploading(null);
     }
-  }, [product.id]);
+  }, [postFile]);
 
   const onPick = (face: "front" | "back") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) upload(f, face);
   };
+
+  // Atelier d'édition : on upload les PNG exportés (recto/verso) comme visuels.
+  const handleEditorValidate = useCallback(async (recto: string, verso: string | null) => {
+    setEditorOpen(false);
+    setUploading("front");
+    setError(null);
+    try {
+      const rf = await postFile(dataUrlToFile(recto, "flyer-recto.png"), "front");
+      if (rf) setFrontFile(rf);
+      if (verso) {
+        const bf = await postFile(dataUrlToFile(verso, "flyer-verso.png"), "back");
+        if (bf) { setBackFile(bf); setFaces("recto-verso"); }
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur lors de la validation de l'atelier.");
+    } finally {
+      setUploading(null);
+    }
+  }, [postFile]);
+
+  // Signature manuscrite du BAT : upload du PNG dès qu'elle est tracée.
+  const handleSignatureChange = useCallback(async (dataUrl: string | null) => {
+    if (!dataUrl) { setSignatureUrl(null); return; }
+    try {
+      const up = await postFile(dataUrlToFile(dataUrl, "signature-bat.png"), "front");
+      setSignatureUrl(up?.url ?? null);
+    } catch { setSignatureUrl(null); }
+  }, [postFile]);
 
   const finalize = () => {
     const params = new URLSearchParams({
@@ -133,8 +194,15 @@ export default function PrintConfigurator({
 
   const addToCart = () => {
     if (!frontFile || price == null) { setError("Déposez votre visuel pour commander."); return; }
+    if (batEnabled && (!batApproved || batName.trim().length < 2)) {
+      setError("Signez le bon à tirer pour commander."); return;
+    }
     setAdding(true);
     try {
+      // Aperçu panier : si le visuel est une image (PNG de l'atelier ou JPG/PNG
+      // uploadé), on l'utilise comme vignette. Un PDF n'est pas affichable direct.
+      const frontIsImage = !isPdfUrl(frontFile.url);
+      const backIsImage = backFile ? !isPdfUrl(backFile.url) : false;
       const config: PrintConfig = {
         productType,
         supplier:        "gelato",
@@ -147,9 +215,12 @@ export default function PrintConfigurator({
         lotPriceTTC:     price,
         frontFileUrl:    frontFile.url,
         backFileUrl:     spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null,
-        frontPreviewUrl: null,
-        backPreviewUrl:  null,
-        batStatus:       "a_verifier",
+        frontPreviewUrl: frontIsImage ? frontFile.url : null,
+        backPreviewUrl:  spec.faces && faces === "recto-verso" && backIsImage ? (backFile?.url ?? null) : null,
+        batStatus:       batEnabled ? "valide" : "a_verifier",
+        batSignature:    batEnabled
+          ? { name: batName.trim(), date: new Date().toISOString(), signatureUrl: signatureUrl ?? undefined }
+          : undefined,
       };
       addItem({
         product: {
@@ -244,11 +315,30 @@ export default function PrintConfigurator({
           </div>
         )}
 
-        {/* ── Gérez votre fichier (flux Pixartprinting) ─────────────────── */}
+        {/* ── Atelier de création en ligne (petits formats) ─────────────── */}
+        {atelierEnabled && (
+          <div className="rounded-2xl border border-[var(--hm-primary)]/25 bg-[var(--hm-accent-soft-rose)] p-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-primary)]">Créez votre visuel en ligne</p>
+            <p className="mb-3 mt-1 text-[12px] leading-relaxed text-[var(--hm-text-soft)]">
+              Textes, formes, images, QR code… composez votre {product.name.toLowerCase()} directement dans le navigateur.
+            </p>
+            <button
+              type="button"
+              onClick={() => setEditorOpen(true)}
+              className="btn-primary w-full gap-2"
+            >
+              <Sparkles size={15} /> Ouvrir l&apos;atelier de création
+            </button>
+          </div>
+        )}
+
+        {/* ── J'ai déjà mon fichier prêt ────────────────────────────────── */}
         <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Gérez votre fichier</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+            {atelierEnabled ? "Ou j'ai déjà mon fichier prêt" : "Gérez votre fichier"}
+          </p>
           <p className="mb-4 mt-1 text-[12px] leading-relaxed text-[var(--hm-text-muted)]">
-            Déposez votre visuel prêt à imprimer, ou confiez la création à notre studio.
+            Déposez votre visuel prêt à imprimer (PDF, PNG ou JPG haute résolution).
           </p>
 
           <FileDrop
@@ -271,27 +361,6 @@ export default function PrintConfigurator({
               />
             </div>
           )}
-
-          {/* Alternatives à l'upload (studio PAO + éditeur à venir) */}
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <a
-              href="/contact?sujet=pao"
-              className="group flex items-start gap-3 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)]"
-            >
-              <PenLine size={18} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
-              <span>
-                <span className="block text-[13px] font-semibold text-[var(--hm-text)]">Confier à notre studio</span>
-                <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Pas de fichier prêt ? Notre équipe PAO crée ou adapte votre visuel.</span>
-              </span>
-            </a>
-            <div className="flex items-start gap-3 rounded-xl border border-dashed border-[var(--hm-line)] bg-white p-4 opacity-70">
-              <Sparkles size={18} className="mt-0.5 shrink-0 text-[var(--hm-text-muted)]" />
-              <span>
-                <span className="block text-[13px] font-semibold text-[var(--hm-text-soft)]">Éditer en ligne</span>
-                <span className="block text-[11px] leading-snug text-[var(--hm-text-muted)]">Bientôt — éditeur de visuel intégré.</span>
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Nom du projet (façon "Item name" Pixartprinting) */}
@@ -344,21 +413,64 @@ export default function PrintConfigurator({
               <p className="text-[10px] text-[var(--hm-text-muted)]">Port confirmé au paiement · BAT validé avant production</p>
             </div>
 
+            {/* Bon à tirer — signature (commandes directes avec atelier) */}
+            {batEnabled && frontFile && (
+              <div className="rounded-2xl border border-[var(--hm-primary)]/25 bg-[var(--hm-accent-soft-rose)] p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-primary)]">
+                  Bon à tirer — Signature
+                </p>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--hm-text-soft)]">
+                  En signant, vous approuvez ce visuel pour l&apos;impression. S&apos;agissant d&apos;un
+                  produit personnalisé, cette approbation vaut renonciation à votre droit de
+                  rétractation (art. L221-28 du Code de la consommation).
+                </p>
+                <input
+                  type="text"
+                  value={batName}
+                  onChange={(e) => setBatName(e.target.value)}
+                  placeholder="Votre nom et prénom"
+                  className="mt-3 w-full rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--hm-primary)]"
+                />
+                <div className="mt-3">
+                  <p className="mb-1.5 text-[11px] font-semibold text-[var(--hm-text-soft)]">
+                    Votre signature {signatureUrl
+                      ? <span className="font-medium text-green-600">✓ signée</span>
+                      : <span className="text-[var(--hm-text-muted)]">(souris ou doigt)</span>}
+                  </p>
+                  <SignaturePad onChange={handleSignatureChange} />
+                </div>
+                <label className="mt-3 flex cursor-pointer items-start gap-2 text-[12px] text-[var(--hm-text)]">
+                  <input
+                    type="checkbox"
+                    checked={batApproved}
+                    onChange={(e) => setBatApproved(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--hm-primary)]"
+                  />
+                  <span>
+                    J&apos;ai vérifié l&apos;orthographe, les couleurs et la mise en page. J&apos;approuve
+                    ce bon à tirer et autorise sa mise en production.
+                  </span>
+                </label>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={addToCart}
-              disabled={adding || !frontFile}
-              className="btn-primary gap-2 disabled:opacity-60"
+              disabled={adding || !frontFile || (batEnabled && (!batApproved || batName.trim().length < 2))}
+              className="btn-primary gap-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {adding ? (
                 <><Loader2 size={15} className="animate-spin" /> Ajout…</>
+              ) : batEnabled ? (
+                <><ShoppingCart size={15} /> Signer le BAT et ajouter au panier — {price != null ? price.toFixed(2) : "—"} €</>
               ) : (
                 <><ShoppingCart size={15} /> Ajouter au panier — {price != null ? price.toFixed(2) : "—"} €</>
               )}
             </button>
             {!frontFile && (
               <p className="-mt-2 text-center text-[11px] text-[var(--hm-text-muted)]">
-                Déposez votre visuel pour pouvoir commander.
+                {atelierEnabled ? "Créez ou déposez votre visuel pour commander." : "Déposez votre visuel pour pouvoir commander."}
               </p>
             )}
           </>
@@ -416,6 +528,18 @@ export default function PrintConfigurator({
           </div>
         </div>
       </div>
+
+      {/* ── Atelier d'édition (petits formats) ────────────────────────────── */}
+      {editorOpen && (
+        <PrintEditor
+          widthMm={editorW}
+          heightMm={editorH}
+          bleedMm={spec.bleedMm}
+          faces={spec.faces ? faces : "recto"}
+          onValidate={handleEditorValidate}
+          onClose={() => setEditorOpen(false)}
+        />
+      )}
     </div>
   );
 }
