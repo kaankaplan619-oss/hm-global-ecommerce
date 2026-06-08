@@ -17,13 +17,13 @@
  * onValidate(rectoPng, versoPng|null) : appelé quand le client valide.
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { renderPdfFileToPngs } from "@/lib/pdf-preview";
 import {
   Type, ImagePlus, Trash2, X, Check, Box, RotateCw,
   Square, Circle, Minus, QrCode, LayoutTemplate, Copy,
-  ArrowUp, ArrowDown, Undo2, Bold,
+  ArrowUp, ArrowDown, Undo2, Bold, Eraser,
 } from "lucide-react";
 
 type ObjType = "image" | "text" | "rect" | "ellipse" | "line" | "qr";
@@ -114,9 +114,12 @@ export default function PrintEditor({
   const [histFront, setHistFront] = useState<EditorObject[][]>([]);
   const [histBack, setHistBack]   = useState<EditorObject[][]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null); // édition texte inline
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  // Verso présent : soit l'option recto-verso, soit un PDF 2 pages importé.
+  const [importedVerso, setImportedVerso] = useState(false);
 
   // ─── Aperçu 3D rotatif ──────────────────────────────────────────────────
   const [view3D, setView3D] = useState(false);
@@ -136,6 +139,26 @@ export default function PrintEditor({
   const STAGE_W = 520;
   const STAGE_H = Math.round(STAGE_W / ratio);
   const bleedFrac = bleedMm / widthMm;
+
+  // Verso disponible (option recto-verso OU PDF 2 pages importé).
+  const hasVerso = faces === "recto-verso" || importedVerso;
+
+  // Supprimer l'objet sélectionné via clavier (Suppr / Backspace), sauf en
+  // cours de saisie de texte (input/textarea/champ éditable).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || el?.isContentEditable) return;
+      if (!selected) return;
+      e.preventDefault();
+      setObjects((arr) => arr.filter((o) => o.id !== selected));
+      setSelected(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selected, setObjects]);
 
   // ─── Historique (undo) ──────────────────────────────────────────────────
   const snapshot = useCallback(() => {
@@ -166,6 +189,17 @@ export default function PrintEditor({
     snapshot();
     setObjects((arr) => arr.filter((o) => o.id !== id));
     setSelected(null);
+    setEditingId(null);
+  };
+
+  // Vide la face courante (tout effacer).
+  const clearFace = () => {
+    if (objects.length === 0) return;
+    if (!window.confirm("Effacer tous les éléments de cette face ?")) return;
+    snapshot();
+    setObjects([]);
+    setSelected(null);
+    setEditingId(null);
   };
 
   const duplicateObj = (id: string) => {
@@ -236,7 +270,12 @@ export default function PrintEditor({
         snapshot();
         // Prépend → l'import sert de fond (sous les éléments déjà placés).
         setFront((a) => [bg(pages[0]), ...a]);
-        if (faces === "recto-verso" && pages[1]) setBack((a) => [bg(pages[1]), ...a]);
+        // PDF de 2 pages = recto + verso : on place la page 2 au verso et on
+        // active le verso, même si l'option recto-verso n'était pas cochée.
+        if (pages[1]) {
+          setBack((a) => [bg(pages[1]), ...a]);
+          setImportedVerso(true);
+        }
         setFace("front");
         setSelected(null);
       } finally {
@@ -365,7 +404,7 @@ export default function PrintEditor({
     setExporting(true);
     try {
       const recto = await renderFace(front);
-      const verso = faces === "recto-verso" ? await renderFace(back) : null;
+      const verso = hasVerso ? await renderFace(back) : null;
       onValidate(recto, verso);
     } finally {
       setExporting(false);
@@ -377,7 +416,7 @@ export default function PrintEditor({
     setExporting(true);
     try {
       const f = await renderFace(front);
-      const b = faces === "recto-verso" ? await renderFace(back) : null;
+      const b = hasVerso ? await renderFace(back) : null;
       setPng3D({ front: f, back: b });
       setAngle(0);
       setView3D(true);
@@ -475,11 +514,16 @@ export default function PrintEditor({
               </button>
             </>
           )}
+          {objects.length > 0 && (
+            <button type="button" onClick={clearFace} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--hm-line)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--hm-text-soft)] hover:border-red-300 hover:text-red-500">
+              <Eraser size={14} /> Tout effacer
+            </button>
+          )}
 
           <button type="button" onClick={open3D} disabled={exporting || front.length === 0} className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-[var(--hm-line)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--hm-text)] hover:border-[var(--hm-primary)] disabled:opacity-50">
             <Box size={14} /> Aperçu 3D
           </button>
-          {faces === "recto-verso" && (
+          {hasVerso && (
             <div className="flex gap-1 rounded-lg bg-[var(--hm-surface)] p-1">
               {(["front", "back"] as const).map((f) => (
                 <button key={f} type="button" onClick={() => { setFace(f); setSelected(null); }}
@@ -508,16 +552,44 @@ export default function PrintEditor({
             {objects.map((o) => (
               <div
                 key={o.id}
-                onPointerDown={(e) => onPointerDown(e, o, "move")}
-                className={`absolute cursor-move select-none ${selected === o.id ? "outline outline-2 outline-[var(--hm-primary)]" : ""}`}
+                onPointerDown={(e) => { if (editingId !== o.id) onPointerDown(e, o, "move"); }}
+                onDoubleClick={() => { if (o.type === "text") { setSelected(o.id); setEditingId(o.id); } }}
+                className={`absolute select-none ${editingId === o.id ? "cursor-text" : "cursor-move"} ${selected === o.id ? "outline outline-2 outline-[var(--hm-primary)]" : ""}`}
                 style={{ left: o.x * STAGE_W, top: o.y * STAGE_H, width: o.w * STAGE_W, height: o.h * STAGE_H }}
               >
-                {renderObjBody(o)}
-                {selected === o.id && (
-                  <span
-                    onPointerDown={(e) => onPointerDown(e, o, "resize")}
-                    className="absolute -bottom-1.5 -right-1.5 h-3.5 w-3.5 cursor-nwse-resize rounded-full border-2 border-white bg-[var(--hm-primary)]"
+                {/* Édition de texte directement sur la carte (double-clic) */}
+                {editingId === o.id && o.type === "text" ? (
+                  <input
+                    autoFocus
+                    value={o.text ?? ""}
+                    onChange={(e) => updateObj(o.id, { text: e.target.value })}
+                    onBlur={() => setEditingId(null)}
+                    onKeyDown={(e) => { if (e.key === "Enter") setEditingId(null); e.stopPropagation(); }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="h-full w-full border-none bg-transparent p-0 outline-none"
+                    style={{ color: o.color, fontFamily: o.fontFamily, fontSize: o.h * STAGE_H * 0.6, fontWeight: o.bold ? 700 : 500, textAlign: o.align ?? "center", lineHeight: 1 }}
                   />
+                ) : (
+                  renderObjBody(o)
+                )}
+                {selected === o.id && editingId !== o.id && (
+                  <>
+                    {/* Bouton supprimer flottant */}
+                    <button
+                      type="button"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={() => removeObj(o.id)}
+                      className="absolute -right-2.5 -top-2.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-white shadow hover:bg-red-600"
+                      title="Supprimer"
+                    >
+                      <X size={11} />
+                    </button>
+                    {/* Poignée de redimensionnement */}
+                    <span
+                      onPointerDown={(e) => onPointerDown(e, o, "resize")}
+                      className="absolute -bottom-1.5 -right-1.5 h-3.5 w-3.5 cursor-nwse-resize rounded-full border-2 border-white bg-[var(--hm-primary)]"
+                    />
+                  </>
                 )}
               </div>
             ))}
@@ -590,7 +662,7 @@ export default function PrintEditor({
 
         {/* Pied — valider */}
         <div className="flex items-center justify-between gap-3 border-t border-[var(--hm-line)] px-5 py-3">
-          <p className="hidden text-[11px] text-[var(--hm-text-muted)] sm:block">Rouge = fond perdu · vert = zone sécurité (gardez le contenu à l&apos;intérieur).</p>
+          <p className="hidden text-[11px] text-[var(--hm-text-muted)] sm:block">Double-cliquez un texte pour l&apos;éditer · touche Suppr ou ✕ pour retirer · rouge = fond perdu, vert = zone sécurité.</p>
           <button type="button" onClick={validate} disabled={exporting || (front.length === 0)} className="btn-primary gap-2 disabled:opacity-60">
             <Check size={15} /> {exporting ? "Génération…" : "Valider ma carte"}
           </button>
@@ -638,7 +710,7 @@ export default function PrintEditor({
 
             <div className="flex items-center justify-center gap-2 px-5 py-4">
               <button type="button" onClick={() => setAngle(0)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">Recto</button>
-              {faces === "recto-verso" && (
+              {hasVerso && (
                 <button type="button" onClick={() => setAngle(180)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">Verso</button>
               )}
               <button type="button" onClick={() => setAngle((a) => a + 360)} className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">

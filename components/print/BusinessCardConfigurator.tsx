@@ -278,6 +278,8 @@ export default function BusinessCardConfigurator() {
     if (verso) {
       const bf = await uploadFile(dataUrlToFile(verso, "carte-verso.png"), "back");
       if (bf) setBackFile(bf);
+      // L'éditeur a produit un verso (ex. PDF 2 pages) → passe en recto-verso.
+      setFaces("recto-verso");
     }
     setStep(3);
   }, [uploadFile]);
