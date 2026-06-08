@@ -4,7 +4,7 @@ import {
   ArrowRight, FileText, Image as ImageIcon, CreditCard, Frame, BookOpen,
   Palette, ShieldCheck, Brush, Package, MapPin,
 } from "lucide-react";
-import { PRINT_CATALOGUE, printSpecImage } from "@/data/print-catalogue";
+import { PRINT_CATALOGUE, printSpecImage, printConfigHref } from "@/data/print-catalogue";
 
 export const metadata: Metadata = {
   title: "Impression — Cartes de visite, Flyers, Affiches",
@@ -146,8 +146,8 @@ export default function ImpressionPage() {
                     >
                       {/* Overlay cliquable (toute la carte) */}
                       <Link
-                        href={product.href}
-                        aria-label={`${product.direct ? "Personnaliser" : "Demander un devis pour"} ${product.name} ${product.sizeLabel}`}
+                        href={printConfigHref(product.id)}
+                        aria-label={`Personnaliser ${product.name} ${product.sizeLabel}`}
                         className="absolute inset-0 z-10"
                       />
 
@@ -193,10 +193,10 @@ export default function ImpressionPage() {
 
                         {/* CTA : cartes → configurateur live ; autres → devis */}
                         <Link
-                          href={product.href}
+                          href={printConfigHref(product.id)}
                           className="relative z-20 mt-4 flex items-center justify-between rounded-xl border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-3.5 py-3 text-[12px] font-bold text-[var(--hm-primary)] transition-all group-hover:border-[var(--hm-primary)] group-hover:bg-[var(--hm-primary)] group-hover:text-white"
                         >
-                          {product.direct ? "Personnaliser maintenant" : "Demander un devis"}
+                          Personnaliser maintenant
                           <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                         </Link>
                       </div>

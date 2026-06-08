@@ -257,3 +257,71 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
 export function printSpecImage(id: string): string {
   return `/mockups/print/spec/${id}.webp`;
 }
+
+// ─── Specs techniques par produit (pour le configurateur générique) ──────────
+// widthMm × heightMm = format FINI (orientation portrait par défaut pour les
+// formats hauts). faces = recto/verso possible. orientationToggle = on propose
+// paysage/portrait (inutile sur les formats carrés). bleedMm = fond perdu.
+
+export interface PrintSpec {
+  widthMm:           number;
+  heightMm:          number;
+  faces:             boolean;
+  orientationToggle: boolean;
+  bleedMm:           number;
+}
+
+export const PRINT_SPECS: Record<string, PrintSpec> = {
+  "bc-standard": { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 3 },
+  "bc-rounded":  { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 3 },
+  "bc-square":   { widthMm: 55,  heightMm: 55,  faces: true,  orientationToggle: false, bleedMm: 3 },
+  "bc-folded":   { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 3 },
+  "flyer-a6":    { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 3 },
+  "flyer-a5":    { widthMm: 148, heightMm: 210, faces: true,  orientationToggle: true,  bleedMm: 3 },
+  "flyer-a4":    { widthMm: 210, heightMm: 297, faces: true,  orientationToggle: true,  bleedMm: 3 },
+  "poster-a3":   { widthMm: 297, heightMm: 420, faces: false, orientationToggle: true,  bleedMm: 3 },
+  "poster-40x60":{ widthMm: 400, heightMm: 600, faces: false, orientationToggle: true,  bleedMm: 5 },
+  "poster-50x70":{ widthMm: 500, heightMm: 700, faces: false, orientationToggle: true,  bleedMm: 5 },
+  "poster-a2":   { widthMm: 420, heightMm: 594, faces: false, orientationToggle: true,  bleedMm: 5 },
+  "canvas-30x40":{ widthMm: 300, heightMm: 400, faces: false, orientationToggle: true,  bleedMm: 20 },
+  "canvas-40x60":{ widthMm: 400, heightMm: 600, faces: false, orientationToggle: true,  bleedMm: 20 },
+  "canvas-50x50":{ widthMm: 500, heightMm: 500, faces: false, orientationToggle: false, bleedMm: 20 },
+  "canvas-60x90":{ widthMm: 600, heightMm: 900, faces: false, orientationToggle: true,  bleedMm: 20 },
+  "card-a6":     { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 3 },
+  "card-square": { widthMm: 140, heightMm: 140, faces: true,  orientationToggle: false, bleedMm: 3 },
+  "card-folded": { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 3 },
+};
+
+// Produits routés vers le configurateur cartes dédié (85×55, gère prix + coins).
+const CARD_NATIVE_IDS = new Set(["bc-standard", "bc-rounded"]);
+
+/** Liste à plat de tous les produits. */
+export const ALL_PRINT_PRODUCTS: CuratedPrintProduct[] =
+  PRINT_CATALOGUE.flatMap((b) => b.products);
+
+/** Récupère un produit + sa famille + sa spec par id. */
+export function getPrintProduct(id: string):
+  | { product: CuratedPrintProduct; family: PrintFamilyBlock["uid"]; spec: PrintSpec }
+  | null {
+  for (const block of PRINT_CATALOGUE) {
+    const product = block.products.find((p) => p.id === id);
+    if (product && PRINT_SPECS[id]) {
+      return { product, family: block.uid, spec: PRINT_SPECS[id] };
+    }
+  }
+  return null;
+}
+
+/**
+ * Destination du bouton "Personnaliser maintenant" de la grille /impression.
+ * Cartes natives 85×55 → configurateur dédié (prix + commande directe).
+ * Tout le reste → configurateur générique /impression/[slug].
+ */
+export function printConfigHref(id: string): string {
+  return CARD_NATIVE_IDS.has(id) ? "/impression/cartes-de-visite" : `/impression/${id}`;
+}
+
+/** true si ce produit a un parcours de commande directe (prix connu). */
+export function isDirectOrder(id: string): boolean {
+  return CARD_NATIVE_IDS.has(id);
+}
