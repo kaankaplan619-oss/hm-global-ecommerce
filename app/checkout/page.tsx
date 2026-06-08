@@ -457,6 +457,48 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, user, loginDone]);
 
+  // Pré-remplissage automatique depuis le COMPTE : si le client est connecté,
+  // on récupère l'adresse de sa dernière commande (l'objet user ne porte pas
+  // l'adresse postale). Ainsi il ne retape pas ses coordonnées à chaque fois.
+  // On ne remplit que les champs encore vides (ne jamais écraser sa saisie).
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/orders");
+        if (!res.ok) return;
+        const data = await res.json();
+        const orders: { createdAt?: string; billingAddress?: Record<string, string>; shippingAddress?: Record<string, string> }[] =
+          Array.isArray(data.orders) ? data.orders : [];
+        if (!orders.length || cancelled) return;
+        // La plus récente d'abord.
+        const last = orders.slice().sort((a, b) =>
+          new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0];
+        const a = (last.billingAddress && Object.keys(last.billingAddress).length
+          ? last.billingAddress
+          : last.shippingAddress) ?? {};
+        if (cancelled) return;
+        setBillingAddress((prev) => ({
+          ...prev,
+          email:      prev.email      || a.email      || "",
+          firstName:  prev.firstName  || a.firstName  || "",
+          lastName:   prev.lastName   || a.lastName   || "",
+          company:    prev.company    || a.company    || "",
+          siret:      prev.siret      || a.siret      || "",
+          vatNumber:  prev.vatNumber  || a.vatNumber  || "",
+          street:     prev.street     || a.street     || "",
+          city:       prev.city       || a.city       || "",
+          postalCode: prev.postalCode || a.postalCode || "",
+          country:    prev.country    || a.country    || "FR",
+          phone:      prev.phone      || a.phone      || "",
+        }));
+        if (a.company || a.siret) setAccountType("entreprise");
+      } catch { /* hors-ligne / pas d'historique → on laisse vierge */ }
+    })();
+    return () => { cancelled = true; };
+  }, [isAuthenticated]);
+
   // Trigger rehydration and mark when done — prevents premature empty-cart redirect
   useEffect(() => {
     const unsub = useCartStore.persist.onFinishHydration(() => setHydrated(true));
@@ -626,9 +668,9 @@ export default function CheckoutPage() {
                   <p className="mt-0.5 text-[#b91c1c]/80">
                     La configuration de votre carte de visite est introuvable (session expirée ou page rechargée).
                     Veuillez{" "}
-                    <a href="/impression/cartes-de-visite" className="font-bold underline hover:text-[#b91c1c]">
+                    <Link href="/impression/cartes-de-visite" className="font-bold underline hover:text-[#b91c1c]">
                       recommencer la personnalisation
-                    </a>
+                    </Link>
                     {" "}pour finaliser votre commande.
                   </p>
                 </div>

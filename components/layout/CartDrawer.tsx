@@ -190,16 +190,14 @@ export default function CartDrawer() {
           ) : (
             <div className="flex flex-col gap-4">
               {items.map((item) => {
-                const previewImages = [
-                  {
-                    src:   item.composedPreviewUrl ?? item.printConfig?.frontPreviewUrl ?? undefined,
-                    label: item.printConfig ? "Recto" : "Face",
-                  },
-                  {
-                    src:   item.composedPreviewBack ?? item.printConfig?.backPreviewUrl ?? undefined,
-                    label: item.printConfig ? "Verso" : "Dos",
-                  },
-                ].filter((v) => !!v.src) as { src: string; label: string }[];
+                // Print : recto seul (plus simple). Textile : face + dos.
+                const previewImages = (item.printConfig
+                  ? [{ src: item.printConfig.frontPreviewUrl ?? undefined, label: "Recto" }]
+                  : [
+                      { src: item.composedPreviewUrl,  label: "Face" },
+                      { src: item.composedPreviewBack, label: "Dos"  },
+                    ]
+                ).filter((v) => !!v.src) as { src: string; label: string }[];
 
                 return (
                   <div
