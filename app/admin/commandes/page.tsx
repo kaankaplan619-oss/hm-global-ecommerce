@@ -135,11 +135,12 @@ export default function AdminCommandesPage() {
   const { user, isAuthenticated, _hasHydrated } = useAuthStore();
   const [orders, setOrders] = useState<RawOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<OrderStatus | "urgent" | "all">("all");
+  const [filter, setFilter] = useState<OrderStatus | "urgent" | "active" | "done" | "cancelled" | "all">("all");
   const [search, setSearch] = useState("");
   const [filterBAT, setFilterBAT] = useState(false);
   const [filterFichier, setFilterFichier] = useState(false);
   const [filterFournisseur, setFilterFournisseur] = useState<string>("all");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -170,14 +171,12 @@ export default function AdminCommandesPage() {
     const items = o.order_items ?? [];
     const profile = o.profiles ?? {};
 
-    // Filtre statut
-    if (filter === "urgent") {
-      const urgentStatuses: OrderStatus[] = [
-        "commande_a_valider", "paiement_recu", "awaiting_bank_transfer", "fichier_a_verifier",
-        "bat_a_preparer", "a_commander_fournisseur", "prete_a_expedier",
-      ];
-      if (!urgentStatuses.includes(o.status)) return false;
-    } else if (filter !== "all") {
+    // Filtre statut — soit un groupe (urgent/active/done/cancelled), soit un statut précis
+    if (filter === "all") {
+      // pas de filtre statut
+    } else if (filter === "urgent" || filter === "active" || filter === "done" || filter === "cancelled") {
+      if (STATUS_META[o.status]?.group !== filter) return false;
+    } else {
       // Supporte statuts multiples séparés par virgule (liens dashboard)
       const filterStatuses = filter.split(",") as OrderStatus[];
       if (!filterStatuses.includes(o.status)) return false;
@@ -256,42 +255,37 @@ export default function AdminCommandesPage() {
             </div>
           </div>
 
-          {/* Filtres statuts */}
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              onClick={() => setFilter("all")}
-              className={`px-3 py-1.5 text-[10px] font-semibold rounded-full border transition-colors
-                ${filter === "all" ? "border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
-            >
-              Tout ({orders.length})
-            </button>
-            <button
-              onClick={() => setFilter("urgent")}
-              className={`px-3 py-1.5 text-[10px] font-semibold rounded-full border transition-colors
-                ${filter === "urgent" ? "border-[var(--hm-rose)] text-[var(--hm-rose)] bg-[var(--hm-accent-soft-rose)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
-            >
-              🔴 Urgences
-            </button>
-
-            {FILTER_GROUPS.map((group) => (
-              <span key={group.label} className="flex items-center gap-1.5">
-                <span className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider self-center">{group.label}</span>
-                {group.statuses.map((s) => {
-                  const count = orders.filter((o) => o.status === s).length;
-                  const meta = STATUS_META[s];
-                  return (
-                    <button
-                      key={s}
-                      onClick={() => setFilter(s)}
-                      className={`px-2.5 py-1 text-[10px] font-semibold rounded-full border transition-colors
-                        ${filter === s ? "border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
-                    >
-                      {meta.label} {count > 0 && `(${count})`}
-                    </button>
-                  );
-                })}
-              </span>
+          {/* Filtre principal — 4 vues simples (Tout / Urgences / En cours / Clôturées) */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {([
+              { key: "all",       label: "Toutes",     count: orders.length },
+              { key: "urgent",    label: "🔴 À traiter", count: orders.filter((o) => STATUS_META[o.status]?.group === "urgent").length },
+              { key: "active",    label: "En cours",   count: orders.filter((o) => STATUS_META[o.status]?.group === "active").length },
+              { key: "done",      label: "Terminées",  count: orders.filter((o) => STATUS_META[o.status]?.group === "done").length },
+              { key: "cancelled", label: "Annulées",   count: orders.filter((o) => STATUS_META[o.status]?.group === "cancelled").length },
+            ] as const).map(({ key, label, count }) => (
+              <button
+                key={key}
+                onClick={() => setFilter(key)}
+                className={`px-3.5 py-1.5 text-[11px] font-semibold rounded-full border transition-colors
+                  ${filter === key
+                    ? key === "urgent"
+                      ? "border-[var(--hm-rose)] text-[var(--hm-rose)] bg-[var(--hm-accent-soft-rose)]"
+                      : "border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]"
+                    : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
+              >
+                {label} <span className="opacity-60">({count})</span>
+              </button>
             ))}
+
+            <button
+              onClick={() => setShowAdvanced((v) => !v)}
+              className={`ml-auto px-3 py-1.5 text-[10px] font-semibold rounded-full border inline-flex items-center gap-1 transition-colors
+                ${showAdvanced ? "border-[var(--hm-primary)] text-[var(--hm-primary)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
+            >
+              <Filter size={10} />
+              {showAdvanced ? "Masquer les filtres" : "Filtres avancés"}
+            </button>
           </div>
 
           {/* Filtre multi-statuts actif (vient d'un lien dashboard) */}
@@ -310,34 +304,58 @@ export default function AdminCommandesPage() {
             </div>
           )}
 
-          {/* Filtres secondaires */}
-          <div className="flex flex-wrap gap-2 items-center">
-            <Filter size={11} className="text-[var(--hm-text-soft)]" />
-            <button
-              onClick={() => setFilterFichier(!filterFichier)}
-              className={`px-3 py-1 text-[10px] font-semibold rounded-full border transition-colors
-                ${filterFichier ? "border-amber-400 text-amber-600 bg-amber-50" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
-            >
-              Fichier en attente
-            </button>
-            <button
-              onClick={() => setFilterBAT(!filterBAT)}
-              className={`px-3 py-1 text-[10px] font-semibold rounded-full border transition-colors
-                ${filterBAT ? "border-blue-400 text-blue-600 bg-blue-50" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
-            >
-              BAT requis/recommandé
-            </button>
-            {FOURNISSEUR_FILTERS.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => setFilterFournisseur(filterFournisseur === value ? "all" : value)}
-                className={`px-3 py-1 text-[10px] font-semibold rounded-full border transition-colors
-                  ${filterFournisseur === value ? "border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          {/* Filtres avancés — repliés par défaut (statut précis, fichier, BAT, fournisseur) */}
+          {showAdvanced && (
+            <div className="flex flex-col gap-3 rounded-2xl border border-[var(--hm-line)] bg-white/60 p-3">
+              {FILTER_GROUPS.map((group) => (
+                <div key={group.label} className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider w-20 shrink-0">{group.label}</span>
+                  {group.statuses.map((s) => {
+                    const count = orders.filter((o) => o.status === s).length;
+                    const meta = STATUS_META[s];
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => setFilter(s)}
+                        className={`px-2.5 py-1 text-[10px] font-semibold rounded-full border transition-colors
+                          ${filter === s ? "border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
+                      >
+                        {meta.label} {count > 0 && `(${count})`}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+
+              <div className="flex flex-wrap gap-2 items-center border-t border-[var(--hm-line)] pt-3">
+                <span className="text-[9px] font-bold text-[var(--hm-text-soft)] uppercase tracking-wider w-20 shrink-0">Affiner</span>
+                <button
+                  onClick={() => setFilterFichier(!filterFichier)}
+                  className={`px-3 py-1 text-[10px] font-semibold rounded-full border transition-colors
+                    ${filterFichier ? "border-amber-400 text-amber-600 bg-amber-50" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
+                >
+                  Fichier en attente
+                </button>
+                <button
+                  onClick={() => setFilterBAT(!filterBAT)}
+                  className={`px-3 py-1 text-[10px] font-semibold rounded-full border transition-colors
+                    ${filterBAT ? "border-blue-400 text-blue-600 bg-blue-50" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
+                >
+                  BAT requis/recommandé
+                </button>
+                {FOURNISSEUR_FILTERS.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setFilterFournisseur(filterFournisseur === value ? "all" : value)}
+                    className={`px-3 py-1 text-[10px] font-semibold rounded-full border transition-colors
+                      ${filterFournisseur === value ? "border-[var(--hm-primary)] text-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-text-soft)]/40"}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ─ Liste ─────────────────────────────────────────────────────────── */}
