@@ -20,6 +20,15 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Check, AlertCircle, ShoppingCart, Loader2, ChevronRight, Info, PenLine, Sparkles } from "lucide-react";
+
+// Swatch visuel par finition (rend la différence mat / brillant / premium
+// visible, au lieu d'un simple libellé texte). Mat = surface douce diffuse,
+// Brillant = reflets lustrés, Premium = satiné velours profond.
+const FINISH_SWATCH: Record<string, string> = {
+  mat:      "linear-gradient(135deg,#ececf1 0%,#dadae1 100%)",
+  brillant: "linear-gradient(115deg,#d2d2da 0%,#ffffff 26%,#c4c4ce 50%,#ffffff 74%,#d2d2da 100%)",
+  premium:  "linear-gradient(135deg,#2d2340 0%,#4a3b63 55%,#6b577f 100%)",
+};
 import { useCartStore } from "@/store/cart";
 import BusinessCardVisualizer from "@/components/print/BusinessCardVisualizer";
 import PrintMockupViewer from "@/components/print/PrintMockupViewer";
@@ -311,16 +320,21 @@ export default function BusinessCardConfigurator() {
                       key={f.value}
                       type="button"
                       onClick={() => setFinish(f.value)}
-                      className={`flex flex-col gap-1 rounded-xl border px-4 py-3 text-left transition ${
+                      className={`flex flex-col gap-1 rounded-xl border p-2.5 text-left transition ${
                         finish === f.value
                           ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]"
                           : "border-[var(--hm-line)] hover:border-[var(--hm-primary)]/40"
                       }`}
                     >
-                      <span className={`text-sm font-semibold ${finish === f.value ? "text-[var(--hm-primary)]" : "text-[var(--hm-text)]"}`}>
+                      <span
+                        aria-hidden
+                        className="mb-1.5 h-11 w-full rounded-lg border border-black/5 shadow-inner"
+                        style={{ background: FINISH_SWATCH[f.value] }}
+                      />
+                      <span className={`px-1 text-sm font-semibold ${finish === f.value ? "text-[var(--hm-primary)]" : "text-[var(--hm-text)]"}`}>
                         {f.label}
                       </span>
-                      <span className="text-[11px] text-[var(--hm-text-soft)]">{f.description}</span>
+                      <span className="px-1 pb-1 text-[11px] leading-snug text-[var(--hm-text-soft)]">{f.description}</span>
                     </button>
                   ))}
                 </div>
