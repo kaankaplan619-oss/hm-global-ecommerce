@@ -752,16 +752,49 @@ export default function BusinessCardConfigurator() {
                 <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
                   Aperçu en direct
                 </p>
-                <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
-                  <BusinessCardVisualizer
-                    orientation={orientation}
-                    frontFileUrl={frontFile?.url ?? null}
-                    backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
-                    showToggle={faces === "recto-verso"}
-                    hasBack={versoProvided}
-                    displayWidth={320}
-                  />
-                </div>
+                {faces === "recto-verso" && versoProvided ? (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <p className="mb-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-[var(--hm-primary)]">Recto</p>
+                      <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
+                        <BusinessCardVisualizer
+                          orientation={orientation}
+                          frontFileUrl={frontFile?.url ?? null}
+                          backFileUrl={backFile?.url ?? null}
+                          forceFace="front"
+                          hasBack={versoProvided}
+                          showToggle={false}
+                          displayWidth={300}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="mb-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-[var(--hm-primary)]">Verso</p>
+                      <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
+                        <BusinessCardVisualizer
+                          orientation={orientation}
+                          frontFileUrl={frontFile?.url ?? null}
+                          backFileUrl={backFile?.url ?? null}
+                          forceFace="back"
+                          hasBack={versoProvided}
+                          showToggle={false}
+                          displayWidth={300}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
+                    <BusinessCardVisualizer
+                      orientation={orientation}
+                      frontFileUrl={frontFile?.url ?? null}
+                      backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
+                      showToggle={faces === "recto-verso"}
+                      hasBack={versoProvided}
+                      displayWidth={320}
+                    />
+                  </div>
+                )}
                 <p className="mt-2.5 text-center text-[10px] leading-snug text-[var(--hm-text-muted)]">
                   {PRINT_ORIENTATION_LABELS[orientation]}
                   {frontFile ? " · votre visuel" : " · déposez votre visuel à l'étape Fichiers"}
