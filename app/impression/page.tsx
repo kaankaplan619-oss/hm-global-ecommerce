@@ -134,40 +134,39 @@ const STATIC_FALLBACK: Record<string, {
 //
 // La rotation `index % length` du helper getPrintProductVisual garantit
 // qu'aucune image adjacente ne se répète dans la grille.
-// Vignettes "studio maison" par famille (rendu 100% HM via SVG→WebP, cf
-// _gen-showcases.js + _gen-print-showcases.js — designs fictifs élégants,
-// aucun watermark / "Pastel" / marque tierce). Servies en object-cover 4:3
-// sur la grille catalogue → look agence premium, un coup d'œil = un support.
+// Photos d'exemplaires réels (libres de droits — licence Pexels, usage
+// commercial sans attribution requise). Remplacent les anciennes vignettes
+// SVG "studio maison" (rendu 2.5D jugé trop kitsch). Visée B2B type
+// Pixartprinting / Printoclock : packshots flat-lay et mises en situation
+// (cartes, flyers, affiches encadrées, toiles murales, invitations).
 const FAMILY_SHOWCASES: Record<string, string[]> = {
   "business-cards": [
-    "/mockups/print/business-card/showcase-01.webp",
-    "/mockups/print/business-card/showcase-02.webp",
-    "/mockups/print/business-card/showcase-03.webp",
+    "/mockups/print/business-card/photo-01.webp",
+    "/mockups/print/business-card/photo-02.webp",
+    "/mockups/print/business-card/photo-03.webp",
   ],
   flyer: [
-    "/mockups/print/flyer/showcase-01.webp",
-    "/mockups/print/flyer/showcase-02.webp",
-    "/mockups/print/flyer/showcase-03.webp",
+    "/mockups/print/flyer/photo-01.webp",
+    "/mockups/print/flyer/photo-02.webp",
+    "/mockups/print/flyer/photo-03.webp",
   ],
   poster: [
-    "/mockups/print/poster/showcase-01.webp",
-    "/mockups/print/poster/showcase-02.webp",
-    "/mockups/print/poster/showcase-03.webp",
+    "/mockups/print/poster/photo-01.webp",
+    "/mockups/print/poster/photo-02.webp",
+    "/mockups/print/poster/photo-03.webp",
   ],
   canvas: [
-    "/mockups/print/canvas/showcase-01.webp",
-    "/mockups/print/canvas/showcase-02.webp",
-    "/mockups/print/canvas/showcase-03.webp",
+    "/mockups/print/canvas/photo-01.webp",
+    "/mockups/print/canvas/photo-02.webp",
+    "/mockups/print/canvas/photo-03.webp",
   ],
   cards: [
-    "/mockups/print/cards/showcase-01.webp",
-    "/mockups/print/cards/showcase-02.webp",
-    "/mockups/print/cards/showcase-03.webp",
+    "/mockups/print/cards/photo-01.webp",
+    "/mockups/print/cards/photo-02.webp",
+    "/mockups/print/cards/photo-03.webp",
   ],
 };
 
-// On sert exclusivement les vignettes studio maison (les anciens mockups
-// Mockups Design portaient le watermark "mockups-design.com" + démo "Pastel").
 const IMAGE_VARIANTS_BY_CATEGORY: Record<string, string[]> = FAMILY_SHOWCASES;
 
 /**
