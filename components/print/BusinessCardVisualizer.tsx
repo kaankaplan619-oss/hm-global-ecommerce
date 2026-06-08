@@ -17,6 +17,7 @@
 
 import { useState } from "react";
 import type { PrintOrientation } from "@/data/print-products";
+import PdfPagePreview from "@/components/print/PdfPagePreview";
 
 // ─── Helper : détection PDF depuis l'URL ──────────────────────────────────────
 // L'URL Supabase contient l'extension d'origine : .../timestamp-front-monlogo.pdf
@@ -65,7 +66,20 @@ export default function BusinessCardVisualizer({
   // Safe zone = 3 mm intérieur
   const safePx = bleedPx;
 
-  const currentFile = face === "front" ? frontFileUrl : backFileUrl;
+  // Fichier + page à afficher pour la face courante.
+  // Verso : fichier verso dédié si fourni, sinon page 2 d'un PDF recto-verso unique.
+  let currentFile: string | null;
+  let currentPage = 1;
+  if (face === "front") {
+    currentFile = frontFileUrl;
+  } else if (backFileUrl) {
+    currentFile = backFileUrl;
+  } else if (frontFileUrl && isPdfUrl(frontFileUrl)) {
+    currentFile = frontFileUrl;
+    currentPage = 2;
+  } else {
+    currentFile = null;
+  }
 
   return (
     <div className={`flex flex-col items-center gap-3 ${className}`}>
@@ -102,26 +116,8 @@ export default function BusinessCardVisualizer({
           {/* Fichier client */}
           {currentFile ? (
             isPdfUrl(currentFile) ? (
-              /* ── PDF : <img> ne peut pas rendre un PDF → fallback texte + lien ── */
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#f9f8fb] px-3 py-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-sm">
-                  📄
-                </div>
-                <p className="text-center text-[10px] font-semibold leading-snug text-[var(--hm-text-soft)]">
-                  PDF chargé ✓
-                </p>
-                <p className="text-center text-[9px] leading-snug text-[var(--hm-text-muted)]">
-                  Aperçu final vérifié par HM Global avant impression
-                </p>
-                <a
-                  href={currentFile}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 text-[9px] font-bold text-[var(--hm-primary)] hover:underline"
-                >
-                  Ouvrir le PDF →
-                </a>
-              </div>
+              /* ── PDF : rendu réel de la page via pdf.js (le client voit son visuel) ── */
+              <PdfPagePreview url={currentFile} page={currentPage} />
             ) : (
               /* ── Image PNG / JPG : rendu direct ── */
               // eslint-disable-next-line @next/next/no-img-element
