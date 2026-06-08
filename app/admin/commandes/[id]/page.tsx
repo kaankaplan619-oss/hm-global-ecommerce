@@ -158,6 +158,11 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [advancing, setAdvancing] = useState(false);
   const [markingPaid, setMarkingPaid] = useState(false);
+  // Envoi production (Gelato) — interne, jamais visible client.
+  const [gelatoUid, setGelatoUid] = useState("");
+  const [gelatoSending, setGelatoSending] = useState(false);
+  const [gelatoError, setGelatoError] = useState<string | null>(null);
+  const [gelatoResult, setGelatoResult] = useState<{ id: string; status: string } | null>(null);
 
   useEffect(() => {
     if (!_hasHydrated) return;
@@ -287,6 +292,36 @@ export default function AdminCommandeDetailPage({ params }: Props) {
       setCopiedItemId(itemId);
       setTimeout(() => setCopiedItemId(null), 2000);
     });
+  };
+
+  // ── Envoi 1-clic en production (Gelato) — admin uniquement ────────────────
+  // Le client ne voit jamais Gelato : envoi interne après paiement + BAT validé.
+  const handleSendToProduction = async (item: OrderItem) => {
+    if (!order || !item.printConfig) return;
+    const productUid = (item.printConfig.gelatoUid ?? gelatoUid).trim();
+    const fileUrl = item.printConfig.frontFileUrl;
+    if (!productUid) { setGelatoError("UID produit Gelato manquant — renseignez-le ci-dessous."); return; }
+    if (!fileUrl)    { setGelatoError("Aucun fichier d'impression sur cet article."); return; }
+    const fileType = "default";
+    if (!window.confirm("Envoyer cet article en production maintenant ? La commande part chez le partenaire d'impression (action facturée, non automatique).")) return;
+    setGelatoSending(true);
+    setGelatoError(null);
+    try {
+      const res = await fetch("/api/gelato/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id, productUid, fileUrl, fileType }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) { setGelatoError(body.error ?? "Échec de l'envoi en production."); return; }
+      setGelatoResult({ id: body.gelatoOrderId, status: body.status });
+      setOrder({ ...order, status: "commande_fournisseur_passee" as OrderStatus });
+      setNewStatus("commande_fournisseur_passee" as OrderStatus);
+    } catch {
+      setGelatoError("Erreur réseau. Réessayez.");
+    } finally {
+      setGelatoSending(false);
+    }
   };
 
   const handleQuickAdvance = async (nextStatus: OrderStatus) => {
@@ -639,13 +674,42 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                 </div>
                               )}
 
-                              {/* Bloc fournisseur print */}
+                              {/* Bloc fournisseur print — envoi 1-clic (interne) */}
                               <div className="mt-3 pt-2 border-t border-[var(--hm-line)]">
-                                <p className="text-[9px] text-[var(--hm-text-soft)] mb-1">Fournisseur impression</p>
-                                <span className="badge badge-info text-[9px]">Gelato (V1 — commande manuelle)</span>
-                                <p className="mt-1 text-[9px] text-[var(--hm-text-muted)]">
-                                  Transmettre les fichiers ci-dessus à gelato.com. La commande Gelato automatique sera activée en V2.
-                                </p>
+                                <p className="text-[9px] text-[var(--hm-text-soft)] mb-1">Production impression (interne — invisible client)</p>
+                                <span className="badge badge-info text-[9px]">Gelato POD</span>
+
+                                {gelatoResult ? (
+                                  <p className="mt-2 text-[10px] font-semibold text-green-600">
+                                    ✓ Envoyé en production · Réf {gelatoResult.id} · {gelatoResult.status}
+                                  </p>
+                                ) : (
+                                  <div className="mt-2 flex flex-col gap-1.5">
+                                    {!item.printConfig.gelatoUid && (
+                                      <input
+                                        type="text"
+                                        value={gelatoUid}
+                                        onChange={(e) => setGelatoUid(e.target.value)}
+                                        placeholder="UID produit Gelato (ex: business_cards_…_cl_4-4_hor)"
+                                        className="w-full rounded-lg border border-[var(--hm-line)] px-2 py-1.5 text-[10px] outline-none focus:border-[var(--hm-primary)]"
+                                      />
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSendToProduction(item)}
+                                      disabled={gelatoSending}
+                                      className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--hm-primary)] px-3 py-1.5 text-[11px] font-bold text-white hover:opacity-90 disabled:opacity-50"
+                                    >
+                                      {gelatoSending ? "Envoi…" : "Envoyer en production"}
+                                    </button>
+                                    {gelatoError && (
+                                      <p className="text-[9px] font-semibold text-red-500">{gelatoError}</p>
+                                    )}
+                                    <p className="text-[9px] text-[var(--hm-text-muted)]">
+                                      Action manuelle, après paiement + BAT validé. Le client ne voit jamais le partenaire.
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ) : (
