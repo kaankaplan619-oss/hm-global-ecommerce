@@ -569,6 +569,34 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                 </div>
                               </div>
 
+                              {/* Aperçu visuel de la carte (PNG éditeur / rendu PDF) */}
+                              {(item.printConfig.frontPreviewUrl || item.printConfig.backPreviewUrl) && (
+                                <div className="mb-3 grid grid-cols-2 gap-2">
+                                  {item.printConfig.frontPreviewUrl && (
+                                    <div className="flex flex-col gap-1">
+                                      <span className="text-[9px] text-[var(--hm-text-muted)]">Aperçu Recto</span>
+                                      <a href={item.printConfig.frontPreviewUrl} target="_blank" rel="noopener noreferrer"
+                                        className="overflow-hidden rounded-lg border border-[var(--hm-primary)]/30 bg-white">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={item.printConfig.frontPreviewUrl} alt="Aperçu recto carte"
+                                          className="h-full w-full object-contain transition hover:scale-105" />
+                                      </a>
+                                    </div>
+                                  )}
+                                  {item.printConfig.backPreviewUrl && (
+                                    <div className="flex flex-col gap-1">
+                                      <span className="text-[9px] text-[var(--hm-text-muted)]">Aperçu Verso</span>
+                                      <a href={item.printConfig.backPreviewUrl} target="_blank" rel="noopener noreferrer"
+                                        className="overflow-hidden rounded-lg border border-[var(--hm-primary)]/30 bg-white">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={item.printConfig.backPreviewUrl} alt="Aperçu verso carte"
+                                          className="h-full w-full object-contain transition hover:scale-105" />
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
                               {/* Fichier recto */}
                               {item.printConfig.frontFileUrl && (
                                 <div className="mb-1.5">

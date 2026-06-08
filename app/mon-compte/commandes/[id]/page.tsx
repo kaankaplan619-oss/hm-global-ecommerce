@@ -291,7 +291,9 @@ export default function CommandeDetailPage({ params }: Props) {
           <div className="p-5">
             <div className="flex flex-col gap-4">
               {order.items.map((item) => {
-                const itemImg = getOrderItemImage(item.product?.id, item.color?.id);
+                const itemImg =
+                  item.printConfig?.frontPreviewUrl
+                  ?? getOrderItemImage(item.product?.id, item.color?.id);
                 return (
                 <div
                   key={item.id}

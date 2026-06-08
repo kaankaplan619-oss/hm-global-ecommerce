@@ -191,8 +191,14 @@ export default function CartDrawer() {
             <div className="flex flex-col gap-4">
               {items.map((item) => {
                 const previewImages = [
-                  { src: item.composedPreviewUrl,  label: "Face" },
-                  { src: item.composedPreviewBack, label: "Dos"  },
+                  {
+                    src:   item.composedPreviewUrl ?? item.printConfig?.frontPreviewUrl ?? undefined,
+                    label: item.printConfig ? "Recto" : "Face",
+                  },
+                  {
+                    src:   item.composedPreviewBack ?? item.printConfig?.backPreviewUrl ?? undefined,
+                    label: item.printConfig ? "Verso" : "Dos",
+                  },
                 ].filter((v) => !!v.src) as { src: string; label: string }[];
 
                 return (
@@ -255,6 +261,7 @@ export default function CartDrawer() {
                         {(() => {
                           const thumbSrc =
                             item.composedPreviewUrl
+                            || item.printConfig?.frontPreviewUrl
                             || getProductCatalogImage(item.product, item.color.id)
                             || item.product.images?.[0];
                           return thumbSrc ? (

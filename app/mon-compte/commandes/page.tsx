@@ -86,7 +86,10 @@ export default function CommandesPage() {
             {orders.map((order) => {
               const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.terminee;
               const firstItem = order.items?.[0];
-              const itemImg = getOrderItemImage(firstItem?.product?.id, firstItem?.color?.id);
+              // Print : vignette = aperçu carte. Sinon : image catalogue produit.
+              const itemImg =
+                firstItem?.printConfig?.frontPreviewUrl
+                ?? getOrderItemImage(firstItem?.product?.id, firstItem?.color?.id);
               return (
                 <Link
                   key={order.id}

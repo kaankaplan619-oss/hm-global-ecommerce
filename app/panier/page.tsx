@@ -98,9 +98,17 @@ export default function PanierPage() {
             {/* Items list */}
             <div className="lg:col-span-2 flex flex-col gap-6">
               {items.map((item) => {
+                // Textile : aperçu composé (BAT Studio). Print : aperçu carte
+                // (PNG éditeur / rendu PDF). Labels Recto/Verso pour le print.
                 const previewImages = [
-                  { src: item.composedPreviewUrl,  label: "Face" },
-                  { src: item.composedPreviewBack, label: "Dos"  },
+                  {
+                    src:   item.composedPreviewUrl ?? item.printConfig?.frontPreviewUrl ?? undefined,
+                    label: item.printConfig ? "Recto" : "Face",
+                  },
+                  {
+                    src:   item.composedPreviewBack ?? item.printConfig?.backPreviewUrl ?? undefined,
+                    label: item.printConfig ? "Verso" : "Dos",
+                  },
                 ].filter((v) => !!v.src) as { src: string; label: string }[];
 
                 return (

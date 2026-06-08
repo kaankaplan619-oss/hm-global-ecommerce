@@ -32,6 +32,7 @@ const FINISH_SWATCH: Record<string, string> = {
 import { useCartStore } from "@/store/cart";
 import BusinessCardVisualizer from "@/components/print/BusinessCardVisualizer";
 import PrintEditor from "@/components/print/PrintEditor";
+import { renderPdfPageToPng, isPdfUrl } from "@/lib/pdf-preview";
 import PrintMockupViewer from "@/components/print/PrintMockupViewer";
 import {
   BUSINESS_CARD_OPTIONS,
@@ -68,6 +69,16 @@ interface UploadedFile {
   type:     string;
 }
 
+// Convertit un data URL (PNG export éditeur / aperçu PDF) en File uploadable.
+function dataUrlToFile(dataUrl: string, name: string): File {
+  const [meta, b64] = dataUrl.split(",");
+  const mime = /:(.*?);/.exec(meta)?.[1] ?? "image/png";
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new File([arr], name, { type: mime });
+}
+
 // ─── Composant ────────────────────────────────────────────────────────────────
 
 export default function BusinessCardConfigurator() {
@@ -93,6 +104,12 @@ export default function BusinessCardConfigurator() {
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack,  setUploadingBack]  = useState(false);
   const [uploadError,    setUploadError]    = useState<string | null>(null);
+
+  // Aperçu PNG affichable de la carte (recto/verso) — sert d'image dans le
+  // panier, la commande et l'admin (un PDF ne s'affiche pas dans un <img>).
+  // Image/PNG → l'URL elle-même ; PDF → rendu d'une page uploadé en PNG.
+  const [frontPreviewUrl, setFrontPreviewUrl] = useState<string | null>(null);
+  const [backPreviewUrl,  setBackPreviewUrl]  = useState<string | null>(null);
 
   // Nombre de pages du PDF recto → si ≥ 2, le verso = page 2 automatiquement
   // (un seul PDF recto-verso, le client n'a pas à uploader 2 fichiers).
@@ -201,17 +218,55 @@ export default function BusinessCardConfigurator() {
     e.target.value = "";
   }, [uploadFile]);
 
+  // ── Aperçu PNG affichable (panier / commande / admin) ───────────────────────
+  // Upload un PNG (data URL) comme aperçu et renvoie l'URL https Supabase.
+  const uploadPreviewPng = useCallback(async (
+    dataUrl: string, name: string, face: "front" | "back",
+  ): Promise<string | null> => {
+    const up = await uploadFile(dataUrlToFile(dataUrl, name), face);
+    return up?.url ?? null;
+  }, [uploadFile]);
+
+  // Dérive une URL d'aperçu affichable depuis un fichier :
+  //   - image (PNG/JPG)  → l'URL elle-même (déjà affichable dans un <img>)
+  //   - PDF              → rendu d'une page → PNG → upload → URL https
+  const derivePreviewUrl = useCallback(async (
+    file: UploadedFile, face: "front" | "back", pdfPage = 1,
+  ): Promise<string | null> => {
+    if (!isPdfUrl(file.url)) return file.url;
+    const png = await renderPdfPageToPng(file.url, pdfPage, 600);
+    if (!png) return null;
+    return uploadPreviewPng(png, `apercu-${face}.png`, face);
+  }, [uploadPreviewPng]);
+
+  // Régénère les aperçus dès que le fichier recto/verso ou les faces changent.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!frontFile) { setFrontPreviewUrl(null); setBackPreviewUrl(null); return; }
+      const fp = await derivePreviewUrl(frontFile, "front", 1);
+      if (cancelled) return;
+      setFrontPreviewUrl(fp);
+
+      if (faces !== "recto-verso") { setBackPreviewUrl(null); return; }
+      if (backFile) {
+        const bp = await derivePreviewUrl(backFile, "back", 1);
+        if (!cancelled) setBackPreviewUrl(bp);
+      } else if (isPdfUrl(frontFile.url) && (frontPdfPages ?? 0) >= 2) {
+        // PDF recto-verso unique → verso = page 2.
+        const png = await renderPdfPageToPng(frontFile.url, 2, 600);
+        const url = png ? await uploadPreviewPng(png, "apercu-verso.png", "back") : null;
+        if (!cancelled) setBackPreviewUrl(url);
+      } else if (!cancelled) {
+        setBackPreviewUrl(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [frontFile, backFile, faces, frontPdfPages, derivePreviewUrl, uploadPreviewPng]);
+
   // ── Atelier d'édition en ligne — validation du rendu (Phase 1) ──────────────
-  // Convertit les data URLs PNG exportées par l'éditeur en File, les upload via
-  // le même endpoint que l'upload manuel, puis passe à l'étape récap (3).
-  const dataUrlToFile = (dataUrl: string, name: string): File => {
-    const [meta, b64] = dataUrl.split(",");
-    const mime = /:(.*?);/.exec(meta)?.[1] ?? "image/png";
-    const bin = atob(b64);
-    const arr = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-    return new File([arr], name, { type: mime });
-  };
+  // Upload les PNG exportés par l'éditeur (recto/verso), puis passe au récap (3).
+  // Les aperçus sont régénérés par l'effet ci-dessus (PNG = affichables direct).
   const handleEditorValidate = useCallback(async (recto: string, verso: string | null) => {
     setEditorOpen(false);
     const rf = await uploadFile(dataUrlToFile(recto, "carte-recto.png"), "front");
@@ -242,8 +297,12 @@ export default function BusinessCardConfigurator() {
         lotPriceTTC:    lotPrice,
         frontFileUrl:   frontFile.url,
         backFileUrl:    faces === "recto-verso" ? (backFile?.url ?? null) : null,
-        frontPreviewUrl: null,  // pas de preview générée côté client pour les PDFs
-        backPreviewUrl:  null,
+        // Aperçu affichable : généré par l'effet (PNG éditeur / image directe /
+        // rendu PDF). Fallback : si image directe pas encore reflétée dans l'état.
+        frontPreviewUrl: frontPreviewUrl ?? (!isPdfUrl(frontFile.url) ? frontFile.url : null),
+        backPreviewUrl:  faces === "recto-verso"
+          ? (backPreviewUrl ?? (backFile && !isPdfUrl(backFile.url) ? backFile.url : null))
+          : null,
         batStatus:      "a_verifier",
       };
 
@@ -265,7 +324,7 @@ export default function BusinessCardConfigurator() {
     } catch {
       setAdding(false);
     }
-  }, [addItem, frontFile, backFile, orientation, faces, finish, corners, quantity, projectName, lotPrice, router]);
+  }, [addItem, frontFile, backFile, frontPreviewUrl, backPreviewUrl, orientation, faces, finish, corners, quantity, projectName, lotPrice, router]);
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
