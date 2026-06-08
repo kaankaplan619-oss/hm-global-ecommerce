@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  ChevronLeft,
   ShoppingBag,
   ShieldCheck,
 } from "lucide-react";
@@ -101,6 +102,15 @@ export default function MonComptePage() {
   return (
     <div className="min-h-screen bg-[#f8f9fb] pb-20 pt-24">
       <div className="container max-w-3xl">
+
+        {/* Bouton retour au site */}
+        <Link
+          href="/"
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
+        >
+          <ChevronLeft size={16} />
+          Retour à l&rsquo;accueil
+        </Link>
 
         {/* ── En-tête profil ─────────────────────────────────────────────── */}
         <div className="mb-8 overflow-hidden rounded-2xl border border-[#e6e8ee] bg-white shadow-[0_8px_24px_rgba(63,45,88,0.06)]">
