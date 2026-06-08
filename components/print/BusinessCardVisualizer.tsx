@@ -42,6 +42,10 @@ interface Props {
   forceFace?:     "front" | "back";
   /** Taille d'affichage en px — width de la carte (hauteur déduite du ratio) */
   displayWidth?:  number;
+  /** Coins arrondis (option "coins arrondis") → affiche le rayon dans l'aperçu. */
+  rounded?:       boolean;
+  /** Finition → reflet visuel (mat = aucun, brillant = lustré, premium = satiné). */
+  finish?:        "mat" | "brillant" | "premium";
   className?:     string;
 }
 
@@ -53,6 +57,8 @@ export default function BusinessCardVisualizer({
   hasBack       = false,
   forceFace,
   displayWidth  = 340,
+  rounded       = false,
+  finish        = "mat",
   className     = "",
 }: Props) {
   const [internalFace, setFace] = useState<"front" | "back">("front");
@@ -103,28 +109,31 @@ export default function BusinessCardVisualizer({
           }}
         />
 
-        {/* Zone format fini — contour continu */}
+        {/* Zone format fini — contour continu. Coins arrondis si l'option
+           "coins arrondis" est choisie (rayon ~2,5 mm à l'échelle). */}
         <div
           className="absolute overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
           style={{
-            top:    bleedPx,
-            left:   bleedPx,
-            width:  displayWidth,
-            height: displayHeight,
+            top:          bleedPx,
+            left:         bleedPx,
+            width:        displayWidth,
+            height:       displayHeight,
+            borderRadius: rounded ? Math.round(displayWidth * (2.5 / 85)) : 2,
           }}
         >
-          {/* Fichier client */}
+          {/* Fichier client — object-contain : la carte entière reste visible
+             (pas de rognage des bords / du texte). */}
           {currentFile ? (
             isPdfUrl(currentFile) ? (
               /* ── PDF : rendu réel de la page via pdf.js (le client voit son visuel) ── */
-              <PdfPagePreview url={currentFile} page={currentPage} />
+              <PdfPagePreview url={currentFile} page={currentPage} fit="contain" />
             ) : (
               /* ── Image PNG / JPG : rendu direct ── */
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={currentFile}
                 alt={face === "front" ? "Recto" : "Verso"}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             )
           ) : (
@@ -137,6 +146,21 @@ export default function BusinessCardVisualizer({
               </p>
               <div className="h-px w-1/3 bg-[rgba(177,63,116,0.2)]" />
             </div>
+          )}
+
+          {/* Reflet de finition : brillant = lustré net, premium = satiné doux.
+             Mat = aucun reflet. Donne un aperçu visuel de la finition choisie. */}
+          {finish === "brillant" && (
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{ background: "linear-gradient(115deg, rgba(255,255,255,0) 38%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 62%)" }}
+            />
+          )}
+          {finish === "premium" && (
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{ background: "linear-gradient(125deg, rgba(255,255,255,0) 44%, rgba(255,255,255,0.22) 52%, rgba(255,255,255,0) 60%)" }}
+            />
           )}
 
           {/* Zone de sécurité — tirets verts intérieurs */}
@@ -152,6 +176,13 @@ export default function BusinessCardVisualizer({
           />
         </div>
       </div>
+
+      {/* Étiquette finition (visible sous l'aperçu) */}
+      {finish !== "mat" && (
+        <span className="text-[10px] font-semibold text-[var(--hm-text-soft)]">
+          Finition {finish === "brillant" ? "brillante (lustrée)" : "premium (satinée)"}
+        </span>
+      )}
 
       {/* ── Légende zones ────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-4 text-[9px] font-semibold text-[var(--hm-text-muted)]">

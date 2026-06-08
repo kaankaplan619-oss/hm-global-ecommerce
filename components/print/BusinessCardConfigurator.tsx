@@ -365,6 +365,8 @@ export default function BusinessCardConfigurator() {
           <div className="flex items-center justify-center rounded-xl bg-[var(--hm-surface)] p-3">
             <BusinessCardVisualizer
               orientation={orientation}
+              rounded={corners === "rounded"}
+              finish={finish}
               frontFileUrl={frontFile?.url ?? null}
               backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
               showToggle={versoProvided}
@@ -832,6 +834,8 @@ export default function BusinessCardConfigurator() {
                 <div className="flex justify-center bg-[var(--hm-surface)] rounded-xl p-6">
                   <BusinessCardVisualizer
                     orientation={orientation}
+              rounded={corners === "rounded"}
+              finish={finish}
                     frontFileUrl={frontFile?.url ?? null}
                     backFileUrl={backFile?.url ?? null}
                     showToggle={versoProvided}
@@ -950,6 +954,8 @@ export default function BusinessCardConfigurator() {
                       <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
                         <BusinessCardVisualizer
                           orientation={orientation}
+              rounded={corners === "rounded"}
+              finish={finish}
                           frontFileUrl={frontFile?.url ?? null}
                           backFileUrl={backFile?.url ?? null}
                           forceFace="front"
@@ -964,6 +970,8 @@ export default function BusinessCardConfigurator() {
                       <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
                         <BusinessCardVisualizer
                           orientation={orientation}
+              rounded={corners === "rounded"}
+              finish={finish}
                           frontFileUrl={frontFile?.url ?? null}
                           backFileUrl={backFile?.url ?? null}
                           forceFace="back"
@@ -978,6 +986,8 @@ export default function BusinessCardConfigurator() {
                   <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
                     <BusinessCardVisualizer
                       orientation={orientation}
+              rounded={corners === "rounded"}
+              finish={finish}
                       frontFileUrl={frontFile?.url ?? null}
                       backFileUrl={faces === "recto-verso" ? (backFile?.url ?? null) : null}
                       showToggle={versoProvided}

@@ -18,10 +18,12 @@ export default function PdfPagePreview({
   url,
   page = 1,
   className = "",
+  fit = "cover",
 }: {
   url: string;
   page?: number;
   className?: string;
+  fit?: "cover" | "contain";
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
@@ -65,7 +67,7 @@ export default function PdfPagePreview({
     <div className={`relative h-full w-full ${className}`}>
       <canvas
         ref={canvasRef}
-        className="h-full w-full object-cover"
+        className={`h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
         style={{ display: status === "ok" ? "block" : "none" }}
       />
       {status === "loading" && (
