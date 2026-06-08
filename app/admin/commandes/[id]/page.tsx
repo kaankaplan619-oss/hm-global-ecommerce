@@ -567,6 +567,16 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                      : "À vérifier"}
                                   </span>
                                 </div>
+                                {item.printConfig.batSignature && (
+                                  <div className="flex justify-between text-[10px]">
+                                    <span className="text-[var(--hm-text-soft)]">BAT signé par</span>
+                                    <span className="font-semibold text-[var(--hm-text)]">
+                                      {item.printConfig.batSignature.name}
+                                      {" · "}
+                                      {new Date(item.printConfig.batSignature.date).toLocaleDateString("fr-FR")}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Aperçu visuel de la carte (PNG éditeur / rendu PDF) */}
@@ -1154,7 +1164,7 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                       🎨 Gelato — POD automatisé (mugs, posters, accessoires)
                     </option>
                     <option value="stock_interne">
-                      📦 Stock interne — Produit déjà en stock à l'agence (WG004 V1, etc.)
+                      📦 Stock interne — Produit déjà en stock à l&apos;agence (WG004 V1, etc.)
                     </option>
                   </optgroup>
                   {/* ── Legacy (lecture seule pour vieilles commandes) ── */}

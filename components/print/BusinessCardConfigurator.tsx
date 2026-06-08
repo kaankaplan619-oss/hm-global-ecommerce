@@ -140,6 +140,10 @@ export default function BusinessCardConfigurator() {
   // Atelier d'édition en ligne (Phase 1). Handler défini après uploadFile.
   const [editorOpen, setEditorOpen] = useState(false);
 
+  // Signature du Bon à Tirer (BAT) — approbation du visuel avant production.
+  const [batName, setBatName] = useState("");
+  const [batApproved, setBatApproved] = useState(false);
+
   // ── Étape UI ───────────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [adding, setAdding] = useState(false);
@@ -303,7 +307,9 @@ export default function BusinessCardConfigurator() {
         backPreviewUrl:  faces === "recto-verso"
           ? (backPreviewUrl ?? (backFile && !isPdfUrl(backFile.url) ? backFile.url : null))
           : null,
-        batStatus:      "a_verifier",
+        // BAT signé par le client → vaut bon à tirer (renonciation rétractation).
+        batStatus:      "valide",
+        batSignature:   { name: batName.trim(), date: new Date().toISOString() },
       };
 
       // Le produit print utilise des valeurs neutres pour les champs textile.
@@ -324,7 +330,7 @@ export default function BusinessCardConfigurator() {
     } catch {
       setAdding(false);
     }
-  }, [addItem, frontFile, backFile, frontPreviewUrl, backPreviewUrl, orientation, faces, finish, corners, quantity, projectName, lotPrice, router]);
+  }, [addItem, frontFile, backFile, frontPreviewUrl, backPreviewUrl, orientation, faces, finish, corners, quantity, projectName, batName, lotPrice, router]);
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -822,6 +828,37 @@ export default function BusinessCardConfigurator() {
                 </div>
               )}
 
+              {/* Signature du Bon à Tirer (BAT) */}
+              <div className="rounded-2xl border border-[var(--hm-primary)]/25 bg-[var(--hm-accent-soft-rose)] p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-primary)]">
+                  Bon à tirer — Signature
+                </p>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--hm-text-soft)]">
+                  En signant, vous approuvez ce visuel pour l&apos;impression. S&apos;agissant d&apos;un
+                  produit personnalisé, cette approbation vaut renonciation à votre droit de
+                  rétractation (art. L221-28 du Code de la consommation).
+                </p>
+                <input
+                  type="text"
+                  value={batName}
+                  onChange={(e) => setBatName(e.target.value)}
+                  placeholder="Votre nom et prénom (signature)"
+                  className="mt-3 w-full rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--hm-primary)]"
+                />
+                <label className="mt-3 flex cursor-pointer items-start gap-2 text-[12px] text-[var(--hm-text)]">
+                  <input
+                    type="checkbox"
+                    checked={batApproved}
+                    onChange={(e) => setBatApproved(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--hm-primary)]"
+                  />
+                  <span>
+                    J&apos;ai vérifié l&apos;orthographe, les couleurs et la mise en page. J&apos;approuve
+                    ce bon à tirer et autorise sa mise en production.
+                  </span>
+                </label>
+              </div>
+
               <div className="flex gap-3">
                 <button
                   type="button"
@@ -833,13 +870,13 @@ export default function BusinessCardConfigurator() {
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  disabled={adding}
-                  className="btn-primary flex-1 gap-2 disabled:opacity-60"
+                  disabled={adding || !batApproved || batName.trim().length < 2}
+                  className="btn-primary flex-1 gap-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {adding ? (
                     <><Loader2 size={15} className="animate-spin" /> Ajout en cours…</>
                   ) : (
-                    <><ShoppingCart size={15} /> Valider le BAT et ajouter au panier</>
+                    <><ShoppingCart size={15} /> Signer le BAT et ajouter au panier</>
                   )}
                 </button>
               </div>

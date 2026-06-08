@@ -230,6 +230,13 @@ export interface PrintConfig {
   /** Aperçu PNG verso généré pour affichage admin. */
   backPreviewUrl:   string | null;
   batStatus:        "a_verifier" | "valide" | "invalide";
+  /** Bon à tirer signé par le client (approbation du visuel avant production).
+   *  Pour les produits personnalisés, l'approbation du BAT vaut renonciation au
+   *  droit de rétractation (art. L221-28 C. conso). */
+  batSignature?: {
+    name: string;        // nom tapé par le client (signature)
+    date: string;        // ISO date de signature
+  };
 }
 
 // ─── Cart Types ─────────────────────────────────────────────────────────────────
