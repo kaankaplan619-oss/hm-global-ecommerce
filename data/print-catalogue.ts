@@ -143,7 +143,7 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         priceLabel: "dès 18,90 €",
         direct: true,
         badge: "Commande directe",
-        href: devisHref("affiche-50x70", "50 × 70 cm"),
+        href: "/impression/poster-50x70",
       },
       {
         id: "poster-a2",
@@ -169,7 +169,7 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         priceLabel: "dès 67,90 €",
         direct: true,
         badge: "Commande directe",
-        href: devisHref("toile-30x40", "30 × 40 cm"),
+        href: "/impression/canvas-30x40",
       },
       {
         id: "canvas-40x60",
@@ -180,7 +180,7 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         priceLabel: "dès 75,90 €",
         direct: true,
         badge: "Commande directe",
-        href: devisHref("toile-40x60", "40 × 60 cm"),
+        href: "/impression/canvas-40x60",
       },
       {
         id: "canvas-50x50",
@@ -191,7 +191,7 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         priceLabel: "dès 76,90 €",
         direct: true,
         badge: "Commande directe",
-        href: devisHref("toile-50x50", "50 × 50 cm"),
+        href: "/impression/canvas-50x50",
       },
       {
         id: "canvas-60x90",
