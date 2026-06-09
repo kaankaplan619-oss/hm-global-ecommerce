@@ -842,7 +842,7 @@ function Folded3D({
   const trans = dragging ? "none" : "transform 0.6s cubic-bezier(0.4,0,0.2,1)";
 
   // Une moitié du visuel complet (w×h) affichée dans une fenêtre pw×ph.
-  const Half = ({ src, ox, oy, rotate }: { src: string | null; ox: number; oy: number; rotate?: string }) => (
+  const half = (src: string | null, ox: number, oy: number, rotate?: string) => (
     <div className="absolute inset-0 overflow-hidden bg-white" style={{ backfaceVisibility: "hidden", transform: rotate }}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -853,28 +853,24 @@ function Folded3D({
     </div>
   );
 
-  const Panel = ({ x, y, origin, rot, intOx, intOy, extOx, extOy }: {
-    x: number; y: number; origin: string; rot: string; intOx: number; intOy: number; extOx: number; extOy: number;
-  }) => (
-    <div style={{ position: "absolute", left: x, top: y, width: pw, height: ph, transformStyle: "preserve-3d", transformOrigin: origin, transform: rot, transition: trans }}>
-      <Half src={int} ox={intOx} oy={intOy} />
-      <Half src={ext} ox={extOx} oy={extOy} rotate={vertical ? "rotateY(180deg)" : "rotateX(180deg)"} />
+  const panel = (key: string, x: number, y: number, origin: string, rot: string, intOx: number, intOy: number, extOx: number, extOy: number) => (
+    <div key={key} style={{ position: "absolute", left: x, top: y, width: pw, height: ph, transformStyle: "preserve-3d", transformOrigin: origin, transform: rot, transition: trans }}>
+      {half(int, intOx, intOy)}
+      {half(ext, extOx, extOy, vertical ? "rotateY(180deg)" : "rotateX(180deg)")}
     </div>
   );
 
   return (
     <div className="drop-shadow-[0_24px_50px_rgba(0,0,0,0.5)]" style={{ width: w, height: h, transformStyle: "preserve-3d", transform: `rotateY(${angle}deg)`, transition: trans }}>
-      {vertical ? (
-        <>
-          <Panel x={0}  y={0} origin="100% 50%" rot={`rotateY(${openDeg}deg)`}  intOx={0}  intOy={0} extOx={pw} extOy={0} />
-          <Panel x={pw} y={0} origin="0% 50%"   rot={`rotateY(${-openDeg}deg)`} intOx={pw} intOy={0} extOx={0}  extOy={0} />
-        </>
-      ) : (
-        <>
-          <Panel x={0} y={0}  origin="50% 100%" rot={`rotateX(${-openDeg}deg)`} intOx={0} intOy={0}  extOx={0} extOy={ph} />
-          <Panel x={0} y={ph} origin="50% 0%"   rot={`rotateX(${openDeg}deg)`}  intOx={0} intOy={ph} extOx={0} extOy={0} />
-        </>
-      )}
+      {vertical
+        ? [
+            panel("l", 0,  0, "100% 50%", `rotateY(${openDeg}deg)`,  0,  0, pw, 0),
+            panel("r", pw, 0, "0% 50%",   `rotateY(${-openDeg}deg)`, pw, 0, 0,  0),
+          ]
+        : [
+            panel("t", 0, 0,  "50% 100%", `rotateX(${-openDeg}deg)`, 0, 0,  0, ph),
+            panel("b", 0, ph, "50% 0%",   `rotateX(${openDeg}deg)`,  0, ph, 0, 0),
+          ]}
     </div>
   );
 }
