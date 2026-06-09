@@ -508,8 +508,8 @@ export default function PrintEditor({
   const unsafeCount = objects.filter(isUnsafe).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black/40 backdrop-blur-sm">
-      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col bg-white sm:my-6 sm:h-[calc(100%-3rem)] sm:rounded-2xl sm:shadow-2xl">
+    <div className="fixed inset-x-0 top-0 z-50 flex h-[100dvh] flex-col bg-black/40 backdrop-blur-sm">
+      <div className="relative mx-auto flex h-full max-h-[100dvh] w-full max-w-5xl flex-col overflow-hidden bg-white sm:my-6 sm:h-[calc(100dvh-3rem)] sm:rounded-2xl sm:shadow-2xl">
 
         {/* En-tête */}
         <div className="flex items-center justify-between border-b border-[var(--hm-line)] px-5 py-3">
@@ -578,7 +578,7 @@ export default function PrintEditor({
         {/* Plan de travail — mesuré pour que le format tienne en entier */}
         <div
           ref={stageBoxRef}
-          className="flex flex-1 items-center justify-center overflow-hidden bg-[var(--hm-surface)] p-3 sm:p-4"
+          className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[var(--hm-surface)] p-3 sm:p-4"
           onPointerDown={() => { setSelected(null); setShowTemplates(false); }}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => { e.preventDefault(); processFile(e.dataTransfer.files?.[0]); }}
