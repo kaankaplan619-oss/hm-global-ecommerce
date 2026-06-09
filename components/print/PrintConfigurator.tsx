@@ -16,9 +16,9 @@
  * Le jour où un prix existe, on bascule la fin vers l'ajout au panier.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart, Sparkles, Truck, TrendingDown } from "lucide-react";
+import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart, Sparkles, Truck, TrendingDown, AlertTriangle, Download, HelpCircle } from "lucide-react";
 import { estimateDelivery, formatDeliveryWindow } from "@/lib/delivery-estimate";
 import type { CuratedPrintProduct, PrintSpec } from "@/data/print-catalogue";
 import type { PrintOrientation } from "@/data/print-products";
@@ -108,6 +108,63 @@ export default function PrintConfigurator({
   // Toiles = production plus longue ; autres formats POD ~3 j ouvrés.
   const prodDays = product.id.startsWith("canvas") ? 5 : 3;
   const delivery = direct ? formatDeliveryWindow(estimateDelivery(new Date(), prodDays)) : null;
+
+  // Vérification fichier (preflight "style Pixartprinting") : résolution.
+  const [fileCheck, setFileCheck] = useState<{ level: "ok" | "warn" | "info"; msg: string } | null>(null);
+  useEffect(() => {
+    if (!frontFile) { setFileCheck(null); return; }
+    if (isPdfUrl(frontFile.url)) {
+      setFileCheck({ level: "info", msg: "Fichier PDF reçu — conformité (polices, couleurs, fond perdu) contrôlée avant production." });
+      return;
+    }
+    let cancelled = false;
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (cancelled) return;
+      const targetWmm = Math.max(spec.widthMm, spec.heightMm) + 2 * spec.bleedMm;
+      const dpi = Math.round(Math.max(img.naturalWidth, img.naturalHeight) / (targetWmm / 25.4));
+      if (dpi >= 250) setFileCheck({ level: "ok", msg: `Résolution excellente (~${dpi} dpi) — prêt pour l'impression.` });
+      else if (dpi >= 150) setFileCheck({ level: "warn", msg: `Résolution correcte (~${dpi} dpi) — un fichier ≥ 300 dpi sera plus net.` });
+      else setFileCheck({ level: "warn", msg: `Basse résolution (~${dpi} dpi) — risque de flou. Privilégiez un fichier ≥ 300 dpi.` });
+    };
+    img.onerror = () => { if (!cancelled) setFileCheck({ level: "info", msg: "Visuel reçu." }); };
+    img.src = frontFile.url;
+    return () => { cancelled = true; };
+  }, [frontFile, spec.widthMm, spec.heightMm, spec.bleedMm]);
+
+  // Gabarit téléchargeable (PNG avec repères fond perdu / coupe / sécurité).
+  const downloadGabarit = useCallback(() => {
+    const sMm = Math.min(spec.widthMm, spec.heightMm);
+    const lMm = Math.max(spec.widthMm, spec.heightMm);
+    const wMm = folded ? sMm * folded.openMultiplier : (orientation === "landscape" ? lMm : sMm);
+    const hMm = folded ? lMm : (orientation === "landscape" ? sMm : lMm);
+    const b = spec.bleedMm;
+    const PX = 4; // px par mm (~100 dpi, suffisant comme gabarit)
+    const totW = (wMm + 2 * b) * PX, totH = (hMm + 2 * b) * PX;
+    const c = document.createElement("canvas");
+    c.width = totW; c.height = totH;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, totW, totH);
+    const rect = (x: number, y: number, w: number, h: number, color: string, dash: number[]) => {
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash(dash);
+      ctx.strokeRect(x, y, w, h);
+    };
+    rect(0.75, 0.75, totW - 1.5, totH - 1.5, "#ef4444", [6, 4]);                 // fond perdu (bord)
+    rect(b * PX, b * PX, wMm * PX, hMm * PX, "#111827", []);                      // format fini (coupe)
+    rect(2 * b * PX, 2 * b * PX, (wMm - 2 * b) * PX, (hMm - 2 * b) * PX, "#22c55e", [6, 4]); // sécurité
+    ctx.setLineDash([]); ctx.fillStyle = "#6b7280"; ctx.font = `${10 * (PX / 4)}px sans-serif`;
+    ctx.fillText(`Fond perdu (+${b} mm)`, 6, 14);
+    ctx.fillText(`Format fini : ${wMm} × ${hMm} mm`, b * PX + 6, b * PX + 16);
+    c.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `gabarit-${product.id}.png`;
+      a.click(); URL.revokeObjectURL(url);
+    });
+  }, [folded, orientation, spec.widthMm, spec.heightMm, spec.bleedMm, product.id]);
 
   // Atelier d'édition en ligne : activé sur les petits formats (flyers,
   // invitations ≤ 320 mm). Les grands formats (affiches, toiles) restent en
@@ -388,6 +445,38 @@ export default function PrintConfigurator({
           </div>
         )}
 
+        {/* Vérification du fichier (preflight) */}
+        {fileCheck && (
+          <div className={`flex items-start gap-2 rounded-xl border px-4 py-3 text-[12px] font-semibold ${
+            fileCheck.level === "ok" ? "border-green-200 bg-green-50 text-green-700"
+              : fileCheck.level === "warn" ? "border-amber-200 bg-amber-50 text-amber-700"
+              : "border-[var(--hm-line)] bg-[var(--hm-surface)] text-[var(--hm-text-soft)]"
+          }`}>
+            {fileCheck.level === "ok" ? <CheckCircle2 size={15} className="mt-px shrink-0" /> : <AlertTriangle size={15} className="mt-px shrink-0" />}
+            <span>{fileCheck.msg}</span>
+          </div>
+        )}
+
+        {/* Gabarit + aide (style Pixartprinting) */}
+        <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Vous créez dans votre logiciel ?</p>
+              <p className="mt-1 text-[12px] leading-relaxed text-[var(--hm-text-muted)]">
+                Téléchargez le gabarit avec les repères (fond perdu, coupe, zone de sécurité).
+              </p>
+            </div>
+            <button type="button" onClick={downloadGabarit} className="btn-outline shrink-0 gap-2 text-xs">
+              <Download size={14} /> Télécharger le gabarit
+            </button>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-[var(--hm-line)] pt-3 text-[11px] text-[var(--hm-text-muted)]">
+            <Help term="Fond perdu" def={`Marge de ${spec.bleedMm} mm autour qui sera coupée. Étendez-y votre fond pour éviter les bords blancs.`} />
+            <Help term="Zone de sécurité" def="Gardez textes et logos à l'intérieur pour qu'ils ne soient pas rognés à la coupe." />
+            <Help term="Résolution" def="Visez 300 dpi à la taille réelle pour un rendu net (évitez les images web)." />
+          </div>
+        </div>
+
         {/* Nom du projet (façon "Item name" Pixartprinting) */}
         <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
           <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
@@ -638,5 +727,18 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-[var(--hm-text-muted)]">{label}</span>
       <span className="text-right font-semibold text-[var(--hm-text)]">{value}</span>
     </div>
+  );
+}
+
+/** Terme avec infobulle d'aide (survol/tap) — explique fond perdu, sécurité, etc. */
+function Help({ term, def }: { term: string; def: string }) {
+  return (
+    <span className="group relative inline-flex cursor-help items-center gap-1 font-semibold text-[var(--hm-text-soft)]">
+      <HelpCircle size={12} className="text-[var(--hm-text-muted)]" />
+      {term}
+      <span className="pointer-events-none absolute bottom-full left-0 z-20 mb-1.5 w-56 rounded-lg bg-[var(--hm-text)] px-3 py-2 text-[11px] font-medium leading-snug text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+        {def}
+      </span>
+    </span>
   );
 }
