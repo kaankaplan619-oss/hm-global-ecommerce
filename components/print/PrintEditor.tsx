@@ -136,16 +136,22 @@ export default function PrintEditor({
   const fileRef  = useRef<HTMLInputElement>(null);
 
   const ratio = widthMm / heightMm;
-  // Largeur du plan de travail responsive : 520 px max, sinon s'adapte à
-  // l'écran (mobile) en gardant des marges.
-  const [vw, setVw] = useState(520);
+  // Plan de travail responsive borné À LA FOIS par la largeur ET la hauteur
+  // d'écran dispo. Sans la borne hauteur, un format portrait (flyer/affiche A4)
+  // devient trop haut et déborde du modal (toolbar + bouton Valider coupés).
+  const [vp, setVp] = useState({ w: 520, h: 680 });
   useEffect(() => {
-    const f = () => setVw(Math.min(520, Math.max(260, (window.innerWidth || 520) - 48)));
+    const f = () => setVp({
+      w: Math.max(260, Math.min(520, (window.innerWidth || 520) - 48)),
+      // ~220 px réservés : barre d'outils + pied (Valider) + marges du modal.
+      h: Math.max(260, (window.innerHeight || 800) - 220),
+    });
     f();
     window.addEventListener("resize", f);
     return () => window.removeEventListener("resize", f);
   }, []);
-  const STAGE_W = vw;
+  // Largeur qui garantit que la hauteur tienne aussi : min(largeur, hauteur×ratio).
+  const STAGE_W = Math.round(Math.min(vp.w, vp.h * ratio));
   const STAGE_H = Math.round(STAGE_W / ratio);
   const bleedFrac = bleedMm / widthMm;
 
