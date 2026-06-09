@@ -131,6 +131,7 @@ export default function PrintEditor({
   const [view3D, setView3D] = useState(false);
   const [png3D, setPng3D] = useState<{ front: string; back: string | null } | null>(null);
   const [angle, setAngle] = useState(0);
+  const [flat3D, setFlat3D] = useState(false); // déplié à plat ↔ plié (produits pliés)
   const [dragging3D, setDragging3D] = useState(false);
   const drag3DRef = useRef<{ x: number; a: number } | null>(null);
 
@@ -748,46 +749,71 @@ export default function PrintEditor({
         {view3D && png3D && (
           <div className="absolute inset-0 z-10 flex flex-col bg-[#1a1622]/95 sm:rounded-2xl">
             <div className="flex items-center justify-between px-5 py-3">
-              <p className="text-sm font-bold text-white">Aperçu 3D — {showingFront ? "Recto" : "Verso"}</p>
+              <p className="text-sm font-bold text-white">
+                Aperçu 3D{foldAxis ? "" : ` — ${showingFront ? faceLabels.front : faceLabels.back}`}
+              </p>
               <button type="button" onClick={() => setView3D(false)} className="rounded-full p-1.5 text-white/70 hover:bg-white/10"><X size={18} /></button>
             </div>
 
             <div
               className="flex flex-1 select-none items-center justify-center overflow-hidden"
-              style={{ perspective: "1400px", cursor: dragging3D ? "grabbing" : "grab" }}
+              style={{ perspective: "1600px", cursor: dragging3D ? "grabbing" : "grab" }}
               onPointerDown={on3DDown}
               onPointerMove={on3DMove}
               onPointerUp={on3DUp}
               onPointerLeave={on3DUp}
             >
-              <div
-                style={{
-                  width: CARD3D_W,
-                  height: CARD3D_H,
-                  transformStyle: "preserve-3d",
-                  transform: `rotateY(${angle}deg)`,
-                  transition: dragging3D ? "none" : "transform 0.8s cubic-bezier(0.4,0,0.2,1)",
-                }}
-              >
-                <div className="absolute inset-0 overflow-hidden rounded-xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style={{ backfaceVisibility: "hidden" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={png3D.front} alt="Recto" className="h-full w-full object-cover" draggable={false} />
+              {foldAxis ? (
+                <Folded3D
+                  ext={png3D.front}
+                  int={png3D.back}
+                  axis={foldAxis}
+                  w={CARD3D_W}
+                  h={CARD3D_H}
+                  angle={angle}
+                  openDeg={flat3D ? 0 : 32}
+                  dragging={dragging3D}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: CARD3D_W,
+                    height: CARD3D_H,
+                    transformStyle: "preserve-3d",
+                    transform: `rotateY(${angle}deg)`,
+                    transition: dragging3D ? "none" : "transform 0.8s cubic-bezier(0.4,0,0.2,1)",
+                  }}
+                >
+                  <div className="absolute inset-0 overflow-hidden rounded-xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style={{ backfaceVisibility: "hidden" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={png3D.front} alt={faceLabels.front} className="h-full w-full object-cover" draggable={false} />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+                    {png3D.back ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={png3D.back} alt={faceLabels.back} className="h-full w-full object-cover" draggable={false} />
+                    ) : (
+                      <span className="text-[11px] font-semibold text-[var(--hm-text-muted)]">{faceLabels.back} vierge</span>
+                    )}
+                  </div>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
-                  {png3D.back ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={png3D.back} alt="Verso" className="h-full w-full object-cover" draggable={false} />
-                  ) : (
-                    <span className="text-[11px] font-semibold text-[var(--hm-text-muted)]">Verso vierge</span>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="flex items-center justify-center gap-2 px-5 py-4">
-              <button type="button" onClick={() => setAngle(0)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">Recto</button>
-              {hasVerso && (
-                <button type="button" onClick={() => setAngle(180)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">Verso</button>
+              {foldAxis ? (
+                <>
+                  <button type="button" onClick={() => setFlat3D((v) => !v)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">{flat3D ? "Plier" : "Déplier à plat"}</button>
+                  <button type="button" onClick={() => setAngle(0)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">{faceLabels.front}</button>
+                  <button type="button" onClick={() => setAngle(180)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">{faceLabels.back}</button>
+                </>
+              ) : (
+                <>
+                  <button type="button" onClick={() => setAngle(0)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">{faceLabels.front}</button>
+                  {hasVerso && (
+                    <button type="button" onClick={() => setAngle(180)} className="rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">{faceLabels.back}</button>
+                  )}
+                </>
               )}
               <button type="button" onClick={() => setAngle((a) => a + 360)} className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/20">
                 <RotateCw size={13} /> Tour complet
@@ -797,6 +823,58 @@ export default function PrintEditor({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Aperçu 3D plié (dépliant / carte pliée) ────────────────────────────────
+// Deux volets articulés à la pliure : face intérieure (avant) + extérieure
+// (arrière). On tourne l'objet et on peut le déplier à plat.
+function Folded3D({
+  ext, int, axis, w, h, angle, openDeg, dragging,
+}: {
+  ext: string; int: string | null; axis: "vertical" | "horizontal";
+  w: number; h: number; angle: number; openDeg: number; dragging: boolean;
+}) {
+  const vertical = axis === "vertical";
+  const pw = vertical ? Math.round(w / 2) : w;
+  const ph = vertical ? h : Math.round(h / 2);
+  const trans = dragging ? "none" : "transform 0.6s cubic-bezier(0.4,0,0.2,1)";
+
+  // Une moitié du visuel complet (w×h) affichée dans une fenêtre pw×ph.
+  const Half = ({ src, ox, oy, rotate }: { src: string | null; ox: number; oy: number; rotate?: string }) => (
+    <div className="absolute inset-0 overflow-hidden bg-white" style={{ backfaceVisibility: "hidden", transform: rotate }}>
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt="" draggable={false} style={{ position: "absolute", width: w, height: h, left: -ox, top: -oy, maxWidth: "none" }} />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-[10px] text-[var(--hm-text-muted)]">vierge</div>
+      )}
+    </div>
+  );
+
+  const Panel = ({ x, y, origin, rot, intOx, intOy, extOx, extOy }: {
+    x: number; y: number; origin: string; rot: string; intOx: number; intOy: number; extOx: number; extOy: number;
+  }) => (
+    <div style={{ position: "absolute", left: x, top: y, width: pw, height: ph, transformStyle: "preserve-3d", transformOrigin: origin, transform: rot, transition: trans }}>
+      <Half src={int} ox={intOx} oy={intOy} />
+      <Half src={ext} ox={extOx} oy={extOy} rotate={vertical ? "rotateY(180deg)" : "rotateX(180deg)"} />
+    </div>
+  );
+
+  return (
+    <div className="drop-shadow-[0_24px_50px_rgba(0,0,0,0.5)]" style={{ width: w, height: h, transformStyle: "preserve-3d", transform: `rotateY(${angle}deg)`, transition: trans }}>
+      {vertical ? (
+        <>
+          <Panel x={0}  y={0} origin="100% 50%" rot={`rotateY(${openDeg}deg)`}  intOx={0}  intOy={0} extOx={pw} extOy={0} />
+          <Panel x={pw} y={0} origin="0% 50%"   rot={`rotateY(${-openDeg}deg)`} intOx={pw} intOy={0} extOx={0}  extOy={0} />
+        </>
+      ) : (
+        <>
+          <Panel x={0} y={0}  origin="50% 100%" rot={`rotateX(${-openDeg}deg)`} intOx={0} intOy={0}  extOx={0} extOy={ph} />
+          <Panel x={0} y={ph} origin="50% 0%"   rot={`rotateX(${openDeg}deg)`}  intOx={0} intOy={ph} extOx={0} extOy={0} />
+        </>
+      )}
     </div>
   );
 }
