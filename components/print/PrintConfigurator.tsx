@@ -52,15 +52,22 @@ export default function PrintConfigurator({
 }) {
   const router = useRouter();
 
+  // Carte pliée : produit "double volet". Le visuel se conçoit sur la PLANCHE
+  // DÉPLIÉE (extérieur + intérieur), avec une ligne de pli au centre — comme
+  // chez les concurrents. Toujours recto-verso (ext/int), pas d'orientation.
+  const FOLDED = product.id === "card-folded";
+
   // Orientation initiale : paysage si format large, portrait sinon.
   const initialOrientation: PrintOrientation =
     spec.widthMm >= spec.heightMm ? "landscape" : "portrait";
 
   // Faces réellement commandables (ex. flyer A4 = recto-verso uniquement).
   const directFaces = getPrintFacesAvailable(product.id);
-  const availableFaces: PrintFace[] = directFaces.length
-    ? directFaces
-    : (spec.faces ? ["recto", "recto-verso"] : ["recto"]);
+  const availableFaces: PrintFace[] = FOLDED
+    ? ["recto-verso"]
+    : directFaces.length
+      ? directFaces
+      : (spec.faces ? ["recto", "recto-verso"] : ["recto"]);
 
   const [orientation, setOrientation] = useState<PrintOrientation>(initialOrientation);
   const [faces, setFaces] = useState<PrintFace>(
@@ -95,9 +102,12 @@ export default function PrintConfigurator({
   const [batApproved, setBatApproved] = useState(false);
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
 
-  // Dimensions éditeur selon l'orientation choisie.
-  const editorW = orientation === "landscape" ? Math.max(spec.widthMm, spec.heightMm) : Math.min(spec.widthMm, spec.heightMm);
-  const editorH = orientation === "landscape" ? Math.min(spec.widthMm, spec.heightMm) : Math.max(spec.widthMm, spec.heightMm);
+  // Dimensions éditeur. Carte pliée = PLANCHE DÉPLIÉE (2× la largeur fermée,
+  // pli vertical au centre). Sinon, selon l'orientation choisie.
+  const shortMm = Math.min(spec.widthMm, spec.heightMm);
+  const longMm  = Math.max(spec.widthMm, spec.heightMm);
+  const editorW = FOLDED ? shortMm * 2 : (orientation === "landscape" ? longMm : shortMm);
+  const editorH = FOLDED ? longMm     : (orientation === "landscape" ? shortMm : longMm);
 
   // Changer de faces : garder une quantité valide pour la nouvelle grille.
   const pickFaces = (next: PrintFace) => {
@@ -255,10 +265,10 @@ export default function PrintConfigurator({
           <div className="rounded-2xl border border-[var(--hm-line)] bg-white/95 p-3 backdrop-blur">
             <div className="flex items-center justify-center rounded-xl bg-[var(--hm-surface)] p-3">
               <PrintSupportVisualizer
-                widthMm={spec.widthMm}
-                heightMm={spec.heightMm}
+                widthMm={FOLDED ? editorW : spec.widthMm}
+                heightMm={FOLDED ? editorH : spec.heightMm}
                 sizeLabel={product.sizeLabel}
-                orientation={orientation}
+                orientation={FOLDED ? "landscape" : orientation}
                 frontFileUrl={frontFile?.url ?? null}
                 backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
                 showToggle={spec.faces && faces === "recto-verso"}
@@ -271,7 +281,7 @@ export default function PrintConfigurator({
         </div>
 
         {/* Orientation */}
-        {spec.orientationToggle && (
+        {spec.orientationToggle && !FOLDED && (
           <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
             <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Orientation</p>
             <div className="flex flex-wrap gap-3">
@@ -489,10 +499,10 @@ export default function PrintConfigurator({
             <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Aperçu en direct</p>
             <div className="flex justify-center rounded-xl bg-[var(--hm-surface)] p-4">
               <PrintSupportVisualizer
-                widthMm={spec.widthMm}
-                heightMm={spec.heightMm}
+                widthMm={FOLDED ? editorW : spec.widthMm}
+                heightMm={FOLDED ? editorH : spec.heightMm}
                 sizeLabel={product.sizeLabel}
-                orientation={orientation}
+                orientation={FOLDED ? "landscape" : orientation}
                 frontFileUrl={frontFile?.url ?? null}
                 backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
                 showToggle={spec.faces && faces === "recto-verso"}
@@ -512,8 +522,10 @@ export default function PrintConfigurator({
             <div className="flex flex-col gap-2">
               <Row label="Support" value={product.name} />
               <Row label="Format"  value={product.sizeLabel} />
-              {spec.orientationToggle && <Row label="Orientation" value={PRINT_ORIENTATION_LABELS[orientation]} />}
-              {spec.faces && <Row label="Impression" value={faces === "recto-verso" ? "Recto-verso" : "Recto seul"} />}
+              {spec.orientationToggle && !FOLDED && <Row label="Orientation" value={PRINT_ORIENTATION_LABELS[orientation]} />}
+              {FOLDED
+                ? <Row label="Impression" value="Extérieur + intérieur" />
+                : spec.faces && <Row label="Impression" value={faces === "recto-verso" ? "Recto-verso" : "Recto seul"} />}
             </div>
           </div>
 
@@ -530,7 +542,9 @@ export default function PrintConfigurator({
           widthMm={editorW}
           heightMm={editorH}
           bleedMm={spec.bleedMm}
-          faces={spec.faces ? faces : "recto"}
+          faces={FOLDED ? "recto-verso" : (spec.faces ? faces : "recto")}
+          faceLabels={FOLDED ? { front: "Extérieur", back: "Intérieur" } : { front: "Recto", back: "Verso" }}
+          foldAxis={FOLDED ? "vertical" : null}
           onValidate={handleEditorValidate}
           onClose={() => setEditorOpen(false)}
         />
