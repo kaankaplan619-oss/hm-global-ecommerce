@@ -52,10 +52,16 @@ export default function PrintConfigurator({
 }) {
   const router = useRouter();
 
-  // Carte pliée : produit "double volet". Le visuel se conçoit sur la PLANCHE
-  // DÉPLIÉE (extérieur + intérieur), avec une ligne de pli au centre — comme
-  // chez les concurrents. Toujours recto-verso (ext/int), pas d'orientation.
-  const FOLDED = product.id === "card-folded";
+  // Produits pliés / dépliants : se conçoivent avec EXTÉRIEUR + INTÉRIEUR et une
+  // ligne de pli, comme chez les concurrents (toujours recto-verso, pas d'orientation).
+  //   - carte pliée  : fermée A6 → s'ouvre en planche (×2 largeur), pli vertical
+  //   - dépliant A4  : feuille A4 à plat, pliée en deux → A5, pli horizontal
+  const FOLDED_CONFIG: Record<string, { axis: "vertical" | "horizontal"; openMultiplier: 1 | 2 }> = {
+    "card-folded": { axis: "vertical",   openMultiplier: 2 },
+    "flyer-a4":    { axis: "horizontal", openMultiplier: 1 },
+  };
+  const folded = FOLDED_CONFIG[product.id] ?? null;
+  const FOLDED = folded !== null;
 
   // Orientation initiale : paysage si format large, portrait sinon.
   const initialOrientation: PrintOrientation =
@@ -102,12 +108,13 @@ export default function PrintConfigurator({
   const [batApproved, setBatApproved] = useState(false);
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
 
-  // Dimensions éditeur. Carte pliée = PLANCHE DÉPLIÉE (2× la largeur fermée,
-  // pli vertical au centre). Sinon, selon l'orientation choisie.
+  // Dimensions éditeur. Plié/dépliant = planche (×openMultiplier de la largeur).
+  // Sinon, selon l'orientation choisie.
   const shortMm = Math.min(spec.widthMm, spec.heightMm);
   const longMm  = Math.max(spec.widthMm, spec.heightMm);
-  const editorW = FOLDED ? shortMm * 2 : (orientation === "landscape" ? longMm : shortMm);
-  const editorH = FOLDED ? longMm     : (orientation === "landscape" ? shortMm : longMm);
+  const editorW = folded ? shortMm * folded.openMultiplier : (orientation === "landscape" ? longMm : shortMm);
+  const editorH = folded ? longMm : (orientation === "landscape" ? shortMm : longMm);
+  const editorOrientation: PrintOrientation = editorW >= editorH ? "landscape" : "portrait";
 
   // Changer de faces : garder une quantité valide pour la nouvelle grille.
   const pickFaces = (next: PrintFace) => {
@@ -268,7 +275,7 @@ export default function PrintConfigurator({
                 widthMm={FOLDED ? editorW : spec.widthMm}
                 heightMm={FOLDED ? editorH : spec.heightMm}
                 sizeLabel={product.sizeLabel}
-                orientation={FOLDED ? "landscape" : orientation}
+                orientation={FOLDED ? editorOrientation : orientation}
                 frontFileUrl={frontFile?.url ?? null}
                 backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
                 showToggle={spec.faces && faces === "recto-verso"}
@@ -502,7 +509,7 @@ export default function PrintConfigurator({
                 widthMm={FOLDED ? editorW : spec.widthMm}
                 heightMm={FOLDED ? editorH : spec.heightMm}
                 sizeLabel={product.sizeLabel}
-                orientation={FOLDED ? "landscape" : orientation}
+                orientation={FOLDED ? editorOrientation : orientation}
                 frontFileUrl={frontFile?.url ?? null}
                 backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
                 showToggle={spec.faces && faces === "recto-verso"}
@@ -544,7 +551,7 @@ export default function PrintConfigurator({
           bleedMm={spec.bleedMm}
           faces={FOLDED ? "recto-verso" : (spec.faces ? faces : "recto")}
           faceLabels={FOLDED ? { front: "Extérieur", back: "Intérieur" } : { front: "Recto", back: "Verso" }}
-          foldAxis={FOLDED ? "vertical" : null}
+          foldAxis={folded?.axis ?? null}
           onValidate={handleEditorValidate}
           onClose={() => setEditorOpen(false)}
         />
