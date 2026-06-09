@@ -127,7 +127,7 @@ export const DIRECT_PRINT_PRICING: Record<string, DirectPrintPricing> = {
     unitPriceTTC: 76.90,           // coût 34,79 € × 2,2
     quantities: [1, 2, 3],
   },
-  // ── Invitations A6 (paliers Gelato non linéaires) ──
+  // ── Invitations (paliers Gelato non linéaires · coûts relevés 2026-06-09) ──
   "card-a6": {
     gelatoUid: "cards_pf_a6_pt_350-gsm-coated-silk_cl_4-4_ver",
     quantities: [50, 100, 250],
@@ -135,6 +135,24 @@ export const DIRECT_PRINT_PRICING: Record<string, DirectPrintPricing> = {
       { quantity: 50,  priceTTC: 23.90 },   // coût 10,80 € × 2,2
       { quantity: 100, priceTTC: 42.90 },   // coût 19,44 € × 2,2
       { quantity: 250, priceTTC: 106.90 },  // coût 48,60 € × 2,2
+    ],
+  },
+  "card-square": {
+    gelatoUid: "cards_pf_sq_pt_350-gsm-coated-silk_cl_4-4_hor",
+    quantities: [50, 100, 250],
+    tiers: [
+      { quantity: 50,  priceTTC: 35.90 },   // coût 16,19 € × 2,2
+      { quantity: 100, priceTTC: 64.90 },   // coût 29,17 € × 2,2
+      { quantity: 250, priceTTC: 160.90 },  // coût 72,89 € × 2,2
+    ],
+  },
+  "card-folded": {
+    gelatoUid: "creased-cards_pf_a6_pt_300-gsm-coated-silk_cl_4-4_ft_crease-hor_hor",
+    quantities: [50, 100, 250],
+    tiers: [
+      { quantity: 50,  priceTTC: 24.90 },   // coût 10,91 € × 2,2
+      { quantity: 100, priceTTC: 42.90 },   // coût 19,26 € × 2,2
+      { quantity: 250, priceTTC: 97.90 },   // coût 44,30 € × 2,2
     ],
   },
 };
