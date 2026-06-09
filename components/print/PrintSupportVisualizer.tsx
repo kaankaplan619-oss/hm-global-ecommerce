@@ -97,9 +97,6 @@ export default function PrintSupportVisualizer({
           className="absolute inset-0 rounded-sm"
           style={{ border: "1.5px dashed rgba(239,68,68,0.7)", pointerEvents: "none" }}
         />
-        <span className="absolute text-[8px] font-semibold text-red-400 leading-none" style={{ top: 2, left: bleedPx }}>
-          Fond perdu
-        </span>
 
         {/* Format fini */}
         <div
@@ -129,21 +126,19 @@ export default function PrintSupportVisualizer({
             style={{ top: safePx, left: safePx, right: safePx, bottom: safePx, border: "1px dashed rgba(34,197,94,0.6)" }}
           />
         </div>
-
-        {/* Légende format fini */}
-        <span className="absolute text-[8px] font-semibold text-[var(--hm-text-muted)] leading-none" style={{ bottom: bleedPx - 12, left: bleedPx }}>
-          {sizeLabel}
-        </span>
-        <span className="absolute text-[8px] text-green-500 font-semibold leading-none" style={{ bottom: bleedPx + safePx + 2, right: bleedPx + safePx }}>
-          Zone sécurité
-        </span>
       </div>
+
+      {/* Dimension du format fini — affichée proprement sous l'aperçu */}
+      <p className="text-[13px] font-bold text-[var(--hm-text)]">
+        {sizeLabel}
+        <span className="ml-1.5 font-medium text-[var(--hm-text-muted)]">· format fini</span>
+      </p>
 
       {/* Légende zones */}
       <div className="flex flex-wrap items-center justify-center gap-3 text-[9px] font-semibold text-[var(--hm-text-muted)]">
-        <span className="flex items-center gap-1"><span className="inline-block h-2 w-4 border border-dashed border-red-400" /> Fond perdu</span>
+        <span className="flex items-center gap-1"><span className="inline-block h-2 w-4 border border-dashed border-red-400" /> Fond perdu (+{bleedMm} mm)</span>
         <span className="flex items-center gap-1"><span className="inline-block h-2 w-4 border border-[var(--hm-text-muted)]" /> Format fini</span>
-        <span className="flex items-center gap-1"><span className="inline-block h-2 w-4 border border-dashed border-green-400" /> Sécurité</span>
+        <span className="flex items-center gap-1"><span className="inline-block h-2 w-4 border border-dashed border-green-400" /> Zone sécurité</span>
       </div>
 
       {/* Toggle recto/verso */}

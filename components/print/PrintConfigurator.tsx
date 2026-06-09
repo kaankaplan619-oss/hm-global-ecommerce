@@ -316,53 +316,47 @@ export default function PrintConfigurator({
           </div>
         )}
 
-        {/* ── Atelier de création en ligne (petits formats) ─────────────── */}
-        {atelierEnabled && (
+        {/* ── Atelier : seule entrée pour les petits formats (comme les cartes) ─
+           On importe un PDF/JPG OU on compose en ligne. La page 2 d'un PDF
+           devient automatiquement le verso (géré par PrintEditor). */}
+        {atelierEnabled ? (
           <div className="rounded-2xl border border-[var(--hm-primary)]/25 bg-[var(--hm-accent-soft-rose)] p-5">
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-primary)]">Créez votre visuel en ligne</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-primary)]">Votre visuel</p>
             <p className="mb-3 mt-1 text-[12px] leading-relaxed text-[var(--hm-text-soft)]">
-              Textes, formes, images, QR code… composez votre {product.name.toLowerCase()} directement dans le navigateur.
+              Importez votre fichier <strong>PDF ou JPG</strong> (la page 2 d&apos;un PDF devient le verso),
+              ou composez votre {product.name.toLowerCase()} : textes, formes, images, QR code.
             </p>
             <button
               type="button"
               onClick={() => setEditorOpen(true)}
               className="btn-primary w-full gap-2"
             >
-              <Sparkles size={15} /> Ouvrir l&apos;atelier de création
+              <Sparkles size={15} /> {frontFile ? "Modifier mon visuel" : "Ouvrir l'atelier de création"}
             </button>
+            {frontFile && (
+              <p className="mt-2 flex items-center justify-center gap-1.5 text-[12px] font-semibold text-green-600">
+                <CheckCircle2 size={14} /> Visuel prêt{faces === "recto-verso" ? " (recto-verso)" : ""}
+              </p>
+            )}
+          </div>
+        ) : (
+          /* Grands formats (affiches, toiles) : pas d'atelier → upload du fichier prêt. */
+          <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Votre fichier</p>
+            <p className="mb-4 mt-1 text-[12px] leading-relaxed text-[var(--hm-text-muted)]">
+              Déposez votre visuel prêt à imprimer (PDF, PNG ou JPG haute résolution).
+            </p>
+
+            <FileDrop
+              label="Votre visuel"
+              required
+              file={frontFile}
+              uploading={uploading === "front"}
+              onPick={onPick("front")}
+              onClear={() => setFrontFile(null)}
+            />
           </div>
         )}
-
-        {/* ── J'ai déjà mon fichier prêt ────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
-            {atelierEnabled ? "Ou j'ai déjà mon fichier prêt" : "Gérez votre fichier"}
-          </p>
-          <p className="mb-4 mt-1 text-[12px] leading-relaxed text-[var(--hm-text-muted)]">
-            Déposez votre visuel prêt à imprimer (PDF, PNG ou JPG haute résolution).
-          </p>
-
-          <FileDrop
-            label={spec.faces ? "Visuel recto" : "Votre visuel"}
-            required
-            file={frontFile}
-            uploading={uploading === "front"}
-            onPick={onPick("front")}
-            onClear={() => setFrontFile(null)}
-          />
-
-          {spec.faces && faces === "recto-verso" && (
-            <div className="mt-3">
-              <FileDrop
-                label="Visuel verso"
-                file={backFile}
-                uploading={uploading === "back"}
-                onPick={onPick("back")}
-                onClear={() => setBackFile(null)}
-              />
-            </div>
-          )}
-        </div>
 
         {/* Nom du projet (façon "Item name" Pixartprinting) */}
         <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
