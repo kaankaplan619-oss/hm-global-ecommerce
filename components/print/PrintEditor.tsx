@@ -852,10 +852,11 @@ export default function PrintEditor({
                   ext={png3D.front}
                   int={png3D.back}
                   axis={foldAxis}
+                  panels={Math.max(2, foldCount + 1)}
                   w={CARD3D_W}
                   h={CARD3D_H}
                   angle={angle}
-                  openDeg={flat3D ? 0 : 32}
+                  openDeg={flat3D ? 0 : 30}
                   dragging={dragging3D}
                 />
               ) : (
@@ -912,49 +913,61 @@ export default function PrintEditor({
 }
 
 // ─── Aperçu 3D plié (dépliant / carte pliée) ────────────────────────────────
-// Deux volets articulés à la pliure : face intérieure (avant) + extérieure
-// (arrière). On tourne l'objet et on peut le déplier à plat.
+// N volets articulés en accordéon. Chaque volet montre sa tranche du visuel
+// (face avant = recto/extérieur, face arrière = verso/intérieur). On tourne
+// l'objet et on peut le déplier à plat (openDeg = 0).
 function Folded3D({
-  ext, int, axis, w, h, angle, openDeg, dragging,
+  ext, int, axis, panels, w, h, angle, openDeg, dragging,
 }: {
-  ext: string; int: string | null; axis: "vertical" | "horizontal";
+  ext: string; int: string | null; axis: "vertical" | "horizontal"; panels: number;
   w: number; h: number; angle: number; openDeg: number; dragging: boolean;
 }) {
   const vertical = axis === "vertical";
-  const pw = vertical ? Math.round(w / 2) : w;
-  const ph = vertical ? h : Math.round(h / 2);
-  const trans = dragging ? "none" : "transform 0.6s cubic-bezier(0.4,0,0.2,1)";
+  const n = Math.max(2, panels);
+  const pw = vertical ? Math.round(w / n) : w;
+  const ph = vertical ? h : Math.round(h / n);
+  const trans = dragging ? "none" : "transform 0.55s cubic-bezier(0.4,0,0.2,1)";
 
-  // Une moitié du visuel complet (w×h) affichée dans une fenêtre pw×ph.
-  const half = (src: string | null, ox: number, oy: number, rotate?: string) => (
-    <div className="absolute inset-0 overflow-hidden bg-white" style={{ backfaceVisibility: "hidden", transform: rotate }}>
+  // Tranche `i` du visuel complet (w×h) affichée dans une fenêtre pw×ph.
+  const slice = (src: string | null, i: number, rotate?: string) => (
+    <div className="absolute inset-0 overflow-hidden" style={{ backfaceVisibility: "hidden", transform: rotate, background: "#fff", boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.06)" }}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" draggable={false} style={{ position: "absolute", width: w, height: h, left: -ox, top: -oy, maxWidth: "none" }} />
+        <img src={src} alt="" draggable={false} style={{ position: "absolute", width: vertical ? w : pw, height: vertical ? ph : h, left: vertical ? -i * pw : 0, top: vertical ? 0 : -i * ph, maxWidth: "none" }} />
       ) : (
         <div className="flex h-full w-full items-center justify-center text-[10px] text-[var(--hm-text-muted)]">vierge</div>
       )}
     </div>
   );
 
-  const panel = (key: string, x: number, y: number, origin: string, rot: string, intOx: number, intOy: number, extOx: number, extOy: number) => (
-    <div key={key} style={{ position: "absolute", left: x, top: y, width: pw, height: ph, transformStyle: "preserve-3d", transformOrigin: origin, transform: rot, transition: trans }}>
-      {half(int, intOx, intOy)}
-      {half(ext, extOx, extOy, vertical ? "rotateY(180deg)" : "rotateX(180deg)")}
-    </div>
-  );
+  // Chaîne récursive : chaque volet est ancré sur le bord du précédent et
+  // pivote en sens alterné (accordéon).
+  const chain = (i: number): React.ReactNode => {
+    const first = i === 0;
+    const sign = i % 2 === 0 ? 1 : -1;
+    const rot = first ? undefined
+      : vertical ? `rotateY(${sign * openDeg}deg)` : `rotateX(${-sign * openDeg}deg)`;
+    return (
+      <div
+        style={{
+          position: first ? "relative" : "absolute",
+          ...(vertical ? { left: first ? 0 : "100%", top: 0 } : { top: first ? 0 : "100%", left: 0 }),
+          width: pw, height: ph,
+          transformStyle: "preserve-3d",
+          transformOrigin: vertical ? "left center" : "center top",
+          transform: rot, transition: trans,
+        }}
+      >
+        {slice(int, i)}
+        {slice(ext, i, vertical ? "rotateY(180deg)" : "rotateX(180deg)")}
+        {i + 1 < n && chain(i + 1)}
+      </div>
+    );
+  };
 
   return (
-    <div className="drop-shadow-[0_24px_50px_rgba(0,0,0,0.5)]" style={{ width: w, height: h, transformStyle: "preserve-3d", transform: `rotateY(${angle}deg)`, transition: trans }}>
-      {vertical
-        ? [
-            panel("l", 0,  0, "100% 50%", `rotateY(${openDeg}deg)`,  0,  0, pw, 0),
-            panel("r", pw, 0, "0% 50%",   `rotateY(${-openDeg}deg)`, pw, 0, 0,  0),
-          ]
-        : [
-            panel("t", 0, 0,  "50% 100%", `rotateX(${-openDeg}deg)`, 0, 0,  0, ph),
-            panel("b", 0, ph, "50% 0%",   `rotateX(${openDeg}deg)`,  0, ph, 0, 0),
-          ]}
+    <div className="drop-shadow-[0_24px_55px_rgba(0,0,0,0.55)]" style={{ width: pw, height: ph, transformStyle: "preserve-3d", transform: `rotateY(${angle}deg)`, transition: trans }}>
+      {chain(0)}
     </div>
   );
 }
