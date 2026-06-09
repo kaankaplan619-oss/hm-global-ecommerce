@@ -105,10 +105,25 @@ export const DIRECT_PRINT_PRICING: Record<string, DirectPrintPricing> = {
       },
     },
   },
-  // ── Posters (POD à l'unité, prix linéaire) ──
+  // ── Affiches (POD à l'unité, prix linéaire · coûts relevés 2026-06-09) ──
+  "poster-a3": {
+    gelatoUid: "posters_pf_a3_pt_170-gsm-coated-silk_cl_4-0_hor",
+    unitPriceTTC: 15.90,           // coût 6,90 € × 2,2
+    quantities: [1, 2, 3, 5, 10],
+  },
+  "poster-40x60": {
+    gelatoUid: "large-posters_pf_400x600-mm_pt_170-gsm-coated-silk_cl_4-0_hor",
+    unitPriceTTC: 17.90,           // coût 7,70 € × 2,2
+    quantities: [1, 2, 3, 5, 10],
+  },
   "poster-50x70": {
     gelatoUid: "large-posters_pf_500x700-mm_pt_170-gsm-coated-silk_cl_4-0_ver",
     unitPriceTTC: 18.90,           // coût 8,51 € × 2,2
+    quantities: [1, 2, 3, 5, 10],
+  },
+  "poster-a2": {
+    gelatoUid: "large-posters_pf_a2_pt_170-gsm-coated-silk_cl_4-0_hor",
+    unitPriceTTC: 17.90,           // coût 7,82 € × 2,2
     quantities: [1, 2, 3, 5, 10],
   },
   // ── Toiles canvas (POD à l'unité, prix linéaire) ──
@@ -125,6 +140,11 @@ export const DIRECT_PRINT_PRICING: Record<string, DirectPrintPricing> = {
   "canvas-50x50": {
     gelatoUid: "canvas_s_product_cf_500x500-mm_cm_canvas_cthck_wood-fsc-slim_cl_4-0_hor",
     unitPriceTTC: 76.90,           // coût 34,79 € × 2,2
+    quantities: [1, 2, 3],
+  },
+  "canvas-60x90": {
+    gelatoUid: "canvas_600x900-mm-24x36-inch_canvas_wood-fsc-slim_4-0_hor",
+    unitPriceTTC: 130.90,          // coût 59,19 € × 2,2 (relevé 2026-06-09)
     quantities: [1, 2, 3],
   },
   // ── Invitations (paliers Gelato non linéaires · coûts relevés 2026-06-09) ──

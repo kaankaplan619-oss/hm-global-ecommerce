@@ -38,9 +38,6 @@ export interface PrintFamilyBlock {
   products:    CuratedPrintProduct[];
 }
 
-const devisHref = (id: string, size: string) =>
-  `/contact?sujet=impression&produit=${encodeURIComponent(id)}&format=${encodeURIComponent(size)}`;
-
 const CONFIG_HREF = "/impression/cartes-de-visite";
 
 export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
@@ -119,20 +116,22 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         name: "Affiche A3",
         sizeLabel: "29,7 × 42 cm",
         description:
-          "Le format vitrine et bureau. Papier 200 g/m², impression quadri haute définition, idéal affichage intérieur.",
-        priceLabel: "Sur devis",
-        direct: false,
-        href: devisHref("affiche-a3", "A3 · 29,7 × 42 cm"),
+          "Le format vitrine et bureau. Papier 170 g/m² couché, impression quadri haute définition, idéal affichage intérieur.",
+        priceLabel: "dès 15,90 €",
+        direct: true,
+        badge: "Commande directe",
+        href: "/impression/poster-a3",
       },
       {
         id: "poster-40x60",
         name: "Affiche 40 × 60 cm",
         sizeLabel: "40 × 60 cm",
         description:
-          "Grand format d'accroche pour commerces et événements. 200 g/m² non couché, rendu mat élégant.",
-        priceLabel: "Sur devis",
-        direct: false,
-        href: devisHref("affiche-40x60", "40 × 60 cm"),
+          "Grand format d'accroche pour commerces et événements. Papier 170 g/m² couché, rendu quadri.",
+        priceLabel: "dès 17,90 €",
+        direct: true,
+        badge: "Commande directe",
+        href: "/impression/poster-40x60",
       },
       {
         id: "poster-50x70",
@@ -150,10 +149,11 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         name: "Affiche A2",
         sizeLabel: "42 × 59,4 cm",
         description:
-          "Format premium pour campagnes et expositions. 200 g/m², couleurs profondes et tenue dans le temps.",
-        priceLabel: "Sur devis",
-        direct: false,
-        href: devisHref("affiche-a2", "A2 · 42 × 59,4 cm"),
+          "Format premium pour campagnes et expositions. Papier 170 g/m² couché, couleurs profondes.",
+        priceLabel: "dès 17,90 €",
+        direct: true,
+        badge: "Commande directe",
+        href: "/impression/poster-a2",
       },
     ],
   },
@@ -198,10 +198,11 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         name: "Toile 60 × 90 cm",
         sizeLabel: "60 × 90 cm",
         description:
-          "Grand format statement pour halls et salles de réunion. Toile tendue, cadre bois FSC renforcé.",
-        priceLabel: "Sur devis",
-        direct: false,
-        href: devisHref("toile-60x90", "60 × 90 cm"),
+          "Grand format statement pour halls et salles de réunion. Toile tendue sur cadre bois FSC.",
+        priceLabel: "dès 130,90 €",
+        direct: true,
+        badge: "Commande directe",
+        href: "/impression/canvas-60x90",
       },
     ],
   },

@@ -87,7 +87,8 @@ export default function PrintConfigurator({
   // invitations ≤ 320 mm). Les grands formats (affiches, toiles) restent en
   // upload de fichier prêt. BAT + signature requis pour les commandes directes.
   const atelierEnabled = Math.max(spec.widthMm, spec.heightMm) <= 320 && spec.faces;
-  const batEnabled = direct && atelierEnabled;
+  // BAT + signature requis sur TOUTE commande directe (petits ET grands formats).
+  const batEnabled = direct;
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [batName, setBatName] = useState("");
