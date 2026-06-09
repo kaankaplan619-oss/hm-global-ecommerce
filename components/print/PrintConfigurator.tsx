@@ -53,16 +53,21 @@ export default function PrintConfigurator({
 }) {
   const router = useRouter();
 
-  // Produits pliés / dépliants : se conçoivent avec EXTÉRIEUR + INTÉRIEUR et une
-  // ligne de pli, comme chez les concurrents (toujours recto-verso, pas d'orientation).
-  //   - carte pliée  : fermée A6 → s'ouvre en planche (×2 largeur), pli vertical
-  //   - dépliant A4  : feuille A4 à plat, pliée en deux → A5, pli horizontal
-  const FOLDED_CONFIG: Record<string, { axis: "vertical" | "horizontal"; openMultiplier: 1 | 2 }> = {
-    "card-folded": { axis: "vertical",   openMultiplier: 2 },
-    "flyer-a4":    { axis: "horizontal", openMultiplier: 1 },
+  // Produits pliés / dépliants : se conçoivent dépliés (EXTÉRIEUR + INTÉRIEUR)
+  // avec des lignes de pli VERTICALES, comme chez les concurrents (Pixartprinting).
+  //   - carte pliée : fermée A6 → planche A5 paysage, 1 pli (2 volets)
+  //   - dépliant A4 : planche A4 paysage, 1 pli (2 volets) ou 2 plis (3 volets)
+  // open() renvoie les dimensions de la PLANCHE DÉPLIÉE (mm) depuis (court, long).
+  const FOLD_PRODUCTS: Record<string, {
+    open: (short: number, long: number) => { w: number; h: number };
+    choices: { label: string; panels: number }[];
+  }> = {
+    "card-folded": { open: (s, l) => ({ w: s * 2, h: l }), choices: [{ label: "Carte pliée · 2 volets", panels: 2 }] },
+    "flyer-a4":    { open: (s, l) => ({ w: l, h: s }),     choices: [{ label: "1 pli · 4 faces", panels: 2 }, { label: "2 plis · 6 faces", panels: 3 }] },
   };
-  const folded = FOLDED_CONFIG[product.id] ?? null;
-  const FOLDED = folded !== null;
+  const foldCfg = FOLD_PRODUCTS[product.id] ?? null;
+  const FOLDED = foldCfg !== null;
+  const [foldPanels, setFoldPanels] = useState(foldCfg?.choices[0].panels ?? 2);
 
   // Orientation initiale : paysage si format large, portrait sinon.
   const initialOrientation: PrintOrientation =
@@ -137,8 +142,9 @@ export default function PrintConfigurator({
   const downloadGabarit = useCallback(() => {
     const sMm = Math.min(spec.widthMm, spec.heightMm);
     const lMm = Math.max(spec.widthMm, spec.heightMm);
-    const wMm = folded ? sMm * folded.openMultiplier : (orientation === "landscape" ? lMm : sMm);
-    const hMm = folded ? lMm : (orientation === "landscape" ? sMm : lMm);
+    const o = foldCfg ? foldCfg.open(sMm, lMm) : null;
+    const wMm = o ? o.w : (orientation === "landscape" ? lMm : sMm);
+    const hMm = o ? o.h : (orientation === "landscape" ? sMm : lMm);
     const b = spec.bleedMm;
     const PX = 4; // px par mm (~100 dpi, suffisant comme gabarit)
     const totW = (wMm + 2 * b) * PX, totH = (hMm + 2 * b) * PX;
@@ -164,7 +170,7 @@ export default function PrintConfigurator({
       a.href = url; a.download = `gabarit-${product.id}.png`;
       a.click(); URL.revokeObjectURL(url);
     });
-  }, [folded, orientation, spec.widthMm, spec.heightMm, spec.bleedMm, product.id]);
+  }, [foldCfg, orientation, spec.widthMm, spec.heightMm, spec.bleedMm, product.id]);
 
   // Atelier d'édition en ligne : activé sur les petits formats (flyers,
   // invitations ≤ 320 mm). Les grands formats (affiches, toiles) restent en
@@ -178,13 +184,15 @@ export default function PrintConfigurator({
   const [batApproved, setBatApproved] = useState(false);
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
 
-  // Dimensions éditeur. Plié/dépliant = planche (×openMultiplier de la largeur).
+  // Dimensions éditeur. Plié/dépliant = planche dépliée (open()), plis verticaux.
   // Sinon, selon l'orientation choisie.
   const shortMm = Math.min(spec.widthMm, spec.heightMm);
   const longMm  = Math.max(spec.widthMm, spec.heightMm);
-  const editorW = folded ? shortMm * folded.openMultiplier : (orientation === "landscape" ? longMm : shortMm);
-  const editorH = folded ? longMm : (orientation === "landscape" ? shortMm : longMm);
+  const openDims = foldCfg ? foldCfg.open(shortMm, longMm) : null;
+  const editorW = openDims ? openDims.w : (orientation === "landscape" ? longMm : shortMm);
+  const editorH = openDims ? openDims.h : (orientation === "landscape" ? shortMm : longMm);
   const editorOrientation: PrintOrientation = editorW >= editorH ? "landscape" : "portrait";
+  const foldCount = foldCfg ? foldPanels - 1 : 0;
 
   // Changer de faces : garder une quantité valide pour la nouvelle grille.
   const pickFaces = (next: PrintFace) => {
@@ -358,6 +366,30 @@ export default function PrintConfigurator({
         </div>
 
         {/* Orientation */}
+        {/* Type de pli (dépliant) — style Pixartprinting */}
+        {foldCfg && foldCfg.choices.length > 1 && (
+          <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
+            <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Type de pli</p>
+            <div className="flex flex-wrap gap-3">
+              {foldCfg.choices.map((c) => (
+                <button
+                  key={c.panels}
+                  type="button"
+                  onClick={() => setFoldPanels(c.panels)}
+                  className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+                    foldPanels === c.panels
+                      ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                      : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
+                  }`}
+                >
+                  <FoldIcon panels={c.panels} active={foldPanels === c.panels} />
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {spec.orientationToggle && !FOLDED && (
           <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
             <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Orientation</p>
@@ -675,7 +707,8 @@ export default function PrintConfigurator({
           bleedMm={spec.bleedMm}
           faces={FOLDED ? "recto-verso" : (spec.faces ? faces : "recto")}
           faceLabels={FOLDED ? { front: "Extérieur", back: "Intérieur" } : { front: "Recto", back: "Verso" }}
-          foldAxis={folded?.axis ?? null}
+          foldAxis={FOLDED ? "vertical" : null}
+          foldCount={foldCount}
           allowTemplates={false}
           onValidate={handleEditorValidate}
           onClose={() => setEditorOpen(false)}
@@ -728,6 +761,20 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-[var(--hm-text-muted)]">{label}</span>
       <span className="text-right font-semibold text-[var(--hm-text)]">{value}</span>
     </div>
+  );
+}
+
+/** Petite icône de pli : un rectangle divisé en `panels` volets. */
+function FoldIcon({ panels, active }: { panels: number; active: boolean }) {
+  const stroke = active ? "var(--hm-primary)" : "var(--hm-text-muted)";
+  const W = 26, H = 18, pw = W / panels;
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="shrink-0" aria-hidden>
+      <rect x="0.5" y="0.5" width={W - 1} height={H - 1} rx="1.5" fill="none" stroke={stroke} strokeWidth="1.2" />
+      {Array.from({ length: panels - 1 }, (_, i) => (
+        <line key={i} x1={pw * (i + 1)} y1="1" x2={pw * (i + 1)} y2={H - 1} stroke={stroke} strokeWidth="1" strokeDasharray="2 2" />
+      ))}
+    </svg>
   );
 }
 

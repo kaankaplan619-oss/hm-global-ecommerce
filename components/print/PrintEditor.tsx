@@ -100,6 +100,7 @@ export default function PrintEditor({
   faces = "recto",
   faceLabels = { front: "Recto", back: "Verso" },
   foldAxis = null,
+  foldCount = 1,
   allowTemplates = true,
   onValidate,
   onClose,
@@ -110,8 +111,10 @@ export default function PrintEditor({
   faces?:   "recto" | "recto-verso";
   /** Libellés des 2 faces (ex. carte pliée : Extérieur / Intérieur). */
   faceLabels?: { front: string; back: string };
-  /** Trace une ligne de pli au centre (carte pliée). */
+  /** Trace des lignes de pli (carte pliée / dépliant). */
   foldAxis?: "vertical" | "horizontal" | null;
+  /** Nombre de plis (1 = 2 volets, 2 = 3 volets…). */
+  foldCount?: number;
   /** Affiche le bouton Modèles (templates de carte de visite uniquement). */
   allowTemplates?: boolean;
   onValidate: (rectoPng: string, versoPng: string | null) => void;
@@ -606,17 +609,23 @@ export default function PrintEditor({
             <div className="pointer-events-none absolute" style={{ inset: -bleedFrac * STAGE_W, border: "1.5px dashed rgba(239,68,68,0.55)" }} />
             <div className="pointer-events-none absolute" style={{ inset: bleedFrac * STAGE_W, border: "1px dashed rgba(34,197,94,0.5)" }} />
 
-            {/* Ligne de pli (carte pliée) */}
-            {foldAxis === "vertical" && (
-              <div className="pointer-events-none absolute left-1/2 top-0 h-full -translate-x-1/2 border-l border-dashed border-[var(--hm-primary)]/40">
-                <span className="absolute -top-0 left-1.5 text-[8px] font-bold uppercase tracking-wider text-[var(--hm-primary)]/60">pli</span>
-              </div>
-            )}
-            {foldAxis === "horizontal" && (
-              <div className="pointer-events-none absolute left-0 top-1/2 w-full -translate-y-1/2 border-t border-dashed border-[var(--hm-primary)]/40">
-                <span className="absolute left-1.5 -top-3 text-[8px] font-bold uppercase tracking-wider text-[var(--hm-primary)]/60">pli</span>
-              </div>
-            )}
+            {/* Lignes de pli (carte pliée / dépliant) — foldCount plis répartis */}
+            {foldAxis && Array.from({ length: Math.max(0, foldCount) }, (_, i) => {
+              const pos = `${((i + 1) / (foldCount + 1)) * 100}%`;
+              return foldAxis === "vertical" ? (
+                <div key={i} className="pointer-events-none absolute top-0 h-full border-l border-dashed border-[var(--hm-primary)]/45" style={{ left: pos }}>
+                  <span className="absolute left-1 top-1 text-[8px] font-bold uppercase tracking-wider text-[var(--hm-primary)]/60">pli</span>
+                </div>
+              ) : (
+                <div key={i} className="pointer-events-none absolute left-0 w-full border-t border-dashed border-[var(--hm-primary)]/45" style={{ top: pos }}>
+                  <span className="absolute left-1 -top-3 text-[8px] font-bold uppercase tracking-wider text-[var(--hm-primary)]/60">pli</span>
+                </div>
+              );
+            })}
+
+            {/* Cotes (dimensions du format fini) — style Pixartprinting */}
+            <span className="pointer-events-none absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-semibold text-[var(--hm-text-muted)]">{Math.round(widthMm)} mm</span>
+            <span className="pointer-events-none absolute -left-7 top-1/2 -translate-y-1/2 -rotate-90 text-[9px] font-semibold text-[var(--hm-text-muted)]">{Math.round(heightMm)} mm</span>
 
             {/* Repères d'alignement (au centre) pendant le déplacement */}
             {guides.v && <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[var(--hm-primary)]" />}
