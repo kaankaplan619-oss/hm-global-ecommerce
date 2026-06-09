@@ -709,7 +709,7 @@ export default function PrintConfigurator({
           faceLabels={FOLDED ? { front: "Extérieur", back: "Intérieur" } : { front: "Recto", back: "Verso" }}
           foldAxis={FOLDED ? "vertical" : null}
           foldCount={foldCount}
-          allowTemplates={false}
+          templateSet="flyer"
           onValidate={handleEditorValidate}
           onClose={() => setEditorOpen(false)}
         />

@@ -93,6 +93,42 @@ const TEMPLATES: { label: string; build: () => EditorObject[] }[] = [
   },
 ];
 
+// ─── Modèles flyer / dépliant (mises en page génériques, à éditer) ──────────
+// NB : l'éditeur affiche le texte sur UNE ligne (pas de retour auto) → on garde
+// des libellés courts ; le client remplace ensuite par son texte.
+const FLYER_TEMPLATES: { label: string; build: () => EditorObject[] }[] = [
+  {
+    label: "Promo",
+    build: () => [
+      { id: nextId(), type: "rect", x: 0, y: 0, w: 1, h: 0.16, fill: "#b13f74", stroke: "#b13f74", strokeW: 0, radius: 0 },
+      { id: nextId(), type: "text", x: 0.06, y: 0.035, w: 0.88, h: 0.07, text: "OFFRE SPÉCIALE", color: "#ffffff", align: "center", fontFamily: FONTS[3].css, bold: true },
+      { id: nextId(), type: "text", x: 0.1, y: 0.34, w: 0.8, h: 0.22, text: "-20%", color: "#2d2340", align: "center", fontFamily: FONTS[3].css, bold: true },
+      { id: nextId(), type: "text", x: 0.1, y: 0.6, w: 0.8, h: 0.08, text: "sur votre commande", color: "#6e6280", align: "center", fontFamily: FONTS[0].css },
+      { id: nextId(), type: "rect", x: 0.32, y: 0.8, w: 0.36, h: 0.09, fill: "#2d2340", stroke: "#2d2340", strokeW: 0, radius: 0.5 },
+      { id: nextId(), type: "text", x: 0.32, y: 0.815, w: 0.36, h: 0.05, text: "exemple.fr", color: "#ffffff", align: "center", fontFamily: FONTS[0].css, bold: true },
+    ],
+  },
+  {
+    label: "Titre + sous-titre",
+    build: () => [
+      { id: nextId(), type: "text", x: 0.08, y: 0.3, w: 0.84, h: 0.16, text: "Votre titre", color: "#2d2340", align: "center", fontFamily: FONTS[1].css, bold: true },
+      { id: nextId(), type: "line", x: 0.4, y: 0.5, w: 0.2, h: 0.02, stroke: "#b13f74", strokeW: 0.005 },
+      { id: nextId(), type: "text", x: 0.1, y: 0.55, w: 0.8, h: 0.08, text: "Votre sous-titre", color: "#6e6280", align: "center", fontFamily: FONTS[0].css },
+      { id: nextId(), type: "text", x: 0.1, y: 0.82, w: 0.8, h: 0.06, text: "contact · exemple.fr", color: "#2d2340", align: "center", fontFamily: FONTS[0].css },
+    ],
+  },
+  {
+    label: "Événement",
+    build: () => [
+      { id: nextId(), type: "text", x: 0.06, y: 0.2, w: 0.88, h: 0.14, text: "Événement", color: "#2d2340", align: "center", fontFamily: FONTS[3].css, bold: true },
+      { id: nextId(), type: "line", x: 0.4, y: 0.42, w: 0.2, h: 0.02, stroke: "#b13f74", strokeW: 0.005 },
+      { id: nextId(), type: "text", x: 0.1, y: 0.48, w: 0.8, h: 0.08, text: "00/00 · 00h00", color: "#b13f74", align: "center", fontFamily: FONTS[0].css, bold: true },
+      { id: nextId(), type: "text", x: 0.1, y: 0.6, w: 0.8, h: 0.07, text: "Lieu", color: "#6e6280", align: "center", fontFamily: FONTS[0].css },
+      { id: nextId(), type: "text", x: 0.1, y: 0.82, w: 0.8, h: 0.06, text: "exemple.fr", color: "#2d2340", align: "center", fontFamily: FONTS[0].css },
+    ],
+  },
+];
+
 export default function PrintEditor({
   widthMm,
   heightMm,
@@ -102,6 +138,7 @@ export default function PrintEditor({
   foldAxis = null,
   foldCount = 1,
   allowTemplates = true,
+  templateSet = "card",
   onValidate,
   onClose,
 }: {
@@ -115,8 +152,10 @@ export default function PrintEditor({
   foldAxis?: "vertical" | "horizontal" | null;
   /** Nombre de plis (1 = 2 volets, 2 = 3 volets…). */
   foldCount?: number;
-  /** Affiche le bouton Modèles (templates de carte de visite uniquement). */
+  /** Affiche le bouton Modèles. */
   allowTemplates?: boolean;
+  /** Jeu de modèles : cartes de visite ou flyers/dépliants. */
+  templateSet?: "card" | "flyer";
   onValidate: (rectoPng: string, versoPng: string | null) => void;
   onClose:  () => void;
 }) {
@@ -545,8 +584,8 @@ export default function PrintEditor({
             <div className="relative">
               <ToolBtn icon={<LayoutTemplate size={14} />} label="Modèles" onClick={() => setShowTemplates((v) => !v)} />
               {showTemplates && (
-                <div className="absolute left-0 top-full z-20 mt-1 w-44 rounded-xl border border-[var(--hm-line)] bg-white p-1 shadow-xl">
-                  {TEMPLATES.map((t) => (
+                <div className="absolute left-0 top-full z-20 mt-1 w-48 rounded-xl border border-[var(--hm-line)] bg-white p-1 shadow-xl">
+                  {(templateSet === "flyer" ? FLYER_TEMPLATES : TEMPLATES).map((t) => (
                     <button key={t.label} type="button" onClick={() => applyTemplate(t.build)} className="block w-full rounded-lg px-3 py-2 text-left text-[12px] font-semibold text-[var(--hm-text)] hover:bg-[var(--hm-accent-soft-rose)]">
                       {t.label}
                     </button>
