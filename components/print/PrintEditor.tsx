@@ -136,22 +136,26 @@ export default function PrintEditor({
   const fileRef  = useRef<HTMLInputElement>(null);
 
   const ratio = widthMm / heightMm;
-  // Plan de travail responsive borné À LA FOIS par la largeur ET la hauteur
-  // d'écran dispo. Sans la borne hauteur, un format portrait (flyer/affiche A4)
-  // devient trop haut et déborde du modal (toolbar + bouton Valider coupés).
-  const [vp, setVp] = useState({ w: 520, h: 680 });
+  // Le plan de travail doit TENIR ENTIÈREMENT dans la zone dispo (sinon un
+  // format portrait déborde et on ne voit pas tout ce qu'on place). On MESURE
+  // la zone réelle (ResizeObserver) — robuste à la barre d'outils qui passe sur
+  // 2 lignes, au header/footer, au mobile — et on y inscrit le plan.
+  const stageBoxRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState({ w: 520, h: 640 });
   useEffect(() => {
-    const f = () => setVp({
-      w: Math.max(260, Math.min(520, (window.innerWidth || 520) - 48)),
-      // ~220 px réservés : barre d'outils + pied (Valider) + marges du modal.
-      h: Math.max(260, (window.innerHeight || 800) - 220),
+    const el = stageBoxRef.current;
+    if (!el) return;
+    const measure = () => setBox({
+      w: Math.max(200, el.clientWidth - 8),
+      h: Math.max(200, el.clientHeight - 8),
     });
-    f();
-    window.addEventListener("resize", f);
-    return () => window.removeEventListener("resize", f);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
-  // Largeur qui garantit que la hauteur tienne aussi : min(largeur, hauteur×ratio).
-  const STAGE_W = Math.round(Math.min(vp.w, vp.h * ratio));
+  // On inscrit le format dans la boîte : limité par la largeur ET la hauteur.
+  const STAGE_W = Math.round(Math.min(520, box.w, box.h * ratio));
   const STAGE_H = Math.round(STAGE_W / ratio);
   const bleedFrac = bleedMm / widthMm;
 
@@ -571,9 +575,10 @@ export default function PrintEditor({
           <input ref={fileRef} type="file" accept=".png,.jpg,.jpeg,.svg,.pdf,application/pdf" className="hidden" onChange={onPickImage} />
         </div>
 
-        {/* Plan de travail */}
+        {/* Plan de travail — mesuré pour que le format tienne en entier */}
         <div
-          className="flex flex-1 items-center justify-center overflow-auto bg-[var(--hm-surface)] p-4 sm:p-6"
+          ref={stageBoxRef}
+          className="flex flex-1 items-center justify-center overflow-hidden bg-[var(--hm-surface)] p-3 sm:p-4"
           onPointerDown={() => { setSelected(null); setShowTemplates(false); }}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => { e.preventDefault(); processFile(e.dataTransfer.files?.[0]); }}
