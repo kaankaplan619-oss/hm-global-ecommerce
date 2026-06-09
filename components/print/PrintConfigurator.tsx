@@ -60,14 +60,21 @@ export default function PrintConfigurator({
   // open() renvoie les dimensions de la PLANCHE DÉPLIÉE (mm) depuis (court, long).
   const FOLD_PRODUCTS: Record<string, {
     open: (short: number, long: number) => { w: number; h: number };
-    choices: { label: string; panels: number }[];
+    choices: { id: string; label: string; panels: number }[];
   }> = {
-    "card-folded": { open: (s, l) => ({ w: s * 2, h: l }), choices: [{ label: "Carte pliée · 2 volets", panels: 2 }] },
-    "flyer-a4":    { open: (s, l) => ({ w: l, h: s }),     choices: [{ label: "1 pli · 4 faces", panels: 2 }, { label: "2 plis · 6 faces", panels: 3 }] },
+    "card-folded": { open: (s, l) => ({ w: s * 2, h: l }), choices: [{ id: "fold", label: "Carte pliée · 2 volets", panels: 2 }] },
+    // Types de pli réels chez Gelato : single-fold (4 faces), roll-folded &
+    // accordion (6 faces). Côté éditeur : 2 volets (1 pli) ou 3 volets (2 plis).
+    "flyer-a4":    { open: (s, l) => ({ w: l, h: s }), choices: [
+      { id: "single",    label: "1 pli · 4 faces", panels: 2 },
+      { id: "roll",      label: "2 plis roulé · 6 faces", panels: 3 },
+      { id: "accordion", label: "Accordéon · 6 faces", panels: 3 },
+    ] },
   };
   const foldCfg = FOLD_PRODUCTS[product.id] ?? null;
   const FOLDED = foldCfg !== null;
-  const [foldPanels, setFoldPanels] = useState(foldCfg?.choices[0].panels ?? 2);
+  const [foldChoiceId, setFoldChoiceId] = useState(foldCfg?.choices[0].id ?? "");
+  const foldChoice = foldCfg?.choices.find((c) => c.id === foldChoiceId) ?? foldCfg?.choices[0];
 
   // Orientation initiale : paysage si format large, portrait sinon.
   const initialOrientation: PrintOrientation =
@@ -192,7 +199,7 @@ export default function PrintConfigurator({
   const editorW = openDims ? openDims.w : (orientation === "landscape" ? longMm : shortMm);
   const editorH = openDims ? openDims.h : (orientation === "landscape" ? shortMm : longMm);
   const editorOrientation: PrintOrientation = editorW >= editorH ? "landscape" : "portrait";
-  const foldCount = foldCfg ? foldPanels - 1 : 0;
+  const foldCount = foldChoice ? foldChoice.panels - 1 : 0;
 
   // Changer de faces : garder une quantité valide pour la nouvelle grille.
   const pickFaces = (next: PrintFace) => {
@@ -373,16 +380,16 @@ export default function PrintConfigurator({
             <div className="flex flex-wrap gap-3">
               {foldCfg.choices.map((c) => (
                 <button
-                  key={c.panels}
+                  key={c.id}
                   type="button"
-                  onClick={() => setFoldPanels(c.panels)}
+                  onClick={() => setFoldChoiceId(c.id)}
                   className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
-                    foldPanels === c.panels
+                    foldChoiceId === c.id
                       ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
                       : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
                   }`}
                 >
-                  <FoldIcon panels={c.panels} active={foldPanels === c.panels} />
+                  <FoldIcon panels={c.panels} active={foldChoiceId === c.id} />
                   {c.label}
                 </button>
               ))}
@@ -687,7 +694,7 @@ export default function PrintConfigurator({
               <Row label="Format"  value={product.sizeLabel} />
               {spec.orientationToggle && !FOLDED && <Row label="Orientation" value={PRINT_ORIENTATION_LABELS[orientation]} />}
               {FOLDED
-                ? <Row label="Impression" value="Extérieur + intérieur" />
+                ? <Row label="Impression" value="Recto-verso" />
                 : spec.faces && <Row label="Impression" value={faces === "recto-verso" ? "Recto-verso" : "Recto seul"} />}
             </div>
           </div>
@@ -706,7 +713,7 @@ export default function PrintConfigurator({
           heightMm={editorH}
           bleedMm={spec.bleedMm}
           faces={FOLDED ? "recto-verso" : (spec.faces ? faces : "recto")}
-          faceLabels={FOLDED ? { front: "Extérieur", back: "Intérieur" } : { front: "Recto", back: "Verso" }}
+          faceLabels={{ front: "Recto", back: "Verso" }}
           foldAxis={FOLDED ? "vertical" : null}
           foldCount={foldCount}
           templateSet="flyer"
