@@ -18,7 +18,8 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart, Sparkles } from "lucide-react";
+import { UploadCloud, Loader2, X, ArrowRight, CheckCircle2, ShoppingCart, Sparkles, Truck, TrendingDown } from "lucide-react";
+import { estimateDelivery, formatDeliveryWindow } from "@/lib/delivery-estimate";
 import type { CuratedPrintProduct, PrintSpec } from "@/data/print-catalogue";
 import type { PrintOrientation } from "@/data/print-products";
 import { PRINT_ORIENTATION_LABELS } from "@/data/print-products";
@@ -95,6 +96,18 @@ export default function PrintConfigurator({
   const [adding, setAdding] = useState(false);
   const [projectName, setProjectName] = useState("");
   const price = direct ? getPrintDirectPrice(product.id, quantity, faces) : null;
+
+  // Prix à l'unité + économie vs le plus petit palier (modèle Pixartprinting).
+  const perUnit = price != null && quantity > 0 ? price / quantity : null;
+  const baseOpt = qtyOptions[0];
+  const basePerUnit = baseOpt && baseOpt.quantity > 0 ? baseOpt.priceTTC / baseOpt.quantity : null;
+  const savingPct = perUnit != null && basePerUnit != null && basePerUnit > 0 && perUnit < basePerUnit
+    ? Math.round((1 - perUnit / basePerUnit) * 100)
+    : 0;
+
+  // Toiles = production plus longue ; autres formats POD ~3 j ouvrés.
+  const prodDays = product.id.startsWith("canvas") ? 5 : 3;
+  const delivery = direct ? formatDeliveryWindow(estimateDelivery(new Date(), prodDays)) : null;
 
   // Atelier d'édition en ligne : activé sur les petits formats (flyers,
   // invitations ≤ 320 mm). Les grands formats (affiches, toiles) restent en
@@ -400,29 +413,51 @@ export default function PrintConfigurator({
             <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5">
               <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Quantité</p>
               <div className="flex flex-wrap gap-2">
-                {qtyOptions.map((o) => (
-                  <button
-                    key={o.quantity}
-                    type="button"
-                    onClick={() => setQuantity(o.quantity)}
-                    className={`flex items-baseline gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
-                      quantity === o.quantity
-                        ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
-                        : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
-                    }`}
-                  >
-                    {o.quantity}{o.quantity >= 25 ? " ex." : o.quantity > 1 ? " unités" : " unité"}
-                    <span className="text-[11px] font-bold text-[var(--hm-text-muted)]">{o.priceTTC.toFixed(2)} €</span>
-                  </button>
-                ))}
+                {qtyOptions.map((o) => {
+                  const u = o.quantity > 0 ? o.priceTTC / o.quantity : 0;
+                  return (
+                    <button
+                      key={o.quantity}
+                      type="button"
+                      onClick={() => setQuantity(o.quantity)}
+                      className={`flex flex-col items-start rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+                        quantity === o.quantity
+                          ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                          : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
+                      }`}
+                    >
+                      <span>{o.quantity}{o.quantity >= 25 ? " ex." : o.quantity > 1 ? " unités" : " unité"} · {o.priceTTC.toFixed(2)} €</span>
+                      <span className="text-[10px] font-medium text-[var(--hm-text-muted)]">soit {u.toFixed(u < 1 ? 3 : 2)} €/{o.quantity >= 25 ? "ex." : "unité"}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Prix TTC du choix courant */}
             <div className="rounded-2xl border border-[var(--hm-primary)]/25 bg-[var(--hm-accent-soft-rose)] px-5 py-4">
               <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Prix TTC</p>
-              <p className="text-2xl font-black text-[var(--hm-primary)]">{price != null ? price.toFixed(2) : "—"} €</p>
-              <p className="text-[10px] text-[var(--hm-text-muted)]">Port confirmé au paiement · BAT validé avant production</p>
+              <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                <p className="text-2xl font-black text-[var(--hm-primary)]">{price != null ? price.toFixed(2) : "—"} €</p>
+                {perUnit != null && (
+                  <p className="text-[12px] font-semibold text-[var(--hm-text-soft)]">
+                    soit {perUnit.toFixed(perUnit < 1 ? 3 : 2)} € / exemplaire
+                  </p>
+                )}
+                {savingPct > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">
+                    <TrendingDown size={12} /> −{savingPct}% à l&apos;unité
+                  </span>
+                )}
+              </div>
+              {delivery && (
+                <p className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-[var(--hm-text)]">
+                  <Truck size={14} className="text-[var(--hm-primary)]" />
+                  Livraison estimée {delivery}
+                  <span className="font-medium text-[var(--hm-text-muted)]">· après validation du BAT</span>
+                </p>
+              )}
+              <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">Port confirmé au paiement · jours ouvrés, hors délais exceptionnels</p>
             </div>
 
             {/* Bon à tirer — signature (commandes directes avec atelier) */}
