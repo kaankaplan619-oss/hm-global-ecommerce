@@ -44,6 +44,7 @@ export interface EditorObject {
   align?:      "left" | "center" | "right";
   fontFamily?: string;
   bold?:       boolean;
+  fontMm?:     number;  // taille de police en mm (sinon dérivée de la hauteur)
   // Formes
   fill?:       string;
   stroke?:     string;
@@ -62,6 +63,22 @@ const FONTS: { label: string; css: string }[] = [
 
 let __uid = 0;
 const nextId = () => `o${++__uid}`;
+
+/** Découpe un texte en lignes qui tiennent dans `maxW` (respecte les \n). */
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
+  const out: string[] = [];
+  for (const para of (text ?? "").split("\n")) {
+    if (para === "") { out.push(""); continue; }
+    let line = "";
+    for (const word of para.split(" ")) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxW && line) { out.push(line); line = word; }
+      else line = test;
+    }
+    out.push(line);
+  }
+  return out;
+}
 
 // ─── Modèles de carte (objets normalisés, recto) ────────────────────────────
 const TEMPLATES: { label: string; build: () => EditorObject[] }[] = [
@@ -211,6 +228,11 @@ export default function PrintEditor({
   const STAGE_W = Math.round(Math.min(500, box.w, box.h * ratio) * 0.88);
   const STAGE_H = Math.round(STAGE_W / ratio);
   const bleedFrac = bleedMm / widthMm;
+
+  // Taille de police : explicite (fontMm) sinon dérivée de la hauteur du bloc.
+  // À l'écran, mm → px via la résolution du plan (STAGE_H / heightMm).
+  const effFontMm = (o: EditorObject) => o.fontMm ?? o.h * heightMm * 0.6;
+  const screenFontPx = (o: EditorObject) => effFontMm(o) * (STAGE_H / heightMm);
 
   // Verso disponible (option recto-verso OU PDF 2 pages importé).
   const hasVerso = faces === "recto-verso" || importedVerso;
@@ -455,13 +477,16 @@ export default function PrintEditor({
         const im = imgMap.get(o.id);
         if (im) ctx.drawImage(im, x, y, w, h);
       } else if (o.type === "text") {
-        const ph = h;
+        const fpx = effFontMm(o) * PX_PER_MM;
         ctx.fillStyle = o.color ?? "#2d2340";
-        ctx.textBaseline = "middle";
-        ctx.font = `${o.bold ? 700 : 500} ${Math.round(ph * 0.62)}px ${o.fontFamily ?? FONTS[0].css}`;
+        ctx.textBaseline = "top";
+        ctx.font = `${o.bold ? 700 : 500} ${Math.round(fpx)}px ${o.fontFamily ?? FONTS[0].css}`;
         ctx.textAlign = (o.align ?? "center") as CanvasTextAlign;
+        const lineH = fpx * 1.18;
+        const lines = wrapText(ctx, o.text ?? "", w);
         const tx = o.align === "left" ? x : o.align === "right" ? x + w : x + w / 2;
-        ctx.fillText(o.text ?? "", tx, y + ph / 2);
+        let ly = y + Math.max(0, (h - lines.length * lineH) / 2);
+        for (const ln of lines) { ctx.fillText(ln, tx, ly); ly += lineH; }
       } else if (o.type === "rect") {
         const r = (o.radius ?? 0) * h;
         ctx.beginPath();
@@ -543,8 +568,8 @@ export default function PrintEditor({
     }
     if (o.type === "text") {
       return (
-        <div className="flex h-full w-full items-center" style={{ justifyContent: o.align === "left" ? "flex-start" : o.align === "right" ? "flex-end" : "center" }}>
-          <span style={{ color: o.color, fontFamily: o.fontFamily, fontSize: o.h * STAGE_H * 0.6, fontWeight: o.bold ? 700 : 500, lineHeight: 1, whiteSpace: "nowrap" }}>{o.text}</span>
+        <div className="flex h-full w-full items-center">
+          <span style={{ color: o.color, fontFamily: o.fontFamily, fontSize: screenFontPx(o), fontWeight: o.bold ? 700 : 500, lineHeight: 1.18, whiteSpace: "pre-wrap", overflowWrap: "break-word", width: "100%", textAlign: o.align ?? "center" }}>{o.text}</span>
         </div>
       );
     }
@@ -681,15 +706,15 @@ export default function PrintEditor({
               >
                 {/* Édition de texte directement sur la carte (double-clic) */}
                 {editingId === o.id && o.type === "text" ? (
-                  <input
+                  <textarea
                     autoFocus
                     value={o.text ?? ""}
                     onChange={(e) => updateObj(o.id, { text: e.target.value })}
                     onBlur={() => setEditingId(null)}
-                    onKeyDown={(e) => { if (e.key === "Enter") setEditingId(null); e.stopPropagation(); }}
+                    onKeyDown={(e) => { if (e.key === "Escape") setEditingId(null); e.stopPropagation(); }}
                     onPointerDown={(e) => e.stopPropagation()}
-                    className="h-full w-full border-none bg-transparent p-0 outline-none"
-                    style={{ color: o.color, fontFamily: o.fontFamily, fontSize: o.h * STAGE_H * 0.6, fontWeight: o.bold ? 700 : 500, textAlign: o.align ?? "center", lineHeight: 1 }}
+                    className="h-full w-full resize-none border-none bg-transparent p-0 outline-none"
+                    style={{ color: o.color, fontFamily: o.fontFamily, fontSize: screenFontPx(o), fontWeight: o.bold ? 700 : 500, textAlign: o.align ?? "center", lineHeight: 1.18, whiteSpace: "pre-wrap", overflowWrap: "break-word" }}
                   />
                 ) : (
                   renderObjBody(o)
@@ -732,6 +757,12 @@ export default function PrintEditor({
               {FONTS.map((f) => <option key={f.label} value={f.css}>{f.label}</option>)}
             </select>
             <button type="button" onClick={() => updateObj(selObj.id, { bold: !selObj.bold })} className={`rounded-md border px-2 py-1.5 ${selObj.bold ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]" : "border-[var(--hm-line)] text-[var(--hm-text-soft)]"}`}><Bold size={13} /></button>
+            {/* Taille de police (mm) — permet d'écrire de vrais paragraphes qui reviennent à la ligne */}
+            <div className="flex items-center gap-1 rounded-lg border border-[var(--hm-line)] px-1 py-0.5 text-[12px] font-semibold text-[var(--hm-text-soft)]">
+              <button type="button" onClick={() => updateObj(selObj.id, { fontMm: Math.max(2, Math.round((effFontMm(selObj) - 1) * 10) / 10) })} className="px-1.5 hover:text-[var(--hm-primary)]">A−</button>
+              <span className="w-10 text-center tabular-nums">{Math.round(effFontMm(selObj))} mm</span>
+              <button type="button" onClick={() => updateObj(selObj.id, { fontMm: Math.round((effFontMm(selObj) + 1) * 10) / 10 })} className="px-1.5 hover:text-[var(--hm-primary)]">A+</button>
+            </div>
             <input type="color" value={selObj.color ?? "#2d2340"} onChange={(e) => updateObj(selObj.id, { color: e.target.value })} className="h-8 w-9 cursor-pointer rounded border border-[var(--hm-line)]" />
             <div className="flex gap-1 rounded-lg bg-[var(--hm-surface)] p-1">
               {(["left", "center", "right"] as const).map((a) => (
