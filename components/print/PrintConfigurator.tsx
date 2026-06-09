@@ -676,6 +676,7 @@ export default function PrintConfigurator({
           faces={FOLDED ? "recto-verso" : (spec.faces ? faces : "recto")}
           faceLabels={FOLDED ? { front: "Extérieur", back: "Intérieur" } : { front: "Recto", back: "Verso" }}
           foldAxis={folded?.axis ?? null}
+          allowTemplates={false}
           onValidate={handleEditorValidate}
           onClose={() => setEditorOpen(false)}
         />

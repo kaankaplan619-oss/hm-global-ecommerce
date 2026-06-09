@@ -100,6 +100,7 @@ export default function PrintEditor({
   faces = "recto",
   faceLabels = { front: "Recto", back: "Verso" },
   foldAxis = null,
+  allowTemplates = true,
   onValidate,
   onClose,
 }: {
@@ -111,6 +112,8 @@ export default function PrintEditor({
   faceLabels?: { front: string; back: string };
   /** Trace une ligne de pli au centre (carte pliée). */
   foldAxis?: "vertical" | "horizontal" | null;
+  /** Affiche le bouton Modèles (templates de carte de visite uniquement). */
+  allowTemplates?: boolean;
   onValidate: (rectoPng: string, versoPng: string | null) => void;
   onClose:  () => void;
 }) {
@@ -534,19 +537,21 @@ export default function PrintEditor({
           <ToolBtn icon={<Minus size={14} />} label="Ligne" onClick={addLine} />
           <ToolBtn icon={<QrCode size={14} />} label="QR" onClick={addQr} />
 
-          {/* Modèles */}
-          <div className="relative">
-            <ToolBtn icon={<LayoutTemplate size={14} />} label="Modèles" onClick={() => setShowTemplates((v) => !v)} />
-            {showTemplates && (
-              <div className="absolute left-0 top-full z-20 mt-1 w-44 rounded-xl border border-[var(--hm-line)] bg-white p-1 shadow-xl">
-                {TEMPLATES.map((t) => (
-                  <button key={t.label} type="button" onClick={() => applyTemplate(t.build)} className="block w-full rounded-lg px-3 py-2 text-left text-[12px] font-semibold text-[var(--hm-text)] hover:bg-[var(--hm-accent-soft-rose)]">
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Modèles (uniquement cartes de visite — templates pensés pour 85×55) */}
+          {allowTemplates && (
+            <div className="relative">
+              <ToolBtn icon={<LayoutTemplate size={14} />} label="Modèles" onClick={() => setShowTemplates((v) => !v)} />
+              {showTemplates && (
+                <div className="absolute left-0 top-full z-20 mt-1 w-44 rounded-xl border border-[var(--hm-line)] bg-white p-1 shadow-xl">
+                  {TEMPLATES.map((t) => (
+                    <button key={t.label} type="button" onClick={() => applyTemplate(t.build)} className="block w-full rounded-lg px-3 py-2 text-left text-[12px] font-semibold text-[var(--hm-text)] hover:bg-[var(--hm-accent-soft-rose)]">
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="mx-1 h-5 w-px bg-[var(--hm-line)]" />
           <ToolBtn icon={<Undo2 size={14} />} label="Annuler" onClick={undo} disabled={hist.length === 0} />
