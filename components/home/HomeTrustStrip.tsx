@@ -1,4 +1,4 @@
-import { ShieldCheck, HeartHandshake, Layers, FileText } from "lucide-react";
+import { ShieldCheck, MapPin, Layers, FileText } from "lucide-react";
 
 /**
  * HomeTrustStrip — Bandeau confiance, 4 items courts.
@@ -18,9 +18,9 @@ const TRUST_ITEMS = [
     tone:  "cyan",
   },
   {
-    icon:  HeartHandshake,
-    title: "Accompagnement humain",
-    desc:  "Un interlocuteur dédié, du fichier source à la livraison.",
+    icon:  MapPin,
+    title: "Depuis 2018 à Souffelweyersheim",
+    desc:  "Un vrai atelier alsacien — et 410 élèves accueillis via Erasmus.",
     tone:  "cyan",
   },
   {

@@ -6,6 +6,7 @@ import BestSellers from "../components/home/BestSellers";
 import HomeProcessBAT from "../components/home/HomeProcessBAT";
 import HomeRealisations from "../components/home/HomeRealisations";
 import HomeVisualShowcase from "../components/home/HomeVisualShowcase";
+import HomeSignaletique from "../components/home/HomeSignaletique";
 import HomeAtelier from "../components/home/HomeAtelier";
 import HomePack360 from "../components/home/HomePack360";
 import HomeTrustStrip from "../components/home/HomeTrustStrip";
@@ -37,6 +38,7 @@ export default function HomePage() {
       <HomeProcessBAT />
       <HomeRealisations />
       <HomeVisualShowcase />
+      <HomeSignaletique />
       <HomeAtelier />
       <HomePack360 />
       <HomeTrustStrip />

@@ -47,8 +47,8 @@ function AtelierImage() {
 
   return (
     <Image
-      src="/images/home/hm-atelier-production-textile.webp"
-      alt="Production HM Global en atelier : un opérateur utilise la presse à chaud pour transférer un design sur textile."
+      src="/images/realisations/miammi-fabrication.jpg"
+      alt="Atelier HM Global : lettres d'enseigne rétroéclairées MiAMMi en cours d'assemblage."
       fill
       sizes="100vw"
       className="object-cover"
@@ -123,8 +123,9 @@ export default function HomeAtelier() {
                   className="mt-3 max-w-[36rem] text-[13.5px] leading-[1.65]"
                   style={{ color: "rgba(255,255,255,0.82)" }}
                 >
-                  Chaque commande est vérifiée par notre équipe avant d&apos;être
-                  produite ou transmise au bon partenaire.
+                  Textile à la presse, enseignes assemblées sur place, pose en
+                  façade : chaque commande est vérifiée par notre équipe avant
+                  production.
                 </p>
               </div>
             </div>

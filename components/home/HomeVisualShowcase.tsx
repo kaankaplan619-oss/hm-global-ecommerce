@@ -52,7 +52,7 @@ const ITEMS: ShowcaseItem[] = [
     icon:  FileText,
     label: "Flyers & brochures",
     line:  "A6 à A4 · 170 g/m² couché · dès 31,90 €",
-    image: "/images/home/hm-print-flyers.webp",
+    image: "/images/realisations/ncm-flyers.jpg",
     href:  "/impression/flyer-a5",
     accent: "var(--hm-magenta)",
     fallbackGradient: "linear-gradient(135deg, #D64A9A 0%, #C13C8A 55%, #4B2A6F 100%)",
@@ -156,8 +156,8 @@ export default function HomeVisualShowcase() {
               className="mt-3 max-w-[44rem] text-[13.5px] leading-6"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Cartes, flyers, affiches ou canvas : envoyez votre fichier ou
-              votre brief, on cadre le devis et le BAT avant production.
+              Cartes, flyers, affiches ou canvas : créez votre visuel dans
+              l&apos;atelier en ligne, validez le BAT et commandez au prix affiché.
             </p>
           </div>
           <Link
@@ -229,7 +229,7 @@ export default function HomeVisualShowcase() {
                       color: item.accent,
                     }}
                   >
-                    Demander un devis
+                    Commander en ligne
                     <ArrowRight size={12} />
                   </span>
                 </div>
