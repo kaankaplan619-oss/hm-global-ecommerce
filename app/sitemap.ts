@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { ALL_PRODUCTS } from "@/data/products";
+import { ALL_PRINT_PRODUCTS, printConfigHref } from "@/data/print-catalogue";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmglobalagence.fr";
 
@@ -19,7 +20,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: url("/"),                  changeFrequency: "weekly",  priority: 1.0 },
     { url: url("/catalogue"),         changeFrequency: "weekly",  priority: 0.9 },
     { url: url("/impression"),        changeFrequency: "weekly",  priority: 0.9 },
-    { url: url("/impression/cartes-de-visite"), changeFrequency: "monthly", priority: 0.8 },
+    { url: url("/a-propos"),          changeFrequency: "monthly", priority: 0.6 },
+    { url: url("/realisations"),      changeFrequency: "weekly",  priority: 0.7 },
+    { url: url("/entreprises"),       changeFrequency: "monthly", priority: 0.6 },
+    { url: url("/engagements"),       changeFrequency: "monthly", priority: 0.5 },
+    { url: url("/techniques"),        changeFrequency: "monthly", priority: 0.6 },
+    { url: url("/devis-rapide"),      changeFrequency: "monthly", priority: 0.6 },
     { url: url("/contact"),           changeFrequency: "yearly",  priority: 0.4 },
     { url: url("/cgv"),               changeFrequency: "yearly",  priority: 0.2 },
     { url: url("/confidentialite"),   changeFrequency: "yearly",  priority: 0.2 },
@@ -42,5 +48,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     }));
 
-  return [...staticPages, ...categoryPages, ...productPages];
+  // Configurateurs print (cartes 85×55 partagent /impression/cartes-de-visite).
+  const printHrefs = new Set(ALL_PRINT_PRODUCTS.map((p) => printConfigHref(p.id)));
+  const printPages: MetadataRoute.Sitemap = [...printHrefs].map((href) => ({
+    url: url(href),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  return [...staticPages, ...categoryPages, ...printPages, ...productPages];
 }
