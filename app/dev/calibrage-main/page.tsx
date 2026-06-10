@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PrintMockupPreview from "@/components/print/PrintMockupPreview";
 import CardSituationPreview from "@/components/print/CardSituationPreview";
+import TestPdfCard from "./TestPdfCard";
 import { PRINT_MOCKUP_TEMPLATES } from "@/data/printMockupTemplates";
 
 export const metadata: Metadata = {
@@ -35,6 +36,12 @@ export default function CalibrageMainPage() {
           frontUrl="/images/clients/miamm.jpg"
           backUrl="/images/clients/r3m.jpg"
         />
+      </div>
+      <h2 className="mb-4 mt-10 text-xl font-semibold text-[var(--hm-text)]">
+        Test PDF réel — carte Miguel Gonçalves (HM Global)
+      </h2>
+      <div className="max-w-3xl">
+        <TestPdfCard />
       </div>
     </div>
   );
