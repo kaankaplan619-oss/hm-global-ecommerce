@@ -130,15 +130,21 @@ export default function PrintMockupPreview({
     return () => ro.disconnect();
   }, [printArea.corners]);
 
-  const QUAD_BASE = 100; // taille px du div source avant projection
+  // Le div source AVANT projection doit avoir le MÊME ratio que le support
+  // physique (85×55 pour une carte). Avec une base carrée, object-cover
+  // recadrait le design dans un carré (~35 % de largeur perdue) puis la
+  // projection l'étirait → design « agrandi » / zoomé horizontalement.
+  const QUAD_BASE = 100; // hauteur px du div source avant projection
+  const quadH = QUAD_BASE;
+  const quadW = QUAD_BASE * (printArea.width / printArea.height);
   const perspectiveStyle: React.CSSProperties | null =
     printArea.corners && containerW > 0
       ? {
           left: 0,
           top: 0,
-          width: QUAD_BASE,
-          height: QUAD_BASE,
-          transform: quadMatrix3d(printArea.corners, containerW / sceneWidth, QUAD_BASE, QUAD_BASE),
+          width: quadW,
+          height: quadH,
+          transform: quadMatrix3d(printArea.corners, containerW / sceneWidth, quadW, quadH),
           transformOrigin: "0 0",
         }
       : null;
