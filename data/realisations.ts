@@ -138,22 +138,6 @@ export const REALISATIONS: Realisation[] = [
     alt: "Enseigne lumineuse ronde posée en façade chez Crusty Coq",
   },
   {
-    id: "au-tilleul-enseignes",
-    title: "Enseignes de façade — Restaurant Au Tilleul",
-    sector: "Signalétique",
-    tags: ["Enseigne drapeau", "Panneau"],
-    image: "/images/realisations/au-tilleul-enseignes.jpg",
-    alt: "Enseigne drapeau et panneau de façade du restaurant Au Tilleul",
-  },
-  {
-    id: "au-traditionnel-vitrine",
-    title: "Habillage vitrine — Au Traditionnel",
-    sector: "Signalétique",
-    tags: ["Vitrine", "Impression"],
-    image: "/images/realisations/au-traditionnel-vitrine.jpg",
-    alt: "Vitrine du restaurant Au Traditionnel habillée d'un visuel imprimé avec QR codes",
-  },
-  {
     id: "totem-euro-automobile",
     title: "Conception totem 3D — Euro Automobile",
     sector: "Signalétique",
@@ -184,14 +168,6 @@ export const REALISATIONS: Realisation[] = [
     tags: ["Panneau"],
     image: "/images/realisations/illico-panneau.jpg",
     alt: "Panneau de chantier imprimé pour illiCO travaux",
-  },
-  {
-    id: "alc-bache",
-    title: "Bâche grand format 11 m — ALC Carrosserie",
-    sector: "Print",
-    tags: ["Bâche", "Grand format"],
-    image: "/images/realisations/alc-bache.jpg",
-    alt: "Visuel de la bâche 11 × 2 m créée et imprimée pour ALC Carrosserie",
   },
   {
     id: "hm-print",
