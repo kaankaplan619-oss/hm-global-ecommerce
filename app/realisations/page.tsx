@@ -4,6 +4,7 @@ import BackLink from "@/components/ui/BackLink";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import RealisationsGallery from "@/components/realisations/RealisationsGallery";
 import AtelierVideos from "@/components/realisations/AtelierVideos";
+import ClientLogos from "@/components/realisations/ClientLogos";
 
 export const metadata: Metadata = {
   title: "Réalisations",
@@ -58,6 +59,21 @@ export default function RealisationsPage() {
           </div>
 
           <AtelierVideos />
+        </section>
+
+        {/* Logos clients */}
+        <section className="mb-14">
+          <div className="mb-8 max-w-2xl">
+            <p className="section-tag">Ils nous font confiance</p>
+            <h2 className="mb-3 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
+              Des identités créées ou produites chez nous.
+            </h2>
+            <p className="text-sm leading-7 text-[var(--hm-text-soft)]">
+              Restaurants, artisans, entreprises du bâtiment, automobile : ces logos
+              ont été créés, déclinés ou produits par l&apos;agence.
+            </p>
+          </div>
+          <ClientLogos />
         </section>
 
         {/* CTA final */}

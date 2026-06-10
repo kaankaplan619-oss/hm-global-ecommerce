@@ -138,6 +138,14 @@ export const REALISATIONS: Realisation[] = [
     alt: "Enseigne lumineuse ronde posée en façade chez Crusty Coq",
   },
   {
+    id: "jour-j-enseigne",
+    title: "Enseigne lettres rétroéclairées — Jour J",
+    sector: "Signalétique",
+    tags: ["Enseigne", "Lettres découpées"],
+    image: "/images/realisations/jour-j-enseigne.jpg",
+    alt: "Façade noire Jour J Salle de réception avec lettres blanches rétroéclairées",
+  },
+  {
     id: "totem-euro-automobile",
     title: "Conception totem 3D — Euro Automobile",
     sector: "Signalétique",

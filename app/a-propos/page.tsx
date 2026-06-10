@@ -108,10 +108,43 @@ const APPROACH = [
 ] as const;
 
 const FACTS = [
+  { value: "2018", label: "année de création, à Souffelweyersheim" },
   { value: "100 %", label: "produit à l'atelier ou posé par nous" },
   { value: "BAT", label: "validé avant chaque production" },
-  { value: "Alsace", label: "Souffelweyersheim · Strasbourg" },
   { value: "410", label: "élèves accueillis (Erasmus)" },
+] as const;
+
+const HISTOIRE = [
+  {
+    image: "/images/histoire/presse-yilmaz-2018.jpg",
+    year: "2018",
+    caption: "Déjà à la presse : t-shirts marqués pour Ets Yilmaz",
+    alt: "Presse à chaud et t-shirts Ets Yilmaz marqués en flex, en 2018",
+  },
+  {
+    image: "/images/histoire/vehicule-home-style-2018.jpg",
+    year: "2018",
+    caption: "Lettrage véhicule — Home Style Carrelage",
+    alt: "Voiture lettrée pour Home Style Carrelage en 2018",
+  },
+  {
+    image: "/images/histoire/bache-oeillets-2018.jpg",
+    year: "2018",
+    caption: "Bâche grand format, œillets posés à la main",
+    alt: "Pose d'œillets sur une bâche imprimée grand format en 2018",
+  },
+  {
+    image: "/images/histoire/camion-yilmaz-2018.jpg",
+    year: "2018",
+    caption: "Habillage utilitaire — Ets Yilmaz",
+    alt: "Camion Renault Master habillé pour Ets Yilmaz en 2018",
+  },
+  {
+    image: "/images/histoire/enseigne-bar-actifs.jpg",
+    year: "Enseigne",
+    caption: "Lettres rétroéclairées — Bar L'Actifs, Strasbourg",
+    alt: "Enseigne rétroéclairée du Bar L'Actifs à Strasbourg",
+  },
 ] as const;
 
 const CONTACT = [
@@ -242,6 +275,45 @@ export default function AboutPage() {
                   </div>
                 </div>
               </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Histoire depuis 2018 */}
+        <section className="mb-14">
+          <div className="mb-7 max-w-2xl">
+            <p className="section-tag">Notre histoire</p>
+            <h2 className="mb-3 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
+              Depuis 2018, le même métier : produire.
+            </h2>
+            <p className="text-sm leading-7 text-[var(--hm-text-soft)]">
+              Véhicules lettrés, bâches, textile à la presse, enseignes : l&apos;atelier
+              tourne depuis 2018. La boutique en ligne d&apos;aujourd&apos;hui s&apos;appuie
+              sur ce savoir-faire.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
+            {HISTOIRE.map((h) => (
+              <figure
+                key={h.image}
+                className="overflow-hidden rounded-[1.4rem] border border-[var(--hm-line)] bg-white"
+              >
+                <div className="relative aspect-[3/4]">
+                  <Image
+                    src={h.image}
+                    alt={h.alt}
+                    fill
+                    sizes="(min-width:1024px) 19vw, (min-width:640px) 32vw, 48vw"
+                    className="object-cover"
+                  />
+                  <span className="absolute left-2.5 top-2.5 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide shadow-sm" style={{ color: "var(--hm-rose)" }}>
+                    {h.year}
+                  </span>
+                </div>
+                <figcaption className="p-3 text-[12px] font-medium leading-snug text-[var(--hm-text-soft)]">
+                  {h.caption}
+                </figcaption>
+              </figure>
             ))}
           </div>
         </section>
