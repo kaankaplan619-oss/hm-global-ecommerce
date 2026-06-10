@@ -77,7 +77,17 @@ export interface PrintMockupTemplate {
     width: number;
     height: number;
     rotate?: number; // degrés, 0 si omis
+    /** 4 coins exacts (px scène, TL/TR/BR/BL) → projection perspective
+     *  matrix3d dans PrintMockupPreview. Prioritaire sur x/y/width/height. */
+    corners?: { x: number; y: number }[];
   };
+  /** Dimensions natives de la scène si différentes du standard famille
+   *  (SCENE_DIMENSIONS du viewer). Ex : scène "main" 1600×1065. */
+  sceneWidth?: number;
+  sceneHeight?: number;
+  /** Patch d'occlusion (doigts, objets DEVANT le support) : PNG alpha extrait
+   *  de la scène, rendu AU-DESSUS du design client. Coords px scène. */
+  occlusionPatch?: { src: string; x: number; y: number; width: number; height: number };
 }
 
 // ── Mockups Design licence (constante partagée) ──────────────────────────────
@@ -92,6 +102,37 @@ export const PRINT_MOCKUP_TEMPLATES: PrintMockupTemplate[] = [
   // (1200×900 chacun). Les coords visent la CARTE DU DESSUS de la pile —
   // celle qui montrera le design overlay du client (les cartes derrière
   // restent en flou du mockup d'origine).
+  {
+    // V1.3 (2026-06-10, validé Kaan) : scène "carte tenue en main" — défaut
+    // du configurateur. Le design client recouvre la carte de démo "simple".
+    id: "business-card-hand-01",
+    family: "business-cards",
+    sourceName: "Mockups Design",
+    sourceUrl: "https://mockups-design.com/hand-holding-business-card-mockup/",
+    licenseUrl: MD_LICENSE,
+    sceneImage: "/mockups/print/business-card/business-card-hand-01.webp",
+    supportedFormats: ["85×55 mm standard", "85×55 mm coins ronds"],
+    recommendedUse: "Scène principale — votre carte tenue en main",
+    sceneWidth: 1600,
+    sceneHeight: 1065,
+    // Coins mesurés par détection pixel de la carte démo (bleu #235B73),
+    // +4 px d'overscan. Les coins gauches sont occultés par les doigts →
+    // bords extrapolés depuis la partie visible, et patch d'occlusion
+    // (doigts détourés par chroma-key) rendu au-dessus du design.
+    printArea: {
+      x: 684, y: 291, width: 630, height: 409,
+      corners: [
+        { x: 680, y: 290 },   // haut-gauche (extrapolé sous l'index)
+        { x: 1318, y: 287 },  // haut-droit
+        { x: 1318, y: 704 },  // bas-droit
+        { x: 680, y: 700 },   // bas-gauche (extrapolé sous le pouce)
+      ],
+    },
+    occlusionPatch: {
+      src: "/mockups/print/business-card/business-card-hand-01-occlusion.png",
+      x: 600, y: 150, width: 210, height: 660,
+    },
+  },
   {
     id: "business-card-stack-01",
     family: "business-cards",

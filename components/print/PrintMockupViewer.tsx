@@ -96,11 +96,12 @@ export default function PrintMockupViewer({
       {/* ── Scène principale ──────────────────────────────────────────────── */}
       <PrintMockupPreview
         sceneImage={activeScene.sceneImage}
-        sceneWidth={dims.width}
-        sceneHeight={dims.height}
+        sceneWidth={activeScene.sceneWidth ?? dims.width}
+        sceneHeight={activeScene.sceneHeight ?? dims.height}
         printArea={activeScene.printArea}
         clientDesignUrl={overlayUrl}
         whiteCardOverlay={whiteCardOverlay}
+        occlusionPatch={activeScene.occlusionPatch ?? null}
         alt={`${alt} — ${activeScene.recommendedUse}`}
       />
 
