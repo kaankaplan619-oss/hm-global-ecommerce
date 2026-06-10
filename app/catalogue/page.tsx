@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BackLink from "@/components/ui/BackLink";
 import ProductCard from "@/components/product/ProductCard";
 import { ALL_PRODUCTS, SEASONAL_ORDER, CURRENT_SEASON } from "@/data/products";
 
@@ -29,6 +30,8 @@ export default function CataloguePage() {
   return (
     <div className="bg-white pb-20 pt-24">
       <div className="container">
+        <BackLink href="/" label="Retour à l'accueil" />
+
         {/* Header */}
         <div className="mb-12">
           <p className="section-tag">Catalogue complet</p>
