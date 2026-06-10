@@ -157,8 +157,11 @@ export default function HomeHeroPremium() {
                     className="relative aspect-[4/3] overflow-hidden rounded-[1.3rem]"
                     style={{ background: "#f6f7f9" }}
                   >
+                    {/* Version retouchée pour la vignette : crop 4:3 sur les
+                        logos + exposition/BdB corrigées (l'original reste
+                        prestige-tshirts.jpg) */}
                     <Image
-                      src="/images/realisations/prestige-tshirts.jpg"
+                      src="/images/realisations/prestige-tshirts-hero.jpg"
                       alt="T-shirts noirs marqués en DTF pour Prestige Bar à Vin, réalisés par HM Global"
                       fill
                       priority

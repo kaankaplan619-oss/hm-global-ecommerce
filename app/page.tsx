@@ -1,5 +1,4 @@
 import HomeHeroPremium from "../components/home/HomeHeroPremium";
-import HomeQuickEntries from "../components/home/HomeQuickEntries";
 import HomeNeedsPacks from "../components/home/HomeNeedsPacks";
 import HomeTextilePremium from "../components/home/HomeTextilePremium";
 import BestSellers from "../components/home/BestSellers";
@@ -17,16 +16,16 @@ import HomeFinalCTA from "../components/home/HomeFinalCTA";
  *
  * Le trafic arrive surtout d'Instagram (reels) : le visiteur doit voir
  * IMMÉDIATEMENT les produits achetables et leurs prix. Ordre :
- *   1. Hero (visuel textiles + CTA catalogue/impression)
+ *   1. Hero (vraies photos atelier + CTA catalogue/impression)
  *   2. Best-sellers textile        (t-shirts, hoodies — prix affichés)
  *   3. Section print               (cartes, flyers, affiches, canvas — prix)
- *   4. Entrées rapides             (3 cartes textile / print / pack)
- *   5. Réalisations                (preuve : vrais projets)
- *   6. Process / BAT validation
- *   7. Textile premium             (qualité matière)
- *   8. Signalétique / enseignes    (devis)
- *   9. Atelier / production
- *   10. Packs par besoin + Pack 360 + confiance + CTA final
+ *   4. Réalisations                (preuve : vrais projets — remplace les
+ *      « entrées rapides » aux images stock, retirées le 2026-06-10)
+ *   5. Process / BAT validation
+ *   6. Textile premium             (qualité matière)
+ *   7. Signalétique / enseignes    (devis)
+ *   8. Atelier / production
+ *   9. Packs par besoin + Pack 360 + confiance + CTA final
  */
 export default function HomePage() {
   return (
@@ -34,7 +33,6 @@ export default function HomePage() {
       <HomeHeroPremium />
       <BestSellers />
       <HomeVisualShowcase />
-      <HomeQuickEntries />
       <HomeRealisations />
       <HomeProcessBAT />
       <HomeTextilePremium />
