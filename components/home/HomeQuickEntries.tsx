@@ -45,12 +45,12 @@ const ENTRIES: Entry[] = [
   {
     icon:  Printer,
     title: "Impression & supports",
-    desc:  "Cartes de visite, flyers, affiches, brochures — devis cadré, BAT validé avant production.",
+    desc:  "Cartes de visite, flyers, affiches, toiles — commande en ligne au prix affiché, BAT validé.",
     sources: [
       "/images/home/hm-card-print-supports-v2.webp",
       "/images/home/hm-card-print-supports-v2.jpg",
     ],
-    cta:   "Demander un devis print",
+    cta:   "Commander en ligne",
     href:  "/impression",
     accent: "var(--hm-magenta)",
     fallbackGradient: "linear-gradient(135deg, #D64A9A 0%, #C13C8A 50%, #4B2A6F 100%)",

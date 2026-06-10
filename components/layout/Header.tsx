@@ -220,6 +220,14 @@ export default function Header() {
             </Link>
 
             <div className="flex flex-col gap-1">
+            {/* Accueil — repère explicite (le logo seul est moins évident) */}
+            <Link
+              href="/"
+              onClick={() => setIsMobileOpen(false)}
+              className="flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-base font-bold text-[var(--hm-text)] transition-colors hover:bg-[rgba(177,63,116,0.07)]"
+            >
+              Accueil
+            </Link>
             {NAV_ITEMS.map((item) =>
               item.children ? (
                 <div key={item.label}>

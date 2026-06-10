@@ -41,9 +41,9 @@ const ITEMS: ShowcaseItem[] = [
   {
     icon:  CreditCard,
     label: "Cartes de visite",
-    line:  "350 g/m² · Mat ou brillant · Coins ronds disponibles",
+    line:  "350 g/m² · Mat, brillant ou premium · dès 34,90 €",
     image: "/mockups/print/business-card/carte-visite-premium.webp",
-    href:  "/contact?sujet=devis&support=cartes-de-visite",
+    href:  "/impression/cartes-de-visite",
     accent: "var(--hm-cyan)",
     fallbackGradient: "linear-gradient(135deg, #6EC7DD 0%, #54B6D2 60%, #4B2A6F 100%)",
     fit: "contain",
@@ -51,27 +51,27 @@ const ITEMS: ShowcaseItem[] = [
   {
     icon:  FileText,
     label: "Flyers & brochures",
-    line:  "A4, A5 · 170 g/m² couché · Recto ou recto-verso",
+    line:  "A6 à A4 · 170 g/m² couché · dès 31,90 €",
     image: "/images/home/hm-print-flyers.webp",
-    href:  "/contact?sujet=devis&support=flyers",
+    href:  "/impression/flyer-a5",
     accent: "var(--hm-magenta)",
     fallbackGradient: "linear-gradient(135deg, #D64A9A 0%, #C13C8A 55%, #4B2A6F 100%)",
   },
   {
     icon:  ImageIcon,
     label: "Affiches & posters",
-    line:  "30×40 à 50×70 cm · 200 g/m² · Grand format",
+    line:  "A3 à A2 · grand format · dès 15,90 €",
     image: "/images/home/hm-print-affiches-posters.webp",
-    href:  "/contact?sujet=devis&support=affiches",
+    href:  "/impression/poster-a3",
     accent: "var(--hm-violet)",
     fallbackGradient: "linear-gradient(135deg, #C13C8A 0%, #4B2A6F 55%, #3B235A 100%)",
   },
   {
     icon:  Frame,
     label: "Toiles canvas",
-    line:  "Cadre bois FSC · Impression haute résolution",
+    line:  "Cadre bois FSC · haute résolution · dès 67,90 €",
     image: "/images/home/hm-print-toiles-canvas.webp",
-    href:  "/contact?sujet=devis&support=canvas",
+    href:  "/impression/canvas-30x40",
     accent: "var(--hm-cyan)",
     fallbackGradient: "linear-gradient(135deg, #54B6D2 0%, #4B2A6F 55%, #C13C8A 100%)",
   },
@@ -137,7 +137,7 @@ export default function HomeVisualShowcase() {
               className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: "var(--hm-magenta)" }}
             >
-              Impression · Devis cadré
+              Impression · Commande en ligne
             </p>
             <h2
               className="font-semibold leading-[1.08] tracking-[-0.02em]"
@@ -161,10 +161,10 @@ export default function HomeVisualShowcase() {
             </p>
           </div>
           <Link
-            href="/contact?sujet=devis&support=impression"
+            href="/impression"
             className="btn-hm-violet-outline shrink-0 self-start lg:self-auto"
           >
-            Demander un devis print
+            Voir toute l’impression
             <ArrowRight size={14} />
           </Link>
         </div>

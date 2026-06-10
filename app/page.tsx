@@ -4,6 +4,7 @@ import HomeNeedsPacks from "../components/home/HomeNeedsPacks";
 import HomeTextilePremium from "../components/home/HomeTextilePremium";
 import BestSellers from "../components/home/BestSellers";
 import HomeProcessBAT from "../components/home/HomeProcessBAT";
+import HomeRealisations from "../components/home/HomeRealisations";
 import HomeVisualShowcase from "../components/home/HomeVisualShowcase";
 import HomeAtelier from "../components/home/HomeAtelier";
 import HomePack360 from "../components/home/HomePack360";
@@ -34,6 +35,7 @@ export default function HomePage() {
       <HomeTextilePremium />
       <BestSellers />
       <HomeProcessBAT />
+      <HomeRealisations />
       <HomeVisualShowcase />
       <HomeAtelier />
       <HomePack360 />
