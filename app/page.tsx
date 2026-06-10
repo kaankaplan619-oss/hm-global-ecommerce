@@ -13,33 +13,34 @@ import HomeTrustStrip from "../components/home/HomeTrustStrip";
 import HomeFinalCTA from "../components/home/HomeFinalCTA";
 
 /**
- * Homepage HM Global — refonte Corporate Créatif Premium (palette 2026).
+ * Homepage HM Global — orientation boutique (2026-06-10, demande Kaan).
  *
- * Structure 10 blocs avec visuels marketing intégrés :
- *   1. Hero principal              (pack agence 360)
- *   2. Entrées rapides             (3 cartes textile / print / pack)
- *   3. Textile premium             (hoodie porté + macro logo)
- *   4. Best-sellers textile        (Printify, intact)
- *   5. Process / BAT validation    (sérieux validation avant production)
- *   6. Section print               (4 cards devis cadré)
- *   7. Atelier / production        (presse atelier, plein écran)
- *   8. Pack communication complet  (livraison client + 5 livrables)
- *   9. Confiance — 4 items
- *   10. CTA final
+ * Le trafic arrive surtout d'Instagram (reels) : le visiteur doit voir
+ * IMMÉDIATEMENT les produits achetables et leurs prix. Ordre :
+ *   1. Hero (visuel textiles + CTA catalogue/impression)
+ *   2. Best-sellers textile        (t-shirts, hoodies — prix affichés)
+ *   3. Section print               (cartes, flyers, affiches, canvas — prix)
+ *   4. Entrées rapides             (3 cartes textile / print / pack)
+ *   5. Réalisations                (preuve : vrais projets)
+ *   6. Process / BAT validation
+ *   7. Textile premium             (qualité matière)
+ *   8. Signalétique / enseignes    (devis)
+ *   9. Atelier / production
+ *   10. Packs par besoin + Pack 360 + confiance + CTA final
  */
 export default function HomePage() {
   return (
     <>
       <HomeHeroPremium />
-      <HomeQuickEntries />
-      <HomeNeedsPacks />
-      <HomeTextilePremium />
       <BestSellers />
-      <HomeProcessBAT />
-      <HomeRealisations />
       <HomeVisualShowcase />
+      <HomeQuickEntries />
+      <HomeRealisations />
+      <HomeProcessBAT />
+      <HomeTextilePremium />
       <HomeSignaletique />
       <HomeAtelier />
+      <HomeNeedsPacks />
       <HomePack360 />
       <HomeTrustStrip />
       <HomeFinalCTA />

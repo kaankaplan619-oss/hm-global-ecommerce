@@ -66,19 +66,22 @@ export default function HomeHeroPremium() {
               signalétique et BAT avant fabrication.
             </p>
 
+            {/* CTAs orientés achat (trafic Instagram → boutique directe).
+                Le devis rapide reste accessible via le menu, la section
+                signalétique et le CTA final. */}
             <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
               <Link
-                href="/devis-rapide"
+                href="/catalogue"
                 className="btn-hm-magenta w-full justify-center sm:w-auto"
               >
-                Demander un devis rapide
+                Voir le catalogue textile
                 <ArrowRight size={16} />
               </Link>
               <Link
-                href="/catalogue"
+                href="/impression"
                 className="btn-hm-violet-outline w-full justify-center sm:w-auto"
               >
-                Voir le catalogue
+                Commander une impression
               </Link>
             </div>
 
