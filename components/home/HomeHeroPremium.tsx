@@ -1,17 +1,16 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ShieldCheck, Layers, Truck, Star } from "lucide-react";
-import HeroPackImage from "./HeroPackImage";
 
 /**
- * HomeHeroPremium — Hero principal homepage HM Global (palette 2026).
+ * HomeHeroPremium — Hero principal homepage HM Global.
  *
- * Phase polish P1 :
- *   - Compactage vertical (paddings réduits, layout plus dense)
- *   - Plus de cyan (halos, badges, micro-traits) pour rappeler le logo HM
- *   - CTA principal magenta (créatif) + outline violet (sérieux)
- *   - Chips de preuve sociale sous les CTAs
- *   - Badges flottants en bas de l'image (cohabite mieux avec le sujet visuel)
- *   - Cadre image plus large, halo cyan + magenta plus présents
+ * V3 (2026-06-10, demande Kaan) : 100 % authentique HM Global.
+ *   - Visuel = collage de VRAIES photos (atelier + réalisations clients),
+ *     plus aucune image marketing générique. Textile mis en avant
+ *     (produit le plus rentable), enseigne en appui (preuve d'atelier).
+ *   - Copy textile-first, ancrée atelier Souffelweyersheim / depuis 2018.
+ *   - Mise en page conservée : texte à gauche, visuel à droite.
  */
 
 const HERO_BADGES = [
@@ -44,7 +43,7 @@ export default function HomeHeroPremium() {
                 className="h-1.5 w-1.5 rounded-full"
                 style={{ background: "var(--hm-cyan)" }}
               />
-              Agence de communication · Alsace
+              Atelier &amp; agence · Souffelweyersheim · depuis 2018
             </p>
 
             <h1
@@ -54,16 +53,17 @@ export default function HomeHeroPremium() {
                 color: "var(--hm-text-main)",
               }}
             >
-              Textile personnalisé, print et communication pour entreprises.
+              Vos textiles personnalisés, marqués dans notre atelier en Alsace.
             </h1>
 
             <p
               className="mt-5 max-w-[38rem] text-[14.5px] leading-[1.65] sm:text-[15px]"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              HM Global vous accompagne de la création du visuel jusqu&apos;à la
-              production : textiles professionnels, supports imprimés,
-              signalétique et BAT avant fabrication.
+              T-shirts, sweats et polos à votre logo — DTF, flex ou broderie —
+              et tous vos supports imprimés. BAT validé avant chaque
+              production. En photo : notre atelier et de vraies commandes
+              clients.
             </p>
 
             {/* CTAs orientés achat (trafic Instagram → boutique directe).
@@ -107,7 +107,10 @@ export default function HomeHeroPremium() {
             </div>
           </div>
 
-          {/* ── Colonne droite : grande card visuelle ─────────────────── */}
+          {/* ── Colonne droite : collage de VRAIES photos HM Global ───────
+              Grande image = marquage DTF à la presse dans l'atelier (textile,
+              cœur du business). Deux petites = textile client livré (Prestige)
+              + enseigne MiAMMi en fabrication (preuve d'atelier). */}
           <div className="order-2 relative lg:order-2">
             <div
               className="relative overflow-hidden rounded-[1.8rem] bg-white p-2.5 sm:p-3"
@@ -116,30 +119,66 @@ export default function HomeHeroPremium() {
                 border: "1px solid rgba(45,35,64,0.06)",
               }}
             >
+              <div className="grid gap-2.5 sm:gap-3">
+                <div
+                  className="relative aspect-[16/9] overflow-hidden rounded-[1.3rem]"
+                  style={{ background: "#f6f7f9" }}
+                >
+                  <Image
+                    src="/images/home/hm-atelier-production-textile.jpg"
+                    alt="Marquage DTF d'un t-shirt à la presse à chaud dans l'atelier HM Global à Souffelweyersheim"
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 45vw, 100vw"
+                    className="object-cover"
+                  />
 
-              <div
-                className="relative aspect-[4/3] overflow-hidden rounded-[1.3rem]"
-                style={{ background: "#f6f7f9" }}
-              >
-                {/* Image hero — chaîne de fallback WebP → JPG → fallback graphique */}
-                <HeroPackImage />
+                  {/* Badges flottants sur la photo principale */}
+                  <div className="absolute inset-x-3 bottom-3 z-10 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                    {HERO_BADGES.map(({ icon: Icon, label }) => (
+                      <span
+                        key={label}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[10.5px] font-semibold backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-[11px]"
+                        style={{
+                          color: "var(--hm-violet)",
+                          boxShadow: "0 6px 16px rgba(59,35,90,0.12)",
+                          border: "1px solid rgba(84,182,210,0.20)",
+                        }}
+                      >
+                        <Icon size={12} style={{ color: "var(--hm-cyan)" }} />
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-                {/* Badges flottants en bas (cohabitent avec le sujet visuel) */}
-                <div className="absolute inset-x-3 bottom-3 z-10 flex flex-wrap items-center justify-center gap-1.5 sm:inset-x-4 sm:bottom-4 sm:gap-2">
-                  {HERO_BADGES.map(({ icon: Icon, label }) => (
-                    <span
-                      key={label}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[10.5px] font-semibold backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-[11px]"
-                      style={{
-                        color: "var(--hm-violet)",
-                        boxShadow: "0 6px 16px rgba(59,35,90,0.12)",
-                        border: "1px solid rgba(84,182,210,0.20)",
-                      }}
-                    >
-                      <Icon size={12} style={{ color: "var(--hm-cyan)" }} />
-                      {label}
-                    </span>
-                  ))}
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                  <div
+                    className="relative aspect-[4/3] overflow-hidden rounded-[1.3rem]"
+                    style={{ background: "#f6f7f9" }}
+                  >
+                    <Image
+                      src="/images/realisations/prestige-tshirts.jpg"
+                      alt="T-shirts noirs marqués en DTF pour Prestige Bar à Vin, réalisés par HM Global"
+                      fill
+                      priority
+                      sizes="(min-width: 1024px) 22vw, 50vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div
+                    className="relative aspect-[4/3] overflow-hidden rounded-[1.3rem]"
+                    style={{ background: "#f6f7f9" }}
+                  >
+                    <Image
+                      src="/images/realisations/miammi-fabrication.jpg"
+                      alt="Lettres d'enseigne rétroéclairées MiAMMi en fabrication à l'atelier HM Global"
+                      fill
+                      priority
+                      sizes="(min-width: 1024px) 22vw, 50vw"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
