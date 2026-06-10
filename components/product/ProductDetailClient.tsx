@@ -928,14 +928,17 @@ export default function ProductDetailClient({ product }: Props) {
               <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getIndicativeDelay(product)}</p>
             </div>
           </div>
-          {/* CTA principal — comportement par catégorie :
-               - Goodies (mug) : V1 personnalisable. Le bouton scroll vers le
-                 ProductConfigurator (id="mug-commander") où se trouvent l'upload
-                 et le vrai bouton "Ajouter mon mug au panier". Pas de redirect
-                 /devis-rapide qui serait incohérent avec un flow panier direct.
-               - Textile + quoteOnly (polo) : raccourci historique vers le
-                 formulaire devis rapide pré-rempli pour le slug produit. */}
-          {product.category === "goodies" || product.category === "casquettes" || product.category === "polos" || product.id === "wg004" ? (
+          {/* CTA principal — comportement par catégorie (2026-06-10) :
+               - Goodies (mug) + casquettes + polos : la personnalisation =
+                 upload dans le ProductConfigurator → le bouton scroll vers
+                 l'ancre id="mug-commander". Wording « Personnaliser » (jamais
+                 « Commander » : le produit est toujours personnalisé d'abord).
+               - Textile Studio (t-shirts, sweats, hoodies… y compris wg004) :
+                 navigation DIRECTE vers /studio/<slug> avec la config courante.
+                 La taille peut être vide : le Studio a son propre sélecteur.
+                 C'est le SEUL CTA Personnaliser de la fiche (l'ancien doublon
+                 en bas du configurateur a été retiré — demande Kaan). */}
+          {product.category === "goodies" || product.category === "casquettes" || product.category === "polos" ? (
             <button
               type="button"
               onClick={(e) => {
@@ -947,30 +950,21 @@ export default function ProductDetailClient({ product }: Props) {
               }}
               className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
             >
-              {product.id === "wg004"
-                ? "Commander ce sweat"
-                : product.category === "casquettes"
-                ? "Commander ma casquette"
+              {product.category === "casquettes"
+                ? "Personnaliser ma casquette"
                 : product.category === "polos"
-                ? "Commander mon polo"
-                : "Commander mon mug"}
+                ? "Personnaliser mon polo"
+                : "Personnaliser mon mug"}
               <ArrowRight size={16} />
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById("mug-commander")?.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                });
-              }}
+            <Link
+              href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}
               className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
             >
               🎨 Personnaliser mon article
               <ArrowRight size={16} />
-            </button>
+            </Link>
           )}
           {product.volumePricing ? (
             <div>
@@ -1043,39 +1037,10 @@ export default function ProductDetailClient({ product }: Props) {
           requirePersonalization={product.supplierName === "printful"}
           studioComposedFront={studioComposedFront}
           studioComposedBack={studioComposedBack}
-          studioCTA={
-            product.category === "goodies" || product.category === "casquettes" ? (
-              /* Goodies (mugs) — V1 personnalisable simple :
-                 - L'upload logo est activé dans ProductConfigurator (hideLogoUpload=false ci-dessus)
-                 - Pas de Studio Fabric.js (réservé textile)
-                 - Pas de bouton studio CTA — on laisse le bouton "Ajouter au panier"
-                   par défaut du ProductConfigurator s'afficher (gère lui-même
-                   l'état logo/taille/quantité + label "Uploadez votre design d'abord"
-                   → "Ajouter mon mug au panier")
-                 - Lien secondaire "Demander un devis" rendu DANS le ProductConfigurator
-                   (sous le bouton, lien discret) */
-              undefined
-            ) : size ? (
-              <Link
-                href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.30)] transition-all hover:bg-[var(--hm-primary)]/90 hover:shadow-[0_6px_20px_rgba(177,63,116,0.40)] active:scale-[0.98]"
-              >
-                🎨 Personnaliser mon article →
-              </Link>
-            ) : (
-              <div title="Sélectionnez d'abord une taille">
-                <span
-                  aria-disabled="true"
-                  className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)]/40 px-5 py-3.5 text-sm font-bold text-white/70 select-none"
-                >
-                  🎨 Personnaliser mon article →
-                </span>
-                <p className="mt-1.5 text-center text-[11px] text-[var(--hm-text-soft)]">
-                  Sélectionnez d&apos;abord une taille
-                </p>
-              </div>
-            )
-          }
+          /* studioCTA volontairement absent (2026-06-10) : le CTA Personnaliser
+             unique est en HAUT de la colonne droite (Link direct vers le
+             Studio). Goodies/casquettes gardent leur bouton "Ajouter au
+             panier" par défaut du ProductConfigurator (upload sur la fiche). */
         />
         )}
         </div>

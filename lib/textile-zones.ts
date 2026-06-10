@@ -24,20 +24,30 @@ export const ZONES_BY_CATEGORY: Record<
     dos:   [number, number, number, number];
   }
 > = {
-  // tshirts.coeur calibré visuellement sur le mockup Bella+Canvas 3001 (2026-05-26).
-  // Évolution : [0.38, 0.28, 0.18, 0.18] → [0.60, ...] (doctrine, trop à droite vers
-  // l'aisselle) → [0.52, 0.25, 0.14, 0.14] (calibration mockup réel).
-  // Position visée : côté gauche du porteur, légèrement à droite du centre de l'image,
-  // sous la clavicule / haut poitrine, pas collé à l'aisselle.
-  // BAT signés non impactés : bat-renderer.ts utilise uniquement le transform absolu
-  // (left/top/scaleX/scaleY/canvasSize), pas ZONES_BY_CATEGORY (commentaire ligne 153-157).
-  // Pilote tshirts seul — hoodies/softshells à valider visuellement plus tard.
-  tshirts:    { coeur: [0.52, 0.25, 0.14, 0.14], dos: [0.25, 0.20, 0.50, 0.45] },
-  // hoodies coeur left ajuste de 0.40 a 0.38 pour aligner le placement
-  // left-chest professionnel sur celui du t-shirt (centre x = 0.46 au lieu
-  // de 0.48 qui paraissait trop center-torso). Top/width/height inchanges.
-  hoodies:    { coeur: [0.38, 0.32, 0.16, 0.16], dos: [0.25, 0.22, 0.50, 0.42] },
-  softshells: { coeur: [0.42, 0.30, 0.15, 0.15], dos: [0.26, 0.22, 0.48, 0.40] },
+  // ── Recalibration 2026-06-10 (demande Kaan : zones identiques sur tous les
+  // textiles, alignées fournisseur) ──────────────────────────────────────────
+  // Les mockups Studio tshirts/hoodies sont désormais les photos
+  // printify-cropped (cadrage uniforme : vêtement ≈ 94 % de largeur, mesuré
+  // par bbox : g5000 L.03/T.10/W.94/H.80 · bella L.025/T.055/W.95/H.89 ·
+  // cc1717 L.055/T.025/W.89/H.95 · 18000 L.03/T.07/W.945/H.86 ·
+  // 18500 L.025/T.045/W.945/H.91).
+  // Ancrage cœur conservé de la calibration validée du 2026-05-26 (Bella) en
+  // coordonnées RELATIVES au vêtement : centre à 62 % de la largeur bbox
+  // (= poitrine GAUCHE du porteur, côté droit de l'image), 31 % de la hauteur.
+  // Taille cœur resserrée vers le vrai 10×10 cm (cf. conclusion wg004 iter 8).
+  // Dos : centré, dimensionné sur les max fournisseur (≈28×35 cm t-shirt,
+  // ≈27×32 cm sweat/hoodie) au lieu des anciens rectangles ~45 cm irréalistes.
+  // BAT signés non impactés : bat-renderer.ts utilise uniquement le transform
+  // absolu (left/top/scaleX/scaleY/canvasSize), pas ZONES_BY_CATEGORY.
+  tshirts:    { coeur: [0.55, 0.27, 0.13, 0.13], dos: [0.33, 0.22, 0.34, 0.42] },
+  // Fix bug signalé 2026-06-10 : l'ancien cœur hoodies [0.38, ...] (centre
+  // x = 0.46) plaçait le marquage côté DROIT du porteur / centre torse —
+  // jamais propagé depuis la recalibration tshirts du 26 mai. Aligné sur la
+  // même convention que tshirts (poitrine gauche du porteur).
+  hoodies:    { coeur: [0.55, 0.29, 0.13, 0.13], dos: [0.34, 0.24, 0.33, 0.39] },
+  // softshells : packshots TopTex inchangés — cœur basculé du centre vers la
+  // poitrine gauche du porteur (même convention), dos réaliste.
+  softshells: { coeur: [0.53, 0.28, 0.13, 0.13], dos: [0.36, 0.25, 0.28, 0.32] },
   // polos calibré sur le packshot Printful Gildan 64800 (broderie cœur 10×10 cm).
   // Cœur descendu/recentré vs fallback tshirts (zone précédente trop haute/à droite
   // sur le packshot polo). Broderie front uniquement → dos rarement utilisé.
@@ -57,15 +67,18 @@ export const ZONES_STATIC: {
 };
 
 // ── Mockup files par couleur générique (fallback quand packshot absent) ──────
+// Fix 2026-06-10 : le dossier /mockups/tshirt/ ne contient que des .webp —
+// les anciennes extensions .jpg/.png pointaient vers des fichiers inexistants
+// (canvas Studio vide pour toute couleur passant par ce fallback).
 export const MOCKUP_FILES: Record<string, { front: string; back: string }> = {
-  blanc:    { front: "/mockups/tshirt/blanc-front.jpg",    back: "/mockups/tshirt/blanc-back.png"    },
-  noir:     { front: "/mockups/tshirt/noir-front.jpg",     back: "/mockups/tshirt/noir-back.png"     },
-  gris:     { front: "/mockups/tshirt/gris-front.jpg",     back: "/mockups/tshirt/gris-back.png"     },
-  marine:   { front: "/mockups/tshirt/marine-front.jpg",   back: "/mockups/tshirt/marine-back.png"   },
-  rouge:    { front: "/mockups/tshirt/rouge-front.jpg",    back: "/mockups/tshirt/rouge-back.png"    },
-  bleu:     { front: "/mockups/tshirt/bleu-front.jpg",     back: "/mockups/tshirt/bleu-back.png"     },
-  vert:     { front: "/mockups/tshirt/vert-front.jpg",     back: "/mockups/tshirt/vert-back.png"     },
-  bordeaux: { front: "/mockups/tshirt/bordeaux-front.png", back: "/mockups/tshirt/bordeaux-back.png" },
+  blanc:    { front: "/mockups/tshirt/blanc-front.webp",    back: "/mockups/tshirt/blanc-back.webp"    },
+  noir:     { front: "/mockups/tshirt/noir-front.webp",     back: "/mockups/tshirt/noir-back.webp"     },
+  gris:     { front: "/mockups/tshirt/gris-front.webp",     back: "/mockups/tshirt/gris-back.webp"     },
+  marine:   { front: "/mockups/tshirt/marine-front.webp",   back: "/mockups/tshirt/marine-back.webp"   },
+  rouge:    { front: "/mockups/tshirt/rouge-front.webp",    back: "/mockups/tshirt/rouge-back.webp"    },
+  bleu:     { front: "/mockups/tshirt/bleu-front.webp",     back: "/mockups/tshirt/bleu-back.webp"     },
+  vert:     { front: "/mockups/tshirt/vert-front.webp",     back: "/mockups/tshirt/vert-back.webp"     },
+  bordeaux: { front: "/mockups/tshirt/bordeaux-front.webp", back: "/mockups/tshirt/bordeaux-back.webp" },
 };
 
 // ── Mapping colorId produit → slug mockup générique ──────────────────────────

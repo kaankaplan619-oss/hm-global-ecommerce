@@ -140,9 +140,13 @@ export default function StudioClient({ product }: Props) {
 
 
   return (
-    <div className="bg-[var(--hm-bg)]">
-      {/* ── Top bar ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 border-b border-[var(--hm-line)] bg-white/95 backdrop-blur-sm">
+    /* pt-[var(--site-header-offset)] : le header global du site est `fixed`
+       (z-50) — sans ce padding, la barre Studio (et son bouton « Retour »)
+       passait DESSOUS et restait invisible (bug signalé par Kaan 2026-06-10 :
+       « obligé de cliquer sur le logo HM Global pour revenir en arrière »). */
+    <div className="bg-[var(--hm-bg)] pt-[var(--site-header-offset)]">
+      {/* ── Top bar (non sticky : visible sous le header global) ───────────── */}
+      <header className="border-b border-[var(--hm-line)] bg-white/95">
         <div className="container flex h-14 items-center gap-3">
           {/* Retour */}
           <Link
