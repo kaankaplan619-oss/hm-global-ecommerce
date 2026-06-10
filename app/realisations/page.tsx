@@ -11,6 +11,7 @@ import {
   Signpost,
 } from "lucide-react";
 import RealisationsGallery from "@/components/realisations/RealisationsGallery";
+import AtelierVideos from "@/components/realisations/AtelierVideos";
 
 export const metadata: Metadata = {
   title: "Réalisations",
@@ -160,6 +161,21 @@ export default function RealisationsPage() {
           </div>
 
           <RealisationsGallery />
+        </section>
+
+        <section className="mb-14">
+          <div className="mb-8 max-w-2xl">
+            <p className="section-tag">L&apos;atelier en action</p>
+            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
+              Produit chez nous, posé par nous.
+            </h2>
+            <p className="text-base leading-7 text-[var(--hm-text-soft)]">
+              Marquage à la presse, lettrage vinyle, flocage et pose d&apos;enseigne : quelques
+              vidéos prises sur le vif, à l&apos;atelier de Souffelweyersheim et sur les chantiers.
+            </p>
+          </div>
+
+          <AtelierVideos />
         </section>
 
         <section className="mb-14">
