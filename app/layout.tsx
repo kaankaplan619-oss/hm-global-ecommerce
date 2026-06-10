@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/layout/CartDrawer";
 import QuoteAssistant from "@/components/assistant/QuoteAssistant";
 import CookieConsent from "@/components/layout/CookieConsent";
+import LocalBusinessJsonLd from "@/components/seo/LocalBusinessJsonLd";
 
 export const metadata: Metadata = {
   title: {
@@ -64,6 +65,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="bg-white text-[var(--hm-text)] antialiased">
+        <LocalBusinessJsonLd />
         <Header />
         <CartDrawer />
         <main className="min-h-screen">{children}</main>
