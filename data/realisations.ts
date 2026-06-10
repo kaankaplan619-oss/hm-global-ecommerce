@@ -106,12 +106,20 @@ export const REALISATIONS: Realisation[] = [
     alt: "Caisson lumineux rond et panneau MiAMMi posés en façade",
   },
   {
+    id: "naga-depose",
+    title: "Dépose de l'ancienne enseigne — Le Naga",
+    sector: "Signalétique",
+    tags: ["Dépose", "Façade"],
+    image: "/images/realisations/alternative-pose.jpg",
+    alt: "Dépose des anciennes lettres de façade avant pose de l'enseigne Le Naga",
+  },
+  {
     id: "naga-enseigne",
-    title: "Enseigne rétroéclairée — Le Naga Sushi & Wok",
+    title: "Nouvelle enseigne rétroéclairée — Le Naga Sushi & Wok",
     sector: "Signalétique",
     tags: ["Enseigne", "Rétroéclairage"],
     image: "/images/realisations/naga-enseigne.jpg",
-    alt: "Enseigne lumineuse Le Naga Sushi & Wok éclairée de nuit",
+    alt: "Nouvelle enseigne lumineuse Le Naga Sushi & Wok posée, éclairée de nuit",
   },
   {
     id: "selim-vitrine",
@@ -120,14 +128,6 @@ export const REALISATIONS: Realisation[] = [
     tags: ["Vitrine", "Vinyle"],
     image: "/images/realisations/selim-vitrine.jpg",
     alt: "Vitrine du salon Selim Coiffure avec lettrage et logos en vinyle",
-  },
-  {
-    id: "alternative-pose",
-    title: "Pose de lettres en façade — Alternative Restaurant",
-    sector: "Signalétique",
-    tags: ["Lettres relief", "Pose"],
-    image: "/images/realisations/alternative-pose.jpg",
-    alt: "Pose des lettres en relief Alternative Restaurant en façade",
   },
   {
     id: "enseigne-crusty-coq",
