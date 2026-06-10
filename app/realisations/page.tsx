@@ -1,260 +1,66 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BackLink from "@/components/ui/BackLink";
-import {
-  ArrowRight,
-  BrushCleaning,
-  CarFront,
-  CheckCircle2,
-  ChevronRight,
-  FileImage,
-  Signpost,
-} from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import RealisationsGallery from "@/components/realisations/RealisationsGallery";
 import AtelierVideos from "@/components/realisations/AtelierVideos";
 
 export const metadata: Metadata = {
   title: "Réalisations",
   description:
-    "Découvrez des exemples de réalisations HM Global Agence en textile personnalisé, habillage véhicule, signalétique et print.",
+    "Nos réalisations : textile marqué en DTF, flex, enseignes, print — produites à l'atelier de Souffelweyersheim pour des entreprises d'Alsace.",
 };
 
-const SERVICE_CASES = [
-  {
-    id: "vehicle",
-    icon: CarFront,
-    type: "Habillage véhicule",
-    title: "Marquage utilitaire ou véhicule d'entreprise",
-    text:
-      "Pour les artisans, entreprises terrain ou structures mobiles, HM Global peut cadrer un habillage simple, lisible et cohérent avec l'identité visuelle.",
-    bullets: [
-      "Lettrage, covering partiel ou signalétique mobile",
-      "Support pensé pour la visibilité terrain",
-      "Demande de devis recommandée",
-    ],
-  },
-  {
-    id: "signage",
-    icon: Signpost,
-    type: "Signalétique",
-    title: "Repérage, panneaux et supports de présence",
-    text:
-      "La signalétique est traitée comme un outil de visibilité et d'orientation, avec une logique plus fonctionnelle que décorative.",
-    bullets: [
-      "Panneaux, plaques, supports d'accueil",
-      "Usage intérieur ou extérieur",
-      "Projet à cadrer selon lieu et format",
-    ],
-  },
-  {
-    id: "print",
-    icon: FileImage,
-    type: "Print",
-    title: "Supports imprimés pour diffusion et rendez-vous",
-    text:
-      "Cartes, flyers, supports salon ou documents commerciaux : la page prépare un emplacement crédible pour présenter ces réalisations plus tard.",
-    bullets: [
-      "Supports de communication courants",
-      "Préparation PAO possible",
-      "Compatible avec futurs cas clients réels",
-    ],
-  },
-  {
-    id: "design",
-    icon: BrushCleaning,
-    type: "Préparation visuelle",
-    title: "Ajustement de fichiers, logo et cohérence graphique",
-    text:
-      "Avant une production textile ou print, HM Global peut aussi intervenir sur la mise au propre du visuel et la préparation du bon fichier.",
-    bullets: [
-      "Logo à reprendre ou simplifier",
-      "Déclinaison selon support",
-      "Étape utile avant marquage",
-    ],
-  },
-] as const;
-
-const BEFORE_AFTER = [
-  {
-    title: "Avant",
-    text:
-      "Le besoin est parfois simple dans l'idée, mais encore flou sur le support, la technique ou le fichier à produire.",
-    points: [
-      "Logo non adapté au textile",
-      "Choix produit encore incertain",
-      "Besoin multi-supports ou multi-équipes",
-    ],
-  },
-  {
-    title: "Après",
-    text:
-      "Le projet devient plus lisible : bon support, bonne technique, rendu cohérent et base plus claire pour commander ou demander un devis.",
-    points: [
-      "Produit et technique mieux cadrés",
-      "Visuel prêt à être exploité",
-      "Parcours plus simple jusqu'à la production",
-    ],
-  },
-] as const;
-
-const CATEGORY_PILLS = [
-  "Textile personnalisé",
-  "Habillage véhicule",
-  "Signalétique",
-  "Print",
-  "Avant / Après",
-  "Exemples représentatifs",
-] as const;
-
+/**
+ * Page Réalisations — volontairement IMAGE-FIRST (demande Kaan 2026-06-10) :
+ * héro court → galerie photos réelles → vidéos atelier → CTA. Pas de blocs
+ * de texte théoriques (avant/après, services) : la preuve passe par l'image.
+ */
 export default function RealisationsPage() {
   return (
     <div className="bg-white pb-20 pt-24">
       <div className="container">
         <BackLink href="/" label="Retour à l'accueil" />
 
-        <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,rgba(248,249,251,0.95)_0%,rgba(255,255,255,1)_72%)] px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
-          <div className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-end">
-            <div>
-              <p className="section-tag">Réalisations HM Global</p>
-              <h1 className="mb-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[var(--hm-text)] md:text-5xl">
-                Ce que HM Global produit pour les entreprises, associations et équipes.
-              </h1>
-              <p className="max-w-2xl text-base leading-8 text-[var(--hm-text-soft)]">
-                Textile personnalisé, habillage véhicule, signalétique et print : des réalisations
-                concrètes pour des structures qui veulent une image cohérente, visible et bien produite.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3.5">
-                <Link href="/catalogue" className="btn-primary gap-2">
-                  Voir le catalogue
-                  <ArrowRight size={16} />
-                </Link>
-                <Link href="/contact" className="btn-outline">
-                  Demander un devis
-                </Link>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              {CATEGORY_PILLS.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-[1.25rem] border border-[var(--hm-line)] bg-white px-4 py-4 text-sm leading-6 text-[var(--hm-text)] shadow-[0_14px_34px_rgba(63,45,88,0.04)]"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
+        {/* Héro court */}
+        <section className="mb-10">
+          <p className="section-tag">Réalisations HM Global</p>
+          <h1 className="mb-4 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[var(--hm-text)] md:text-5xl">
+            Fait à l&apos;atelier, livré à de vraies entreprises.
+          </h1>
+          <p className="max-w-2xl text-base leading-8 text-[var(--hm-text-soft)]">
+            Textile marqué en DTF et flex, enseignes posées, print : tout ce que vous voyez
+            ici a été produit chez nous, à Souffelweyersheim.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3.5">
+            <Link href="/catalogue" className="btn-primary gap-2">
+              Voir le catalogue
+              <ArrowRight size={16} />
+            </Link>
+            <Link href="/contact" className="btn-outline">
+              Demander un devis
+            </Link>
           </div>
         </section>
 
+        {/* Galerie photos réelles */}
         <section className="mb-14">
-          <div className="mb-8 max-w-2xl">
-            <p className="section-tag">Nos réalisations</p>
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Des projets réels, livrés à des entreprises d&apos;ici.
-            </h2>
-            <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-              Broderie, impression, autocollants, enseignes : un aperçu de ce que nous produisons à
-              l&apos;atelier pour des restaurants, garages, sociétés de service et commerces.
-            </p>
-          </div>
-
           <RealisationsGallery />
         </section>
 
+        {/* Vidéos atelier / chantier */}
         <section className="mb-14">
           <div className="mb-8 max-w-2xl">
             <p className="section-tag">L&apos;atelier en action</p>
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
               Produit chez nous, posé par nous.
             </h2>
-            <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-              Marquage à la presse, lettrage vinyle, flocage et pose d&apos;enseigne : quelques
-              vidéos prises sur le vif, à l&apos;atelier de Souffelweyersheim et sur les chantiers.
-            </p>
           </div>
 
           <AtelierVideos />
         </section>
 
-        <section className="mb-14">
-          <div className="mb-8 max-w-2xl">
-            <p className="section-tag">Autres réalisations</p>
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Habillage véhicule, signalétique, print et préparation visuelle.
-            </h2>
-            <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-              HM Global intervient au-delà du textile : marquage mobile, repérage, supports imprimés
-              et mise au propre de fichiers avant production.
-            </p>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            {SERVICE_CASES.map(({ id, icon: Icon, type, title, text, bullets }) => (
-              <article
-                key={id}
-                className="flex h-full flex-col rounded-[1.75rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-6"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-text-soft)]">
-                      {type}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-semibold text-[var(--hm-text)]">{title}</h3>
-                  </div>
-                  <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white">
-                    <Icon className="h-5 w-5 text-[var(--hm-primary)]" />
-                  </span>
-                </div>
-
-                <div className="mt-5 rounded-[1.25rem] border border-[var(--hm-line)] bg-white p-5">
-                  <p className="text-sm leading-7 text-[var(--hm-text-soft)]">{text}</p>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  {bullets.map((item) => (
-                    <div key={item} className="flex items-start gap-3">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--hm-primary)]" />
-                      <p className="text-sm leading-6 text-[var(--hm-text)]">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="mb-14 grid gap-6 lg:grid-cols-2">
-          {BEFORE_AFTER.map((item) => (
-            <article
-              key={item.title}
-              className="rounded-[1.75rem] border border-[var(--hm-line)] bg-white p-7 shadow-[0_18px_48px_rgba(63,45,88,0.05)]"
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-primary)]">
-                {item.title} / après projet
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold text-[var(--hm-text)]">
-                {item.title === "Avant"
-                  ? "Le besoin est là, mais pas encore bien cadré"
-                  : "Le projet devient plus lisible et plus exploitable"}
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-[var(--hm-text-soft)]">{item.text}</p>
-
-              <div className="mt-6 space-y-3">
-                {item.points.map((point) => (
-                  <div
-                    key={point}
-                    className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-4 text-sm leading-6 text-[var(--hm-text)]"
-                  >
-                    {point}
-                  </div>
-                ))}
-              </div>
-            </article>
-          ))}
-        </section>
-
+        {/* CTA final */}
         <section className="rounded-[2rem] border border-[var(--hm-line)] bg-[var(--hm-accent-soft-blue)] p-8 sm:p-10">
           <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <div>
@@ -263,9 +69,8 @@ export default function RealisationsPage() {
                 Vous avez un besoin proche de ces réalisations ?
               </h2>
               <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-                Si le projet est déjà cadré, le catalogue vous permet d&apos;avancer rapidement sur le
-                textile. Si le besoin est plus large ou plus spécifique, HM Global peut reprendre
-                le projet avec vous et construire la bonne réponse.
+                Textile, enseigne, print ou projet mixte : on cadre votre besoin
+                et on produit, comme pour les projets ci-dessus.
               </p>
             </div>
 
@@ -280,10 +85,7 @@ export default function RealisationsPage() {
                 <h3 className="mt-3 text-xl font-semibold text-[var(--hm-text)]">
                   Voir les produits disponibles
                 </h3>
-                <p className="mt-3 text-sm leading-6 text-[var(--hm-text-soft)]">
-                  Pour un besoin textile déjà identifié et une commande plus directe.
-                </p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hm-primary)]">
+                <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hm-primary)]">
                   Accéder au catalogue
                   <ChevronRight className="h-4 w-4" />
                 </span>
@@ -299,10 +101,7 @@ export default function RealisationsPage() {
                 <h3 className="mt-3 text-xl font-semibold text-[var(--hm-text)]">
                   Demander un devis ou un cadrage
                 </h3>
-                <p className="mt-3 text-sm leading-6 text-[var(--hm-text-soft)]">
-                  Pour un projet mixte, visuel, signalétique, véhicule ou besoin encore à structurer.
-                </p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hm-primary)]">
+                <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hm-primary)]">
                   Ouvrir la demande
                   <ChevronRight className="h-4 w-4" />
                 </span>

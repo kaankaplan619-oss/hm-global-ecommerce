@@ -10,8 +10,13 @@
 const VIDEOS = [
   {
     id: "pose-enseigne",
-    title: "Pose d'enseigne sur site",
+    title: "Pose d'enseigne — Crusty Coq",
     caption: "Installation d'une enseigne lumineuse en façade, réalisée par nos soins.",
+  },
+  {
+    id: "fixation-enseigne",
+    title: "Fixation du support d'enseigne",
+    caption: "Préparation et fixation du support en façade, sur le chantier Crusty Coq.",
   },
   {
     id: "presse-marquage",
@@ -19,20 +24,25 @@ const VIDEOS = [
     caption: "Pressage à chaud d'un sweat à l'atelier de Souffelweyersheim.",
   },
   {
+    id: "flocage-prestige",
+    title: "Marquage DTF client",
+    caption: "Marquage des t-shirts Prestige Vins & Boissons.",
+  },
+  {
+    id: "decoupe-traceur",
+    title: "Découpe vinyle au traceur",
+    caption: "Le traceur découpe un lettrage adhésif à l'atelier.",
+  },
+  {
     id: "lettrage-vinyle",
     title: "Lettrage adhésif",
     caption: "Échenillage d'un lettrage vinyle découpé à l'atelier.",
-  },
-  {
-    id: "flocage-prestige",
-    title: "Flocage logo client",
-    caption: "Marquage des t-shirts Prestige Vins & Boissons.",
   },
 ] as const;
 
 export default function AtelierVideos() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {VIDEOS.map((v) => (
         <figure
           key={v.id}
