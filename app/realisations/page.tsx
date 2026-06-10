@@ -8,39 +8,15 @@ import {
   CheckCircle2,
   ChevronRight,
   FileImage,
-  Shirt,
   Signpost,
 } from "lucide-react";
-import ProductImage from "@/components/product/ProductImage";
+import RealisationsGallery from "@/components/realisations/RealisationsGallery";
 
 export const metadata: Metadata = {
   title: "Réalisations",
   description:
     "Découvrez des exemples de réalisations HM Global Agence en textile personnalisé, habillage véhicule, signalétique et print.",
 };
-
-const FEATURED_CASES = [
-  {
-    id: "textile-equipe",
-    label: "Textile personnalisé",
-    title: "Tenues d'équipe pour activité terrain",
-    summary:
-      "Exemple représentatif d'un besoin fréquent : équiper une équipe avec une base textile claire, cohérente et facile à réassortir.",
-    image: "/images/products/jui62/PS_CGJUI62_NAVY-NEONGREEN.avif",
-    imageAlt: "Softshell personnalisée HM Global",
-    tags: ["Softshell", "Broderie", "Équipe terrain"],
-  },
-  {
-    id: "hoodie-staff",
-    label: "Textile événementiel",
-    title: "Hoodies et sweats pour staff ou association",
-    summary:
-      "Base de réalisation adaptée aux événements, associations et équipes qui veulent un textile identifiable, confortable et lisible.",
-    image: "/images/products/wu620/PS_CGWU620_BLACK.avif",
-    imageAlt: "Hoodie personnalisé HM Global",
-    tags: ["Hoodie", "DTF", "Staff / Association"],
-  },
-] as const;
 
 const SERVICE_CASES = [
   {
@@ -173,56 +149,17 @@ export default function RealisationsPage() {
 
         <section className="mb-14">
           <div className="mb-8 max-w-2xl">
-            <p className="section-tag">Mises en situation</p>
+            <p className="section-tag">Nos réalisations</p>
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Textile et communication visuelle pour les professionnels.
+              Des projets réels, livrés à des entreprises d&apos;ici.
             </h2>
             <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-              Des réalisations adaptées à chaque besoin — équipe terrain, staff événementiel,
-              corporate ou association. Du support choisi à la production, avec un accompagnement clair.
+              Broderie, impression, autocollants, enseignes : un aperçu de ce que nous produisons à
+              l&apos;atelier pour des restaurants, garages, sociétés de service et commerces.
             </p>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            {FEATURED_CASES.map((item) => (
-              <article
-                key={item.id}
-                className="overflow-hidden rounded-[1.75rem] border border-[var(--hm-line)] bg-white shadow-[0_18px_48px_rgba(63,45,88,0.06)]"
-              >
-                <div className="relative aspect-[16/11] bg-[var(--hm-surface)]">
-                  <ProductImage
-                    src={item.image}
-                    alt={item.imageAlt}
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 40vw, 100vw"
-                    className="object-contain"
-                    label="Visuel de réalisation à venir"
-                  />
-                  <div className="absolute left-4 top-4 rounded-full border border-[var(--hm-line)] bg-white/95 px-3 py-1 text-[10px] font-semibold tracking-[0.14em] text-[var(--hm-primary)] backdrop-blur-sm">
-                    {item.label}
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <h3 className="text-2xl font-semibold text-[var(--hm-text)]">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-[var(--hm-text-soft)]">
-                    {item.summary}
-                  </p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {item.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-1 text-[11px] font-medium text-[var(--hm-text)]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+          <RealisationsGallery />
         </section>
 
         <section className="mb-14">
@@ -305,12 +242,12 @@ export default function RealisationsPage() {
         <section className="rounded-[2rem] border border-[var(--hm-line)] bg-[var(--hm-accent-soft-blue)] p-8 sm:p-10">
           <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <div>
-              <p className="section-tag">Passer à l'action</p>
+              <p className="section-tag">Passer à l&apos;action</p>
               <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
                 Vous avez un besoin proche de ces réalisations ?
               </h2>
               <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-                Si le projet est déjà cadré, le catalogue vous permet d'avancer rapidement sur le
+                Si le projet est déjà cadré, le catalogue vous permet d&apos;avancer rapidement sur le
                 textile. Si le besoin est plus large ou plus spécifique, HM Global peut reprendre
                 le projet avec vous et construire la bonne réponse.
               </p>
