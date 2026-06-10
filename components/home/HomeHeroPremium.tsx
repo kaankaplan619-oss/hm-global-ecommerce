@@ -157,13 +157,12 @@ export default function HomeHeroPremium() {
                     className="relative aspect-[4/3] overflow-hidden rounded-[1.3rem]"
                     style={{ background: "#f6f7f9" }}
                   >
-                    {/* Macro 4:3 sur la broderie dorée du polo Prestige —
-                        recadrée/redressée depuis prestige-polo-broderie.jpg
-                        (photo plus lumineuse que les t-shirts, étiquette
-                        fournisseur hors cadre). Demande Kaan 2026-06-10. */}
+                    {/* Photo fournie par Kaan (2026-06-10, IMG_1914) : commande
+                        de t-shirts « Atelier du Pide » fraîchement marqués —
+                        crop 4:3 sur l'imprimé, doigt et étiquette hors cadre. */}
                     <Image
-                      src="/images/realisations/prestige-polo-broderie-hero.jpg"
-                      alt="Broderie dorée Prestige Bar à Vin sur polo noir, réalisée par HM Global"
+                      src="/images/realisations/atelier-du-pide-tshirts-hero.jpg"
+                      alt="T-shirts noirs et kaki marqués pour Atelier du Pide, réalisés par HM Global"
                       fill
                       priority
                       sizes="(min-width: 1024px) 22vw, 50vw"
