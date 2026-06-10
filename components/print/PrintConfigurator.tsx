@@ -390,7 +390,7 @@ export default function PrintConfigurator({
                       : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
                   }`}
                 >
-                  <FoldIcon panels={c.panels} active={foldChoiceId === c.id} />
+                  <FoldIcon kind={c.id} active={foldChoiceId === c.id} />
                   {c.label}
                 </button>
               ))}
@@ -773,18 +773,20 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Petite icône de pli : un rectangle divisé en `panels` volets. */
-function FoldIcon({ panels, active }: { panels: number; active: boolean }) {
-  const stroke = active ? "var(--hm-primary)" : "var(--hm-text-muted)";
-  const W = 26, H = 18, pw = W / panels;
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="shrink-0" aria-hidden>
-      <rect x="0.5" y="0.5" width={W - 1} height={H - 1} rx="1.5" fill="none" stroke={stroke} strokeWidth="1.2" />
-      {Array.from({ length: panels - 1 }, (_, i) => (
-        <line key={i} x1={pw * (i + 1)} y1="1" x2={pw * (i + 1)} y2={H - 1} stroke={stroke} strokeWidth="1" strokeDasharray="2 2" />
-      ))}
-    </svg>
-  );
+/** Icône de pli : dessin de profil distinct selon le type (pli simple, roulé, accordéon). */
+function FoldIcon({ kind, active }: { kind: string; active: boolean }) {
+  const s = active ? "var(--hm-primary)" : "var(--hm-text-muted)";
+  const common = { width: 30, height: 20, viewBox: "0 0 30 20", className: "shrink-0", fill: "none", stroke: s, strokeWidth: 1.6, strokeLinejoin: "round" as const, strokeLinecap: "round" as const, "aria-hidden": true };
+  if (kind === "accordion") {
+    // Zigzag (2 plis alternés)
+    return <svg {...common}><path d="M3 15 L10 5 L17 15 L24 5 L27 9" /></svg>;
+  }
+  if (kind === "roll") {
+    // Enroulé (volets repliés dans le même sens)
+    return <svg {...common}><path d="M5 4 H25 V16 H11 V8 H18" /></svg>;
+  }
+  // 1 pli — livre ouvert (V)
+  return <svg {...common}><path d="M3 6 L15 14 L27 6" /><path d="M15 14 V4" /></svg>;
 }
 
 /** Terme avec infobulle d'aide (survol/tap) — explique fond perdu, sécurité, etc. */
