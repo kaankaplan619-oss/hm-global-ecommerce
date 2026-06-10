@@ -42,6 +42,8 @@ interface Props {
   showToggle?:   boolean;
   /** Largeur d'affichage du format fini, en px. */
   displayWidth?: number;
+  /** Nombre de plis (dépliant) → trace les lignes de pli sur l'aperçu. */
+  foldCount?:    number;
   className?:    string;
 }
 
@@ -56,6 +58,7 @@ export default function PrintSupportVisualizer({
   showToggle   = true,
   hasBack      = false,
   displayWidth = 300,
+  foldCount    = 0,
   className    = "",
 }: Props) {
   const [face, setFace] = useState<"front" | "back">("front");
@@ -125,6 +128,15 @@ export default function PrintSupportVisualizer({
             className="absolute rounded-sm pointer-events-none"
             style={{ top: safePx, left: safePx, right: safePx, bottom: safePx, border: "1px dashed rgba(34,197,94,0.6)" }}
           />
+
+          {/* Lignes de pli (dépliant) — le client voit les volets */}
+          {foldCount > 0 && Array.from({ length: foldCount }, (_, i) => (
+            <div
+              key={i}
+              className="pointer-events-none absolute top-0 h-full"
+              style={{ left: `${((i + 1) / (foldCount + 1)) * 100}%`, borderLeft: "1px dashed rgba(177,63,116,0.55)" }}
+            />
+          ))}
         </div>
       </div>
 

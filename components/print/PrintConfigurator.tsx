@@ -361,6 +361,7 @@ export default function PrintConfigurator({
                 heightMm={FOLDED ? editorH : spec.heightMm}
                 sizeLabel={product.sizeLabel}
                 orientation={FOLDED ? editorOrientation : orientation}
+                foldCount={FOLDED ? foldCount : 0}
                 frontFileUrl={frontFile?.url ?? null}
                 backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
                 showToggle={spec.faces && faces === "recto-verso"}
@@ -673,6 +674,7 @@ export default function PrintConfigurator({
                 heightMm={FOLDED ? editorH : spec.heightMm}
                 sizeLabel={product.sizeLabel}
                 orientation={FOLDED ? editorOrientation : orientation}
+                foldCount={FOLDED ? foldCount : 0}
                 frontFileUrl={frontFile?.url ?? null}
                 backFileUrl={spec.faces && faces === "recto-verso" ? (backFile?.url ?? null) : null}
                 showToggle={spec.faces && faces === "recto-verso"}
