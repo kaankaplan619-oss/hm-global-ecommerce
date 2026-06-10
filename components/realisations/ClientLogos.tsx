@@ -9,7 +9,6 @@ import Image from "next/image";
 const LOGOS = [
   { src: "/images/clients/miamm.jpg",     name: "MiAMM" },
   { src: "/images/clients/r3m.jpg",       name: "R3M" },
-  { src: "/images/clients/illico.jpg",    name: "illiCO travaux" },
   { src: "/images/clients/metem.jpg",     name: "METEM" },
   { src: "/images/clients/prestige.jpg",  name: "Prestige Vins & Boissons" },
   { src: "/images/clients/doy-doy.jpg",   name: "Doy Doy" },
