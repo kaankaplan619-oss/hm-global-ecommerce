@@ -82,14 +82,6 @@ export const REALISATIONS: Realisation[] = [
     alt: "Utilitaire Renault Master habillé d'un scorpion en vinyle découpé",
   },
   {
-    id: "egp-vehicule",
-    title: "Flocage utilitaire — EGP Propreté",
-    sector: "Véhicule",
-    tags: ["Flocage", "Lettrage"],
-    image: "/images/realisations/egp-vehicule.jpg",
-    alt: "Kangoo floqué EGP : nettoyage, intervention post-sinistre, espaces verts",
-  },
-  {
     id: "scorpion-creation",
     title: "Du dessin à la découpe — scorpion",
     sector: "Véhicule",
