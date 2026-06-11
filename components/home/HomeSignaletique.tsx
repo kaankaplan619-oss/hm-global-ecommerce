@@ -14,7 +14,7 @@ const ITEMS = [
     icon: Lamp,
     label: "Enseignes lumineuses",
     line: "Lettres rétroéclairées, caissons — fabriquées et posées par nous.",
-    image: "/images/realisations/naga-enseigne.jpg",
+    image: "/images/realisations/naga-enseigne-nuit.jpg",
     alt: "Enseigne lumineuse Le Naga posée de nuit",
   },
   {
