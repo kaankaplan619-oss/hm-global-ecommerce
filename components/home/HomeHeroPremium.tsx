@@ -157,12 +157,12 @@ export default function HomeHeroPremium() {
                     className="relative aspect-[4/3] overflow-hidden rounded-[1.3rem]"
                     style={{ background: "#f6f7f9" }}
                   >
-                    {/* Photo fournie par Kaan (2026-06-10, IMG_1914) : commande
-                        de t-shirts « Atelier du Pide » fraîchement marqués —
-                        crop 4:3 sur l'imprimé, doigt et étiquette hors cadre. */}
+                    {/* Photo fournie par Kaan (2026-06-11, IMG_1917) : t-shirt
+                        noir floqué blanc « Atelier du Pide » (logo bien lisible),
+                        t-shirt kaki en appui. Crop 4:3 centré sur le logo. */}
                     <Image
-                      src="/images/realisations/atelier-du-pide-tshirts-hero.jpg"
-                      alt="T-shirts noirs et kaki marqués pour Atelier du Pide, réalisés par HM Global"
+                      src="/images/realisations/atelier-du-pide-hero-v2.jpg"
+                      alt="T-shirt noir floqué « Atelier du Pide » et t-shirt kaki, réalisés par HM Global"
                       fill
                       priority
                       sizes="(min-width: 1024px) 22vw, 50vw"
