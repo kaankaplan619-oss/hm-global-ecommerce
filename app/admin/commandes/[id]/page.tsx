@@ -10,6 +10,7 @@ import {
 import { useAuthStore } from "@/store/auth";
 import { getSupplierInfo } from "@/lib/supplierMap";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
+import { getFulfillmentInfo } from "@/lib/fulfillment";
 import type { Order, OrderStatus, OrderItem, SupplierMode } from "@/types";
 
 // ─── All 16 statuses (ordered by workflow) ────────────────────────────────────
@@ -163,6 +164,9 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const [gelatoSending, setGelatoSending] = useState(false);
   const [gelatoError, setGelatoError] = useState<string | null>(null);
   const [gelatoResult, setGelatoResult] = useState<{ id: string; status: string } | null>(null);
+  // Envoi production Printful (POD textile automatisé) — brouillon puis confirmation.
+  const [printfulLoading, setPrintfulLoading] = useState(false);
+  const [printfulError, setPrintfulError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!_hasHydrated) return;
@@ -324,6 +328,64 @@ export default function AdminCommandeDetailPage({ params }: Props) {
     }
   };
 
+  // ─── Printful (POD textile automatisé) ──────────────────────────────────────
+  // 1) Créer le brouillon : envoie taille + couleur + logo à Printful SANS lancer
+  //    la production ni facturer (confirm: false). Réversible (suppressible).
+  const handleCreatePrintfulDraft = async () => {
+    if (!order) return;
+    setPrintfulLoading(true);
+    setPrintfulError(null);
+    try {
+      const res = await fetch("/api/printful/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPrintfulError(body.error ?? "Échec de la création du brouillon Printful.");
+        return;
+      }
+      setOrder({
+        ...order,
+        printfulOrderId: String(body.printfulOrderId),
+        printfulStatus:  body.printfulStatus,
+        supplierProvider: "printful",
+        status: "commande_fournisseur_passee" as OrderStatus,
+      });
+      setNewStatus("commande_fournisseur_passee" as OrderStatus);
+    } catch {
+      setPrintfulError("Erreur réseau. Réessayez.");
+    } finally {
+      setPrintfulLoading(false);
+    }
+  };
+
+  // 2) Confirmer la production : ⚠️ IRRÉVERSIBLE ET FACTURÉ — double confirmation.
+  const handleConfirmPrintful = async () => {
+    if (!order?.printfulOrderId) return;
+    if (!window.confirm(
+      "⚠️ Confirmer la production Printful ?\n\nCette action est IRRÉVERSIBLE et FACTURÉE : Printful lance l'impression et l'expédition au client. Vérifiez le brouillon dans votre compte Printful avant de confirmer.",
+    )) return;
+    setPrintfulLoading(true);
+    setPrintfulError(null);
+    try {
+      const res = await fetch(`/api/printful/orders/${order.printfulOrderId}/confirm`, {
+        method: "POST",
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPrintfulError(body.error ?? "Échec de la confirmation Printful.");
+        return;
+      }
+      setOrder({ ...order, printfulStatus: body.printfulStatus });
+    } catch {
+      setPrintfulError("Erreur réseau. Réessayez.");
+    } finally {
+      setPrintfulLoading(false);
+    }
+  };
+
   const handleQuickAdvance = async (nextStatus: OrderStatus) => {
     if (!order) return;
     setAdvancing(true);
@@ -376,6 +438,8 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const batRequired = getBatRequired(order.items ?? []);
   const totalQty = (order.items ?? []).reduce((acc, i) => acc + (i.quantity ?? 0), 0);
   const hasFileToVerify = (order.items ?? []).some((i) => i.logoFile?.status === "en_attente");
+  // Circuit de production de la commande (atelier interne / Printful auto / Gelato).
+  const fulfillment = getFulfillmentInfo(order.items ?? []);
 
   // ─── Render ──────────────────────────────────────────────────────────────────
 
@@ -1312,6 +1376,93 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                 {saving ? "Enregistrement..." : "Enregistrer les modifications"}
               </button>
             </div>
+
+            {/* ── Circuit Printful (POD textile automatisé) ──────────────────
+                 Visible uniquement si la commande contient des articles Printful
+                 (Gildan, Bella, casquettes…). Le brouillon part avec taille +
+                 couleur + logo SANS lancer la production (confirm: false). La
+                 confirmation (facturée) est un 2ᵉ bouton manuel séparé. */}
+            {fulfillment.hasPrintful && (
+              <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <Package size={14} className="text-[var(--hm-primary)]" />
+                  <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider">
+                    Fournisseur Printful
+                  </h2>
+                  <span className="ml-auto rounded-full bg-[rgba(177,63,116,0.08)] px-2 py-0.5 text-[9px] font-bold text-[var(--hm-primary)]">
+                    🤖 Automatisé
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-[var(--hm-text-soft)] mb-3 leading-snug">
+                  {fulfillment.allPrintful
+                    ? "Printful imprime et expédie directement au client. Vous n'avez rien à produire à l'atelier."
+                    : `Commande mixte : ${fulfillment.printfulCount} article(s) Printful + ${fulfillment.interneCount} à produire à l'atelier. L'envoi auto Printful ne gère que les articles Printful.`}
+                </p>
+
+                {/* Garde-fou : variant couleur/taille non mappé → l'envoi échouerait */}
+                {fulfillment.missingVariants.length > 0 && (
+                  <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
+                    <p className="text-[10px] font-bold text-amber-700 mb-1">
+                      ⚠ Variant Printful manquant — envoi auto impossible
+                    </p>
+                    {fulfillment.missingVariants.map((m, i) => (
+                      <p key={i} className="text-[10px] text-amber-700">
+                        {m.product} · {m.color} · {m.size}
+                      </p>
+                    ))}
+                    <p className="text-[9px] text-amber-600 mt-1">
+                      Cette couleur/taille n&apos;a pas encore d&apos;ID Printful. À compléter, ou à produire à l&apos;atelier.
+                    </p>
+                  </div>
+                )}
+
+                {fulfillment.printfulMissingLogo && (
+                  <p className="mb-3 text-[10px] font-semibold text-amber-700">
+                    ⚠ Un article Printful n&apos;a pas de fichier logo validé.
+                  </p>
+                )}
+
+                {!order.printfulOrderId ? (
+                  <button
+                    onClick={handleCreatePrintfulDraft}
+                    disabled={printfulLoading || fulfillment.missingVariants.length > 0 || fulfillment.printfulMissingLogo}
+                    className="btn-primary w-full text-xs gap-2"
+                  >
+                    <Package size={12} />
+                    {printfulLoading ? "Création…" : "Créer le brouillon Printful"}
+                  </button>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] px-3 py-2">
+                      <p className="text-[10px] text-[var(--hm-text-soft)]">Brouillon Printful</p>
+                      <p className="text-xs font-bold text-[var(--hm-text)]">
+                        #{order.printfulOrderId}
+                        <span className="ml-2 font-medium text-[var(--hm-text-soft)]">
+                          {order.printfulStatus ?? "draft"}
+                        </span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleConfirmPrintful}
+                      disabled={printfulLoading || order.printfulStatus === "fulfilled" || order.printfulStatus === "inprocess"}
+                      className="btn-primary w-full text-xs gap-2"
+                      style={{ background: "#b91c1c" }}
+                    >
+                      <AlertTriangle size={12} />
+                      {printfulLoading ? "Confirmation…" : "⚠️ Confirmer la production (facturé)"}
+                    </button>
+                    <p className="text-[9px] text-[var(--hm-text-soft)] text-center leading-snug">
+                      Vérifiez d&apos;abord le brouillon dans votre compte Printful. La confirmation est irréversible.
+                    </p>
+                  </div>
+                )}
+
+                {printfulError && (
+                  <p className="mt-2 text-[10px] font-semibold text-red-500">{printfulError}</p>
+                )}
+              </div>
+            )}
 
             {/* Workflow — étape suivante */}
             {WORKFLOW_STEPS[order.status] && (
