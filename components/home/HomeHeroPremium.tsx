@@ -107,9 +107,11 @@ export default function HomeHeroPremium() {
           </div>
 
           {/* ── Colonne droite : visuel principal + 2 vraies réalisations ──
-              Grande image = ambiance « tout-en-un » (IA, choix Kaan 2026-06-11 :
-              presse textile + supports print + lueur d'enseigne — aucun texte
-              lisible, aucun produit vendable). Les deux petites restent de
+              Grande image = ambiance « tout-en-un » (IA, choix Kaan 2026-06-11).
+              V2 après retour Kaan : style « vraie photo d'atelier PME au
+              smartphone » (murs blancs, rayonnages, lumière neutre) pour rester
+              raccord avec les vraies photos — plus de rendu showroom. Aucun
+              texte lisible, aucun produit vendable. Les deux petites restent de
               VRAIES commandes clients (Atelier du Pide + enseigne MiAMMi). */}
           <div className="order-2 relative lg:order-2">
             <div
@@ -125,7 +127,7 @@ export default function HomeHeroPremium() {
                   style={{ background: "#f6f7f9" }}
                 >
                   <Image
-                    src="/images/home/hm-hero-atelier-360.jpg"
+                    src="/images/home/hm-hero-atelier-v2.jpg"
                     alt="Atelier de communication visuelle : presse à chaud textile, supports imprimés et enseigne lumineuse"
                     fill
                     priority
