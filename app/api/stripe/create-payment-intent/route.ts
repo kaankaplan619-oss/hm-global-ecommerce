@@ -7,6 +7,7 @@ import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
 import { PRINT_PRODUCTS_LOOKUP, getBusinessCardLotPrice } from "@/data/print-products";
 import { getPrintDirectPrice } from "@/data/print-pricing";
 import { getPrintProduct } from "@/data/print-catalogue";
+import { checkPrintfulAvailability } from "@/lib/printful-stock";
 import type { Technique, Placement, PrintConfig } from "@/types";
 
 interface CartItemInput {
@@ -71,6 +72,34 @@ export async function POST(req: NextRequest) {
 
     if (!items?.length) {
       return NextResponse.json({ error: "Panier vide" }, { status: 400 });
+    }
+
+    // ── Garde stock Printful — AVANT tout encaissement ────────────────────────
+    // Vérifie en direct (cache 15 min) que chaque article POD est en stock EU.
+    // Bloque le paiement avec un message clair plutôt que d'encaisser un
+    // produit non livrable (→ sinon email d'excuse + remboursement).
+    const stockCheck = await checkPrintfulAvailability(
+      items.map((i) => ({
+        productId:  i.productId,
+        colorId:    i.colorId,
+        colorLabel: i.colorLabel,
+        size:       i.size,
+      })),
+    );
+    if (!stockCheck.ok) {
+      const labels = stockCheck.unavailable.map((u) => {
+        const name = PRODUCTS.find((p) => p.id === u.productId)?.shortName ?? u.productId;
+        return `${name} ${u.colorLabel} taille ${u.size}`;
+      });
+      return NextResponse.json(
+        {
+          error:
+            `Article momentanément en rupture de stock : ${labels.join(", ")}. ` +
+            "Choisissez une autre taille ou couleur, ou réessayez plus tard — votre carte n'a pas été débitée.",
+          unavailableItems: stockCheck.unavailable,
+        },
+        { status: 409 },
+      );
     }
 
     // Determine effective email for receipts and notifications

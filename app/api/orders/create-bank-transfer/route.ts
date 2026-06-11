@@ -6,6 +6,7 @@ import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
 import { PRINT_PRODUCTS_LOOKUP, getBusinessCardLotPrice } from "@/data/print-products";
 import { getPrintDirectPrice } from "@/data/print-pricing";
 import { getPrintProduct } from "@/data/print-catalogue";
+import { checkPrintfulAvailability } from "@/lib/printful-stock";
 import type { Technique, Placement, PrintConfig } from "@/types";
 
 interface CartItemInput {
@@ -56,6 +57,31 @@ export async function POST(req: NextRequest) {
 
     if (!items?.length) {
       return NextResponse.json({ error: "Panier vide" }, { status: 400 });
+    }
+
+    // ── Garde stock Printful — même protection que le paiement CB ─────────────
+    const stockCheck = await checkPrintfulAvailability(
+      items.map((i) => ({
+        productId:  i.productId,
+        colorId:    i.colorId,
+        colorLabel: i.colorLabel,
+        size:       i.size,
+      })),
+    );
+    if (!stockCheck.ok) {
+      const labels = stockCheck.unavailable.map((u) => {
+        const name = PRODUCTS.find((p) => p.id === u.productId)?.shortName ?? u.productId;
+        return `${name} ${u.colorLabel} taille ${u.size}`;
+      });
+      return NextResponse.json(
+        {
+          error:
+            `Article momentanément en rupture de stock : ${labels.join(", ")}. ` +
+            "Choisissez une autre taille ou couleur, ou réessayez plus tard.",
+          unavailableItems: stockCheck.unavailable,
+        },
+        { status: 409 },
+      );
     }
 
     const effectiveEmail =

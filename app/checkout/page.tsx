@@ -365,6 +365,9 @@ export default function CheckoutPage() {
   const [hydrated, setHydrated] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Erreur bloquante au moment de la commande (ex. rupture de stock Printful
+  // détectée par le garde serveur) — affichée au-dessus du bouton de paiement.
+  const [orderError, setOrderError] = useState<string | null>(null);
   // Forces re-render after login to re-check logo states
   const [loginDone, setLoginDone] = useState(false);
   // Méthode de paiement choisie : Stripe (CB/Link) ou virement bancaire V1 manuel.
@@ -545,6 +548,7 @@ export default function CheckoutPage() {
 
   // ── Place order ────────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
+    setOrderError(null);
     // Sauvegarde locale au moment du submit (cas où l'utilisateur a coché la
     // case puis modifié les champs ensuite — on récupère l'état final).
     if (saveAddress && typeof window !== "undefined") {
@@ -592,7 +596,10 @@ export default function CheckoutPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error("Erreur création commande virement");
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error ?? "Erreur création commande virement");
+        }
         const { orderId, orderNumber } = await res.json();
         useCartStore.getState().clearCart();
         router.push(
@@ -608,7 +615,10 @@ export default function CheckoutPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Erreur lors de la création du paiement");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Erreur lors de la création du paiement");
+      }
 
       const { clientSecret, orderId, orderNumber } = await res.json();
 
@@ -617,6 +627,7 @@ export default function CheckoutPage() {
       );
     } catch (err) {
       console.error(err);
+      setOrderError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez.");
       setLoading(false);
     }
   };
@@ -1165,6 +1176,12 @@ export default function CheckoutPage() {
                   {formatPrice(totals.totalTTC)}
                 </span>
               </div>
+
+              {orderError && (
+                <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                  <p className="text-xs font-semibold text-red-700">{orderError}</p>
+                </div>
+              )}
 
               <button
                 onClick={handlePlaceOrder}
