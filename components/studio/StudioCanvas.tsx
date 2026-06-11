@@ -123,6 +123,11 @@ const ZONE_OVERRIDES_BY_PRODUCT_ID: Record<string, {
   coeur?: [number, number, number, number];
   dos?:   [number, number, number, number];
 }> = {
+  // Bonnet à revers : la broderie se fait sur le REVERS (bande basse du
+  // bonnet), pas au milieu du crâne — zone descendue vs casquettes (2026-06-12).
+  "bonnet-yupoong-1501kc": {
+    coeur: [0.40, 0.60, 0.20, 0.13],
+  },
   wg004: {
     // Iter 8 (2026-05-26) : taille réduite à 0.12 × 0.12 pour matcher visuellement
     // un logo 10 cm réel. Le calcul `pxPerCm` (lib/textile-zones.ts SHIRT_BODY_FILL
