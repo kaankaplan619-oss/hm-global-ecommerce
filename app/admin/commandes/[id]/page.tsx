@@ -300,21 +300,33 @@ export default function AdminCommandeDetailPage({ params }: Props) {
 
   // ── Envoi 1-clic en production (Gelato) — admin uniquement ────────────────
   // Le client ne voit jamais Gelato : envoi interne après paiement + BAT validé.
+  // Mode itemId (2026-06-11) : fichiers recto/verso, quantité d'exemplaires et
+  // UID produit sont résolus côté serveur depuis le printConfig persisté —
+  // fini le verso perdu, la quantité à 1 et l'UID collé à la main.
   const handleSendToProduction = async (item: OrderItem) => {
     if (!order || !item.printConfig) return;
-    const productUid = (item.printConfig.gelatoUid ?? gelatoUid).trim();
-    const fileUrl = item.printConfig.frontFileUrl;
-    if (!productUid) { setGelatoError("UID produit Gelato manquant — renseignez-le ci-dessous."); return; }
-    if (!fileUrl)    { setGelatoError("Aucun fichier d'impression sur cet article."); return; }
-    const fileType = "default";
-    if (!window.confirm("Envoyer cet article en production maintenant ? La commande part chez le partenaire d'impression (action facturée, non automatique).")) return;
+    const manualUid = gelatoUid.trim();
+    if (!item.printConfig.gelatoUid && !manualUid) {
+      setGelatoError("UID produit Gelato manquant — renseignez-le ci-dessous (ancienne commande).");
+      return;
+    }
+    if (!item.printConfig.frontFileUrl) {
+      setGelatoError("Aucun fichier d'impression sur cet article.");
+      return;
+    }
+    const qty = item.printConfig.quantity ?? 1;
+    if (!window.confirm(`Envoyer cet article en production maintenant ?\n\n${qty} exemplaire(s) — ${item.printConfig.backFileUrl ? "recto-verso (2 fichiers)" : "recto seul"}.\nLa commande part chez le partenaire d'impression (action facturée, non automatique).`)) return;
     setGelatoSending(true);
     setGelatoError(null);
     try {
       const res = await fetch("/api/gelato/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id, productUid, fileUrl, fileType }),
+        body: JSON.stringify({
+          orderId: order.id,
+          itemId:  item.id,
+          ...(manualUid && !item.printConfig.gelatoUid ? { productUid: manualUid } : {}),
+        }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) { setGelatoError(body.error ?? "Échec de l'envoi en production."); return; }
@@ -440,6 +452,10 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   const hasFileToVerify = (order.items ?? []).some((i) => i.logoFile?.status === "en_attente");
   // Circuit de production de la commande (atelier interne / Printful auto / Gelato).
   const fulfillment = getFulfillmentInfo(order.items ?? []);
+  // Commande Gelato déjà créée : soit à l'instant (state), soit persistée en
+  // base (rechargement de page) — évite de réafficher le bouton d'envoi.
+  const gelatoInfo = gelatoResult
+    ?? (order.gelatoOrderId ? { id: order.gelatoOrderId, status: order.gelatoStatus ?? "créée" } : null);
 
   // ─── Render ──────────────────────────────────────────────────────────────────
 
@@ -794,9 +810,18 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                                 <p className="text-[9px] text-[var(--hm-text-soft)] mb-1">Production impression (interne — invisible client)</p>
                                 <span className="badge badge-info text-[9px]">Gelato POD</span>
 
-                                {gelatoResult ? (
+                                {gelatoInfo ? (
                                   <p className="mt-2 text-[10px] font-semibold text-green-600">
-                                    ✓ Envoyé en production · Réf {gelatoResult.id} · {gelatoResult.status}
+                                    ✓ Envoyé en production · Réf {gelatoInfo.id} · {gelatoInfo.status}
+                                    {" · "}
+                                    <a
+                                      href={`https://dashboard.gelato.com/orders/${gelatoInfo.id}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="underline hover:opacity-80"
+                                    >
+                                      Suivre chez le partenaire ↗
+                                    </a>
                                   </p>
                                 ) : (
                                   <div className="mt-2 flex flex-col gap-1.5">

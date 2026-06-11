@@ -12,11 +12,16 @@ import {
  * Admin-only. Crée une commande Gelato depuis une commande HM Global.
  * Utilisé pour les produits print : cartes de visite, flyers, affiches…
  *
- * Body: {
+ * Body (mode recommandé — l'item est résolu côté serveur) : {
  *   orderId:     string  — ID commande HM Global
- *   productUid:  string  — UID produit Gelato (ex: "business_cards_pf_bb_pt_350-gsm-coated-silk_cl_4-4_hor")
- *   fileUrl:     string  — URL publique du fichier PDF/PNG
- *   fileType?:   "default" | "front" | "back"  (défaut: "default")
+ *   itemId:      string  — ID de l'order_item print : fichiers recto/verso,
+ *                          quantité d'exemplaires et UID Gelato sont lus depuis
+ *                          son product_snapshot.printConfig (source de vérité).
+ *   productUid?: string  — override manuel de l'UID (sinon printConfig.gelatoUid)
+ * }
+ *
+ * Body (mode legacy, conservé pour compat) : {
+ *   orderId, productUid, fileUrl, fileType? — un seul fichier, quantité 1.
  * }
  */
 export async function POST(req: NextRequest) {
@@ -44,16 +49,17 @@ export async function POST(req: NextRequest) {
 
     // ── Body ───────────────────────────────────────────────────────────────
     const body = await req.json();
-    const { orderId, productUid, fileUrl, fileType = "default" } = body as {
-      orderId:    string;
-      productUid: string;
-      fileUrl:    string;
-      fileType?:  "default" | "front" | "back";
+    const { orderId, itemId, productUid, fileUrl, fileType = "default" } = body as {
+      orderId:     string;
+      itemId?:     string;
+      productUid?: string;
+      fileUrl?:    string;
+      fileType?:   "default" | "front" | "back";
     };
 
-    if (!orderId || !productUid || !fileUrl) {
+    if (!orderId || (!itemId && (!productUid || !fileUrl))) {
       return NextResponse.json(
-        { error: "orderId, productUid et fileUrl sont requis" },
+        { error: "orderId + itemId requis (ou orderId + productUid + fileUrl en mode legacy)" },
         { status: 400 }
       );
     }
@@ -82,13 +88,59 @@ export async function POST(req: NextRequest) {
     const email      = order.billing_address?.email ?? addr.email ?? "";
     const shippingAddress = mapHMAddressToGelato(addr, email);
 
-    // ── Items Gelato ───────────────────────────────────────────────────────
+    // ── Construction de l'item Gelato ───────────────────────────────────────
+    // Mode recommandé (itemId) : tout est lu depuis le printConfig persisté à
+    // la commande — fichiers recto/verso, quantité d'exemplaires (250/500/…),
+    // UID produit. Évite les 3 pièges du mode legacy : verso perdu, quantité
+    // forcée à 1, UID collé à la main.
+    let resolvedUid:   string;
+    let files:         GelatoOrderItem["files"];
+    let printQuantity: number;
+
+    if (itemId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const item = ((order.order_items ?? []) as any[]).find((i) => i.id === itemId);
+      if (!item) {
+        return NextResponse.json({ error: "Article introuvable dans la commande" }, { status: 404 });
+      }
+      const cfg = item.product_snapshot?.printConfig as {
+        gelatoUid?:    string;
+        frontFileUrl?: string;
+        backFileUrl?:  string | null;
+        quantity?:     number;
+      } | undefined;
+      if (!cfg?.frontFileUrl) {
+        return NextResponse.json({ error: "Aucun fichier d'impression sur cet article" }, { status: 422 });
+      }
+      resolvedUid = (productUid ?? cfg.gelatoUid ?? "").trim();
+      if (!resolvedUid) {
+        return NextResponse.json(
+          { error: "UID produit Gelato manquant (printConfig.gelatoUid absent — ancienne commande ? renseignez-le manuellement)" },
+          { status: 422 }
+        );
+      }
+      // Recto-verso : deux fichiers typés front/back. Recto seul : un fichier
+      // "default" (Gelato imprime le verso vierge — la couleur est toujours 4-4).
+      files = cfg.backFileUrl
+        ? [
+            { type: "front", url: cfg.frontFileUrl },
+            { type: "back",  url: cfg.backFileUrl },
+          ]
+        : [{ type: "default", url: cfg.frontFileUrl }];
+      printQuantity = cfg.quantity && cfg.quantity > 0 ? cfg.quantity : 1;
+    } else {
+      // Mode legacy : un seul fichier, quantité 1 (à éviter pour les lots).
+      resolvedUid   = productUid!.trim();
+      files         = [{ type: fileType, url: fileUrl! }];
+      printQuantity = 1;
+    }
+
     const items: GelatoOrderItem[] = [
       {
-        itemReferenceId: `${orderId}-item-1`,
-        productUid,
-        files: [{ type: fileType, url: fileUrl }],
-        quantity: 1,
+        itemReferenceId: itemId ? `${orderId}-${itemId}` : `${orderId}-item-1`,
+        productUid: resolvedUid,
+        files,
+        quantity: printQuantity,
       },
     ];
 

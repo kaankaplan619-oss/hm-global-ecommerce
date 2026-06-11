@@ -95,6 +95,10 @@ export function mapDbOrderToOrder(row: any): Order {
     printfulStatus:   row.printful_status    ?? undefined,
     supplierProvider: row.supplier_provider  ?? undefined,
 
+    // Gelato POD (print)
+    gelatoOrderId: row.gelato_order_id ?? undefined,
+    gelatoStatus:  row.gelato_status   ?? undefined,
+
     createdAt: row.created_at,
     updatedAt: row.updated_at,
 

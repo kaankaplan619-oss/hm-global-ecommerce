@@ -498,6 +498,9 @@ export interface Order {
   printfulOrderId?: string;
   printfulStatus?: string;
   supplierProvider?: string;
+  // Gelato POD (print) — symétriques des champs Printful
+  gelatoOrderId?: string;
+  gelatoStatus?: string;
 }
 
 // ─── Review Types ─────────────────────────────────────────────────────────────────

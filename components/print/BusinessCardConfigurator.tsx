@@ -44,6 +44,7 @@ import {
   PRINT_CORNERS_LABELS,
   PRINT_ORIENTATION_LABELS,
   getBusinessCardLotPrice,
+  getBusinessCardGelatoUid,
   type PrintFinish,
   type PrintFaces,
   type PrintOrientation,
@@ -318,6 +319,9 @@ export default function BusinessCardConfigurator() {
         finish,
         corners,
         quantity,
+        // UID produit Gelato exact (finition × orientation) — permet l'envoi
+        // en production en un clic côté admin, sans saisie manuelle d'UID.
+        gelatoUid:      getBusinessCardGelatoUid({ finish, orientation }),
         projectName:    projectName.trim() || undefined,
         lotPriceTTC:    lotPrice,
         frontFileUrl:   frontFile.url,
