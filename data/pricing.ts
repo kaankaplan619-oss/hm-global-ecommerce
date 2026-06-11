@@ -927,10 +927,12 @@ export const TOTE_DENIM_MANTIS_M196_BRODERIE_VOLUME: VolumePricingTier[] = [
 ];
 
 // Sacoche bandoulière BagBase QS309 (1552) — coût 25.25 USD ≈ 23,48 €
+// IMPRESSION uniquement : l'API Printful n'accepte PAS la broderie sur ce
+// produit (files = default/front_dtf_backpack, vérifié 2026-06-12).
 export const SACOCHE_BAGBASE_QS309_PRICES = {
-  dtf: 0, dtflex: 0, flex: 0, broderie: 49.90,
+  dtf: 49.90, dtflex: 0, flex: 0, broderie: 0,
 } as const;
-export const SACOCHE_BAGBASE_QS309_BRODERIE_VOLUME: VolumePricingTier[] = [
+export const SACOCHE_BAGBASE_QS309_DTF_VOLUME: VolumePricingTier[] = [
   { from: 1, to: 9, unitPrice: 49.90 },
   { from: 10,       unitPrice: 46.90 },
 ];
