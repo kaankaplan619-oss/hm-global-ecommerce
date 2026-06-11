@@ -54,6 +54,12 @@ export const ZONES_BY_CATEGORY: Record<
   // Dos calibré sur le placement Printify large_back_embroidery = 3000×1800 px
   // ≈ 25×15 cm (broderie dos paysage), PAS 28×35 (qui est la taille DTF t-shirt).
   polos:      { coeur: [0.54, 0.27, 0.11, 0.11], dos: [0.345, 0.305, 0.31, 0.19] },
+  // ── Flow studio unifié 2026-06-12 (demande Kaan : même procédé partout) ────
+  // casquettes : broderie panneau avant (mockups Printful, casquette centrée).
+  // Zone = front centre ; dos jamais utilisé (placements: ["coeur"]).
+  casquettes: { coeur: [0.40, 0.42, 0.20, 0.13], dos: [0.40, 0.42, 0.20, 0.13] },
+  // sacs : corps du tote/sacoche (mockups Printful à plat, sac centré).
+  sacs:       { coeur: [0.36, 0.46, 0.28, 0.28], dos: [0.36, 0.46, 0.28, 0.28] },
 };
 
 // ── Fallback statique pour packshots B&C Exact 190 (B3.2-A2 validé) ──────────

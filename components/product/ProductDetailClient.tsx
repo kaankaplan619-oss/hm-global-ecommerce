@@ -953,15 +953,7 @@ export default function ProductDetailClient({ product }: Props) {
               }}
               className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
             >
-              {product.category === "casquettes"
-                ? (product.id.startsWith("bonnet") ? "Personnaliser mon bonnet" : product.id.startsWith("bob") ? "Personnaliser mon bob" : "Personnaliser ma casquette")
-                : product.category === "polos"
-                ? "Personnaliser mon polo"
-                : product.category === "sacs"
-                ? "Personnaliser mon sac"
-                : product.category === "softshells"
-                ? "Personnaliser ma veste"
-                : product.id.includes("mug")
+              {product.id.includes("mug")
                 ? "Personnaliser mon mug"
                 : "Personnaliser mon article"}
               <ArrowRight size={16} />

@@ -3730,17 +3730,18 @@ export function getFeaturedProducts(): Product[] {
 
 /**
  * Produits à « flow simple » : personnalisation par upload direct sur la fiche
- * produit (pas de studio Fabric). Historiquement goodies + casquettes ; étendu
- * (2026-06-12, #85) aux polos / sacs / vestes POD Printful — broderie ou
- * impression à emplacement FIXE, le studio n'apporterait rien. Les produits
- * atelier (TopTex/Falk&Ross) de ces catégories gardent le flow studio.
+ * produit (pas de studio Fabric).
+ *
+ * Décision Kaan 2026-06-12 : UN SEUL procédé pour tout le textile — le bouton
+ * « Personnaliser mon article » ouvre le STUDIO (comme les t-shirts) pour
+ * polos, casquettes, sacs et vestes. Seuls les GOODIES (mugs, stickers,
+ * dessous de verre) gardent l'upload direct sur la fiche (zone d'impression
+ * unique, le studio textile n'a pas de sens pour un mug).
+ * Note production : pour la broderie Printful, l'emplacement final reste le
+ * placement standard (cœur/front) — le studio sert d'aperçu, le BAT fait foi.
  */
 export function isSimpleFlowProduct(p: Product): boolean {
-  if (p.category === "goodies" || p.category === "casquettes") return true;
-  return (
-    p.supplierName === "printful" &&
-    (p.category === "polos" || p.category === "sacs" || p.category === "softshells")
-  );
+  return p.category === "goodies";
 }
 
 // ─── Seasonal ordering config ─────────────────────────────────────────────────
