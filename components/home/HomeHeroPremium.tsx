@@ -62,8 +62,7 @@ export default function HomeHeroPremium() {
             >
               Textile à votre logo, supports imprimés et enseignes — un seul
               atelier, à Souffelweyersheim. Vous validez votre BAT avant
-              qu&apos;on lance la machine. En photos&nbsp;: de vraies commandes
-              clients.
+              qu&apos;on lance la machine.
             </p>
 
             {/* CTAs orientés achat (trafic Instagram → boutique directe).
@@ -107,10 +106,11 @@ export default function HomeHeroPremium() {
             </div>
           </div>
 
-          {/* ── Colonne droite : collage de VRAIES photos HM Global ───────
-              Grande image = marquage DTF à la presse dans l'atelier (textile,
-              cœur du business). Deux petites = textile client livré (Prestige)
-              + enseigne MiAMMi en fabrication (preuve d'atelier). */}
+          {/* ── Colonne droite : visuel principal + 2 vraies réalisations ──
+              Grande image = ambiance « tout-en-un » (IA, choix Kaan 2026-06-11 :
+              presse textile + supports print + lueur d'enseigne — aucun texte
+              lisible, aucun produit vendable). Les deux petites restent de
+              VRAIES commandes clients (Atelier du Pide + enseigne MiAMMi). */}
           <div className="order-2 relative lg:order-2">
             <div
               className="relative overflow-hidden rounded-[1.8rem] bg-white p-2.5 sm:p-3"
@@ -125,8 +125,8 @@ export default function HomeHeroPremium() {
                   style={{ background: "#f6f7f9" }}
                 >
                   <Image
-                    src="/images/home/hm-atelier-production-textile.jpg"
-                    alt="Marquage DTF d'un t-shirt à la presse à chaud dans l'atelier HM Global à Souffelweyersheim"
+                    src="/images/home/hm-hero-atelier-360.jpg"
+                    alt="Atelier de communication visuelle : presse à chaud textile, supports imprimés et enseigne lumineuse"
                     fill
                     priority
                     sizes="(min-width: 1024px) 45vw, 100vw"
