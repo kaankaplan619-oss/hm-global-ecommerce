@@ -159,15 +159,36 @@ export default function StudioSummaryPanel({
       // canvasSize : taille reelle mesuree par StudioCanvas (ResizeObserver),
       // pas une valeur hardcodee. Fallback 544 si le canvas n'est pas encore monte.
       const measuredCanvasSize = getContainerSize?.() || 544;
-      const logoPlacementTransform = firstObj?.fabricState
+      // Fix 2026-06-11 : StudioCanvas (éditeur sans Fabric) stocke cx/cy
+      // (centre en fractions 0..1), scale et nw/nh (dims naturelles px) —
+      // l'ancien mapping lisait left/top/scaleX inexistants → transform
+      // persisté à zéro (BAT serveur et placement Printful aveugles).
+      // On reconstruit la convention Fabric attendue par lib/bat-renderer.ts
+      // et lib/printful-placement.ts : left/top = coin haut-gauche en px du
+      // canvas, taille affichée = width×scaleX.
+      const fs = firstObj?.fabricState;
+      const logoPlacementTransform = fs && typeof fs.cx === "number" && fs.nw
         ? {
-            left:   firstObj.fabricState.left   ?? 0,
-            top:    firstObj.fabricState.top    ?? 0,
-            scaleX: firstObj.fabricState.scaleX ?? 1,
-            scaleY: firstObj.fabricState.scaleY ?? 1,
-            width:  firstObj.fabricState.width  ?? 0,
-            height: firstObj.fabricState.height ?? 0,
-            angle:  firstObj.fabricState.angle  ?? 0,
+            left:   fs.cx * measuredCanvasSize - (fs.nw * fs.scale) / 2,
+            top:    fs.cy * measuredCanvasSize - (fs.nh * fs.scale) / 2,
+            scaleX: fs.scale,
+            scaleY: fs.scale,
+            width:  fs.nw,
+            height: fs.nh,
+            angle:  fs.angle ?? 0,
+            canvasSize: measuredCanvasSize,
+            source: "fabric-canvas" as const,
+          }
+        : fs
+        ? {
+            // Legacy (ancien éditeur Fabric) : champs déjà dans la bonne convention.
+            left:   fs.left   ?? 0,
+            top:    fs.top    ?? 0,
+            scaleX: fs.scaleX ?? 1,
+            scaleY: fs.scaleY ?? 1,
+            width:  fs.width  ?? 0,
+            height: fs.height ?? 0,
+            angle:  fs.angle  ?? 0,
             canvasSize: measuredCanvasSize,
             source: "fabric-canvas" as const,
           }
@@ -324,7 +345,7 @@ export default function StudioSummaryPanel({
                   Aperçu de votre personnalisation
                 </p>
                 <p className="mt-0.5 text-[11px] text-[var(--hm-text-soft)]">
-                  Vérifiez le rendu avant d'ajouter au panier
+                  Vérifiez le rendu avant d&apos;ajouter au panier
                 </p>
               </div>
               <button
@@ -702,7 +723,7 @@ export default function StudioSummaryPanel({
           className="btn-primary w-full gap-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {validating ? (
-            <><Loader2 size={16} className="animate-spin" /> Génération de l'aperçu…</>
+            <><Loader2 size={16} className="animate-spin" /> Génération de l&apos;aperçu…</>
           ) : (
             <>👁 Prévisualiser ma personnalisation</>
           )}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { createPrintfulDraft, getFilesForPlacement } from "@/lib/printful";
 import { getPrintfulVariantId, isPrintfulProduct } from "@/lib/printfulVariantMap";
+import { buildPrintfulPosition } from "@/lib/printful-placement";
 import type { PrintfulOrderItem, PrintfulRecipient } from "@/lib/printful";
 
 /**
@@ -94,10 +95,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // Placement exact du Studio → position Printful (aperçu = imprimé).
+      // null si transform absent/rotation/produit hors map → Printful place
+      // le fichier par défaut, comme avant.
+      const position = buildPrintfulPosition(item.product_id, item.logo_placement_transform);
+
       items.push({
         variant_id: variantId,
         quantity:   item.quantity,
-        files:      getFilesForPlacement(item.placement, logoUrl),
+        files:      getFilesForPlacement(item.placement, logoUrl, position ?? undefined),
       });
     }
 

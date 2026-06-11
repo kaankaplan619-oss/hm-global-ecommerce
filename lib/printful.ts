@@ -30,6 +30,21 @@ export interface PrintfulOrderFile {
   type: "front" | "back" | "default";
   /** URL publique du fichier (PNG/PDF 300 DPI recommandé) */
   url:  string;
+  /**
+   * Position exacte du design dans la print area (pixels, origine = coin
+   * haut-gauche de la zone d'impression). Optionnel : sans position, Printful
+   * place le fichier par défaut. Construite par lib/printful-placement.ts
+   * depuis le transform Studio — garantit aperçu atelier = produit imprimé.
+   */
+  position?: {
+    area_width:          number;
+    area_height:         number;
+    width:               number;
+    height:              number;
+    top:                 number;
+    left:                number;
+    limit_to_print_area: boolean;
+  };
 }
 
 export interface PrintfulOrderItem {
@@ -160,17 +175,22 @@ export async function cancelPrintfulOrder(
 
 export function getFilesForPlacement(
   placement: "coeur" | "dos" | "coeur-dos",
-  logoUrl:   string
+  logoUrl:   string,
+  /** Position exacte issue du Studio (lib/printful-placement.ts). Optionnelle :
+   *  sans position, Printful place par défaut (centré). Pour coeur-dos, la
+   *  même position relative est appliquée aux deux faces (le Studio ne stocke
+   *  que le transform du premier logo — limitation V1 documentée). */
+  position?: PrintfulOrderFile["position"]
 ): PrintfulOrderFile[] {
   switch (placement) {
     case "coeur":
-      return [{ type: "front", url: logoUrl }];
+      return [{ type: "front", url: logoUrl, ...(position ? { position } : {}) }];
     case "dos":
-      return [{ type: "back", url: logoUrl }];
+      return [{ type: "back", url: logoUrl, ...(position ? { position } : {}) }];
     case "coeur-dos":
       return [
-        { type: "front", url: logoUrl },
-        { type: "back",  url: logoUrl },
+        { type: "front", url: logoUrl, ...(position ? { position } : {}) },
+        { type: "back",  url: logoUrl, ...(position ? { position } : {}) },
       ];
   }
 }
