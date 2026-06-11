@@ -1948,16 +1948,15 @@ export const PRODUCT_BELLA_3001: Product = {
     { id: "true-royal",       label: "Bleu Royal",       hex: "#2563EB", available: true },
     { id: "rouge",            label: "Rouge",            hex: "#CC1414", available: true },
   ],
+  // Tailles S-2XL uniquement (audit API Printful 2026-06-11) : XS n'existe pas
+  // en True Royal, et 3XL/4XL/5XL sont hors stock EU sur la moitié des
+  // couleurs. Règle Kaan : ne pas vendre ce que l'API ne peut pas livrer.
   sizes: [
-    { label: "XS",   available: true },
     { label: "S",    available: true },
     { label: "M",    available: true },
     { label: "L",    available: true },
     { label: "XL",   available: true },
     { label: "XXL",  available: true },
-    { label: "3XL",  available: true },
-    { label: "4XL",  available: true },
-    { label: "5XL",  available: true },
   ],
   techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
   placements: ["coeur", "dos", "coeur-dos"],
@@ -2049,6 +2048,8 @@ export const PRODUCT_GILDAN_18000: Product = {
     { id: "blanc",      label: "Blanc",      hex: "#ffffff", available: true },
     { id: "rouge",      label: "Rouge",      hex: "#da0a1a", available: true },
   ],
+  // Tailles S-3XL uniquement (audit API Printful 2026-06-11) : 4XL/5XL hors
+  // stock EU pour Marine et Rouge. Règle Kaan : ne pas vendre l'indisponible.
   sizes: [
     { label: "S",    available: true },
     { label: "M",    available: true },
@@ -2056,8 +2057,6 @@ export const PRODUCT_GILDAN_18000: Product = {
     { label: "XL",   available: true },
     { label: "XXL",  available: true },
     { label: "3XL",  available: true },
-    { label: "4XL",  available: true },
-    { label: "5XL",  available: true },
   ],
   techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
   placements: ["coeur", "dos", "coeur-dos"],
@@ -2143,6 +2142,8 @@ export const PRODUCT_GILDAN_18500: Product = {
     { id: "rouge",      label: "Rouge",      hex: "#da0a1a", available: true },
     { id: "royal",      label: "Bleu Royal", hex: "#1D50A4", available: true },
   ],
+  // Tailles S-3XL uniquement (audit API Printful 2026-06-11) : Royal n'existe
+  // pas en 4XL/5XL, Rouge hors stock EU en 4XL/5XL.
   sizes: [
     { label: "S",    available: true },
     { label: "M",    available: true },
@@ -2150,8 +2151,6 @@ export const PRODUCT_GILDAN_18500: Product = {
     { label: "XL",   available: true },
     { label: "XXL",  available: true },
     { label: "3XL",  available: true },
-    { label: "4XL",  available: true },
-    { label: "5XL",  available: true },
   ],
   techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
   placements: ["coeur", "dos", "coeur-dos"],
@@ -2224,12 +2223,14 @@ export const PRODUCT_COMFORT_COLORS_1717: Product = {
   composition: "100% coton ring-spun teint en pièce",
   weight: "195 g/m²",
   images: [],
+  // "rouge" retiré 2026-06-11 : Printful "Red" hors stock EU sur S/M/XL —
+  // règle Kaan : on ne vend pas ce que l'API ne peut pas livrer.
+  // Alternative complète si réintroduction : Paprika #fe4747 (mockup à refaire).
   colors: [
     { id: "noir",    label: "Noir",      hex: "#1a1a1a", available: true },
     { id: "blanc",   label: "Blanc",     hex: "#FAFAF6", available: true },
     { id: "gris",    label: "Sport Grey", hex: "#97999B", available: true },
     { id: "marine",  label: "Marine",    hex: "#1b2a4a", available: true },
-    { id: "rouge",   label: "Rouge",     hex: "#C1121F", available: true },
     { id: "naturel", label: "Natural",   hex: "#E8DDC5", available: true },
   ],
   sizes: [
@@ -2270,7 +2271,6 @@ export const PRODUCT_COMFORT_COLORS_1717: Product = {
     "blanc":   "/mockups/printify-cropped/comfort-colors-1717/blanc-front.jpg",
     "gris":    "/mockups/printify-cropped/comfort-colors-1717/gris-front.jpg",
     "marine":  "/mockups/printify-cropped/comfort-colors-1717/marine-front.jpg",
-    "rouge":   "/mockups/printify-cropped/comfort-colors-1717/rouge-front.jpg",
     "naturel": "/mockups/printify-cropped/comfort-colors-1717/naturel-front.jpg",
   },
   hmMockupImagesBack: {
@@ -2278,7 +2278,6 @@ export const PRODUCT_COMFORT_COLORS_1717: Product = {
     "blanc":   "/mockups/printify-cropped/comfort-colors-1717/blanc-back.jpg",
     "gris":    "/mockups/printify-cropped/comfort-colors-1717/gris-back.jpg",
     "marine":  "/mockups/printify-cropped/comfort-colors-1717/marine-back.jpg",
-    "rouge":   "/mockups/printify-cropped/comfort-colors-1717/rouge-back.jpg",
     "naturel": "/mockups/printify-cropped/comfort-colors-1717/naturel-back.jpg",
   },
   hmMockupGallery: {
@@ -2286,7 +2285,6 @@ export const PRODUCT_COMFORT_COLORS_1717: Product = {
     "blanc":   ["/mockups/printify-cropped/comfort-colors-1717/blanc-front.jpg",   "/mockups/printify-cropped/comfort-colors-1717/blanc-back.jpg",   "/mockups/printify-cropped/comfort-colors-1717/blanc-folded.jpg"],
     "gris":    ["/mockups/printify-cropped/comfort-colors-1717/gris-front.jpg",    "/mockups/printify-cropped/comfort-colors-1717/gris-back.jpg",    "/mockups/printify-cropped/comfort-colors-1717/gris-folded.jpg"],
     "marine":  ["/mockups/printify-cropped/comfort-colors-1717/marine-front.jpg",  "/mockups/printify-cropped/comfort-colors-1717/marine-back.jpg",  "/mockups/printify-cropped/comfort-colors-1717/marine-folded.jpg"],
-    "rouge":   ["/mockups/printify-cropped/comfort-colors-1717/rouge-front.jpg",   "/mockups/printify-cropped/comfort-colors-1717/rouge-back.jpg",   "/mockups/printify-cropped/comfort-colors-1717/rouge-folded.jpg"],
     "naturel": ["/mockups/printify-cropped/comfort-colors-1717/naturel-front.jpg", "/mockups/printify-cropped/comfort-colors-1717/naturel-back.jpg", "/mockups/printify-cropped/comfort-colors-1717/naturel-folded.jpg"],
   },
 };
