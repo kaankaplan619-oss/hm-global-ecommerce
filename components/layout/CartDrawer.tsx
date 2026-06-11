@@ -7,27 +7,9 @@ import { X, ShoppingBag, Plus, Minus, Trash2, Package, ZoomIn, Sparkles, ArrowRi
 import { useCartStore } from "@/store/cart";
 import { formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
-import { getFeaturedProducts } from "@/data/products";
+import CartUpsell from "@/components/cart/CartUpsell";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import type { Placement, Product, ProductColor, Technique } from "@/types";
-
-function getQuickAddDefaults(product: Product): {
-  color: ProductColor;
-  size: string;
-  technique: Technique;
-  placement: Placement;
-} | null {
-  const color = product.colors.find((entry) => entry.available);
-  const size = product.sizes.find((entry) => entry.available)?.label;
-  const technique = product.techniques[0];
-  const placement = product.placements[0];
-
-  if (!color || !size || !technique || !placement) {
-    return null;
-  }
-
-  return { color, size, technique, placement };
-}
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
 function Lightbox({ src, label, onClose }: { src: string; label: string; onClose: () => void }) {
@@ -91,16 +73,6 @@ export default function CartDrawer() {
   const totals = getTotals();
   const [lightbox, setLightbox] = useState<{ src: string; label: string } | null>(null);
   const [dismissedCelebrationAt, setDismissedCelebrationAt] = useState<number | null>(null);
-
-  const suggestedProducts = useMemo(() => {
-    const cartProductIds = new Set(items.map((item) => item.productId));
-    return getFeaturedProducts()
-      .filter((product) => !cartProductIds.has(product.id))
-      // Garde-fou : jamais d'ajout 1-clic pour un produit sur devis.
-      .filter((product) => !product.quoteOnly)
-      .filter((product) => Boolean(getQuickAddDefaults(product)))
-      .slice(0, 2);
-  }, [items]);
 
   const piecesToFreeShipping = Math.max(0, PRICING_CONFIG.freeShippingThreshold - totals.totalItems);
 
@@ -391,84 +363,10 @@ export default function CartDrawer() {
                 );
               })}
 
-              {suggestedProducts.length > 0 && (
-                <div className="rounded-[1.7rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,#ffffff_0%,#f9f7fb_100%)] p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
-                        Compléter votre commande
-                      </p>
-                      <h3 className="mt-1 text-base font-semibold text-[var(--hm-text)]">
-                        Produits souvent ajoutés ensemble
-                      </h3>
-                    </div>
-                    <span className="badge badge-gold">Suggestions</span>
-                  </div>
-
-                  <div className="mt-4 grid gap-3">
-                    {suggestedProducts.map((product) => {
-                      const defaults = getQuickAddDefaults(product);
-                      if (!defaults) return null;
-
-                      return (
-                        <div
-                          key={product.id}
-                          className="rounded-[1.3rem] border border-[var(--hm-line)] bg-white p-3 shadow-[0_10px_24px_rgba(63,45,88,0.05)]"
-                        >
-                          <div className="flex items-center gap-3">
-                            {/* Miniature cross-sell — résout via getProductCatalogImage()
-                               pour tomber sur le mockup HM cropé propre (ex: Gildan 5000
-                               qui a `images: []` mais des packshots dans
-                               public/mockups/printify-cropped/gildan-5000/). Fallback sur
-                               images[0] uniquement si rien trouvé. */}
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white">
-                              {(() => {
-                                const thumbSrc = getProductCatalogImage(product, defaults.color.id) || product.images?.[0];
-                                return thumbSrc ? (
-                                  <Image
-                                    src={thumbSrc}
-                                    alt={product.name}
-                                    width={56}
-                                    height={56}
-                                    className="h-full w-full object-contain"
-                                  />
-                                ) : (
-                                  <Package size={18} className="text-[var(--hm-text-muted)]" />
-                                );
-                              })()}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-semibold text-[var(--hm-text)]">
-                                {product.shortName}
-                              </p>
-                              <p className="mt-1 text-[11px] text-[var(--hm-text-soft)]">
-                                Dès {formatPrice((product.pricing[defaults.technique as Exclude<typeof defaults.technique, "print">] as number) ?? 0)} · {TECHNIQUE_LABELS[defaults.technique]}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              addItem({
-                                product,
-                                quantity: Math.max(product.minOrderQty ?? 1, 1),
-                                color: defaults.color,
-                                size: defaults.size,
-                                technique: defaults.technique,
-                                placement: defaults.placement,
-                              })
-                            }
-                            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--hm-primary)]/18 bg-[var(--hm-accent-soft-rose)] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--hm-primary)] transition hover:border-[var(--hm-primary)]/35 hover:bg-white"
-                          >
-                            Ajouter aussi
-                            <ArrowRight size={14} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              {/* Upsell « UberEats » (#89) : goodies forte marge + logo du
+                  panier réutilisé en 1 clic — remplace les suggestions
+                  featured-textiles (2026-06-12, GO Kaan). */}
+              <CartUpsell items={items} onAdd={addItem} />
             </div>
           )}
         </div>
