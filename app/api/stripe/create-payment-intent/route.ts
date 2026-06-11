@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
-import { createPaymentIntent } from "@/lib/stripe";
+import { createPaymentIntent, getStripe } from "@/lib/stripe";
 import { generateOrderNumber } from "@/lib/utils";
 import { computeUnitPriceWithVolume, computeCartTotals, ttcToHt, PRICING_CONFIG } from "@/data/pricing";
 import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
@@ -361,6 +361,16 @@ export async function POST(req: NextRequest) {
     const { error: itemsError } = await supabase.from("order_items").insert(itemRows);
     if (itemsError) {
       console.error("[CreatePaymentIntent] Items insert:", itemsError);
+      // Garde-fou (bug E2E 2026-06-12) : sans articles, la commande est
+      // inutilisable (ex. contrainte technique obsolète → commande fantôme
+      // payable à 0 article). On annule l'intent et la commande plutôt que
+      // de laisser le client payer dans le vide.
+      await getStripe().paymentIntents.cancel(paymentIntent.id).catch(() => {});
+      await supabase.from("orders").delete().eq("id", orderRow.id);
+      return NextResponse.json(
+        { error: "Impossible d'enregistrer les articles de la commande. Réessayez ou contactez-nous." },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
