@@ -250,6 +250,13 @@ export default function Footer() {
           >
             <span>© 2018 HM Global Agence</span>
             <Link
+              href="/sav"
+              className="transition hover:opacity-80"
+              style={{ color: "var(--hm-text-muted-2)" }}
+            >
+              SAV &amp; suivi
+            </Link>
+            <Link
               href="/cgv"
               className="transition hover:opacity-80"
               style={{ color: "var(--hm-text-muted-2)" }}
