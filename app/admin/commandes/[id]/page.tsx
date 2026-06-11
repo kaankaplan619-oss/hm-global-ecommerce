@@ -10,30 +10,55 @@ import {
 import { useAuthStore } from "@/store/auth";
 import { getSupplierInfo } from "@/lib/supplierMap";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
-import { getFulfillmentInfo } from "@/lib/fulfillment";
+import { getFulfillmentInfo, itemCircuit } from "@/lib/fulfillment";
 import type { Order, OrderStatus, OrderItem, SupplierMode } from "@/types";
 
-// ─── All 16 statuses (ordered by workflow) ────────────────────────────────────
+// ─── All statuses, GROUPÉS par étape du workflow ──────────────────────────────
+// Simplification visuelle (demande Kaan 2026-06-12) : le <select> affiche des
+// <optgroup> — on lit l'étape d'un coup d'œil au lieu de 17 lignes en vrac.
 
-const ALL_STATUSES: { value: OrderStatus; label: string }[] = [
-  { value: "awaiting_bank_transfer",       label: "Attente virement bancaire" },
-  { value: "commande_a_valider",           label: "À valider" },
-  { value: "paiement_recu",               label: "Paiement reçu" },
-  { value: "fichier_a_verifier",          label: "Fichier à vérifier" },
-  { value: "bat_a_preparer",              label: "BAT à préparer" },
-  { value: "attente_validation_client",   label: "Attente validation client" },
-  { value: "en_attente_client",           label: "En attente client" },
-  { value: "a_commander_fournisseur",     label: "À commander fournisseur" },
-  { value: "validee",                     label: "Validée" },
-  { value: "commande_fournisseur_passee", label: "Commande fournisseur passée" },
-  { value: "attente_reception_textile",   label: "Attente réception textile" },
-  { value: "en_production",              label: "En production" },
-  { value: "en_traitement",              label: "En traitement" },
-  { value: "prete_a_expedier",           label: "Prête à expédier" },
-  { value: "expediee",                   label: "Expédiée" },
-  { value: "terminee",                   label: "Terminée" },
-  { value: "annulee",                    label: "Annulée" },
+const STATUS_GROUPS: { group: string; statuses: { value: OrderStatus; label: string }[] }[] = [
+  {
+    group: "1 · Paiement",
+    statuses: [
+      { value: "awaiting_bank_transfer", label: "Attente virement bancaire" },
+      { value: "commande_a_valider",     label: "À valider" },
+      { value: "paiement_recu",          label: "Paiement reçu" },
+    ],
+  },
+  {
+    group: "2 · Fichier & BAT",
+    statuses: [
+      { value: "fichier_a_verifier",        label: "Fichier à vérifier" },
+      { value: "bat_a_preparer",            label: "BAT à préparer" },
+      { value: "attente_validation_client", label: "Attente validation client" },
+      { value: "en_attente_client",         label: "En attente client" },
+    ],
+  },
+  {
+    group: "3 · Production",
+    statuses: [
+      { value: "validee",                     label: "Validée" },
+      { value: "a_commander_fournisseur",     label: "À commander fournisseur" },
+      { value: "commande_fournisseur_passee", label: "Commande fournisseur passée" },
+      { value: "attente_reception_textile",   label: "Attente réception textile" },
+      { value: "en_production",               label: "En production" },
+      { value: "en_traitement",               label: "En traitement" },
+    ],
+  },
+  {
+    group: "4 · Expédition & fin",
+    statuses: [
+      { value: "prete_a_expedier", label: "Prête à expédier" },
+      { value: "expediee",         label: "Expédiée" },
+      { value: "terminee",         label: "Terminée" },
+      { value: "annulee",          label: "Annulée" },
+    ],
+  },
 ];
+
+const ALL_STATUSES: { value: OrderStatus; label: string }[] =
+  STATUS_GROUPS.flatMap((g) => g.statuses);
 
 // ─── Statuts où le rejet de fichier est pertinent ────────────────────────────
 
@@ -113,8 +138,26 @@ function getBatRequired(items: OrderItem[]): "required" | "recommended" | "no" {
   return "no";
 }
 
-function buildSupplierLine(item: OrderItem, orderNumber: string): string {
+/**
+ * Infos fournisseur CONSCIENTES DU CIRCUIT : un produit Printful commandé en
+ * volume (≥ seuil, DTF) part à l'atelier — le badge doit dire « Atelier »,
+ * pas « Printful » (fix demande Kaan 2026-06-12).
+ */
+function effectiveSupplierInfo(item: OrderItem) {
   const info = getSupplierInfo(item.product);
+  if (info.supplier === "printful" && itemCircuit(item) === "interne") {
+    return {
+      ...info,
+      supplier: "interne" as const,
+      supplierLabel: "Atelier HM Global · volume",
+      supplierUrl: undefined,
+    };
+  }
+  return info;
+}
+
+function buildSupplierLine(item: OrderItem, orderNumber: string): string {
+  const info = effectiveSupplierInfo(item);
   return [
     info.supplierLabel,
     info.supplierReference || "—",
@@ -608,7 +651,7 @@ export default function AdminCommandeDetailPage({ params }: Props) {
 
               <div className="flex flex-col gap-6">
                 {(order.items ?? []).map((item) => {
-                  const supplierInfo = getSupplierInfo(item.product);
+                  const supplierInfo = effectiveSupplierInfo(item);
                   const supplierLine = buildSupplierLine(item, order.orderNumber);
                   const isCopied = copiedItemId === item.id;
 
@@ -1321,8 +1364,12 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                 onChange={(e) => setNewStatus(e.target.value as OrderStatus)}
                 className="input mb-3"
               >
-                {ALL_STATUSES.map(({ value, label }) => (
-                  <option key={value} value={value}>{label}</option>
+                {STATUS_GROUPS.map(({ group, statuses }) => (
+                  <optgroup key={group} label={group}>
+                    {statuses.map(({ value, label }) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
 

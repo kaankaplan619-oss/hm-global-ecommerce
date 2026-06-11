@@ -77,6 +77,17 @@ export function getSupplierInfo(product: {
   const { supplierName, toptexRef, toptexUrl, supplierRef, prixAchatHT, reference } = product;
 
   // ── Via snapshot du produit ──────────────────────────────────────────────
+  // Printful = POD automatisé (impression + expédition par Printful).
+  if (supplierName === "printful") {
+    return {
+      supplier: "printful",
+      supplierLabel: "Printful · automatisé",
+      supplierReference: reference ?? supplierRef ?? "—",
+      supplierUrl: "https://www.printful.com/dashboard/default/orders",
+      stockStatus: "unknown",
+    };
+  }
+
   if (supplierName === "toptex") {
     const ref = toptexRef ?? supplierRef ?? "";
     return {
@@ -133,6 +144,7 @@ export function supplierBadge(supplier: SupplierName): string {
     case "newwave":    return "New Wave";
     case "pixartprint":return "Pixart";
     case "interne":    return "Interne";
+    case "printful":   return "Printful";
     default:           return "Autre";
   }
 }

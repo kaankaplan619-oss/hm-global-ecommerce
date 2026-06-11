@@ -58,7 +58,7 @@ export interface FulfillmentInfo {
 }
 
 /** Circuit d'un article isolé. */
-function itemCircuit(item: OrderItem): "printful" | "gelato" | "interne" {
+export function itemCircuit(item: OrderItem): "printful" | "gelato" | "interne" {
   // Les articles print (cartes de visite…) portent un printConfig → Gelato.
   if (item.printConfig) return "gelato";
   if (isPrintfulProduct(item.product.id)) {

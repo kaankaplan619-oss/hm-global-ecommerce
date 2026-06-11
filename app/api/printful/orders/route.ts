@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { createPrintfulDraft, getFilesForPlacement } from "@/lib/printful";
-import { getPrintfulVariantId, isPrintfulProduct } from "@/lib/printfulVariantMap";
+import { getPrintfulVariantId, isPrintfulProduct, getPrintfulFrontFileType } from "@/lib/printfulVariantMap";
 import { buildPrintfulPosition } from "@/lib/printful-placement";
+import { ATELIER_QTY_THRESHOLD } from "@/data/pricing";
 import type { PrintfulOrderItem, PrintfulRecipient } from "@/lib/printful";
 
 /**
@@ -55,28 +56,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Build recipient from shipping_address
+    // Build recipient from shipping_address.
+    // Le checkout stocke la rue sous "address" (formulaire FR) — fallbacks
+    // pour la compat avec d'anciens formats ("address1"/"street").
     const addr = order.shipping_address as Record<string, string>;
+    const street = addr.address ?? addr.address1 ?? addr.street ?? "";
+    if (!street) {
+      return NextResponse.json(
+        { error: "Adresse de livraison incomplète (rue manquante) — corriger la commande avant l'envoi Printful." },
+        { status: 422 }
+      );
+    }
     const recipient: PrintfulRecipient = {
       name:         `${addr.firstName ?? ""} ${addr.lastName ?? ""}`.trim(),
-      address1:     addr.street ?? "",
+      address1:     street,
       address2:     addr.complement ?? undefined,
       city:         addr.city ?? "",
       country_code: addr.country === "France" ? "FR" : (addr.country ?? "FR"),
       zip:          addr.postalCode ?? "",
-      email:        order.billing_address?.email ?? undefined,
+      email:        order.billing_address?.email ?? order.guest_email ?? undefined,
       phone:        addr.phone ?? undefined,
     };
 
-    // Build Printful items
+    // Build Printful items — commande MIXTE supportée : seuls les articles du
+    // circuit Printful partent chez Printful ; les articles atelier (volume
+    // DTF ≥ seuil, produits TopTex/Falk&Ross) sont ignorés ici et restent à
+    // produire en interne (même logique que lib/fulfillment.ts).
     const items: PrintfulOrderItem[] = [];
+    let skippedAtelier = 0;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const item of (order.order_items ?? []) as any[]) {
-      if (!isPrintfulProduct(item.product_id)) {
-        return NextResponse.json(
-          { error: `Produit ${item.product_id} non géré par Printful. Commande mixte non supportée.` },
-          { status: 422 }
-        );
+      const atelierTech =
+        item.technique === "dtf" || item.technique === "dtflex" || item.technique === "flex";
+      const isAtelierItem =
+        !isPrintfulProduct(item.product_id) ||
+        (item.quantity >= ATELIER_QTY_THRESHOLD && atelierTech);
+      if (isAtelierItem) {
+        skippedAtelier += 1;
+        continue;
       }
 
       const variantId = getPrintfulVariantId(item.product_id, item.color_id, item.size);
@@ -100,15 +117,22 @@ export async function POST(req: NextRequest) {
       // le fichier par défaut, comme avant.
       const position = buildPrintfulPosition(item.product_id, item.logo_placement_transform);
 
+      // Type de fichier EXACT exigé par ce produit (broderie/impression) —
+      // un mauvais type (ex "front" sur une casquette) → 400 Printful.
+      const frontType = getPrintfulFrontFileType(item.product_id, item.technique);
+
       items.push({
         variant_id: variantId,
         quantity:   item.quantity,
-        files:      getFilesForPlacement(item.placement, logoUrl, position ?? undefined),
+        files:      getFilesForPlacement(item.placement, logoUrl, position ?? undefined, frontType),
       });
     }
 
     if (items.length === 0) {
-      return NextResponse.json({ error: "Aucun article Printful dans la commande" }, { status: 422 });
+      return NextResponse.json(
+        { error: "Aucun article du circuit Printful dans cette commande (tout part à l'atelier)." },
+        { status: 422 }
+      );
     }
 
     // Create Printful draft (confirm: false — NEVER triggers production)
@@ -156,6 +180,8 @@ export async function POST(req: NextRequest) {
       printfulOrderId: printfulOrder.id,
       printfulStatus:  printfulOrder.status,
       costs:           printfulOrder.costs,
+      itemsSent:       items.length,
+      skippedAtelier,
     });
   } catch (err) {
     console.error("[POST /api/printful/orders]", err);

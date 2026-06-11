@@ -550,6 +550,47 @@ export const PRINTFUL_PRODUCT_IDS: Record<string, number> = {
   "dessous-verre-liege":    611,
 };
 
+// ─── Types de fichiers Printful par produit ──────────────────────────────────
+// L'API order exige un type de fichier EXACT par produit (vérifié via
+// GET /products/{id} → product.files le 2026-06-12). Un mauvais type → 400.
+// "front"/"back" = textiles DTG (défaut historique, validé en production).
+// broderie : type du placement avant ; print : type impression (DTG/sublim).
+
+const PRODUCT_FILE_TYPES: Record<string, { broderie?: string; print?: string }> = {
+  // Polos & veste — broderie cœur = chest left
+  "polo-sols-prescott":     { broderie: "embroidery_chest_left" },
+  "polo-gildan-64800l":     { broderie: "embroidery_chest_left" },
+  "coupe-vent-sols-32000":  { broderie: "embroidery_chest_left" },
+  // Casquettes/bonnet — "default" = broderie front standard…
+  "casquette-flexfit-6277":  { broderie: "default" },
+  "casquette-yupoong-6006":  { broderie: "default" },
+  "casquette-snapback-6089": { broderie: "default" },
+  "bob-flexfit-5003":        { broderie: "default" },
+  "bonnet-yupoong-1501kc":   { broderie: "default" },
+  // …sauf le dad hat 6245CM qui n'a PAS de "default" (vérifié : erreur 400)
+  "casquette-dad-hat-6245":  { broderie: "embroidery_front" },
+  // Sacs
+  "tote-bagbase-w101":      { broderie: "embroidery_apparel_front", print: "default" },
+  "tote-denim-mantis-m196": { broderie: "embroidery_apparel_front" },
+  "sacoche-bagbase-qs309":  { print: "default" }, // PAS de broderie sur ce produit
+  // Goodies — sublimation/impression digitale
+  "stickers-logo":       { print: "default" },
+  "planche-stickers":    { print: "default" },
+  "mug-noir-brillant":   { print: "default" },
+  "dessous-verre-liege": { print: "default" },
+};
+
+/**
+ * Type de fichier Printful pour le placement AVANT d'un article.
+ * Retourne "front" (textile DTG historique) si le produit n'est pas mappé.
+ */
+export function getPrintfulFrontFileType(productId: string, technique?: string | null): string {
+  const entry = PRODUCT_FILE_TYPES[productId];
+  if (!entry) return "front";
+  const isBroderie = technique === "broderie" || technique === "broderie_illimitee";
+  return (isBroderie ? entry.broderie : entry.print) ?? entry.broderie ?? entry.print ?? "front";
+}
+
 // ─── Lookup public ────────────────────────────────────────────────────────────
 
 /**

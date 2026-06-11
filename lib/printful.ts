@@ -26,8 +26,11 @@ export interface PrintfulRecipient {
 }
 
 export interface PrintfulOrderFile {
-  /** Printful print area id : "front" pour face avant, "back" pour dos */
-  type: "front" | "back" | "default";
+  /** Printful print area id — dépend du PRODUIT : "front"/"back" (textile DTG),
+   *  "default" (casquettes, goodies), "embroidery_chest_left" (polos/veste),
+   *  "embroidery_front" (dad hat), "embroidery_apparel_front" (totes)…
+   *  Source de vérité : getPrintfulFrontFileType (lib/printfulVariantMap.ts). */
+  type: string;
   /** URL publique du fichier (PNG/PDF 300 DPI recommandé) */
   url:  string;
   /**
@@ -180,16 +183,21 @@ export function getFilesForPlacement(
    *  sans position, Printful place par défaut (centré). Pour coeur-dos, la
    *  même position relative est appliquée aux deux faces (le Studio ne stocke
    *  que le transform du premier logo — limitation V1 documentée). */
-  position?: PrintfulOrderFile["position"]
+  position?: PrintfulOrderFile["position"],
+  /** Type de fichier Printful du placement AVANT — dépend du produit/technique
+   *  (cf getPrintfulFrontFileType). Un mauvais type → 400 Printful. */
+  frontFileType: string = "front"
 ): PrintfulOrderFile[] {
+  // La position px ne s'applique qu'au front DTG textile (print area 12″×16″).
+  const frontPos = frontFileType === "front" && position ? { position } : {};
   switch (placement) {
     case "coeur":
-      return [{ type: "front", url: logoUrl, ...(position ? { position } : {}) }];
+      return [{ type: frontFileType, url: logoUrl, ...frontPos }];
     case "dos":
       return [{ type: "back", url: logoUrl, ...(position ? { position } : {}) }];
     case "coeur-dos":
       return [
-        { type: "front", url: logoUrl, ...(position ? { position } : {}) },
+        { type: frontFileType, url: logoUrl, ...frontPos },
         { type: "back",  url: logoUrl, ...(position ? { position } : {}) },
       ];
   }
