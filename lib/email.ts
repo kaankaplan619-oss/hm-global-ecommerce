@@ -10,12 +10,14 @@
  *   sendFactureDisponible      → generate-invoice
  *   sendDemandeAvis            → admin-update status → terminee
  *
- * Design email (2026-06-11) : thème CLAIR, robuste Gmail/Outlook.
+ * Design email (2026-06-12) : thème CLAIR, robuste Gmail/Outlook, DA du site.
  *   - Fond de page gris très clair, carte blanche centrée (max 600 px).
  *   - Logo HM Global réel en en-tête (URL absolue publique — voir LOGO_URL).
  *   - Couleurs en ligne (les clients mail ignorent souvent <style> et le fond
- *     du <body>) : titres FONCÉS (#1a1a1a) → lisibles sur blanc.
- *   - Accent doré #c9a96e conservé (identité du site) pour prix / liens / bouton.
+ *     du <body>) : titres violet foncé #2D2340 → lisibles sur blanc.
+ *   - Accent MAGENTA #b13f74 = --hm-primary du site (prix / liens / bouton,
+ *     texte blanc sur bouton comme les CTA du site). Demande Kaan 2026-06-12 :
+ *     plus de doré, l'email suit la DA du site.
  *
  * Ton éditorial : chaleureux et premium, ancré sur l'atelier alsacien
  * (Souffelweyersheim) et le savoir-faire HM Global — jamais générique.
@@ -44,16 +46,18 @@ const LOGO_URL =
   process.env.EMAIL_LOGO_URL ??
   "https://kbeeedbfkalovtusaden.supabase.co/storage/v1/object/public/mockups/brand/hm-global-logo-email.png";
 
-// Palette email (thème clair)
+// Palette email — ALIGNÉE SUR LA DA DU SITE (app/globals.css, 2026-06-12) :
+// magenta --hm-primary #b13f74 (CTA/accents), violet --hm-text-main #2D2340
+// (titres), gris violacé pour les textes secondaires. Plus de doré.
 const C = {
-  page:    "#f4f4f5",
+  page:    "#f6f4f7",
   card:    "#ffffff",
-  border:  "#ececec",
-  heading: "#1a1a1a",
-  body:    "#444444",
-  muted:   "#777777",
-  faint:   "#9a9a9a",
-  gold:    "#c9a96e",
+  border:  "#ece8ef",
+  heading: "#2D2340",
+  body:    "#4b4257",
+  muted:   "#8a8198",
+  faint:   "#a59cb0",
+  accent:  "#b13f74",
 };
 
 // ─── Resend client (lazy — évite l'import au build) ──────────────────────────
@@ -92,9 +96,9 @@ function getRecipientEmail(order: Order, fn: string): string | null {
 
 function button(href: string, label: string): string {
   return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0">
-    <tr><td align="center" bgcolor="${C.gold}" style="border-radius:6px">
+    <tr><td align="center" bgcolor="${C.accent}" style="border-radius:6px">
       <a href="${href}" target="_blank"
-         style="display:inline-block;padding:13px 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#1a1a1a;text-decoration:none;border-radius:6px">${label}</a>
+         style="display:inline-block;padding:13px 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px">${label}</a>
     </td></tr>
   </table>`;
 }
@@ -122,7 +126,7 @@ function baseLayout(content: string, title: string, preheader = ""): string {
               <img src="${LOGO_URL}" alt="HM Global Agence" width="210" style="display:block;width:210px;max-width:60%;height:auto;border:0;outline:none;text-decoration:none" />
             </td>
           </tr>
-          <tr><td style="padding:0 32px"><div style="height:1px;background:linear-gradient(90deg,transparent,${C.gold}55,transparent)"></div></td></tr>
+          <tr><td style="padding:0 32px"><div style="height:1px;background:linear-gradient(90deg,transparent,${C.accent}55,transparent)"></div></td></tr>
           <!-- Contenu -->
           <tr>
             <td style="padding:28px 32px 8px;color:${C.body};font-size:15px;line-height:1.7">
@@ -137,7 +141,7 @@ function baseLayout(content: string, title: string, preheader = ""): string {
                 Souffelweyersheim, Alsace · Un savoir-faire local depuis 2018
               </p>
               <p style="margin:0;font-size:12px;line-height:1.7;color:${C.faint}">
-                Une question ? Écrivez-nous à <a href="mailto:${REPLY_TO}" style="color:${C.gold};text-decoration:none">${REPLY_TO}</a>
+                Une question ? Écrivez-nous à <a href="mailto:${REPLY_TO}" style="color:${C.accent};text-decoration:none">${REPLY_TO}</a>
               </p>
             </td>
           </tr>
@@ -168,7 +172,7 @@ export async function sendConfirmationPaiement(order: Order) {
   const html = baseLayout(
     `<h2 style="${H2}">Merci, votre paiement est confirmé ✓</h2>
      <p style="${P}">Bonjour ${order.user.firstName},</p>
-     <p style="${P}">Merci pour votre confiance. Nous avons bien reçu votre paiement de <strong style="color:${C.gold}">${order.totalTTC.toFixed(2)} €</strong> pour la commande <strong>#${order.orderNumber}</strong>.</p>
+     <p style="${P}">Merci pour votre confiance. Nous avons bien reçu votre paiement de <strong style="color:${C.accent}">${order.totalTTC.toFixed(2)} €</strong> pour la commande <strong>#${order.orderNumber}</strong>.</p>
      <p style="${P}">Notre atelier alsacien prend le relais : nous vérifions votre visuel avec soin et reviendrons vers vous si le moindre ajustement est nécessaire avant le lancement en production.</p>
      ${button(`${SITE_URL}/mon-compte/commandes/${order.id}`, "Suivre ma commande")}
      <p style="${SIGN}">À très vite,<br/>${SIGNATURE}</p>`,
@@ -199,7 +203,7 @@ export async function sendFichierNonConforme(order: Order, reason: string) {
     `<h2 style="${H2}">Votre visuel a besoin d'un petit ajustement</h2>
      <p style="${P}">Bonjour ${order.user.firstName},</p>
      <p style="${P}">Avant de lancer la fabrication de votre commande <strong>#${order.orderNumber}</strong>, notre atelier a repéré un point à corriger sur votre fichier pour garantir un rendu impeccable :</p>
-     <p style="margin:16px 0;padding:14px 16px;background:#faf6ef;border-left:3px solid ${C.gold};border-radius:4px;color:#5a5145;font-size:14px;line-height:1.6">${reason}</p>
+     <p style="margin:16px 0;padding:14px 16px;background:#faf0f6;border-left:3px solid ${C.accent};border-radius:4px;color:#6b4259;font-size:14px;line-height:1.6">${reason}</p>
      <p style="${P}">Déposez votre fichier corrigé en un clic — on s'occupe du reste.</p>
      ${button(`${SITE_URL}/mon-compte/commandes/${order.id}`, "Déposer mon fichier")}
      <p style="margin:8px 0;font-size:13px;color:${C.faint}">Formats acceptés : PDF, PNG, SVG, AI — jusqu'à 50 Mo. Un doute sur votre fichier ? Répondez à cet email, on vous guide.</p>
@@ -258,7 +262,7 @@ export async function sendCommandeExpediee(order: Order) {
   const from = getFromEmail();
 
   const trackingBlock = order.trackingNumber
-    ? `<p style="${P}">Votre numéro de suivi : <strong style="color:${C.gold}">${order.trackingNumber}</strong></p>`
+    ? `<p style="${P}">Votre numéro de suivi : <strong style="color:${C.accent}">${order.trackingNumber}</strong></p>`
     : "";
 
   const html = baseLayout(
@@ -295,8 +299,8 @@ export async function sendCommandeAnnulee(order: Order) {
     `<h2 style="${H2}">Votre commande a été annulée</h2>
      <p style="${P}">Bonjour ${order.user.firstName},</p>
      <p style="${P}">Votre commande <strong>#${order.orderNumber}</strong> a bien été annulée.</p>
-     <p style="${P}">Un remboursement de <strong style="color:${C.gold}">${order.totalTTC.toFixed(2)} €</strong> sera traité sous 5 à 10 jours ouvrés sur votre moyen de paiement d'origine.</p>
-     <p style="${SUB}">Un imprévu, une question, ou l'envie de relancer votre projet ? Écrivez-nous à <a href="mailto:${REPLY_TO}" style="color:${C.gold};text-decoration:none">${REPLY_TO}</a>, nous serons ravis de vous accompagner.</p>
+     <p style="${P}">Un remboursement de <strong style="color:${C.accent}">${order.totalTTC.toFixed(2)} €</strong> sera traité sous 5 à 10 jours ouvrés sur votre moyen de paiement d'origine.</p>
+     <p style="${SUB}">Un imprévu, une question, ou l'envie de relancer votre projet ? Écrivez-nous à <a href="mailto:${REPLY_TO}" style="color:${C.accent};text-decoration:none">${REPLY_TO}</a>, nous serons ravis de vous accompagner.</p>
      <p style="${SIGN}">${SIGNATURE}</p>`,
     "Commande annulée — HM Global Agence",
     `Votre commande #${order.orderNumber} a été annulée et remboursée.`
