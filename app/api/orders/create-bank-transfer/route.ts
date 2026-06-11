@@ -48,15 +48,25 @@ export async function POST(req: NextRequest) {
     const supabase = await createSupabaseServiceClient();
 
     const body = await req.json();
-    const { items, billingAddress, shippingAddress, guestEmail }: {
+    const { items, billingAddress, shippingAddress, guestEmail, marketingConsent }: {
       items:            CartItemInput[];
       billingAddress:   Record<string, string>;
       shippingAddress?: Record<string, string>;
       guestEmail?:      string;
+      /** Opt-in prospection (#88) — case non pré-cochée au checkout. */
+      marketingConsent?: boolean;
     } = body;
 
     if (!items?.length) {
       return NextResponse.json({ error: "Panier vide" }, { status: 400 });
+    }
+
+    // ── Consentement prospection → profil (si connecté) ──────────────────────
+    if (user && marketingConsent) {
+      await supabase
+        .from("profiles")
+        .update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() })
+        .eq("id", user.id);
     }
 
     // ── Garde stock Printful — même protection que le paiement CB ─────────────
@@ -244,6 +254,7 @@ export async function POST(req: NextRequest) {
         shipping:         totals.shipping,
         total_ttc:        totals.totalTTC,
         free_shipping:    totals.freeShipping,
+        marketing_consent: Boolean(marketingConsent),
         billing_address:  billingAddress,
         shipping_address: shippingAddress ?? billingAddress,
       })

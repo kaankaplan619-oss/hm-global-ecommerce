@@ -63,11 +63,13 @@ export async function POST(req: NextRequest) {
     const supabase = await createSupabaseServiceClient();
 
     const body = await req.json();
-    const { items, billingAddress, shippingAddress, guestEmail }: {
+    const { items, billingAddress, shippingAddress, guestEmail, marketingConsent }: {
       items:            CartItemInput[];
       billingAddress:   Record<string, string>;
       shippingAddress?: Record<string, string>;
       guestEmail?:      string;
+      /** Opt-in prospection (#88) — case non pré-cochée au checkout. */
+      marketingConsent?: boolean;
     } = body;
 
     if (!items?.length) {
@@ -132,6 +134,14 @@ export async function POST(req: NextRequest) {
         },
         { onConflict: "id", ignoreDuplicates: true }
       );
+    }
+
+    // ── Consentement prospection → profil (si connecté) ──────────────────────
+    if (user && marketingConsent) {
+      await supabase
+        .from("profiles")
+        .update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() })
+        .eq("id", user.id);
     }
 
     // ── Recompute prices server-side ──────────────────────────────────────────
@@ -293,6 +303,7 @@ export async function POST(req: NextRequest) {
         free_shipping:            totals.freeShipping,
         billing_address:          billingAddress,
         shipping_address:         shippingAddress ?? billingAddress,
+        marketing_consent:        Boolean(marketingConsent),
         stripe_payment_intent_id: paymentIntent.id,
         stripe_payment_status:    "pending",
       })

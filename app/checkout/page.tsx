@@ -395,6 +395,9 @@ export default function CheckoutPage() {
   // commandes récurrentes. RGPD friendly : 100% côté client, jamais envoyé
   // serveur sans action utilisateur explicite (la case doit être cochée).
   const [saveAddress, setSaveAddress] = useState(false);
+  // Consentement prospection (#88, RGPD/CNIL) : case NON pré-cochée, opt-in
+  // actif uniquement. Stocké sur la commande (+ profil si connecté).
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   // Charge l'adresse sauvegardée au mount si dispo. Priorité plus basse que les
   // infos auth.user (qui sont rechargées dans un autre useEffect).
@@ -584,6 +587,7 @@ export default function CheckoutPage() {
         })),
         billingAddress,
         shippingAddress: sameShipping ? billingAddress : undefined,
+        marketingConsent,
       };
 
       // ── Branche virement bancaire ─────────────────────────────────────────
@@ -972,6 +976,29 @@ export default function CheckoutPage() {
                   <span className="ml-2 text-[10px] text-[var(--hm-text-muted)]">
                     (stocké localement sur votre appareil)
                   </span>
+                </label>
+              </div>
+
+              {/* ── Consentement prospection (#88 — RGPD/CNIL) ──────────
+                 Case NON pré-cochée (opt-in actif obligatoire). Distinct des
+                 emails transactionnels (qui partent sans consentement). */}
+              <div className="mt-3 flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="marketing-consent"
+                  checked={marketingConsent}
+                  onChange={(e) => setMarketingConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-[var(--hm-primary)]"
+                />
+                <label
+                  htmlFor="marketing-consent"
+                  className="cursor-pointer text-[12.5px] leading-snug text-[var(--hm-text-soft)]"
+                >
+                  J&apos;accepte de recevoir les offres, nouveautés et conseils de
+                  HM Global Agence par email (facultatif — désinscription en un clic,{" "}
+                  <Link href="/confidentialite" className="text-[var(--hm-primary)] hover:underline">
+                    politique de confidentialité
+                  </Link>).
                 </label>
               </div>
             </div>
