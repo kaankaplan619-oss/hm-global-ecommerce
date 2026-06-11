@@ -39,12 +39,15 @@ export async function POST(req: NextRequest) {
       updateData.tracking_url    = tracking.trackingUrl;
     }
 
-    // Map statut Gelato → statut HM Global
+    // Map statut Gelato → statut HM Global.
+    // Fix 2026-06-11 : "delivered" pointait vers "livree" qui n'existe pas
+    // dans l'enum OrderStatus (rejeté par orders_status_check) → "terminee",
+    // même convention que le webhook Printful (order fulfilled → terminee).
     const STATUS_MAP: Record<string, string> = {
       created:     "commande_fournisseur_passee",
       printed:     "en_production",
       shipped:     "expediee",
-      delivered:   "livree",
+      delivered:   "terminee",
       canceled:    "annulee",
     };
 
