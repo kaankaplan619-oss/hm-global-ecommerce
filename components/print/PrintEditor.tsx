@@ -149,7 +149,7 @@ const FLYER_TEMPLATES: { label: string; build: () => EditorObject[] }[] = [
 export default function PrintEditor({
   widthMm,
   heightMm,
-  bleedMm = 3,
+  bleedMm = 4, // standard Gelato : 4 mm de fond perdu (pas 3)
   faces = "recto",
   faceLabels = { front: "Recto", back: "Verso" },
   foldAxis = null,
@@ -454,7 +454,15 @@ export default function PrintEditor({
     im.src = src;
   });
 
-  const renderFace = async (objs: EditorObject[]): Promise<string> => {
+  /**
+   * Rend une face en PNG ~300 dpi.
+   * withBleed=true (export production) : le canvas final fait
+   * (format + 2×bleedMm) — standard Gelato 4 mm — avec les pixels
+   * périphériques du design répliqués dans la marge de fond perdu.
+   * Sans ça, Gelato émet un avertissement « no bleeds » et la coupe
+   * peut laisser un liseré blanc.
+   */
+  const renderFace = async (objs: EditorObject[], withBleed = false): Promise<string> => {
     const canvas = document.createElement("canvas");
     const W = canvas.width = Math.round(widthMm * PX_PER_MM);
     const H = canvas.height = Math.round(heightMm * PX_PER_MM);
@@ -512,14 +520,37 @@ export default function PrintEditor({
         ctx.stroke();
       }
     }
-    return canvas.toDataURL("image/png");
+    if (!withBleed) return canvas.toDataURL("image/png");
+
+    // ── Fond perdu (export production) ────────────────────────────────────
+    const b = Math.round(bleedMm * PX_PER_MM);
+    const out = document.createElement("canvas");
+    out.width  = W + 2 * b;
+    out.height = H + 2 * b;
+    const octx = out.getContext("2d")!;
+    octx.fillStyle = "#ffffff";
+    octx.fillRect(0, 0, out.width, out.height);
+    // Réplication des pixels périphériques dans la marge (bords puis coins) :
+    // un fond coloré au bord du design se prolonge dans le fond perdu.
+    octx.drawImage(canvas, 0, 0, W, 1, b, 0, W, b);             // haut
+    octx.drawImage(canvas, 0, H - 1, W, 1, b, H + b, W, b);     // bas
+    octx.drawImage(canvas, 0, 0, 1, H, 0, b, b, H);             // gauche
+    octx.drawImage(canvas, W - 1, 0, 1, H, W + b, b, b, H);     // droite
+    octx.drawImage(canvas, 0, 0, 1, 1, 0, 0, b, b);                     // coin HG
+    octx.drawImage(canvas, W - 1, 0, 1, 1, W + b, 0, b, b);             // coin HD
+    octx.drawImage(canvas, 0, H - 1, 1, 1, 0, H + b, b, b);             // coin BG
+    octx.drawImage(canvas, W - 1, H - 1, 1, 1, W + b, H + b, b, b);     // coin BD
+    // Design au centre, à sa taille exacte.
+    octx.drawImage(canvas, b, b);
+    return out.toDataURL("image/png");
   };
 
   const validate = async () => {
     setExporting(true);
     try {
-      const recto = await renderFace(front);
-      const verso = hasVerso ? await renderFace(back) : null;
+      // Export production : AVEC fond perdu (exigence Gelato 4 mm).
+      const recto = await renderFace(front, true);
+      const verso = hasVerso ? await renderFace(back, true) : null;
       onValidate(recto, verso);
     } finally {
       setExporting(false);

@@ -1049,7 +1049,7 @@ export default function BusinessCardConfigurator() {
         <PrintEditor
           widthMm={orientation === "landscape" ? 85 : 55}
           heightMm={orientation === "landscape" ? 55 : 85}
-          bleedMm={3}
+          bleedMm={4}
           faces={faces}
           onValidate={handleEditorValidate}
           onClose={() => setEditorOpen(false)}

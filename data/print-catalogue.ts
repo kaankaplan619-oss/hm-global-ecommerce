@@ -264,15 +264,20 @@ export interface PrintSpec {
   bleedMm:           number;
 }
 
+// Fix 2026-06-11 : petit format aligné sur le standard GELATO = 4 mm de fond
+// perdu par côté (carte 85×55 → fichier 93×63), zone de sécurité 4 mm. Les 3 mm
+// « standard FR » déclenchaient l'avertissement Gelato « no bleeds » + risque
+// de liseré blanc à la coupe. Posters grand format (5 mm) et canvas (20 mm,
+// marge d'enroulement châssis) conservés — valeurs calées produit par produit.
 export const PRINT_SPECS: Record<string, PrintSpec> = {
-  "bc-standard": { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 3 },
-  "bc-rounded":  { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 3 },
-  "bc-square":   { widthMm: 55,  heightMm: 55,  faces: true,  orientationToggle: false, bleedMm: 3 },
-  "bc-folded":   { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 3 },
-  "flyer-a6":    { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 3 },
-  "flyer-a5":    { widthMm: 148, heightMm: 210, faces: true,  orientationToggle: true,  bleedMm: 3 },
-  "flyer-a4":    { widthMm: 210, heightMm: 297, faces: true,  orientationToggle: true,  bleedMm: 3 },
-  "poster-a3":   { widthMm: 297, heightMm: 420, faces: false, orientationToggle: true,  bleedMm: 3 },
+  "bc-standard": { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 4 },
+  "bc-rounded":  { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 4 },
+  "bc-square":   { widthMm: 55,  heightMm: 55,  faces: true,  orientationToggle: false, bleedMm: 4 },
+  "bc-folded":   { widthMm: 85,  heightMm: 55,  faces: true,  orientationToggle: true,  bleedMm: 4 },
+  "flyer-a6":    { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 4 },
+  "flyer-a5":    { widthMm: 148, heightMm: 210, faces: true,  orientationToggle: true,  bleedMm: 4 },
+  "flyer-a4":    { widthMm: 210, heightMm: 297, faces: true,  orientationToggle: true,  bleedMm: 4 },
+  "poster-a3":   { widthMm: 297, heightMm: 420, faces: false, orientationToggle: true,  bleedMm: 4 },
   "poster-40x60":{ widthMm: 400, heightMm: 600, faces: false, orientationToggle: true,  bleedMm: 5 },
   "poster-50x70":{ widthMm: 500, heightMm: 700, faces: false, orientationToggle: true,  bleedMm: 5 },
   "poster-a2":   { widthMm: 420, heightMm: 594, faces: false, orientationToggle: true,  bleedMm: 5 },
@@ -280,9 +285,9 @@ export const PRINT_SPECS: Record<string, PrintSpec> = {
   "canvas-40x60":{ widthMm: 400, heightMm: 600, faces: false, orientationToggle: true,  bleedMm: 20 },
   "canvas-50x50":{ widthMm: 500, heightMm: 500, faces: false, orientationToggle: false, bleedMm: 20 },
   "canvas-60x90":{ widthMm: 600, heightMm: 900, faces: false, orientationToggle: true,  bleedMm: 20 },
-  "card-a6":     { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 3 },
-  "card-square": { widthMm: 140, heightMm: 140, faces: true,  orientationToggle: false, bleedMm: 3 },
-  "card-folded": { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 3 },
+  "card-a6":     { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 4 },
+  "card-square": { widthMm: 140, heightMm: 140, faces: true,  orientationToggle: false, bleedMm: 4 },
+  "card-folded": { widthMm: 105, heightMm: 148, faces: true,  orientationToggle: true,  bleedMm: 4 },
 };
 
 // Produits routés vers le configurateur cartes dédié (85×55, gère prix + coins).
