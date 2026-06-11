@@ -13,7 +13,7 @@ import { ArrowRight, Shirt } from "lucide-react";
  *   - macro textile avec logo HM Global (image secondaire qualité/détail)
  *
  * Sources attendues :
- *   /images/home/hm-textile-hoodie-premium.webp
+ *   /images/realisations/prestige-polo-broderie.jpg
  *   /images/home/hm-macro-textile-logo.webp
  *
  * Fallback graphique premium si une image est absente.
@@ -93,8 +93,8 @@ export default function HomeTextilePremium() {
             >
               <div className="relative aspect-[16/10]">
                 <TextileImage
-                  src="/images/home/hm-textile-hoodie-premium.webp"
-                  alt="Hoodie noir personnalisé HM Global avec logo brodé sur le cœur, porté par un modèle."
+                  src="/images/realisations/prestige-polo-broderie.jpg"
+                  alt="Polo noir Prestige Bar à Vin marqué or par HM Global — commande client réelle."
                   sizes="(min-width: 1024px) 55vw, 100vw"
                 />
                 {/* Légende discrète bas-gauche */}

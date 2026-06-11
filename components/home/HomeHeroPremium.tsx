@@ -53,16 +53,16 @@ export default function HomeHeroPremium() {
                 color: "var(--hm-text-main)",
               }}
             >
-              Vos textiles personnalisés, marqués dans notre atelier en Alsace.
+              On habille votre équipe, vos murs et votre vitrine.
             </h1>
 
             <p
               className="mt-5 max-w-[38rem] text-[14.5px] leading-[1.65] sm:text-[15px]"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              T-shirts, sweats et polos à votre logo — DTF, flex ou broderie —
-              et tous vos supports imprimés. BAT validé avant chaque
-              production. En photo : notre atelier et de vraies commandes
+              Textile à votre logo, supports imprimés et enseignes — un seul
+              atelier, à Souffelweyersheim. Vous validez votre BAT avant
+              qu&apos;on lance la machine. En photos&nbsp;: de vraies commandes
               clients.
             </p>
 
@@ -74,14 +74,14 @@ export default function HomeHeroPremium() {
                 href="/catalogue"
                 className="btn-hm-magenta w-full justify-center sm:w-auto"
               >
-                Voir le catalogue textile
+                Je personnalise mon textile
                 <ArrowRight size={16} />
               </Link>
               <Link
-                href="/impression"
+                href="/devis-rapide"
                 className="btn-hm-violet-outline w-full justify-center sm:w-auto"
               >
-                Commander une impression
+                Devis gratuit en 24h
               </Link>
             </div>
 
@@ -130,7 +130,7 @@ export default function HomeHeroPremium() {
                     fill
                     priority
                     sizes="(min-width: 1024px) 45vw, 100vw"
-                    className="object-cover"
+                    className="hm-kenburns object-cover"
                   />
 
                   {/* Badges flottants sur la photo principale */}

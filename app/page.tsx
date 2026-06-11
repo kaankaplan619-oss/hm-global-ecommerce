@@ -1,4 +1,6 @@
 import HomeHeroPremium from "../components/home/HomeHeroPremium";
+import HomeReassurance from "../components/home/HomeReassurance";
+import HomeClients from "../components/home/HomeClients";
 import HomeNeedsPacks from "../components/home/HomeNeedsPacks";
 import HomeTextilePremium from "../components/home/HomeTextilePremium";
 import BestSellers from "../components/home/BestSellers";
@@ -31,6 +33,8 @@ export default function HomePage() {
   return (
     <>
       <HomeHeroPremium />
+      <HomeReassurance />
+      <HomeClients />
       <BestSellers />
       <HomeVisualShowcase />
       <HomeRealisations />

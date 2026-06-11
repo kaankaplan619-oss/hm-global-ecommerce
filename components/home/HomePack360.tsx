@@ -51,8 +51,8 @@ function PackClientImage() {
 
   return (
     <Image
-      src="/images/home/hm-pack-communication-complet.webp"
-      alt="Pack client HM Global : colis avec textile personnalisé, cartes de visite, flyers et supports imprimés prêts à livrer."
+      src="/images/realisations/hm-global-print.jpg"
+      alt="Cartes de visite et flyers HM Global imprimés, en piles, prêts à livrer — commande réelle."
       fill
       sizes="(min-width: 1024px) 45vw, 100vw"
       className="object-cover"

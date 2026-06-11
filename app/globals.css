@@ -700,3 +700,11 @@ body {
     print-color-adjust: exact !important;
   }
 }
+
+/* ── Ken Burns (hero accueil, 2026-06-12) — zoom lent type vidéo, 0 Ko ── */
+@keyframes hmKenburns {
+  from { transform: scale(1); }
+  to   { transform: scale(1.07); }
+}
+.hm-kenburns { animation: hmKenburns 22s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .hm-kenburns { animation: none; } }
