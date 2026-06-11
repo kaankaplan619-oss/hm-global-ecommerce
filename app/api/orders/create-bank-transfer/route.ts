@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { generateOrderNumber } from "@/lib/utils";
-import { computeUnitPrice, computeCartTotals, ttcToHt } from "@/data/pricing";
+import { computeUnitPriceWithVolume, computeCartTotals, ttcToHt } from "@/data/pricing";
 import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
 import { PRINT_PRODUCTS_LOOKUP, getBusinessCardLotPrice } from "@/data/print-products";
 import { getPrintDirectPrice } from "@/data/print-pricing";
@@ -179,11 +179,13 @@ export async function POST(req: NextRequest) {
       const product = PRODUCTS.find((p) => p.id === item.productId);
       if (!product) throw new Error(`Produit inconnu: ${item.productId}`);
 
-      const basePrice    = product.pricing[item.technique as keyof typeof product.pricing] as number;
-      const unitPriceTTC = computeUnitPrice({
-        basePrice,
-        technique: item.technique as "dtf" | "dtflex" | "flex" | "broderie" | "broderie_illimitee",
-        placement: item.placement as "coeur" | "dos" | "coeur-dos",
+      // Prix unitaire AVEC remise de volume (palier de quantité) — cohérent
+      // avec la vitrine, le panier et l'autre route de paiement.
+      const unitPriceTTC = computeUnitPriceWithVolume({
+        product,
+        technique: item.technique,
+        placement: item.placement,
+        quantity:  item.quantity,
       });
       const unitPriceHT  = ttcToHt(unitPriceTTC);
       const totalTTC     = Math.round(unitPriceTTC * item.quantity * 100) / 100;

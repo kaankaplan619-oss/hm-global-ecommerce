@@ -9,6 +9,16 @@
  *   sendCommandeAnnulee        → webhook charge.refunded
  *   sendFactureDisponible      → generate-invoice
  *   sendDemandeAvis            → admin-update status → terminee
+ *
+ * Design email (2026-06-11) : thème CLAIR, robuste Gmail/Outlook.
+ *   - Fond de page gris très clair, carte blanche centrée (max 600 px).
+ *   - Logo HM Global réel en en-tête (URL absolue publique — voir LOGO_URL).
+ *   - Couleurs en ligne (les clients mail ignorent souvent <style> et le fond
+ *     du <body>) : titres FONCÉS (#1a1a1a) → lisibles sur blanc.
+ *   - Accent doré #c9a96e conservé (identité du site) pour prix / liens / bouton.
+ *
+ * Ton éditorial : chaleureux et premium, ancré sur l'atelier alsacien
+ * (Souffelweyersheim) et le savoir-faire HM Global — jamais générique.
  */
 
 import type { Order } from "@/types";
@@ -16,8 +26,35 @@ import type { Order } from "@/types";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const FROM_NAME  = "HM Global Agence";
-const REPLY_TO   = "contact@hmglobalagence.fr";
+const SIGNATURE  = "L'équipe HM Global Agence";
+// Adresse de contact / réponse — configurable (le domaine n'est pas encore actif).
+// Par défaut l'adresse de marque ; surchargeable tant que le domaine n'est pas en
+// place via EMAIL_REPLY_TO (ex. une boîte qui fonctionne déjà).
+const REPLY_TO   = process.env.EMAIL_REPLY_TO ?? "contact@hmglobalagence.fr";
 const SITE_URL   = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmglobalagence.fr";
+
+/**
+ * URL ABSOLUE et PUBLIQUE du logo affiché en en-tête des emails.
+ * Doit être joignable sans authentification (Gmail charge l'image côté client).
+ * Par défaut : Supabase Storage (bucket public "mockups") — URL stable,
+ * indépendante du domaine, donc valable en test comme en production.
+ * Surchargeable par EMAIL_LOGO_URL si besoin.
+ */
+const LOGO_URL =
+  process.env.EMAIL_LOGO_URL ??
+  "https://kbeeedbfkalovtusaden.supabase.co/storage/v1/object/public/mockups/brand/hm-global-logo-email.png";
+
+// Palette email (thème clair)
+const C = {
+  page:    "#f4f4f5",
+  card:    "#ffffff",
+  border:  "#ececec",
+  heading: "#1a1a1a",
+  body:    "#444444",
+  muted:   "#777777",
+  faint:   "#9a9a9a",
+  gold:    "#c9a96e",
+};
 
 // ─── Resend client (lazy — évite l'import au build) ──────────────────────────
 
@@ -51,38 +88,72 @@ function getRecipientEmail(order: Order, fn: string): string | null {
   return email;
 }
 
-// ─── Layout HTML partagé ──────────────────────────────────────────────────────
+// ─── Bouton « bulletproof » (rendu fiable Gmail/Outlook) ─────────────────────
 
-function baseLayout(content: string, title: string): string {
+function button(href: string, label: string): string {
+  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0">
+    <tr><td align="center" bgcolor="${C.gold}" style="border-radius:6px">
+      <a href="${href}" target="_blank"
+         style="display:inline-block;padding:13px 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#1a1a1a;text-decoration:none;border-radius:6px">${label}</a>
+    </td></tr>
+  </table>`;
+}
+
+// ─── Layout HTML partagé (table-based, thème clair) ──────────────────────────
+
+function baseLayout(content: string, title: string, preheader = ""): string {
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="x-apple-disable-message-reformatting" />
   <title>${title}</title>
-  <style>
-    body { margin:0; padding:0; background:#0a0a0a; font-family: Arial, sans-serif; color:#f5f5f5; }
-    .wrapper { max-width:600px; margin:0 auto; padding:40px 24px; }
-    .logo { font-size:20px; font-weight:700; letter-spacing:0.05em; color:#c9a96e; margin-bottom:32px; }
-    .divider { height:1px; background:linear-gradient(90deg,transparent,#c9a96e55,transparent); margin:24px 0; }
-    .footer { font-size:12px; color:#555555; margin-top:32px; line-height:1.6; }
-    .btn { display:inline-block; padding:12px 24px; background:#c9a96e; color:#0a0a0a !important; font-weight:700; font-size:14px; text-decoration:none; border-radius:4px; margin:16px 0; }
-    p { line-height:1.7; margin:8px 0; }
-  </style>
 </head>
-<body>
-<div class="wrapper">
-  <div class="logo">HM GLOBAL AGENCE</div>
-  ${content}
-  <div class="divider"></div>
-  <div class="footer">
-    HM Global Agence — Souffelweyersheim, Alsace<br/>
-    <a href="mailto:${REPLY_TO}" style="color:#c9a96e">${REPLY_TO}</a>
-  </div>
-</div>
+<body style="margin:0;padding:0;background:${C.page};font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
+  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${C.page};font-size:1px;line-height:1px">${preheader}</div>` : ""}
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:${C.page}">
+    <tr>
+      <td align="center" style="padding:32px 16px">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;background:${C.card};border:1px solid ${C.border};border-radius:10px;overflow:hidden">
+          <!-- En-tête : logo -->
+          <tr>
+            <td align="center" style="padding:36px 32px 20px">
+              <img src="${LOGO_URL}" alt="HM Global Agence" width="210" style="display:block;width:210px;max-width:60%;height:auto;border:0;outline:none;text-decoration:none" />
+            </td>
+          </tr>
+          <tr><td style="padding:0 32px"><div style="height:1px;background:linear-gradient(90deg,transparent,${C.gold}55,transparent)"></div></td></tr>
+          <!-- Contenu -->
+          <tr>
+            <td style="padding:28px 32px 8px;color:${C.body};font-size:15px;line-height:1.7">
+              ${content}
+            </td>
+          </tr>
+          <!-- Pied -->
+          <tr>
+            <td style="padding:24px 32px 32px;border-top:1px solid ${C.border}">
+              <p style="margin:0 0 6px;font-size:13px;line-height:1.6;color:${C.muted}">
+                <strong style="color:${C.heading}">HM Global Agence</strong> — Atelier de personnalisation textile &amp; impression<br/>
+                Souffelweyersheim, Alsace · Un savoir-faire local depuis 2018
+              </p>
+              <p style="margin:0;font-size:12px;line-height:1.7;color:${C.faint}">
+                Une question ? Écrivez-nous à <a href="mailto:${REPLY_TO}" style="color:${C.gold};text-decoration:none">${REPLY_TO}</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
+
+// Styles inline réutilisables pour le contenu
+const H2   = `margin:0 0 14px;font-size:21px;font-weight:700;color:${C.heading}`;
+const P    = `margin:10px 0;font-size:15px;line-height:1.7;color:${C.body}`;
+const SUB  = `margin:10px 0;font-size:14px;line-height:1.6;color:${C.muted}`;
+const SIGN = `margin:18px 0 4px;font-size:14px;color:${C.muted}`;
 
 // ─── 1. Confirmation de paiement ─────────────────────────────────────────────
 // Déclencheur : webhook payment_intent.succeeded
@@ -95,20 +166,21 @@ export async function sendConfirmationPaiement(order: Order) {
   const from = getFromEmail();
 
   const html = baseLayout(
-    `<h2 style="color:#f5f5f5;margin:0 0 8px">Paiement reçu ✓</h2>
-     <p style="color:#8a8a8a">Bonjour ${order.user.firstName},</p>
-     <p>Votre paiement de <strong style="color:#c9a96e">${order.totalTTC.toFixed(2)} €</strong> a bien été reçu.</p>
-     <p>Commande : <strong>#${order.orderNumber}</strong></p>
-     <p style="color:#8a8a8a;font-size:14px">Votre commande est en cours de vérification. Nous vous contacterons si votre fichier doit être ajusté.</p>
-     <a href="${SITE_URL}/mon-compte/commandes/${order.id}" class="btn">Suivre ma commande</a>`,
-    "Paiement reçu — HM Global Agence"
+    `<h2 style="${H2}">Merci, votre paiement est confirmé ✓</h2>
+     <p style="${P}">Bonjour ${order.user.firstName},</p>
+     <p style="${P}">Merci pour votre confiance. Nous avons bien reçu votre paiement de <strong style="color:${C.gold}">${order.totalTTC.toFixed(2)} €</strong> pour la commande <strong>#${order.orderNumber}</strong>.</p>
+     <p style="${P}">Notre atelier alsacien prend le relais : nous vérifions votre visuel avec soin et reviendrons vers vous si le moindre ajustement est nécessaire avant le lancement en production.</p>
+     ${button(`${SITE_URL}/mon-compte/commandes/${order.id}`, "Suivre ma commande")}
+     <p style="${SIGN}">À très vite,<br/>${SIGNATURE}</p>`,
+    "Paiement reçu — HM Global Agence",
+    `Merci ! Votre paiement de ${order.totalTTC.toFixed(2)} € pour la commande #${order.orderNumber} est confirmé.`
   );
 
   return resend.emails.send({
     from,
     replyTo: REPLY_TO,
     to,
-    subject: `✓ Paiement reçu — Commande #${order.orderNumber}`,
+    subject: `Votre paiement est confirmé — Commande #${order.orderNumber}`,
     html,
   });
 }
@@ -124,21 +196,23 @@ export async function sendFichierNonConforme(order: Order, reason: string) {
   const from = getFromEmail();
 
   const html = baseLayout(
-    `<h2 style="color:#f5f5f5;margin:0 0 8px">Action requise : fichier à corriger</h2>
-     <p>Bonjour ${order.user.firstName},</p>
-     <p>Votre fichier logo pour la commande <strong>#${order.orderNumber}</strong> nécessite une correction :</p>
-     <p style="padding:16px;background:#1a1a1a;border-left:3px solid #c9a96e;border-radius:4px;color:#8a8a8a">${reason}</p>
-     <p>Vous pouvez déposer votre nouveau fichier depuis votre espace client :</p>
-     <a href="${SITE_URL}/mon-compte/commandes/${order.id}" class="btn">Déposer mon fichier</a>
-     <p style="font-size:13px;color:#555555">Formats acceptés : PDF, PNG, SVG, AI — maximum 50 Mo</p>`,
-    "Fichier à corriger — HM Global Agence"
+    `<h2 style="${H2}">Votre visuel a besoin d'un petit ajustement</h2>
+     <p style="${P}">Bonjour ${order.user.firstName},</p>
+     <p style="${P}">Avant de lancer la fabrication de votre commande <strong>#${order.orderNumber}</strong>, notre atelier a repéré un point à corriger sur votre fichier pour garantir un rendu impeccable :</p>
+     <p style="margin:16px 0;padding:14px 16px;background:#faf6ef;border-left:3px solid ${C.gold};border-radius:4px;color:#5a5145;font-size:14px;line-height:1.6">${reason}</p>
+     <p style="${P}">Déposez votre fichier corrigé en un clic — on s'occupe du reste.</p>
+     ${button(`${SITE_URL}/mon-compte/commandes/${order.id}`, "Déposer mon fichier")}
+     <p style="margin:8px 0;font-size:13px;color:${C.faint}">Formats acceptés : PDF, PNG, SVG, AI — jusqu'à 50 Mo. Un doute sur votre fichier ? Répondez à cet email, on vous guide.</p>
+     <p style="${SIGN}">${SIGNATURE}</p>`,
+    "Votre fichier a besoin d'un ajustement — HM Global Agence",
+    `Un petit ajustement est nécessaire sur le visuel de votre commande #${order.orderNumber}.`
   );
 
   return resend.emails.send({
     from,
     replyTo: REPLY_TO,
     to,
-    subject: `⚠️ Fichier à corriger — Commande #${order.orderNumber}`,
+    subject: `Action requise : votre visuel — Commande #${order.orderNumber}`,
     html,
   });
 }
@@ -154,19 +228,21 @@ export async function sendCommandeValidee(order: Order) {
   const from = getFromEmail();
 
   const html = baseLayout(
-    `<h2 style="color:#f5f5f5;margin:0 0 8px">Commande validée ✓</h2>
-     <p>Bonjour ${order.user.firstName},</p>
-     <p>Excellente nouvelle ! Votre commande <strong>#${order.orderNumber}</strong> a été validée et est en cours de fabrication.</p>
-     <p style="color:#8a8a8a;font-size:14px">Vous recevrez un email dès que votre commande sera expédiée.</p>
-     <a href="${SITE_URL}/mon-compte/commandes/${order.id}" class="btn">Voir ma commande</a>`,
-    "Commande validée — HM Global Agence"
+    `<h2 style="${H2}">C'est parti — votre commande est en fabrication 🎨</h2>
+     <p style="${P}">Bonjour ${order.user.firstName},</p>
+     <p style="${P}">Bonne nouvelle : votre visuel est validé et votre commande <strong>#${order.orderNumber}</strong> est désormais en fabrication dans notre atelier.</p>
+     <p style="${SUB}">Nos équipes y apportent le plus grand soin. Vous recevrez un email dès qu'elle sera expédiée.</p>
+     ${button(`${SITE_URL}/mon-compte/commandes/${order.id}`, "Voir ma commande")}
+     <p style="${SIGN}">${SIGNATURE}</p>`,
+    "Commande en fabrication — HM Global Agence",
+    `Votre visuel est validé : la commande #${order.orderNumber} part en fabrication.`
   );
 
   return resend.emails.send({
     from,
     replyTo: REPLY_TO,
     to,
-    subject: `✓ Commande validée — #${order.orderNumber}`,
+    subject: `Votre commande est en fabrication — #${order.orderNumber}`,
     html,
   });
 }
@@ -182,23 +258,25 @@ export async function sendCommandeExpediee(order: Order) {
   const from = getFromEmail();
 
   const trackingBlock = order.trackingNumber
-    ? `<p>Numéro de suivi : <strong style="color:#c9a96e">${order.trackingNumber}</strong></p>`
+    ? `<p style="${P}">Votre numéro de suivi : <strong style="color:${C.gold}">${order.trackingNumber}</strong></p>`
     : "";
 
   const html = baseLayout(
-    `<h2 style="color:#f5f5f5;margin:0 0 8px">Commande expédiée 🚀</h2>
-     <p>Bonjour ${order.user.firstName},</p>
-     <p>Votre commande <strong>#${order.orderNumber}</strong> a été expédiée !</p>
+    `<h2 style="${H2}">Votre commande est en route 🚚</h2>
+     <p style="${P}">Bonjour ${order.user.firstName},</p>
+     <p style="${P}">Votre commande <strong>#${order.orderNumber}</strong> vient de quitter notre atelier et arrive bientôt chez vous.</p>
      ${trackingBlock}
-     <a href="${SITE_URL}/mon-compte/commandes/${order.id}" class="btn">Suivre ma commande</a>`,
-    "Commande expédiée — HM Global Agence"
+     ${button(`${SITE_URL}/mon-compte/commandes/${order.id}`, "Suivre ma commande")}
+     <p style="${SIGN}">Merci encore pour votre confiance,<br/>${SIGNATURE}</p>`,
+    "Commande expédiée — HM Global Agence",
+    `Votre commande #${order.orderNumber} vient d'être expédiée.`
   );
 
   return resend.emails.send({
     from,
     replyTo: REPLY_TO,
     to,
-    subject: `🚀 Commande expédiée — #${order.orderNumber}`,
+    subject: `Votre commande est en route — #${order.orderNumber}`,
     html,
   });
 }
@@ -214,12 +292,14 @@ export async function sendCommandeAnnulee(order: Order) {
   const from = getFromEmail();
 
   const html = baseLayout(
-    `<h2 style="color:#f5f5f5;margin:0 0 8px">Commande annulée</h2>
-     <p>Bonjour ${order.user.firstName},</p>
-     <p>Votre commande <strong>#${order.orderNumber}</strong> a été annulée.</p>
-     <p>Un remboursement de <strong style="color:#c9a96e">${order.totalTTC.toFixed(2)} €</strong> sera traité sous 5 à 10 jours ouvrés sur votre moyen de paiement d'origine.</p>
-     <p style="color:#8a8a8a;font-size:13px">Des questions ? Contactez-nous à <a href="mailto:${REPLY_TO}" style="color:#c9a96e">${REPLY_TO}</a></p>`,
-    "Commande annulée — HM Global Agence"
+    `<h2 style="${H2}">Votre commande a été annulée</h2>
+     <p style="${P}">Bonjour ${order.user.firstName},</p>
+     <p style="${P}">Votre commande <strong>#${order.orderNumber}</strong> a bien été annulée.</p>
+     <p style="${P}">Un remboursement de <strong style="color:${C.gold}">${order.totalTTC.toFixed(2)} €</strong> sera traité sous 5 à 10 jours ouvrés sur votre moyen de paiement d'origine.</p>
+     <p style="${SUB}">Un imprévu, une question, ou l'envie de relancer votre projet ? Écrivez-nous à <a href="mailto:${REPLY_TO}" style="color:${C.gold};text-decoration:none">${REPLY_TO}</a>, nous serons ravis de vous accompagner.</p>
+     <p style="${SIGN}">${SIGNATURE}</p>`,
+    "Commande annulée — HM Global Agence",
+    `Votre commande #${order.orderNumber} a été annulée et remboursée.`
   );
 
   return resend.emails.send({
@@ -242,23 +322,24 @@ export async function sendFactureDisponible(order: Order) {
   const from = getFromEmail();
 
   const downloadBtn = order.invoiceUrl
-    ? `<a href="${order.invoiceUrl}" class="btn">Télécharger ma facture</a>`
-    : "";
+    ? button(order.invoiceUrl, "Télécharger ma facture")
+    : button(`${SITE_URL}/mon-compte/factures`, "Voir mes factures");
 
   const html = baseLayout(
-    `<h2 style="color:#f5f5f5;margin:0 0 8px">Votre facture est disponible</h2>
-     <p>Bonjour ${order.user.firstName},</p>
-     <p>La facture pour votre commande <strong>#${order.orderNumber}</strong> est maintenant disponible.</p>
+    `<h2 style="${H2}">Votre facture est disponible</h2>
+     <p style="${P}">Bonjour ${order.user.firstName},</p>
+     <p style="${P}">La facture de votre commande <strong>#${order.orderNumber}</strong> est désormais disponible dans votre espace client.</p>
      ${downloadBtn}
-     <a href="${SITE_URL}/mon-compte/factures" class="btn" style="margin-left:${order.invoiceUrl ? "8px" : "0"}">Voir mes factures</a>`,
-    "Facture disponible — HM Global Agence"
+     <p style="${SIGN}">${SIGNATURE}</p>`,
+    "Facture disponible — HM Global Agence",
+    `La facture de votre commande #${order.orderNumber} est disponible.`
   );
 
   return resend.emails.send({
     from,
     replyTo: REPLY_TO,
     to,
-    subject: `Facture disponible — Commande #${order.orderNumber}`,
+    subject: `Votre facture est disponible — Commande #${order.orderNumber}`,
     html,
   });
 }
@@ -274,19 +355,21 @@ export async function sendDemandeAvis(order: Order) {
   const from = getFromEmail();
 
   const html = baseLayout(
-    `<h2 style="color:#f5f5f5;margin:0 0 8px">Votre avis compte pour nous</h2>
-     <p>Bonjour ${order.user.firstName},</p>
-     <p>Nous espérons que vos articles vous ont satisfait ! Votre retour nous aide à améliorer nos services.</p>
-     <a href="${SITE_URL}/avis/${order.id}" class="btn">Laisser mon avis</a>
-     <p style="font-size:13px;color:#555555">Cela ne prend que 30 secondes.</p>`,
-    "Donnez votre avis — HM Global Agence"
+    `<h2 style="${H2}">Votre avis compte pour nous</h2>
+     <p style="${P}">Bonjour ${order.user.firstName},</p>
+     <p style="${P}">Nous espérons que votre commande vous a pleinement séduit ! En tant qu'atelier indépendant, votre retour est précieux : il nous aide à progresser et guide les futurs clients.</p>
+     ${button(`${SITE_URL}/avis/${order.id}`, "Laisser mon avis")}
+     <p style="margin:8px 0;font-size:13px;color:${C.faint}">Cela ne prend que 30 secondes — un grand merci d'avance.</p>
+     <p style="${SIGN}">${SIGNATURE}</p>`,
+    "Votre avis — HM Global Agence",
+    `Comment s'est passée votre commande #${order.orderNumber} ?`
   );
 
   return resend.emails.send({
     from,
     replyTo: REPLY_TO,
     to,
-    subject: `⭐ Comment s'est passée votre commande ?`,
+    subject: `Comment s'est passée votre commande ?`,
     html,
   });
 }

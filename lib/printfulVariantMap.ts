@@ -345,6 +345,157 @@ const CASQUETTE_YUPOONG_6006_VARIANTS: Record<string, number> = {
   "blanc__One size":      4810,
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ÉLARGISSEMENT CATALOGUE (#85) — vérifié EU in_stock 2026-06-12 via API
+// publique (availability_status régions EU/EU_LV/EU_ES). Toute combinaison
+// absente ici N'EXISTE PAS dans products.ts (règle Kaan).
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Polo SOL'S 11362 Prescott (catalog 810) — vérifié EU 2026-06-12 ─────────
+// Exclusions volontaires : White (L en rupture EU), Mouse Grey & Sand
+// (n'existent qu'en S-2XL → grille de tailles incohérente avec le produit).
+const POLO_SOLS_PRESCOTT_VARIANTS: Record<string, number> = {
+  "noir__S": 20624,  "noir__M": 20610,  "noir__L": 20617,  "noir__XL": 20631,
+  "noir__2XL": 20638, "noir__3XL": 20645, "noir__4XL": 20652, "noir__5XL": 20659,
+  "marine__S": 20627, "marine__M": 20613, "marine__L": 20620, "marine__XL": 20634,
+  "marine__2XL": 20641, "marine__3XL": 20648, "marine__4XL": 20655, "marine__5XL": 20662,
+  "rouge__S": 20629, "rouge__M": 20615, "rouge__L": 20622, "rouge__XL": 20636,
+  "rouge__2XL": 20643, "rouge__3XL": 20650, "rouge__4XL": 20657, "rouge__5XL": 20664,
+  "gris-chine__S": 20625, "gris-chine__M": 20611, "gris-chine__L": 20618, "gris-chine__XL": 20632,
+  "gris-chine__2XL": 20639, "gris-chine__3XL": 20646, "gris-chine__4XL": 20653, "gris-chine__5XL": 20660,
+};
+
+// ─── Polo Gildan 64800L femme (catalog 664) — vérifié EU 2026-06-12 ──────────
+const POLO_GILDAN_64800L_VARIANTS: Record<string, number> = {
+  "noir__S": 16587,  "noir__M": 16589,  "noir__L": 16590,  "noir__XL": 16591,  "noir__2XL": 16592,
+  "marine__S": 16593, "marine__M": 16594, "marine__L": 16595, "marine__XL": 16596, "marine__2XL": 16597,
+  "gris__S": 16598,  "gris__M": 16599,  "gris__L": 16600,  "gris__XL": 16601,  "gris__2XL": 16602,
+  "blanc__S": 16603, "blanc__M": 16604, "blanc__L": 16605, "blanc__XL": 16606, "blanc__2XL": 16607,
+};
+
+// ─── Coupe-vent SOL'S 32000 (catalog 661) — vérifié EU 2026-06-12 ────────────
+// « French Navy » est nommé « Navy » dans l'API → marine.
+const COUPE_VENT_SOLS_32000_VARIANTS: Record<string, number> = {
+  "noir__S": 16424,  "noir__M": 16425,  "noir__L": 16426,  "noir__XL": 16427,  "noir__2XL": 16428,
+  "marine__S": 16434, "marine__M": 16435, "marine__L": 16436, "marine__XL": 16437, "marine__2XL": 16438,
+  "vert-foret__S": 16429, "vert-foret__M": 16430, "vert-foret__L": 16431, "vert-foret__XL": 16432, "vert-foret__2XL": 16433,
+};
+
+// ─── Dad hat Yupoong 6245CM (catalog 206) — vérifié EU 2026-06-12 ────────────
+// Spruce exclue (rupture EU).
+const CASQUETTE_DAD_HAT_6245_VARIANTS: Record<string, number> = {
+  "noir__One size":       7854,
+  "blanc__One size":      7853,
+  "marine__One size":     7857,
+  "gris__One size":       12736,
+  "kaki__One size":       7855,
+  "pierre__One size":     7859,
+  "bleu-clair__One size": 7856,
+  "rose__One size":       7858,
+  "bordeaux__One size":   12735,
+  "camouflage__One size": 9794,
+};
+
+// ─── Snapback Yupoong 6089M (catalog 99) — vérifié EU 2026-06-12 ─────────────
+// Exclues (rupture EU) : Heather Grey/Navy, Heather Grey/Red, Navy/Red.
+const CASQUETTE_SNAPBACK_6089_VARIANTS: Record<string, number> = {
+  "noir__One size":             4792,
+  "blanc__One size":            22453,
+  "marine__One size":           4802,
+  "marine-fonce__One size":     4798,
+  "gris__One size":             4797,
+  "gris-chine__One size":       7836,
+  "argent__One size":           4808,
+  "rouge__One size":            4806,
+  "royal__One size":            4807,
+  "bordeaux__One size":         4799,
+  "sapin__One size":            4809,
+  "camouflage__One size":       7835,
+  "noir-rose-fluo__One size":   7843,
+  "noir-rouge__One size":       4794,
+  "noir-argent__One size":      4795,
+  "noir-bleu-canard__One size": 4796,
+  "gris-chine-noir__One size":  7837,
+  "naturel-noir__One size":     4801,
+};
+
+// ─── Bob Flexfit 5003 (catalog 253) — vérifié EU 2026-06-12 ──────────────────
+const BOB_FLEXFIT_5003_VARIANTS: Record<string, number> = {
+  "noir__One size":   8760,
+  "blanc__One size":  8759,
+  "marine__One size": 8761,
+  "gris__One size":   8763,
+  "kaki__One size":   8762,
+};
+
+// ─── Bonnet Yupoong 1501KC (catalog 266) — vérifié EU 2026-06-12 ─────────────
+const BONNET_YUPOONG_1501KC_VARIANTS: Record<string, number> = {
+  "noir__One size":       8936,
+  "blanc__One size":      8938,
+  "marine__One size":     8940,
+  "gris__One size":       12881,
+  "gris-chine__One size": 8937,
+  "rouge__One size":      8939,
+  "royal__One size":      17496,
+  "sapin__One size":      8941,
+  "olive__One size":      17495,
+  "marron__One size":     12880,
+  "or__One size":         12882,
+  "rose__One size":       17494,
+};
+
+// ─── Tote BagBase W101 (catalog 1553) — vérifié EU 2026-06-12 ────────────────
+const TOTE_BAGBASE_W101_VARIANTS: Record<string, number> = {
+  "noir__One size":           49313,
+  "vert-bouteille__One size": 49314,
+  "bordeaux__One size":       49315,
+  "rose__One size":           49316,
+  "rouge__One size":          49317,
+  "corail__One size":         49318,
+  "marine__One size":         49319,
+  "gris-clair__One size":     49320,
+  "menthe__One size":         49321,
+  "moutarde__One size":       49322,
+  "naturel__One size":        49323,
+  "orange__One size":         49324,
+};
+
+// ─── Tote denim Mantis M196 (catalog 528) — vérifié EU 2026-06-12 ────────────
+const TOTE_DENIM_MANTIS_M196_VARIANTS: Record<string, number> = {
+  "denim__One size": 13313,
+};
+
+// ─── Sacoche BagBase QS309 (catalog 1552) — vérifié EU 2026-06-12 ────────────
+const SACOCHE_BAGBASE_QS309_VARIANTS: Record<string, number> = {
+  "noir__One size": 49308,
+  "vert__One size": 49309,
+  "rose__One size": 49310,
+};
+
+// ─── Stickers kiss-cut (catalog 358) — vérifié EU 2026-06-12 ─────────────────
+// « Tailles » = formats. Bandeau 15″ volontairement exclu.
+const STICKERS_LOGO_VARIANTS: Record<string, number> = {
+  "blanc__7,6 × 7,6 cm": 10163,
+  "blanc__10 × 10 cm":   10164,
+  "blanc__14 × 14 cm":   10165,
+};
+
+// ─── Planche de stickers A5 (catalog 505) — vérifié EU 2026-06-12 ────────────
+const PLANCHE_STICKERS_VARIANTS: Record<string, number> = {
+  "blanc__14,8 × 21 cm": 12917,
+};
+
+// ─── Mug noir brillant (catalog 300) — vérifié EU 2026-06-12 ─────────────────
+const MUG_NOIR_VARIANTS: Record<string, number> = {
+  "noir__11 oz / 325 ml": 9323,
+  "noir__15 oz / 445 ml": 9324,
+};
+
+// ─── Dessous de verre liège (catalog 611) — vérifié EU 2026-06-12 ────────────
+const DESSOUS_VERRE_VARIANTS: Record<string, number> = {
+  "blanc__9,5 × 9,5 cm": 15662,
+};
+
 // ─── Map par product_id ───────────────────────────────────────────────────────
 
 const PRODUCT_VARIANT_MAP: Record<string, Record<string, number>> = {
@@ -355,6 +506,21 @@ const PRODUCT_VARIANT_MAP: Record<string, Record<string, number>> = {
   "comfort-colors-1717":  COMFORT_COLORS_1717_VARIANTS,
   "casquette-flexfit-6277": CASQUETTE_FLEXFIT_6277_VARIANTS,
   "casquette-yupoong-6006": CASQUETTE_YUPOONG_6006_VARIANTS,
+  // Élargissement #85 (2026-06-12)
+  "polo-sols-prescott":     POLO_SOLS_PRESCOTT_VARIANTS,
+  "polo-gildan-64800l":     POLO_GILDAN_64800L_VARIANTS,
+  "coupe-vent-sols-32000":  COUPE_VENT_SOLS_32000_VARIANTS,
+  "casquette-dad-hat-6245": CASQUETTE_DAD_HAT_6245_VARIANTS,
+  "casquette-snapback-6089": CASQUETTE_SNAPBACK_6089_VARIANTS,
+  "bob-flexfit-5003":       BOB_FLEXFIT_5003_VARIANTS,
+  "bonnet-yupoong-1501kc":  BONNET_YUPOONG_1501KC_VARIANTS,
+  "tote-bagbase-w101":      TOTE_BAGBASE_W101_VARIANTS,
+  "tote-denim-mantis-m196": TOTE_DENIM_MANTIS_M196_VARIANTS,
+  "sacoche-bagbase-qs309":  SACOCHE_BAGBASE_QS309_VARIANTS,
+  "stickers-logo":          STICKERS_LOGO_VARIANTS,
+  "planche-stickers":       PLANCHE_STICKERS_VARIANTS,
+  "mug-noir-brillant":      MUG_NOIR_VARIANTS,
+  "dessous-verre-liege":    DESSOUS_VERRE_VARIANTS,
 };
 
 // ─── Printful product catalog IDs ────────────────────────────────────────────
@@ -367,6 +533,21 @@ export const PRINTFUL_PRODUCT_IDS: Record<string, number> = {
   "comfort-colors-1717":  586,
   "casquette-flexfit-6277": 140,
   "casquette-yupoong-6006": 100,
+  // Élargissement #85 (2026-06-12)
+  "polo-sols-prescott":     810,
+  "polo-gildan-64800l":     664,
+  "coupe-vent-sols-32000":  661,
+  "casquette-dad-hat-6245": 206,
+  "casquette-snapback-6089": 99,
+  "bob-flexfit-5003":       253,
+  "bonnet-yupoong-1501kc":  266,
+  "tote-bagbase-w101":      1553,
+  "tote-denim-mantis-m196": 528,
+  "sacoche-bagbase-qs309":  1552,
+  "stickers-logo":          358,
+  "planche-stickers":       505,
+  "mug-noir-brillant":      300,
+  "dessous-verre-liege":    611,
 };
 
 // ─── Lookup public ────────────────────────────────────────────────────────────

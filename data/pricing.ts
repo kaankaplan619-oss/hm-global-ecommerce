@@ -1,4 +1,4 @@
-import type { PricingConfig, VolumePricingTier } from "@/types";
+import type { PricingConfig, VolumePricingTier, Product, Technique, Placement } from "@/types";
 
 // ─── Global Config ────────────────────────────────────────────────────────────
 export const PRICING_CONFIG: PricingConfig = {
@@ -44,22 +44,25 @@ export const GILDAN_5000_PRICES = {
 //                   200 pcs → -27% | 500 pcs → -29%
 // Prix HM (TTC) = coût Printful × multiplicateur → prix arrondi au centime
 
+// Grille MARCHÉ validée Kaan 2026-06-11 — bascule atelier dès 10 pièces.
+//   1-9   : POD Printful (coût ~7,50 € → marge ~9 € HT)
+//   10+   : atelier interne (coût ~4-5 € → prix marché, marge 40-55 %)
 export const GILDAN_5000_DTF_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 19.90 },
-  { from: 25,  to: 49,  unitPrice: 18.30 }, // -8%
-  { from: 50,  to: 99,  unitPrice: 16.30 }, // -18%
-  { from: 100, to: 199, unitPrice: 15.50 }, // -22%
-  { from: 200, to: 499, unitPrice: 14.50 }, // -27%
-  { from: 500,          unitPrice: 14.10 }, // -29%
+  { from: 1,   to: 9,   unitPrice: 19.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 14.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 11.90 },
+  { from: 50,  to: 99,  unitPrice: 9.90  },
+  { from: 100, to: 199, unitPrice: 8.90  },
+  { from: 200,          unitPrice: 7.90  },
 ];
 
 export const GILDAN_5000_DTFLEX_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 21.90 },
-  { from: 25,  to: 49,  unitPrice: 20.10 }, // -8%
-  { from: 50,  to: 99,  unitPrice: 17.90 }, // -18%
-  { from: 100, to: 199, unitPrice: 17.10 }, // -22%
-  { from: 200, to: 499, unitPrice: 16.00 }, // -27%
-  { from: 500,          unitPrice: 15.50 }, // -29%
+  { from: 1,   to: 9,   unitPrice: 21.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 16.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 13.90 },
+  { from: 50,  to: 99,  unitPrice: 11.90 },
+  { from: 100, to: 199, unitPrice: 10.90 },
+  { from: 200,          unitPrice: 9.90  },
 ];
 
 export const GILDAN_5000_BRODERIE_VOLUME: VolumePricingTier[] = [
@@ -364,24 +367,25 @@ export const BELLA_3001_PLACEMENT_SURCHARGES = {
 
 // Bella+Canvas 3001 — Volume pricing tiers CORRIGÉS (remises Printful réelles)
 // Remises Printful Bella+Canvas : 25 pcs -13% | 50 pcs -21% | 100 pcs -27% | 200 pcs -30% | 500 pcs -32%
+// Grille MARCHÉ 2026-06-11 — t-shirt PREMIUM (ring-spun) : floor un cran au-dessus
+// du Gildan. 1-9 POD (coût DTG 12,30 € TTC) ; 10+ atelier (blanc Bella ~4 € HT +
+// marquage → coût ~6,50 € HT) → marge protégée 45-50 %.
 export const BELLA_3001_DTF_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 22.90 }, // Printify 13.65 €
-  { from: 25,  to: 49,  unitPrice: 19.90 }, // -13%
-  // Tier 50-99 ajusté Mai 2026 : 17.90 → 19.90 € (sort du déficit avéré −0,27€/u
-  // sur coût Printify réel 13.65 € + shipping 1.26€/u + Stripe). Cf audit prix V1.
-  { from: 50,  to: 99,  unitPrice: 19.90 }, // -21% Printful (corrigé +2€)
-  { from: 100, to: 199, unitPrice: 18.90 }, // -27%
-  { from: 200, to: 499, unitPrice: 17.90 }, // -30%
-  { from: 500,          unitPrice: 16.90 }, // -32%
+  { from: 1,   to: 9,   unitPrice: 22.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 17.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 14.90 },
+  { from: 50,  to: 99,  unitPrice: 12.90 },
+  { from: 100, to: 199, unitPrice: 11.90 },
+  { from: 200,          unitPrice: 10.90 },
 ];
 
 export const BELLA_3001_DTFLEX_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 24.90 }, // Printful 13.80 €
-  { from: 25,  to: 49,  unitPrice: 21.90 }, // -13% Printful → 12.00 €
-  { from: 50,  to: 99,  unitPrice: 19.90 }, // -21% Printful → 10.91 €
-  { from: 100, to: 199, unitPrice: 18.90 }, // -27% Printful → 10.07 €
-  { from: 200, to: 499, unitPrice: 17.90 }, // -30% Printful →  9.66 €
-  { from: 500,          unitPrice: 16.90 }, // -32% Printful →  9.38 €
+  { from: 1,   to: 9,   unitPrice: 24.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 19.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 16.90 },
+  { from: 50,  to: 99,  unitPrice: 14.90 },
+  { from: 100, to: 199, unitPrice: 13.90 },
+  { from: 200,          unitPrice: 12.90 },
 ];
 
 export const BELLA_3001_BRODERIE_VOLUME: VolumePricingTier[] = [
@@ -420,22 +424,25 @@ export const GILDAN_18000_PLACEMENT_SURCHARGES = {
   "coeur-dos": 6.00,  // 39.90 + 6.00 = 45.90 TTC (DTG)
 } as const;
 
+// Grille MARCHÉ 2026-06-11 — SWEAT col rond. 1-9 POD (coût DTG 17,40 € TTC) ;
+// 10+ atelier (blanc sweat TopTex ~8-9 € HT + marquage ~3 € → ~12 € HT) →
+// marge protégée 34-50 % avec coussin de sécurité.
 export const GILDAN_18000_DTG_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 39.90 }, // Printful 17.40 €
-  { from: 25,  to: 49,  unitPrice: 36.90 }, // -8%  Printful 16.01 €
-  { from: 50,  to: 99,  unitPrice: 33.90 }, // -16% Printful 14.62 €
-  { from: 100, to: 199, unitPrice: 30.90 }, // -23% Printful 13.39 €
-  { from: 200, to: 499, unitPrice: 27.90 }, // -32% Printful 11.83 €
-  { from: 500,          unitPrice: 24.90 }, // -38% Printful 10.79 €
+  { from: 1,   to: 9,   unitPrice: 39.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 32.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 28.90 },
+  { from: 50,  to: 99,  unitPrice: 25.90 },
+  { from: 100, to: 199, unitPrice: 23.90 },
+  { from: 200,          unitPrice: 21.90 },
 ];
 
 export const GILDAN_18000_DTFLEX_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 41.90 }, // Printful 18.90 €
-  { from: 25,  to: 49,  unitPrice: 38.90 }, // -8%  Printful 17.39 €
-  { from: 50,  to: 99,  unitPrice: 35.90 }, // -16% Printful 15.88 €
-  { from: 100, to: 199, unitPrice: 32.90 }, // -23% Printful 14.56 €
-  { from: 200, to: 499, unitPrice: 28.90 }, // -32% Printful 12.85 €
-  { from: 500,          unitPrice: 25.90 }, // -38% Printful 11.72 €
+  { from: 1,   to: 9,   unitPrice: 41.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 34.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 30.90 },
+  { from: 50,  to: 99,  unitPrice: 27.90 },
+  { from: 100, to: 199, unitPrice: 25.90 },
+  { from: 200,          unitPrice: 23.90 },
 ];
 
 export const GILDAN_18000_BRODERIE_VOLUME: VolumePricingTier[] = [
@@ -474,22 +481,25 @@ export const GILDAN_18500_PLACEMENT_SURCHARGES = {
   "coeur-dos": 6.00,  // 49.90 + 6.00 = 55.90 TTC (DTG)
 } as const;
 
+// Grille MARCHÉ 2026-06-11 — HOODIE à capuche. 1-9 POD (coût DTG 22,74 € TTC) ;
+// 10+ atelier (blanc hoodie TopTex ~12-14 € HT + marquage ~3 € → ~16 € HT) →
+// marge protégée 34-48 % avec coussin de sécurité.
 export const GILDAN_18500_DTG_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 49.90 }, // Printful 22.74 €
-  { from: 25,  to: 49,  unitPrice: 45.90 }, // -9%  Printful 20.69 €
-  { from: 50,  to: 99,  unitPrice: 41.90 }, // -16% Printful 19.10 €
-  { from: 100, to: 199, unitPrice: 38.90 }, // -23% Printful 17.51 €
-  { from: 200, to: 499, unitPrice: 32.90 }, // -34% Printful 15.01 €
-  { from: 500,          unitPrice: 30.90 }, // -38% Printful 14.10 €
+  { from: 1,   to: 9,   unitPrice: 49.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 41.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 36.90 },
+  { from: 50,  to: 99,  unitPrice: 33.90 },
+  { from: 100, to: 199, unitPrice: 30.90 },
+  { from: 200,          unitPrice: 28.90 },
 ];
 
 export const GILDAN_18500_DTFLEX_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 51.90 }, // Printful 24.24 €
-  { from: 25,  to: 49,  unitPrice: 47.90 }, // -9%  Printful 22.06 €
-  { from: 50,  to: 99,  unitPrice: 43.90 }, // -16% Printful 20.36 €
-  { from: 100, to: 199, unitPrice: 39.90 }, // -23% Printful 18.66 €
-  { from: 200, to: 499, unitPrice: 34.90 }, // -34% Printful 16.00 €
-  { from: 500,          unitPrice: 31.90 }, // -38% Printful 15.02 €
+  { from: 1,   to: 9,   unitPrice: 51.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 43.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 38.90 },
+  { from: 50,  to: 99,  unitPrice: 35.90 },
+  { from: 100, to: 199, unitPrice: 32.90 },
+  { from: 200,          unitPrice: 30.90 },
 ];
 
 export const GILDAN_18500_BRODERIE_VOLUME: VolumePricingTier[] = [
@@ -528,22 +538,25 @@ export const COMFORT_COLORS_1717_PLACEMENT_SURCHARGES = {
   "coeur-dos": 8.00,
 } as const;
 
+// Grille MARCHÉ 2026-06-11 — t-shirt HEAVYWEIGHT (coton épais, blanc plus cher).
+// 1-9 POD (coût ~10,90 € TTC) ; 10+ atelier (blanc ~5 € HT + marquage → ~7,50 € HT)
+// → marge protégée ≥ 40 %.
 export const COMFORT_COLORS_1717_DTF_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 21.90 },
-  { from: 25,  to: 49,  unitPrice: 19.90 }, // -9%
-  { from: 50,  to: 99,  unitPrice: 17.90 }, // -18%
-  { from: 100, to: 199, unitPrice: 16.90 },
-  { from: 200, to: 499, unitPrice: 15.90 },
-  { from: 500,          unitPrice: 14.90 },
+  { from: 1,   to: 9,   unitPrice: 21.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 16.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 14.90 },
+  { from: 50,  to: 99,  unitPrice: 12.90 },
+  { from: 100, to: 199, unitPrice: 11.90 },
+  { from: 200,          unitPrice: 10.90 },
 ];
 
 export const COMFORT_COLORS_1717_DTFLEX_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 23.90 },
-  { from: 25,  to: 49,  unitPrice: 21.90 },
-  { from: 50,  to: 99,  unitPrice: 19.90 },
-  { from: 100, to: 199, unitPrice: 18.90 },
-  { from: 200, to: 499, unitPrice: 17.90 },
-  { from: 500,          unitPrice: 16.90 },
+  { from: 1,   to: 9,   unitPrice: 23.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 18.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 16.90 },
+  { from: 50,  to: 99,  unitPrice: 14.90 },
+  { from: 100, to: 199, unitPrice: 13.90 },
+  { from: 200,          unitPrice: 12.90 },
 ];
 
 export const COMFORT_COLORS_1717_BRODERIE_VOLUME: VolumePricingTier[] = [
@@ -582,22 +595,24 @@ export const GILDAN_2400_LS_PLACEMENT_SURCHARGES = {
   "coeur-dos": 8.00,
 } as const;
 
+// Grille MARCHÉ 2026-06-11 — MANCHES LONGUES (plus de tissu, blanc ~5,50 € HT).
+// 1-9 POD (coût ~14 € TTC) ; 10+ atelier (~8 € HT) → marge protégée ~45 %.
 export const GILDAN_2400_LS_DTF_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 27.90 },
-  { from: 25,  to: 49,  unitPrice: 25.90 },
-  { from: 50,  to: 99,  unitPrice: 23.90 },
-  { from: 100, to: 199, unitPrice: 22.90 },
-  { from: 200, to: 499, unitPrice: 21.90 },
-  { from: 500,          unitPrice: 20.90 },
+  { from: 1,   to: 9,   unitPrice: 27.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 21.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 18.90 },
+  { from: 50,  to: 99,  unitPrice: 16.90 },
+  { from: 100, to: 199, unitPrice: 15.90 },
+  { from: 200,          unitPrice: 14.90 },
 ];
 
 export const GILDAN_2400_LS_DTFLEX_VOLUME: VolumePricingTier[] = [
-  { from: 1,   to: 24,  unitPrice: 29.90 },
-  { from: 25,  to: 49,  unitPrice: 27.90 },
-  { from: 50,  to: 99,  unitPrice: 25.90 },
-  { from: 100, to: 199, unitPrice: 24.90 },
-  { from: 200, to: 499, unitPrice: 23.90 },
-  { from: 500,          unitPrice: 22.90 },
+  { from: 1,   to: 9,   unitPrice: 29.90 }, // POD
+  { from: 10,  to: 24,  unitPrice: 23.90 }, // atelier
+  { from: 25,  to: 49,  unitPrice: 20.90 },
+  { from: 50,  to: 99,  unitPrice: 18.90 },
+  { from: 100, to: 199, unitPrice: 17.90 },
+  { from: 200,          unitPrice: 16.90 },
 ];
 
 export const GILDAN_2400_LS_BRODERIE_VOLUME: VolumePricingTier[] = [
@@ -626,6 +641,53 @@ export function computeUnitPrice(params: {
 }): number {
   const { basePrice, technique, placement } = params;
   const surcharge = PLACEMENT_SURCHARGES[technique][placement];
+  return Math.round((basePrice + surcharge) * 100) / 100;
+}
+
+/**
+ * Seuil de bascule en production ATELIER (HM Global presse en interne).
+ * En dessous : POD automatique (Printful, zéro effort). À partir de ce seuil :
+ * atelier (blancs TopTex/Falk&Ross + marquage DTF interne) — coût plus bas, ce
+ * qui rend les prix dégressifs de volume rentables. Validé Kaan 2026-06-11.
+ */
+export const ATELIER_QTY_THRESHOLD = 10;
+
+/**
+ * Prix unitaire TTC d'un article TEXTILE, **remise de volume incluse**.
+ *
+ * Source de vérité UNIQUE partagée par la vitrine (ProductConfigurator), le
+ * panier (store/cart) et le serveur (create-payment-intent / bank-transfer) :
+ * garantit que le prix affiché au client = le prix réellement facturé.
+ *
+ * Logique (identique à la fiche produit) :
+ *   1. palier de volume par technique > palier global > prix fixe ;
+ *   2. + surcharge de placement PROPRE au produit (pricing.placements /
+ *      broDeriePlacementSurcharge) — pas la table globale.
+ */
+export function computeUnitPriceWithVolume(params: {
+  product: Product;
+  technique: Technique;
+  placement: Placement;
+  quantity: number;
+}): number {
+  const { product, technique, placement, quantity } = params;
+
+  const tiers =
+    product.volumePricingByTechnique?.[technique] ??
+    product.volumePricing ??
+    null;
+
+  const basePrice = tiers
+    ? getVolumePricedRate(tiers, quantity)
+    : ((product.pricing[technique as keyof typeof product.pricing] as number) ?? 0);
+
+  const isBroderieFamily =
+    technique === "broderie" || technique === "broderie_illimitee";
+  const place = placement as "coeur" | "dos" | "coeur-dos";
+  const surcharge = isBroderieFamily
+    ? (product.pricing.broDeriePlacementSurcharge?.[place] ?? 0)
+    : (product.pricing.placements?.[place] ?? 0);
+
   return Math.round((basePrice + surcharge) * 100) / 100;
 }
 
@@ -757,6 +819,165 @@ export const POLO_GILDAN_64800_PLACEMENT_SURCHARGES = {
   coeur:       0,
   dos:         0,
   "coeur-dos": 8,
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ÉLARGISSEMENT CATALOGUE 2026-06-12 (#85) — produits Printful vérifiés EU.
+// Coûts catalogue audités via API publique (1 USD ≈ 0,93 EUR), broderie du
+// placement avant incluse dans le coût variant. Prix TTC, ratio ~×2-2,5.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Polo SOL'S 11362 Prescott (Printful 810) — broderie cœur ────────────────
+// Coût 20.25-26.25 USD (S-XL → 5XL). Milieu de gamme, marque française.
+export const POLO_SOLS_PRESCOTT_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 39.90,
+} as const;
+export const POLO_SOLS_PRESCOTT_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 39.90 },
+  { from: 10, to: 24, unitPrice: 36.90 },
+  { from: 25,         unitPrice: 33.90 },
+];
+
+// ─── Polo Gildan 64800L femme (Printful 664) — broderie cœur ─────────────────
+// Coût 18.95-20.50 USD. Jumeau femme du 64800 unisexe → même grille.
+export const POLO_GILDAN_64800L_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 29.90,
+} as const;
+export const POLO_GILDAN_64800L_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 29.90 },
+  { from: 10, to: 24, unitPrice: 26.90 },
+  { from: 25,         unitPrice: 23.90 },
+];
+
+// ─── Coupe-vent SOL'S 32000 (Printful 661) — broderie cœur ───────────────────
+// Coût 21.25-22.75 USD (~20-21 €). Unique veste POD EU du catalogue Printful.
+export const COUPE_VENT_SOLS_32000_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 44.90,
+} as const;
+export const COUPE_VENT_SOLS_32000_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 44.90 },
+  { from: 10, to: 24, unitPrice: 41.90 },
+  { from: 25,         unitPrice: 38.90 },
+];
+
+// ─── Casquettes & bonnet Printful (broderie front incluse) ───────────────────
+// Dad hat Yupoong 6245CM (206) — coût 15.95 USD ≈ 14,83 €
+export const CASQUETTE_DAD_HAT_6245_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 27.90,
+} as const;
+export const CASQUETTE_DAD_HAT_6245_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 27.90 },
+  { from: 10, to: 24, unitPrice: 25.90 },
+  { from: 25,         unitPrice: 23.90 },
+];
+
+// Snapback Yupoong 6089M (99) — coût 14.75 USD ≈ 13,72 € (18 couleurs EU)
+export const CASQUETTE_SNAPBACK_6089_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 27.90,
+} as const;
+export const CASQUETTE_SNAPBACK_6089_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 27.90 },
+  { from: 10, to: 24, unitPrice: 24.90 },
+  { from: 25,         unitPrice: 22.90 },
+];
+
+// Bob Flexfit 5003 (253) — coût 19.95 USD ≈ 18,55 € — seul bob EU → premium
+export const BOB_FLEXFIT_5003_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 34.90,
+} as const;
+export const BOB_FLEXFIT_5003_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 34.90 },
+  { from: 10, to: 24, unitPrice: 32.90 },
+  { from: 25,         unitPrice: 29.90 },
+];
+
+// Bonnet à revers Yupoong 1501KC (266) — coût 13.75 USD ≈ 12,79 € (12 couleurs)
+export const BONNET_YUPOONG_1501KC_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 24.90,
+} as const;
+export const BONNET_YUPOONG_1501KC_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 24.90 },
+  { from: 10, to: 24, unitPrice: 22.90 },
+  { from: 25,         unitPrice: 20.90 },
+];
+
+// ─── Sacs Printful POD ────────────────────────────────────────────────────────
+// Tote BagBase W101 (1553) — coût 8.95 USD ≈ 8,32 € — produit d'appel, brodable
+export const TOTE_BAGBASE_W101_PRICES = {
+  dtf: 16.90, dtflex: 0, flex: 0, broderie: 19.90,
+} as const;
+export const TOTE_BAGBASE_W101_DTF_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 16.90 },
+  { from: 10, to: 24, unitPrice: 15.90 },
+  { from: 25,         unitPrice: 14.90 },
+];
+export const TOTE_BAGBASE_W101_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 19.90 },
+  { from: 10, to: 24, unitPrice: 17.90 },
+  { from: 25,         unitPrice: 15.90 },
+];
+
+// Tote denim Mantis M196 (528) — coût 28.25 USD ≈ 26,27 € — premium cadeau
+export const TOTE_DENIM_MANTIS_M196_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 59.90,
+} as const;
+export const TOTE_DENIM_MANTIS_M196_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1, to: 9, unitPrice: 59.90 },
+  { from: 10,       unitPrice: 54.90 },
+];
+
+// Sacoche bandoulière BagBase QS309 (1552) — coût 25.25 USD ≈ 23,48 €
+export const SACOCHE_BAGBASE_QS309_PRICES = {
+  dtf: 0, dtflex: 0, flex: 0, broderie: 49.90,
+} as const;
+export const SACOCHE_BAGBASE_QS309_BRODERIE_VOLUME: VolumePricingTier[] = [
+  { from: 1, to: 9, unitPrice: 49.90 },
+  { from: 10,       unitPrice: 46.90 },
+];
+
+// ─── Goodies forte marge (impression digitale/sublimation = technique "dtf") ──
+// Stickers kiss-cut (358) — coût 2.50-2.75 USD ≈ 2,33-2,56 € → marge ~70 %
+export const STICKERS_LOGO_PRICES = {
+  dtf: 9.90, dtflex: 0, flex: 0, broderie: 0,
+} as const;
+export const STICKERS_LOGO_DTF_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 9.90 },
+  { from: 10, to: 24, unitPrice: 8.90 },
+  { from: 25,         unitPrice: 7.90 },
+];
+
+// Planche de stickers A5 (505) — coût 5.50 USD ≈ 5,11 €
+export const PLANCHE_STICKERS_PRICES = {
+  dtf: 14.90, dtflex: 0, flex: 0, broderie: 0,
+} as const;
+export const PLANCHE_STICKERS_DTF_VOLUME: VolumePricingTier[] = [
+  { from: 1, to: 9, unitPrice: 14.90 },
+  { from: 10,       unitPrice: 12.90 },
+];
+
+// Mug noir brillant 11oz (300) — coût 7.95 USD ≈ 7,39 € — pour logos clairs
+export const MUG_NOIR_PRICES = {
+  dtf: 16.90, dtflex: 0, flex: 0, broderie: 0,
+} as const;
+export const MUG_NOIR_DTF_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 16.90 },
+  { from: 10, to: 24, unitPrice: 14.90 },
+  { from: 25,         unitPrice: 12.90 },
+];
+
+// Dessous de verre liège (611) — coût 5.50 USD ≈ 5,11 €
+export const DESSOUS_VERRE_PRICES = {
+  dtf: 12.90, dtflex: 0, flex: 0, broderie: 0,
+} as const;
+export const DESSOUS_VERRE_DTF_VOLUME: VolumePricingTier[] = [
+  { from: 1,  to: 9,  unitPrice: 12.90 },
+  { from: 10, to: 24, unitPrice: 10.90 },
+  { from: 25,         unitPrice: 9.90 },
+];
+
+// Surcharges placement neutres (un seul emplacement) — sacs & goodies & couvre-chefs
+export const SINGLE_PLACEMENT_SURCHARGES = {
+  coeur: 0, dos: 0, "coeur-dos": 0,
 } as const;
 
 /**

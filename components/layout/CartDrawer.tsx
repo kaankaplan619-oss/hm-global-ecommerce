@@ -96,6 +96,8 @@ export default function CartDrawer() {
     const cartProductIds = new Set(items.map((item) => item.productId));
     return getFeaturedProducts()
       .filter((product) => !cartProductIds.has(product.id))
+      // Garde-fou : jamais d'ajout 1-clic pour un produit sur devis.
+      .filter((product) => !product.quoteOnly)
       .filter((product) => Boolean(getQuickAddDefaults(product)))
       .slice(0, 2);
   }, [items]);

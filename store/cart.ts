@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem, Product, ProductColor, Technique, Placement, PrintConfig } from "@/types";
-import { computeUnitPrice, computeCartTotals } from "@/data/pricing";
+import { computeUnitPriceWithVolume, computeCartTotals } from "@/data/pricing";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -101,9 +101,9 @@ export const useCartStore = create<CartState>()(
           unitPrice       = overrideUnitPrice ?? printConfig.lotPriceTTC;
           effectiveQuantity = 1; // 1 lot
         } else {
-          const basePrice = product.pricing[technique as keyof typeof product.pricing] as number;
-          unitPrice       = computeUnitPrice({ basePrice, technique: technique as "dtf" | "dtflex" | "flex" | "broderie" | "broderie_illimitee", placement: placement as "coeur" | "dos" | "coeur-dos" });
+          // Textile : prix unitaire AVEC remise de volume (palier de quantité).
           effectiveQuantity = quantity;
+          unitPrice = computeUnitPriceWithVolume({ product, technique, placement, quantity: effectiveQuantity });
         }
 
         const totalPrice = Math.round(unitPrice * effectiveQuantity * 100) / 100;
@@ -126,10 +126,18 @@ export const useCartStore = create<CartState>()(
             const updated = [...state.items];
             const existing = updated[existingIndex];
             const newQty = existing.quantity + effectiveQuantity;
+            // Re-calcul du palier de volume sur la quantité fusionnée (textile).
+            const mergedUnit = computeUnitPriceWithVolume({
+              product:   existing.product,
+              technique: existing.technique,
+              placement: existing.placement,
+              quantity:  newQty,
+            });
             updated[existingIndex] = {
               ...existing,
               quantity: newQty,
-              totalPrice: Math.round(existing.unitPrice * newQty * 100) / 100,
+              unitPrice: mergedUnit,
+              totalPrice: Math.round(mergedUnit * newQty * 100) / 100,
             };
             return {
               items: updated,
@@ -182,15 +190,25 @@ export const useCartStore = create<CartState>()(
           return;
         }
         set((state) => ({
-          items: state.items.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
+          items: state.items.map((item) => {
+            if (item.id !== itemId) return item;
+            // Print : prix du lot fixe. Textile : re-calcul du palier de volume
+            // pour la nouvelle quantité (le prix unitaire baisse avec le volume).
+            const unit = item.printConfig
+              ? item.unitPrice
+              : computeUnitPriceWithVolume({
+                  product:   item.product,
+                  technique: item.technique,
+                  placement: item.placement,
                   quantity,
-                  totalPrice: Math.round(item.unitPrice * quantity * 100) / 100,
-                }
-              : item
-          ),
+                });
+            return {
+              ...item,
+              quantity,
+              unitPrice: unit,
+              totalPrice: Math.round(unit * quantity * 100) / 100,
+            };
+          }),
         }));
       },
 

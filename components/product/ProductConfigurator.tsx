@@ -20,6 +20,7 @@ function getEstimatedShipDate(businessDays = 6): string {
 }
 import { useCartStore } from "@/store/cart";
 import { formatPrice, PRICING_CONFIG, getVolumePricedRate } from "@/data/pricing";
+import { isSimpleFlowProduct } from "@/data/products";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
 import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
@@ -578,12 +579,10 @@ export default function ProductConfigurator({
       )}
 
       {/* ── Emplacement ───────────────────────────────────────────
-           Masqué pour les goodies (mugs) : 1 seule zone d'impression
-           wraparound, pas de choix utilisateur cœur/dos/coeur-dos.
-           Les textiles conservent le bloc intact.
-           Casquettes : broderie front unique → pas de choix d'emplacement.
-           Polos : cœur / dos / cœur+dos (broderie Printify) → sélecteur affiché. */}
-      {product.category !== "goodies" && product.category !== "casquettes" && (
+           Affiché seulement s'il y a un vrai CHOIX (≥ 2 emplacements).
+           Goodies/casquettes/sacs/coupe-vent : zone unique → masqué.
+           Textiles & polo 64800 (cœur/dos/cœur+dos) : sélecteur intact. */}
+      {availablePlacements.length > 1 && (
       <div>
         <label className="label">Emplacement du marquage</label>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -709,13 +708,13 @@ export default function ProductConfigurator({
            Affiché uniquement pour les goodies (mugs). Explique au client le
            workflow honnête : upload → vérification équipe HM Global → rendu
            préparé avant production. Pas de Studio textile, pas de BAT live. */}
-      {!hideLogoUpload && (product.category === "goodies" || product.category === "casquettes" || product.category === "polos") && (
+      {!hideLogoUpload && isSimpleFlowProduct(product) && (
         <div className="rounded-2xl border border-[var(--hm-primary)]/20 bg-[var(--hm-accent-soft-rose)] px-4 py-3">
           <p className="text-[11px] leading-relaxed text-[var(--hm-text)]">
             <span className="font-semibold text-[var(--hm-primary)]">Ajoutez votre logo ou visuel.</span>{" "}
-            {product.category === "goodies"
-              ? "Notre équipe vérifie votre fichier et prépare le rendu mug avant production."
-              : "Notre équipe vérifie votre fichier et prépare le rendu de la broderie front avant production."}
+            {product.techniques.includes("broderie")
+              ? "Notre équipe vérifie votre fichier et prépare le rendu de la broderie avant production."
+              : "Notre équipe vérifie votre fichier et prépare le rendu avant production."}
           </p>
         </div>
       )}
@@ -970,15 +969,17 @@ export default function ProductConfigurator({
             {!size
               ? "Sélectionnez une taille"
               : requirePersonalization && !hasLogo
-              ? (product.category === "goodies" || product.category === "casquettes" || product.category === "polos"
+              ? (isSimpleFlowProduct(product)
                   ? "Ajoutez votre visuel pour commander"
                   : "Personnalisez d'abord votre article")
-              : (product.category === "goodies"
+              : (product.id.includes("mug")
                   ? "Ajouter mon mug au panier"
                   : product.category === "casquettes"
-                  ? "Ajouter ma casquette au panier"
+                  ? (product.id.startsWith("bonnet") ? "Ajouter mon bonnet au panier" : product.id.startsWith("bob") ? "Ajouter mon bob au panier" : "Ajouter ma casquette au panier")
                   : product.category === "polos"
                   ? "Ajouter mon polo au panier"
+                  : product.category === "sacs"
+                  ? "Ajouter mon sac au panier"
                   : "Ajouter au panier")}
           </>
         )}
@@ -990,15 +991,15 @@ export default function ProductConfigurator({
            trompeur (cf. LightMockupPreview gated dans ProductDetailClient).
            Textile : redirection vers le bouton "🎨 Personnaliser mon article" qui
            ouvre le Studio Fabric.js. */}
-      {product.category === "goodies" ? (
-        <p className="text-center text-[10px] text-[var(--hm-text-soft)] leading-snug">
-          Pour les mugs personnalisés, nous vérifions votre visuel avant production
-          afin d&apos;assurer un rendu propre sur la zone d&apos;impression.
-        </p>
-      ) : product.category === "casquettes" || product.category === "polos" ? (
+      {isSimpleFlowProduct(product) && product.techniques.includes("broderie") ? (
         <p className="text-center text-[10px] text-[var(--hm-text-soft)] leading-snug">
           Pour les articles brodés, nous vérifions votre visuel avant production
-          afin d&apos;assurer une broderie nette sur le devant.
+          afin d&apos;assurer une broderie nette.
+        </p>
+      ) : isSimpleFlowProduct(product) ? (
+        <p className="text-center text-[10px] text-[var(--hm-text-soft)] leading-snug">
+          Nous vérifions votre visuel avant production afin d&apos;assurer un
+          rendu propre sur la zone d&apos;impression.
         </p>
       ) : requirePersonalization && !hasLogo ? (
         <p className="text-center text-[10px] text-[var(--hm-primary)]">

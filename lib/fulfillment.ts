@@ -13,6 +13,7 @@
  */
 
 import { isPrintfulProduct, getPrintfulVariantId } from "@/lib/printfulVariantMap";
+import { ATELIER_QTY_THRESHOLD } from "@/data/pricing";
 import type { OrderItem } from "@/types";
 
 export type FulfillmentCircuit = "printful" | "gelato" | "interne" | "mixte";
@@ -60,7 +61,15 @@ export interface FulfillmentInfo {
 function itemCircuit(item: OrderItem): "printful" | "gelato" | "interne" {
   // Les articles print (cartes de visite…) portent un printConfig → Gelato.
   if (item.printConfig) return "gelato";
-  if (isPrintfulProduct(item.product.id)) return "printful";
+  if (isPrintfulProduct(item.product.id)) {
+    // Bascule atelier : à partir du seuil, le volume est produit en interne
+    // (presse DTF HM Global) → coût plus bas, marge protégée sur le prix volume.
+    // UNIQUEMENT pour les techniques que l'atelier sait faire (DTF/DTFlex/flex) :
+    // la broderie reste chez Printful (pas de machine à broder en interne).
+    const atelierTech =
+      item.technique === "dtf" || item.technique === "dtflex" || item.technique === "flex";
+    return item.quantity >= ATELIER_QTY_THRESHOLD && atelierTech ? "interne" : "printful";
+  }
   return "interne";
 }
 
@@ -69,6 +78,8 @@ function itemCircuit(item: OrderItem): "printful" | "gelato" | "interne" {
 export interface RawOrderItemRow {
   product_id?: string | null;
   product_snapshot?: { printConfig?: unknown } | null;
+  quantity?: number | null;
+  technique?: string | null;
 }
 
 export interface CircuitSummary {
@@ -92,8 +103,14 @@ export function classifyOrderRows(items: RawOrderItemRow[]): CircuitSummary {
   let hasInterne = false;
   for (const it of items) {
     if (it.product_snapshot?.printConfig) hasGelato = true;
-    else if (it.product_id && isPrintfulProduct(it.product_id)) hasPrintful = true;
-    else hasInterne = true;
+    else if (it.product_id && isPrintfulProduct(it.product_id)) {
+      // Bascule atelier : gros volume DTF/DTFlex → produit en interne (cf itemCircuit).
+      // La broderie reste chez Printful (pas de broderie en interne).
+      const atelierTech =
+        it.technique === "dtf" || it.technique === "dtflex" || it.technique === "flex";
+      if ((it.quantity ?? 1) >= ATELIER_QTY_THRESHOLD && atelierTech) hasInterne = true;
+      else hasPrintful = true;
+    } else hasInterne = true;
   }
   const distinct = [hasPrintful, hasGelato, hasInterne].filter(Boolean).length;
   const circuit: FulfillmentCircuit =

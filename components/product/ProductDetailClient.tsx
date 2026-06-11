@@ -28,6 +28,7 @@ import {
 import { getV1PrintifyImage, getV1PrintifyGallery } from "@/lib/suppliers/printify/v1-image";
 import HMProductVisual from "@/components/product/HMProductVisual";
 import { formatPrice, getVolumePricedRate } from "@/data/pricing";
+import { isSimpleFlowProduct } from "@/data/products";
 import type { Product, ProductColor, Placement, Technique } from "@/types";
 import type { LogoEffect } from "@/lib/color-utils";
 
@@ -434,6 +435,7 @@ export default function ProductDetailClient({ product }: Props) {
   // ProductConfigurator (workflow validation manuelle équipe).
   const showMockup =
     (product.category === "tshirts" || product.category === "hoodies" || product.category === "softshells") &&
+    !isSimpleFlowProduct(product) && // coupe-vent POD : flow simple, pas de zones calibrées
     !!currentImageUrl &&
     (!isPOD || hasLogoReady) &&
     product.id !== "wg004";
@@ -676,7 +678,7 @@ export default function ProductDetailClient({ product }: Props) {
                  utilisent la navigation par dots simples du carousel principal
                  (ligne 629-655). Pour les ajouter aux non-textiles, il faudra
                  introduire des SVG dédiés par famille. */}
-            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && product.category !== "goodies" && product.category !== "casquettes" && product.category !== "polos" && (() => {
+            {isPrintful && !studioComposedUrl && (show3D || gallery.length > 0) && !isSimpleFlowProduct(product) && (() => {
               const sc   = selectedColor?.hex ?? "#111111";
               // Contour visible uniquement sur les coloris très clairs
               const lum  = parseInt(sc.replace("#",""), 16);
@@ -787,7 +789,7 @@ export default function ProductDetailClient({ product }: Props) {
                  Printify) reste affichée telle quelle, et le client comprend que
                  l'équipe HM Global préparera le rendu mug avant production
                  (cf. encart info dans le ProductConfigurator). */}
-            {logoFile && product.category !== "goodies" && product.category !== "casquettes" && product.category !== "polos" && (
+            {logoFile && !isSimpleFlowProduct(product) && (
               <LightMockupPreview
                 imageUrl={currentImageUrl}
                 logoFile={logoFile}
@@ -887,8 +889,9 @@ export default function ProductDetailClient({ product }: Props) {
           <div className="flex items-start gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-accent-soft-purple)] p-4">
             <Info size={14} className="mt-0.5 shrink-0 text-[var(--hm-purple)]" />
             <p className="text-xs text-[var(--hm-purple)]">
-              La broderie est recommandée pour ce type de vêtement premium. DTF et flex sont
-              disponibles mais à utiliser avec prudence selon le visuel.
+              {product.techniques.includes("dtf") || product.techniques.includes("flex")
+                ? "La broderie est recommandée pour ce type de vêtement premium. DTF et flex sont disponibles mais à utiliser avec prudence selon le visuel."
+                : "La broderie est la finition idéale sur ce type de vêtement : rendu net et durable, même sur tissu technique."}
             </p>
           </div>
         )}
@@ -938,7 +941,7 @@ export default function ProductDetailClient({ product }: Props) {
                  La taille peut être vide : le Studio a son propre sélecteur.
                  C'est le SEUL CTA Personnaliser de la fiche (l'ancien doublon
                  en bas du configurateur a été retiré — demande Kaan). */}
-          {product.category === "goodies" || product.category === "casquettes" || product.category === "polos" ? (
+          {isSimpleFlowProduct(product) ? (
             <button
               type="button"
               onClick={(e) => {
@@ -951,10 +954,16 @@ export default function ProductDetailClient({ product }: Props) {
               className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
             >
               {product.category === "casquettes"
-                ? "Personnaliser ma casquette"
+                ? (product.id.startsWith("bonnet") ? "Personnaliser mon bonnet" : product.id.startsWith("bob") ? "Personnaliser mon bob" : "Personnaliser ma casquette")
                 : product.category === "polos"
                 ? "Personnaliser mon polo"
-                : "Personnaliser mon mug"}
+                : product.category === "sacs"
+                ? "Personnaliser mon sac"
+                : product.category === "softshells"
+                ? "Personnaliser ma veste"
+                : product.id.includes("mug")
+                ? "Personnaliser mon mug"
+                : "Personnaliser mon article"}
               <ArrowRight size={16} />
             </button>
           ) : (
@@ -1033,7 +1042,10 @@ export default function ProductDetailClient({ product }: Props) {
           logoPlacementTransform={logoPlacementTransform}
           batRef={batData?.batRef}
           studioLogoPreset={studioLogoPreset ?? undefined}
-          hideLogoUpload={product.category !== "goodies" && product.category !== "casquettes"}
+          /* Upload direct sur la fiche pour TOUS les produits à flow simple.
+             Fix 2026-06-12 : les polos étaient exclus → upload introuvable →
+             « Ajouter au panier » définitivement désactivé (polo invendable). */
+          hideLogoUpload={!isSimpleFlowProduct(product)}
           requirePersonalization={product.supplierName === "printful"}
           studioComposedFront={studioComposedFront}
           studioComposedBack={studioComposedBack}
