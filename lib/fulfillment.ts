@@ -64,6 +64,56 @@ function itemCircuit(item: OrderItem): "printful" | "gelato" | "interne" {
   return "interne";
 }
 
+// ── Classement depuis les lignes brutes DB (liste admin / dashboard) ─────────
+
+export interface RawOrderItemRow {
+  product_id?: string | null;
+  product_snapshot?: { printConfig?: unknown } | null;
+}
+
+export interface CircuitSummary {
+  circuit: FulfillmentCircuit;
+  /** Libellé court avec emoji pour badges admin. */
+  badge: string;
+  hasInterne: boolean;
+  hasPrintful: boolean;
+  hasGelato: boolean;
+  /** Tout est POD automatisé (rien à produire à l'atelier). */
+  automated: boolean;
+}
+
+/**
+ * Variante légère de getFulfillmentInfo pour les lignes order_items brutes
+ * (API admin) — même logique de circuit, sans exiger les objets mappés.
+ */
+export function classifyOrderRows(items: RawOrderItemRow[]): CircuitSummary {
+  let hasPrintful = false;
+  let hasGelato = false;
+  let hasInterne = false;
+  for (const it of items) {
+    if (it.product_snapshot?.printConfig) hasGelato = true;
+    else if (it.product_id && isPrintfulProduct(it.product_id)) hasPrintful = true;
+    else hasInterne = true;
+  }
+  const distinct = [hasPrintful, hasGelato, hasInterne].filter(Boolean).length;
+  const circuit: FulfillmentCircuit =
+    distinct > 1 ? "mixte" : hasPrintful ? "printful" : hasGelato ? "gelato" : "interne";
+  const BADGES: Record<FulfillmentCircuit, string> = {
+    printful: "🤖 Printful",
+    gelato:   "🤖 Gelato",
+    interne:  "🖨️ Atelier",
+    mixte:    "🖨️+🤖 Mixte",
+  };
+  return {
+    circuit,
+    badge: BADGES[circuit],
+    hasInterne,
+    hasPrintful,
+    hasGelato,
+    automated: (hasPrintful || hasGelato) && !hasInterne,
+  };
+}
+
 const CIRCUIT_LABELS: Record<FulfillmentCircuit, string> = {
   printful: "Printful · POD automatisé",
   gelato:   "Gelato · POD automatisé",

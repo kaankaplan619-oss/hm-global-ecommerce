@@ -42,14 +42,21 @@ export async function GET(req: NextRequest) {
         paid_at,
         created_at,
         tracking_number,
+        tracking_url,
         invoice_url,
         admin_note,
         supplier_mode,
+        supplier_provider,
+        printful_order_id,
+        printful_status,
+        gelato_order_id,
+        gelato_status,
         profiles (
           id, first_name, last_name, email, phone, type, company
         ),
         order_items (
           id,
+          product_id,
           product_name,
           product_reference,
           quantity,
