@@ -112,6 +112,51 @@ export default function ImpressionPage() {
           ))}
         </div>
 
+        {/* ── Comment ça marche — 4 étapes (pack print 2026-06-12) ───────── */}
+        <div className="mb-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            { n: "1", t: "Envoyez votre fichier", d: "PDF ou PNG — ou créez votre visuel dans l'atelier en ligne." },
+            { n: "2", t: "BAT validé avec vous", d: "Contrôle de fichier gratuit, bon à tirer avant toute production." },
+            { n: "3", t: "Impression pro", d: "Papiers certifiés (350 g, couché 170 g…), quadri haute définition." },
+            { n: "4", t: "Livraison France", d: "Production UE, suivi de commande dans votre espace client." },
+          ].map((s) => (
+            <div key={s.n} className="rounded-2xl border border-[var(--hm-line)] bg-white p-4">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--hm-accent-soft-rose)] text-xs font-black text-[var(--hm-primary)]">{s.n}</span>
+              <p className="mt-2.5 text-[13px] font-bold text-[var(--hm-text)]">{s.t}</p>
+              <p className="mt-1 text-[11.5px] leading-snug text-[var(--hm-text-soft)]">{s.d}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Vraies réalisations print HM Global (confiance) ────────────── */}
+        <div className="mb-14">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold tracking-[-0.015em] text-[var(--hm-text)]">Imprimé pour de vrais clients</h2>
+              <p className="text-xs text-[var(--hm-text-soft)]">Quelques commandes livrées par l&apos;agence — photos réelles, pas des mockups.</p>
+            </div>
+            <Link href="/realisations" className="hidden items-center gap-1 text-xs font-bold text-[var(--hm-primary)] hover:underline sm:inline-flex">
+              Voir toutes les réalisations <ArrowRight size={13} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {[
+              { src: "/images/realisations/foch-cartes.jpg",        alt: "Cartes de visite imprimées — client Foch",   label: "Cartes de visite" },
+              { src: "/images/realisations/ncm-flyers.jpg",         alt: "Flyers imprimés — client NCM",                label: "Flyers" },
+              { src: "/images/realisations/metem-autocollants.jpg", alt: "Autocollants imprimés — client Metem",        label: "Autocollants" },
+            ].map((r) => (
+              <figure key={r.src} className="group relative overflow-hidden rounded-[1.4rem] border border-[var(--hm-line)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={r.src} alt={r.alt} loading="lazy" decoding="async"
+                  className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                <figcaption className="absolute bottom-2 left-2 rounded-full bg-white/92 px-3 py-1 text-[10px] font-bold text-[var(--hm-text)] backdrop-blur">
+                  {r.label}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+
         {/* ── Catégories ────────────────────────────────────────────────── */}
         <div className="space-y-16">
           {PRINT_CATEGORIES.map((cat) => {

@@ -24,6 +24,9 @@ import type { CuratedPrintProduct, PrintSpec } from "@/data/print-catalogue";
 import type { PrintOrientation } from "@/data/print-products";
 import { PRINT_ORIENTATION_LABELS } from "@/data/print-products";
 import PrintSupportVisualizer from "@/components/print/PrintSupportVisualizer";
+import PrintMockupViewer from "@/components/print/PrintMockupViewer";
+import { getPrintProduct } from "@/data/print-catalogue";
+import { resolveMockupFamily, getMockupsByFamily } from "@/data/printMockupTemplates";
 import PrintEditor from "@/components/print/PrintEditor";
 import SignaturePad from "@/components/print/SignaturePad";
 import { isPdfUrl } from "@/lib/pdf-preview";
@@ -52,6 +55,16 @@ export default function PrintConfigurator({
   spec:    PrintSpec;
 }) {
   const router = useRouter();
+
+  // ── Scènes « En situation » (pack print 2026-06-12, GO Kaan) ──────────────
+  // Famille de mockups lifestyle calibrés (flyer ×4, poster ×4, canvas ×6).
+  // Exclu pour les cartes/invitations : leur fallback (brochure trifold)
+  // serait trompeur — pas de scène dédiée tant que la famille "cards" n'a
+  // pas ses propres mockups (#23).
+  const found = getPrintProduct(product.id);
+  const mockupFamily =
+    found && found.family !== "cards" ? resolveMockupFamily(found.family) : null;
+  const hasScenes = mockupFamily ? getMockupsByFamily(mockupFamily).length > 0 : false;
 
   // Produits pliés / dépliants : se conçoivent dépliés (EXTÉRIEUR + INTÉRIEUR)
   // avec des lignes de pli VERTICALES, comme chez les concurrents (Pixartprinting).
@@ -688,6 +701,22 @@ export default function PrintConfigurator({
               {frontFile ? " · votre visuel" : " · déposez votre visuel"}
             </p>
           </div>
+
+          {/* En situation — scènes mockup lifestyle (donne envie / crédibilise).
+              Sans visuel client : la scène habillée sert de photo d'ambiance.
+              Avec visuel image : le design du client est composé dans la scène. */}
+          {hasScenes && mockupFamily && (
+            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">En situation</p>
+              <PrintMockupViewer
+                family={mockupFamily}
+                frontDesignUrl={frontFile && !isPdfUrl(frontFile.url) ? frontFile.url : null}
+                backDesignUrl={backFile && !isPdfUrl(backFile.url) ? backFile.url : null}
+                whiteCardOverlay={!!(frontFile && !isPdfUrl(frontFile.url))}
+                alt={product.name}
+              />
+            </div>
+          )}
 
           <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-5 text-sm">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Récapitulatif</p>
