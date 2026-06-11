@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { X, ShoppingBag, Plus, Minus, Trash2, Package, ZoomIn, Sparkles, ArrowRight } from "lucide-react";
+import { X, ShoppingBag, Plus, Minus, Trash2, Package, ZoomIn, Sparkles, ArrowRight, Pencil } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { formatPrice, PRICING_CONFIG } from "@/data/pricing";
 import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
 import CartUpsell from "@/components/cart/CartUpsell";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
+import { isSimpleFlowProduct } from "@/data/products";
 import type { Placement, Product, ProductColor, Technique } from "@/types";
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
@@ -221,6 +222,19 @@ export default function CartDrawer() {
                     )}
 
                     {/* ── Infos produit ── */}
+                    {/* Lien d'édition (demande Kaan 2026-06-12 : « quand on
+                        s'appuie dessus, il faut pouvoir personnaliser ») :
+                        - produit studio → /studio/[slug]?edit=<itemId> (l'atelier
+                          se pré-remplit et « Mettre à jour » remplace la ligne)
+                        - goodies flow simple → fiche produit
+                        - print → pas de lien (lot configuré, à recommander) */}
+                    {(() => {
+                      const editHref = item.printConfig
+                        ? null
+                        : isSimpleFlowProduct(item.product)
+                        ? `/produits/${item.product.slug}`
+                        : `/studio/${item.product.slug}?edit=${item.id}`;
+                      return (
                     <div className="flex gap-3 p-4">
                       {/* Miniature produit — priorité :
                          1. composedPreviewUrl (BAT face composé : packshot + logo)
@@ -229,8 +243,8 @@ export default function CartDrawer() {
                          2. getProductCatalogImage → packshot HM cropé propre
                          3. item.product.images[0] → fallback légacy
                          4. <Package> icon → ultime fallback */}
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white">
-                        {(() => {
+                      {(() => {
+                        const thumb = (() => {
                           const thumbSrc =
                             item.composedPreviewUrl
                             || item.printConfig?.frontPreviewUrl
@@ -252,13 +266,27 @@ export default function CartDrawer() {
                           ) : (
                             <Package size={18} className="text-[var(--hm-text-muted)]" />
                           );
-                        })()}
-                      </div>
+                        })();
+                        const boxClass = "flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white";
+                        return editHref ? (
+                          <Link href={editHref} onClick={closeCart} className={`${boxClass} transition hover:border-[var(--hm-primary)]`} title="Modifier la personnalisation">
+                            {thumb}
+                          </Link>
+                        ) : (
+                          <div className={boxClass}>{thumb}</div>
+                        );
+                      })()}
 
                       {/* Détails */}
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-semibold text-[var(--hm-text)]">
-                          {item.product.shortName}
+                          {editHref ? (
+                            <Link href={editHref} onClick={closeCart} className="transition hover:text-[var(--hm-primary)] hover:underline">
+                              {item.product.shortName}
+                            </Link>
+                          ) : (
+                            item.product.shortName
+                          )}
                           {item.printConfig && (
                             <span className="ml-1.5 rounded-full bg-[var(--hm-accent-soft-rose)] px-2 py-0.5 text-[9px] font-bold text-[var(--hm-primary)]">
                               Impression
@@ -348,6 +376,17 @@ export default function CartDrawer() {
                             <span className="text-sm font-bold text-[var(--hm-text)]">
                               {formatPrice(item.totalPrice)}
                             </span>
+                            {editHref && (
+                              <Link
+                                href={editHref}
+                                onClick={closeCart}
+                                className="text-[var(--hm-text-muted)] transition hover:text-[var(--hm-primary)]"
+                                aria-label="Modifier la personnalisation"
+                                title="Modifier la personnalisation"
+                              >
+                                <Pencil size={14} />
+                              </Link>
+                            )}
                             <button
                               onClick={() => removeItem(item.id)}
                               className="text-[var(--hm-text-muted)] transition hover:text-red-500"
@@ -359,6 +398,8 @@ export default function CartDrawer() {
                         </div>
                       </div>
                     </div>
+                      );
+                    })()}
                   </div>
                 );
               })}

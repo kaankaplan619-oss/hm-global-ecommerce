@@ -12,6 +12,7 @@ import StudioToolsPanel from "@/components/studio/StudioToolsPanel";
 import StudioSummaryPanel from "@/components/studio/StudioSummaryPanel";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getHMTextileFrontPath, getHMTextileBackPath } from "@/lib/hm-visual-utils";
+import { useCartStore } from "@/store/cart";
 
 // Fabric.js must be dynamic (no SSR)
 const StudioCanvas = dynamic(
@@ -43,12 +44,24 @@ export default function StudioClient({ product }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // ── Mode édition (clic sur un article du panier) ──────────────────────────
+  // ?edit=<cartItemId> : l'article existant sert de valeurs initiales et le
+  // CTA du panneau récap devient « Mettre à jour » (replaceItem au lieu
+  // d'addItem). Lecture one-shot au montage — le store peut changer ensuite.
+  const editItemId = searchParams.get("edit");
+  const editItem = useMemo(() => {
+    if (!editItemId) return null;
+    const item = useCartStore.getState().items.find((i) => i.id === editItemId);
+    return item && item.productId === product.id ? item : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editItemId, product.id]);
+
   // ── Read query params ─────────────────────────────────────────────────────
-  const initColorId   = searchParams.get("couleur")   ?? product.colors.find((c) => c.available)?.id ?? "";
-  const initSize      = searchParams.get("taille")    ?? "";
-  const initTechnique = (searchParams.get("technique") as Technique) ?? product.techniques[0];
-  const initQuantity  = parseInt(searchParams.get("quantite") ?? "1") || 1;
-  const initPlacement = (searchParams.get("placement") as Placement) ?? product.placements[0];
+  const initColorId   = editItem?.color.id ?? searchParams.get("couleur") ?? product.colors.find((c) => c.available)?.id ?? "";
+  const initSize      = editItem?.size ?? searchParams.get("taille") ?? "";
+  const initTechnique = editItem?.technique ?? (searchParams.get("technique") as Technique) ?? product.techniques[0];
+  const initQuantity  = editItem?.quantity ?? (parseInt(searchParams.get("quantite") ?? "1") || 1);
+  const initPlacement = editItem?.placement ?? (searchParams.get("placement") as Placement) ?? product.placements[0];
 
   const defaultColor = useMemo(
     () => product.colors.find((c) => c.id === initColorId && c.available)
@@ -69,7 +82,19 @@ export default function StudioClient({ product }: Props) {
   const [view3DIndex, setView3DIndex] = useState(0);
 
   // ── Objects on each face (persistent state separate from canvas) ──────────
-  const [objects, setObjects] = useState<StudioObject[]>([]);
+  // Mode édition : le logo de l'article du panier est re-posé sur le canvas
+  // (URL Supabase déjà uploadée). Position par défaut de la zone — le client
+  // peut le déplacer puis « Mettre à jour ».
+  const [objects, setObjects] = useState<StudioObject[]>(() => {
+    if (!editItem?.logoFile?.url) return [];
+    return [{
+      id: crypto.randomUUID(),
+      type: "logo" as const,
+      src: editItem.logoFile.url,
+      label: editItem.logoFile.name || "Votre logo",
+      face: editItem.placement === "dos" ? ("back" as const) : ("front" as const),
+    }];
+  });
 
   // Face active — synchronisée depuis StudioCanvas via onViewChange
   // (le canvas peut changer de vue indépendamment du placement)
@@ -407,6 +432,7 @@ export default function StudioClient({ product }: Props) {
                 exportPNG={exportPNG}
                 exportComposed={exportComposed}
                 getContainerSize={getContainerSize}
+                editItemId={editItem ? editItemId : null}
               />
             </div>
 

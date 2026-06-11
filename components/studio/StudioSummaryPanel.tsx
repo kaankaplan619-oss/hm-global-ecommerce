@@ -47,6 +47,8 @@ interface Props {
   exportComposed?: () => Promise<{ front: string; back: string }>;
   /** Taille reelle du canvas studio (px) — fournie par StudioCanvasHandle. */
   getContainerSize?: () => number;
+  /** Mode édition : id de l'article du panier à remplacer (replaceItem au lieu d'addItem). */
+  editItemId?: string | null;
 }
 
 export default function StudioSummaryPanel({
@@ -62,9 +64,10 @@ export default function StudioSummaryPanel({
   exportPNG,
   exportComposed,
   getContainerSize,
+  editItemId,
 }: Props) {
   const router = useRouter();
-  const { addItem } = useCartStore();
+  const { addItem, replaceItem } = useCartStore();
   const [validating,   setValidating]   = useState(false);
   const [error,        setError]        = useState<string | null>(null);
   // Étape de confirmation — null = pas encore lancée
@@ -299,7 +302,9 @@ export default function StudioSummaryPanel({
       // l'upload a foiré (auth manquante, réseau), on tombe en fallback sur
       // les data URL base64 — affichage en session sans persistance, le client
       // peut quand même finaliser sa commande sans bloquer.
-      addItem({
+      // Mode édition (clic depuis le panier) : on remplace la ligne existante
+      // au lieu d'en créer une nouvelle.
+      const payload = {
         product,
         quantity:  modalQty,
         size:      modalSize,
@@ -311,7 +316,12 @@ export default function StudioSummaryPanel({
         logoPlacementTransform: (sr.logoPlacementTransform as any) ?? undefined,
         composedPreviewUrl:  faceUrl ?? preview.composedFront ?? undefined,
         composedPreviewBack: backUrl ?? preview.composedBack  ?? undefined,
-      });
+      };
+      if (editItemId) {
+        replaceItem(editItemId, payload);
+      } else {
+        addItem(payload);
+      }
 
       // Navigation client-side → store Zustand conservé en mémoire avec les images
       router.push("/panier");
@@ -540,9 +550,9 @@ export default function StudioSummaryPanel({
                     title={!modalSize ? "Veuillez sélectionner une taille" : undefined}
                   >
                     {confirming ? (
-                      <><Loader2 size={15} className="animate-spin" /> Ajout en cours…</>
+                      <><Loader2 size={15} className="animate-spin" /> {editItemId ? "Mise à jour…" : "Ajout en cours…"}</>
                     ) : (
-                      <><ShoppingCart size={15} /> Confirmer et ajouter au panier</>
+                      <><ShoppingCart size={15} /> {editItemId ? "Mettre à jour mon article" : "Confirmer et ajouter au panier"}</>
                     )}
                   </button>
                   {!modalSize && (

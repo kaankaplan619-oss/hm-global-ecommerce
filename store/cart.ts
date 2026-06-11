@@ -45,6 +45,8 @@ interface CartState {
   lastAddedName: string | null;
   // Actions
   addItem: (params: AddToCartParams) => void;
+  /** Remplace entièrement la ligne `itemId` (mode édition Studio) — l'id est conservé. */
+  replaceItem: (itemId: string, params: AddToCartParams) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   updateLogoFile: (itemId: string, file: CartItem["logoFile"]) => void;
@@ -176,6 +178,52 @@ export const useCartStore = create<CartState>()(
         }
 
         set({ isOpen: true });
+      },
+
+      replaceItem: (itemId, params) => {
+        const { product, quantity, size, color, technique, placement, logoFile, logoEffect, logoPlacementTransform, batRef, composedPreviewUrl, composedPreviewBack, printConfig, overrideUnitPrice } = params;
+
+        // Même logique de prix que addItem (lot print figé / palier volume textile).
+        let unitPrice: number;
+        let effectiveQuantity: number;
+        if (printConfig) {
+          unitPrice = overrideUnitPrice ?? printConfig.lotPriceTTC;
+          effectiveQuantity = 1;
+        } else {
+          effectiveQuantity = quantity;
+          unitPrice = computeUnitPriceWithVolume({ product, technique, placement, quantity: effectiveQuantity });
+        }
+        const totalPrice = Math.round(unitPrice * effectiveQuantity * 100) / 100;
+
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id !== itemId
+              ? item
+              : {
+                  ...item,
+                  productId: product.id,
+                  product,
+                  quantity: effectiveQuantity,
+                  size,
+                  color,
+                  technique,
+                  placement,
+                  logoFile,
+                  logoEffect,
+                  logoPlacementTransform,
+                  batRef,
+                  unitPrice,
+                  totalPrice,
+                  composedPreviewUrl,
+                  composedPreviewBack,
+                  printConfig,
+                }
+          ),
+          lastAddedItemId: itemId,
+          lastAddedAt: Date.now(),
+          lastAddedName: product.shortName,
+          isOpen: true,
+        }));
       },
 
       removeItem: (itemId) => {
