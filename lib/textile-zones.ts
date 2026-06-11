@@ -57,9 +57,10 @@ export const ZONES_BY_CATEGORY: Record<
   // ── Flow studio unifié 2026-06-12 (demande Kaan : même procédé partout) ────
   // casquettes : broderie panneau avant (mockups Printful, casquette centrée).
   // Zone = front centre ; dos jamais utilisé (placements: ["coeur"]).
-  casquettes: { coeur: [0.40, 0.42, 0.20, 0.13], dos: [0.40, 0.42, 0.20, 0.13] },
+  // Resserré 2026-06-12 (retour Kaan : zone trop grande à l'écran).
+  casquettes: { coeur: [0.42, 0.44, 0.16, 0.10], dos: [0.42, 0.44, 0.16, 0.10] },
   // sacs : corps du tote/sacoche (mockups Printful à plat, sac centré).
-  sacs:       { coeur: [0.36, 0.46, 0.28, 0.28], dos: [0.36, 0.46, 0.28, 0.28] },
+  sacs:       { coeur: [0.40, 0.50, 0.20, 0.20], dos: [0.40, 0.50, 0.20, 0.20] },
 };
 
 // ── Fallback statique pour packshots B&C Exact 190 (B3.2-A2 validé) ──────────

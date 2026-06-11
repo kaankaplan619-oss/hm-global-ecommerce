@@ -126,7 +126,11 @@ const ZONE_OVERRIDES_BY_PRODUCT_ID: Record<string, {
   // Bonnet à revers : la broderie se fait sur le REVERS (bande basse du
   // bonnet), pas au milieu du crâne — zone descendue vs casquettes (2026-06-12).
   "bonnet-yupoong-1501kc": {
-    coeur: [0.40, 0.60, 0.20, 0.13],
+    coeur: [0.42, 0.62, 0.16, 0.10],
+  },
+  // Sacoche bandoulière : logo sur le panneau bas (zone plate), petite.
+  "sacoche-bagbase-qs309": {
+    coeur: [0.42, 0.58, 0.16, 0.13],
   },
   wg004: {
     // Iter 8 (2026-05-26) : taille réduite à 0.12 × 0.12 pour matcher visuellement
@@ -209,6 +213,16 @@ const GUIDE_META: Record<string, {
   polos: {
     coeur: { defaultCm: 10, label: "♥ Cœur · max 10×10 cm" },
     dos:   { defaultCm: 18, label: "Dos · max 25×15 cm" },
+  },
+  // Casquettes/bonnets : broderie panneau avant — zone réelle ≈ 12×6 cm.
+  casquettes: {
+    coeur: { defaultCm: 6, label: "Avant · broderie max 12×6 cm" },
+    dos:   { defaultCm: 6, label: "Arrière" },
+  },
+  // Sacs : impression/broderie sur le corps du sac.
+  sacs: {
+    coeur: { defaultCm: 10, label: "Face · max 10×10 cm" },
+    dos:   { defaultCm: 10, label: "Dos" },
   },
 };
 const GUIDE_META_DEFAULT = {

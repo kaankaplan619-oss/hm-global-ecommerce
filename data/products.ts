@@ -2965,10 +2965,10 @@ export const PRODUCT_POLO_SOLS_PRESCOTT: Product = {
   conseil: "La montée en gamme du polo brodé : marque française, tailles S à 5XL pour équiper tout le monde. À partir de 33,90 € l'unité dès 25 pièces.",
   volumePricing: POLO_SOLS_PRESCOTT_BRODERIE_VOLUME,
   hmMockupImages: {
-    "noir":       "/mockups/polos/sols-prescott/noir-front.jpg",
-    "marine":     "/mockups/polos/sols-prescott/marine-front.jpg",
-    "rouge":      "/mockups/polos/sols-prescott/rouge-front.jpg",
-    "gris-chine": "/mockups/polos/sols-prescott/gris-chine-front.jpg",
+    "noir":       "/mockups/polos/sols-prescott/noir-flat.jpg",
+    "marine":     "/mockups/polos/sols-prescott/marine-flat.jpg",
+    "rouge":      "/mockups/polos/sols-prescott/rouge-flat.jpg",
+    "gris-chine": "/mockups/polos/sols-prescott/gris-chine-flat.jpg",
   },
 };
 
@@ -3008,17 +3008,20 @@ export const PRODUCT_POLO_GILDAN_64800L: Product = {
     broDeriePlacementSurcharge: SINGLE_PLACEMENT_SURCHARGES,
   },
   featured: false,
-  visible: true,
+  // RETIRÉ 2026-06-12 (règle Kaan : pas de photo mannequin, et Printful
+  // n'a AUCUNE photo à plat pour ce produit — templates sur modèle uniquement).
+  // Réactiver si une photo à plat devient disponible.
+  visible: false,
   badge: "Broderie incluse",
   supplierName: "printful",
   ideaPour: ["Corporate", "Accueil & événements", "Uniformes mixtes"],
   conseil: "Le complément naturel du polo unisexe pour les équipes mixtes — mêmes coloris, même grille de prix. À partir de 23,90 € l'unité dès 25 pièces.",
   volumePricing: POLO_GILDAN_64800L_BRODERIE_VOLUME,
   hmMockupImages: {
-    "noir":   "/mockups/polos/gildan-64800l/noir-front.jpg",
-    "marine": "/mockups/polos/gildan-64800l/marine-front.jpg",
-    "gris":   "/mockups/polos/gildan-64800l/gris-front.jpg",
-    "blanc":  "/mockups/polos/gildan-64800l/blanc-front.jpg",
+    "noir":   "/mockups/polos/gildan-64800l/noir-flat.jpg",
+    "marine": "/mockups/polos/gildan-64800l/marine-flat.jpg",
+    "gris":   "/mockups/polos/gildan-64800l/gris-flat.jpg",
+    "blanc":  "/mockups/polos/gildan-64800l/blanc-flat.jpg",
   },
 };
 
@@ -3064,9 +3067,9 @@ export const PRODUCT_COUPE_VENT_SOLS_32000: Product = {
   conseil: "Pour une vraie veste softshell doublée, notre atelier vous équipe sur devis. Ce coupe-vent brodé est l'option livrée en ~1 semaine. À partir de 38,90 € dès 25 pièces.",
   volumePricing: COUPE_VENT_SOLS_32000_BRODERIE_VOLUME,
   hmMockupImages: {
-    "noir":       "/mockups/softshells/sols-32000/noir-front.jpg",
-    "marine":     "/mockups/softshells/sols-32000/marine-front.jpg",
-    "vert-foret": "/mockups/softshells/sols-32000/vert-foret-front.jpg",
+    "noir":       "/mockups/softshells/sols-32000/noir-flat.jpg",
+    "marine":     "/mockups/softshells/sols-32000/marine-flat.jpg",
+    "vert-foret": "/mockups/softshells/sols-32000/vert-foret-flat.jpg",
   },
 };
 
