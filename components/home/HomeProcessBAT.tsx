@@ -7,8 +7,9 @@ import { ShieldCheck, Eye, Pencil, Sparkles } from "lucide-react";
 /**
  * HomeProcessBAT — Section "Un BAT validé avant chaque production."
  *
- * Visuel : feuille BAT tenue à la main, ordinateur et t-shirt.
- * Source attendue : /images/home/hm-bat-validation-v3.jpg
+ * Visuel : BAT officiel rempli à la main (logo au cœur, encre bleue),
+ * posé sur l'établi — généré par scripts/gen-bat-home-image.ts.
+ * Source attendue : /images/home/hm-bat-validation-v4.jpg
  *
  * Message : sérieux de la validation, anti-erreur coûteuse.
  * 3 étapes visualisées en colonnes sous l'image.
@@ -65,8 +66,8 @@ function BATImage() {
 
   return (
     <Image
-      src="/images/home/hm-bat-validation-v3.jpg"
-      alt="Le vrai bon à tirer HM Global rempli : visuel du t-shirt, projet, date et mention « Bon pour accord », posé sur l'établi de l'atelier."
+      src="/images/home/hm-bat-validation-v4.jpg"
+      alt="Le bon à tirer HM Global rempli à la main : t-shirt avec logo au cœur, projet, date et mention « Bon pour accord », posé sur l'établi de l'atelier."
       fill
       sizes="(min-width: 1024px) 50vw, 100vw"
       className="object-cover"

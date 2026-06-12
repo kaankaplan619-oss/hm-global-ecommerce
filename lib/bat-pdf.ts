@@ -247,8 +247,9 @@ function drawBatPage(
 
   // ── En-tête ─────────────────────────────────────────────────────────────────
   drawText(page, "BAT", { x: 15, topY: 53, size: 42, font });
+  // x 112 : laisse une vraie respiration après « BAT » (le T s'arrête vers x 103)
   drawText(page, `Client : ${data.clientName}`, {
-    x: 97, topY: 47, size: 17, font, maxWidth: 290,
+    x: 112, topY: 47, size: 17, font, maxWidth: 275,
   });
 
   // Logo HM Global haut droit (ratio 2286×904)
