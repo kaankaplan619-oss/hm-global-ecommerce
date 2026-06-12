@@ -1263,6 +1263,24 @@ export default function AdminCommandeDetailPage({ params }: Props) {
                   </span>
                 </div>
 
+                {(order.items ?? []).some((i) => i.composedPreviewUrl || i.composedPreviewBack) && (
+                  <div className="mb-3 flex flex-col gap-1.5">
+                    <a
+                      href={`/api/orders/${order.id}/bat-pdf`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--hm-primary)] px-3 py-2 text-[11px] font-bold text-white hover:opacity-90"
+                    >
+                      <FileText size={12} />
+                      Télécharger le BAT officiel (PDF)
+                    </a>
+                    <p className="text-[9px] text-[var(--hm-text-muted)]">
+                      Template agence pré-rempli (client, support, dimensions, visuels validés) —
+                      à joindre à l&apos;email de validation client.
+                    </p>
+                  </div>
+                )}
+
                 {(order.items ?? []).some((i) => i.batRef) ? (
                   <div className="flex flex-col gap-2">
                     {(order.items ?? []).filter((i) => i.batRef).map((item) => (
