@@ -9,12 +9,12 @@ import { ArrowRight, Shirt } from "lucide-react";
  * HomeTextilePremium — Section "Des textiles personnalisés pensés pour votre image."
  *
  * Combine deux visuels :
- *   - softshells Okami Protection logo cœur + grand dos (image principale)
+ *   - softshell METEM marquage dos blanc + rouge (image principale)
  *   - gros plan marquage Good Eye Deer (image secondaire qualité/détail,
  *     recadrage réel — remplace l'ancienne macro de synthèse)
  *
  * Sources attendues :
- *   /images/realisations/okami-softshells.jpg
+ *   /images/realisations/metem-softshell-dos.jpg
  *   /images/home/hm-detail-finition-good-eye-deer.jpg
  *
  * Fallback graphique premium si une image est absente.
@@ -92,12 +92,12 @@ export default function HomeTextilePremium() {
                 border: "1px solid rgba(45,35,64,0.08)",
               }}
             >
-              {/* 4/3 = ratio exact de la photo Okami → object-cover ne coupe rien
-                  (en 16/10 le grand logo dos partait hors cadre — retour Kaan) */}
+              {/* 4/3 = ratio exact de la photo → object-cover ne coupe rien
+                  (le logo dos doit rester entièrement visible — retour Kaan) */}
               <div className="relative aspect-[4/3]">
                 <TextileImage
-                  src="/images/realisations/okami-softshells.jpg"
-                  alt="Vestes softshell noires Okami Protection marquées en blanc par HM Global — logo cœur et grand logo dos, commande client réelle."
+                  src="/images/realisations/metem-softshell-dos.jpg"
+                  alt="Veste softshell noire METEM marquée par HM Global — grand logo dos blanc et rouge « Votre partenaire de confiance », commande client réelle."
                   sizes="(min-width: 1024px) 55vw, 100vw"
                 />
                 {/* Légende discrète bas-gauche */}
@@ -113,7 +113,7 @@ export default function HomeTextilePremium() {
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ background: "var(--hm-cyan)" }}
                   />
-                  Logo cœur + grand dos
+                  Marquage dos · softshell
                 </span>
               </div>
             </div>
