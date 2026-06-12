@@ -137,6 +137,15 @@ export async function POST(req: NextRequest) {
           { status: 422 }
         );
       }
+      // Printful télécharge le fichier : une data URL base64 (anciens exports
+      // Studio) ou un chemin relatif ne sont pas exploitables. Bloquer ici
+      // avec un message actionnable plutôt que produire un brouillon corrompu.
+      if (!/^https?:\/\//i.test(logoUrl)) {
+        return NextResponse.json(
+          { error: `URL du logo non publique pour l'article ${item.id} (data: ou chemin relatif) — re-télécharger le logo du client avant l'envoi Printful.` },
+          { status: 422 }
+        );
+      }
 
       // Placement exact du Studio → position Printful (aperçu = imprimé).
       // null si transform absent/rotation/produit hors map → Printful place

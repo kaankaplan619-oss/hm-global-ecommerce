@@ -112,31 +112,65 @@ export default function StudioSummaryPanel({
       let storagePath  = `studio-exports/${timestamp}.png`;
 
       if (logoObj?.file) {
-        logoFileUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload  = () => resolve(reader.result as string);
-          reader.onerror = () => reject(new Error("Impossible de lire le fichier logo."));
-          reader.readAsDataURL(logoObj.file!);
-        });
         logoFileName = logoObj.file.name;
         logoFileType = logoObj.file.type || "image/png";
         logoFileSize = logoObj.file.size;
         storagePath  = `studio-exports/${timestamp}-${logoObj.file.name}`;
 
-        void (async () => {
-          try {
-            const supabase = getSupabaseBrowserClient();
-            await supabase.storage
-              .from("customer-logos")
-              .upload(storagePath, logoObj.file!, { contentType: logoFileType, upsert: true });
-          } catch { /* silent */ }
-        })();
+        // Upload AVANT de continuer : le panier/DB/Printful exigent une URL
+        // publique — une data URL base64 fait échouer la commande POD (et
+        // pèse plusieurs Mo en DB). Fallback data URL uniquement si l'upload
+        // échoue (invité non authentifié, réseau) : l'aperçu reste possible
+        // et la route admin refusera l'envoi Printful avec un message clair.
+        try {
+          const supabase = getSupabaseBrowserClient();
+          const { error: upErr } = await supabase.storage
+            .from("customer-logos")
+            .upload(storagePath, logoObj.file, { contentType: logoFileType, upsert: true });
+          if (!upErr) {
+            const { data: pub } = supabase.storage.from("customer-logos").getPublicUrl(storagePath);
+            logoFileUrl = pub?.publicUrl ?? "";
+          }
+        } catch { /* fallback data URL ci-dessous */ }
+
+        if (!logoFileUrl) {
+          logoFileUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload  = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error("Impossible de lire le fichier logo."));
+            reader.readAsDataURL(logoObj.file!);
+          });
+        }
 
       } else if (logoObj?.src) {
-        logoFileUrl  = logoObj.src;
-        logoFileName = logoObj.src.split("/").pop() ?? "design.svg";
-        logoFileType = "image/svg+xml";
-        storagePath  = logoObj.src;
+        if (logoObj.src.startsWith("data:")) {
+          // QR code généré (data URL) → upload pour obtenir une URL publique.
+          logoFileName = `qr-${timestamp}.png`;
+          logoFileType = "image/png";
+          logoFileSize = Math.round(logoObj.src.length * 0.75);
+          storagePath  = `studio-exports/${timestamp}-qr.png`;
+          try {
+            const blob = await (await fetch(logoObj.src)).blob();
+            const supabase = getSupabaseBrowserClient();
+            const { error: upErr } = await supabase.storage
+              .from("customer-logos")
+              .upload(storagePath, blob, { contentType: "image/png", upsert: true });
+            if (!upErr) {
+              const { data: pub } = supabase.storage.from("customer-logos").getPublicUrl(storagePath);
+              logoFileUrl = pub?.publicUrl ?? "";
+            }
+          } catch { /* fallback data URL */ }
+          if (!logoFileUrl) logoFileUrl = logoObj.src;
+        } else {
+          // Designs de la bibliothèque : chemin relatif /designs/… → URL
+          // absolue, sinon Printful ne peut pas télécharger le fichier.
+          logoFileUrl = logoObj.src.startsWith("/") && typeof window !== "undefined"
+            ? `${window.location.origin}${logoObj.src}`
+            : logoObj.src;
+          logoFileName = logoObj.src.split("/").pop() ?? "design.svg";
+          logoFileType = "image/svg+xml";
+          storagePath  = logoObj.src;
+        }
 
       } else {
         const dataURL = exportPNG();
