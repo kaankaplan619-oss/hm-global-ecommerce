@@ -2744,6 +2744,26 @@ export const PRODUCT_MUG_CERAMIQUE_EU: Product = {
   conseil:
     "Le goodie B2B par excellence. Sublimation pleine couleur sur céramique blanche, couleurs éclatantes, résistant au lave-vaisselle. Idéal pour les séminaires, anniversaires d'entreprise et offres cadeaux clients. Production EU, délai 10-15 jours ouvrés.",
   volumePricing: MUG_11OZ_DTF_VOLUME,
+  styleInfo: {
+    lookTitle:  "Impression pleine couleur",
+    lookDesc:   "Sublimation sur tout le pourtour pour un rendu éclatant et durable.",
+    coupeTitle: "Format universel",
+    coupeDesc:  "11 oz (325 ml) — la taille standard la plus appréciée en entreprise.",
+    extraTitle: "Résistant au lave-vaisselle",
+    extraDesc:  "Encres sublimées dans la céramique, résistantes aux lavages répétés.",
+  },
+  featureHighlights: [
+    "Céramique blanche qualité supérieure",
+    "Sublimation pleine couleur sur tout le pourtour",
+    "Résistant au lave-vaisselle et micro-ondes",
+    "Capacité 325 ml (11 oz)",
+    "Production et expédition UE",
+  ],
+  strengths: [
+    "Format universel 11 oz, standard entreprise",
+    "Impression couleur adaptée aux logos et visuels",
+    "Simple à commander en quantité, dès 1 pièce",
+  ],
   // Pas de hmMockupImages / hmMockupGallery : la résolution image passe par
   // le pipeline Printify V1 (getV1PrintifyImage + getV1PrintifyGallery), qui
   // lit le manifest /mockups/printify/mug-ceramique-eu/.
@@ -2790,6 +2810,26 @@ export const PRODUCT_MUG_11OZ: Product = {
   ideaPour: ["Cadeaux d'entreprise", "Séminaires", "Associations"],
   conseil: "Le goodie B2B par excellence. Impression sublimation pleine couleur, couleurs éclatantes, résistant au lave-vaisselle. Idéal pour les séminaires, anniversaires d'entreprise et offres cadeaux clients.",
   volumePricing: MUG_11OZ_DTF_VOLUME,
+  styleInfo: {
+    lookTitle:  "Impression pleine couleur",
+    lookDesc:   "Sublimation sur tout le pourtour pour un rendu éclatant et durable.",
+    coupeTitle: "Format universel",
+    coupeDesc:  "11 oz (325 ml) — la taille standard la plus appréciée en entreprise.",
+    extraTitle: "Résistant au lave-vaisselle",
+    extraDesc:  "Encres sublimées dans la céramique, résistantes aux lavages répétés.",
+  },
+  featureHighlights: [
+    "Céramique blanche qualité supérieure",
+    "Sublimation pleine couleur sur tout le pourtour",
+    "Résistant au lave-vaisselle",
+    "Capacité 325 ml (11 oz)",
+    "Expédition directe depuis l'UE",
+  ],
+  strengths: [
+    "Format universel 11 oz, standard entreprise",
+    "Impression couleur adaptée aux logos et visuels",
+    "Simple à commander en quantité, dès 1 pièce",
+  ],
   hmMockupImages: {
     "blanc": "/products/goodies/mug-11oz.svg",
   },
@@ -3489,6 +3529,26 @@ export const PRODUCT_STICKERS_LOGO: Product = {
   ideaPour: ["Goodies clients", "Colis & packaging", "Vitrines"],
   conseil: "L'objet logo le plus accessible du catalogue — glissez-en dans chaque colis. À partir de 7,90 € dès 25 pièces.",
   volumePricing: STICKERS_LOGO_DTF_VOLUME,
+  styleInfo: {
+    lookTitle:  "Impression pleine couleur",
+    lookDesc:   "Vinyle blanc brillant imprimé en haute définition — logos, dégradés et visuels détaillés.",
+    coupeTitle: "Découpe kiss-cut",
+    coupeDesc:  "La découpe suit le contour de votre logo, le fond se détache sans abîmer le sticker.",
+    extraTitle: "Trois formats disponibles",
+    extraDesc:  "7,6 × 7,6 cm, 10 × 10 cm ou 14 × 14 cm — du sticker colis au sticker vitrine.",
+  },
+  featureHighlights: [
+    "Vinyle blanc brillant qualité premium",
+    "Découpe kiss-cut au contour du logo",
+    "Impression pleine couleur haute définition",
+    "Trois formats : 7,6 / 10 / 14 cm",
+    "Production et expédition UE",
+  ],
+  strengths: [
+    "L'objet logo le plus accessible du catalogue",
+    "Découpe kiss-cut propre, fond facile à détacher",
+    "Simple à commander en quantité, dès 1 pièce",
+  ],
   hmMockupImages: {
     "blanc": "/mockups/goodies/stickers/blanc-front.jpg",
   },
@@ -3527,6 +3587,26 @@ export const PRODUCT_PLANCHE_STICKERS: Product = {
   ideaPour: ["Associations", "Événements", "Kits de bienvenue"],
   conseil: "Plusieurs stickers par feuille = le format le plus généreux. 12,90 € dès 10 planches.",
   volumePricing: PLANCHE_STICKERS_DTF_VOLUME,
+  styleInfo: {
+    lookTitle:  "Impression pleine couleur",
+    lookDesc:   "Vinyle blanc imprimé en haute définition — plusieurs visuels sur une seule planche.",
+    coupeTitle: "Planche A5 kiss-cut",
+    coupeDesc:  "Chaque sticker se détache individuellement de la planche 14,8 × 21 cm.",
+    extraTitle: "Plusieurs stickers par feuille",
+    extraDesc:  "Déclinez logo, mascotte et slogans sur une même planche — idéal kits de bienvenue.",
+  },
+  featureHighlights: [
+    "Vinyle blanc qualité premium",
+    "Planche A5 (14,8 × 21 cm)",
+    "Découpe kiss-cut sticker par sticker",
+    "Plusieurs visuels sur une même planche",
+    "Production et expédition UE",
+  ],
+  strengths: [
+    "Le format sticker le plus généreux du catalogue",
+    "Plusieurs déclinaisons de votre logo sur une feuille",
+    "Parfait pour les kits événements et bienvenue",
+  ],
   hmMockupImages: {
     "blanc": "/mockups/goodies/sticker-sheet/blanc-front.jpg",
   },
@@ -3568,6 +3648,26 @@ export const PRODUCT_MUG_NOIR_BRILLANT: Product = {
   ideaPour: ["Bureau & salle de pause", "Cadeaux clients", "Identités sombres"],
   conseil: "Le pendant du mug blanc pour les logos clairs. À partir de 12,90 € dès 25 pièces.",
   volumePricing: MUG_NOIR_DTF_VOLUME,
+  styleInfo: {
+    lookTitle:  "Finition noire brillante",
+    lookDesc:   "Céramique noire laquée qui fait ressortir les logos clairs et blancs.",
+    coupeTitle: "Deux formats au choix",
+    coupeDesc:  "11 oz (325 ml) ou 15 oz (445 ml), selon l'usage et le budget.",
+    extraTitle: "Résistant au lave-vaisselle",
+    extraDesc:  "Impression durable sur tour complet, compatible lave-vaisselle et micro-ondes.",
+  },
+  featureHighlights: [
+    "Céramique noire finition brillante",
+    "Impression sur tour complet",
+    "Idéal pour les logos clairs et blancs",
+    "Deux capacités : 325 ml ou 445 ml",
+    "Production et expédition UE",
+  ],
+  strengths: [
+    "Met en valeur les logos clairs et les identités sombres",
+    "Deux formats au choix : 11 oz ou 15 oz",
+    "Simple à commander en quantité, dès 1 pièce",
+  ],
   hmMockupImages: {
     "noir": "/mockups/goodies/mug-noir/noir-front.jpg",
   },
@@ -3606,6 +3706,26 @@ export const PRODUCT_DESSOUS_VERRE_LIEGE: Product = {
   ideaPour: ["Salles de réunion", "Brasseries & restaurants", "Cadeaux de bureau"],
   conseil: "Le complément naturel du mug dans un kit de bureau logoté. À partir de 9,90 € dès 25 pièces.",
   volumePricing: DESSOUS_VERRE_DTF_VOLUME,
+  styleInfo: {
+    lookTitle:  "Impression pleine surface",
+    lookDesc:   "Votre logo imprimé sur toute la face du dessous de verre, couleurs éclatantes.",
+    coupeTitle: "Format carré 9,5 cm",
+    coupeDesc:  "9,5 × 9,5 cm — la taille standard pour verres, tasses et mugs.",
+    extraTitle: "Dos liège antidérapant",
+    extraDesc:  "Panneau rigide avec dos en liège qui protège les tables et ne glisse pas.",
+  },
+  featureHighlights: [
+    "Panneau rigide qualité supérieure",
+    "Dos liège naturel antidérapant",
+    "Impression pleine surface",
+    "Format carré 9,5 × 9,5 cm",
+    "Production et expédition UE",
+  ],
+  strengths: [
+    "Le complément naturel du mug dans un kit logoté",
+    "Dos liège qui protège les tables et ne glisse pas",
+    "Simple à commander en quantité, dès 1 pièce",
+  ],
   hmMockupImages: {
     "blanc": "/mockups/goodies/coaster/blanc-front.jpg",
   },

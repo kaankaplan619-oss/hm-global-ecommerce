@@ -123,6 +123,19 @@ export interface Product {
   techniqueRecommandee?: Technique;
   conseil?: string; // conseil HM Global displayed on product page
   ideaPour?: string[]; // ["Restauration", "BTP", ...]
+  /** Carte « Style et coupe » de la fiche produit — écrase le texte par catégorie si présent. */
+  styleInfo?: {
+    lookTitle: string;
+    lookDesc: string;
+    coupeTitle: string;
+    coupeDesc: string;
+    extraTitle: string;
+    extraDesc: string;
+  };
+  /** Carte « Caractéristiques » de la fiche produit — écrase la liste par catégorie si présent. */
+  featureHighlights?: string[];
+  /** Section « Pourquoi ce modèle » de la fiche produit — écrase la liste par catégorie si présent. */
+  strengths?: string[];
   // Toptex supplier data
   toptexRef?: string;        // e.g. "IB320"
   toptexUrl?: string;        // fiche Toptex URL

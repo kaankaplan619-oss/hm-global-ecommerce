@@ -114,13 +114,15 @@ const STYLE_BY_CATEGORY: Record<ProductCategory, StyleInfo> = {
     extraTitle: "Fond plat renforcé",
     extraDesc:  "Tient debout seul, stable pour les courses ou les goodies.",
   },
+  // Fallback générique — chaque goodie (mug, sticker, dessous de verre…) doit
+  // définir son propre product.styleInfo dans data/products.ts.
   goodies: {
     lookTitle:  "Impression pleine couleur",
-    lookDesc:   "Sublimation sur toute la surface pour un rendu éclatant et durable.",
-    coupeTitle: "Format universel",
-    coupeDesc:  "11 oz (325 ml) — la taille standard la plus appréciée en entreprise.",
-    extraTitle: "Résistant au lave-vaisselle",
-    extraDesc:  "Encres sublimées dans la céramique, résistantes aux lavages répétés.",
+    lookDesc:   "Votre logo ou visuel imprimé en haute définition, couleurs éclatantes.",
+    coupeTitle: "Format adapté à l'objet",
+    coupeDesc:  "Dimensions et zone d'impression détaillées sur chaque fiche produit.",
+    extraTitle: "Qualité durable",
+    extraDesc:  "Matériaux sélectionnés pour un usage quotidien en entreprise.",
   },
   enfants: {
     lookTitle:  "Coupe enfant",
@@ -162,7 +164,8 @@ const FEATURES_BY_CATEGORY: Record<ProductCategory, string[]> = {
   polaires:   ["100% polyester recyclé", "Traitement déperlant DWR", "Col zippé 1/4 ou intégral", "Résistant aux lavages intensifs", "Anti-boulochage longue durée"],
   casquettes: ["Bande de sueur intégrée absorbante", "Bouton supérieur tressé", "Visière pré-courbée 6 panneaux", "Fermeture réglable à scratch ou boucle", "Construction structurée haute tenue"],
   sacs:       ["Anses renforcées double couture", "Fond plat stable portage aisé", "Coton bio certifié GOTS", "Grande zone d'impression recto", "Résistant charges jusqu'à 10 kg"],
-  goodies:    ["Céramique qualité supérieure", "Impression sublimation pleine couleur", "Résistant au lave-vaisselle", "Capacité 325 ml (11 oz)", "Expédié depuis l'UE sous 3–5 jours"],
+  // Fallback générique — chaque goodie doit définir product.featureHighlights dans data/products.ts.
+  goodies:    ["Impression pleine couleur haute définition", "Matériaux qualité supérieure", "Visuel vérifié avant production", "Commande possible dès 1 pièce", "Production et expédition UE"],
   enfants:    ["Matières certifiées Oeko-Tex", "Coutures plates sans irritation", "Étiquette repositionnable", "Lavable à 40°C sans déformation", "Coupe adaptée de 3 à 12 ans"],
 };
 
@@ -220,9 +223,10 @@ interface Props {
 }
 
 export default function ProductFeaturesSection({ product }: Props) {
-  const style    = STYLE_BY_CATEGORY[product.category]  ?? STYLE_BY_CATEGORY.tshirts;
+  const style    = product.styleInfo ?? STYLE_BY_CATEGORY[product.category] ?? STYLE_BY_CATEGORY.tshirts;
   const scales   = FABRIC_SCALES[product.category]      ?? { epaisseur: 50, douceur: 60 };
-  const features = FEATURES_BY_CATEGORY[product.category] ?? [];
+  const features = product.featureHighlights ?? FEATURES_BY_CATEGORY[product.category] ?? [];
+  const isGoodie = product.category === "goodies";
   const certs    = CERTS_BY_SUPPLIER[product.supplierName ?? ""] ?? ["Oeko-Tex Standard 100"];
   const grams    = parseGrams(product.weight);
   const wPct     = weightPercent(grams);
@@ -252,8 +256,15 @@ export default function ProductFeaturesSection({ product }: Props) {
           <div className="flex flex-col gap-3">
             {product.techniques.map((t) => (
               <div key={t} className={`rounded-xl border px-3 py-2.5 ${TECHNIQUE_COLOR_CLASS[t]}`}>
-                <p className="text-[11px] font-bold leading-tight mb-1.5">{TECHNIQUE_LABELS[t]}</p>
-                <p className="text-[10px] leading-snug opacity-75 mb-2">{TECHNIQUE_DESC[t]}</p>
+                {/* Goodies : pas de DTF textile — impression pleine couleur (sublimation, vinyle…) */}
+                <p className="text-[11px] font-bold leading-tight mb-1.5">
+                  {isGoodie ? "Impression pleine couleur" : TECHNIQUE_LABELS[t]}
+                </p>
+                <p className="text-[10px] leading-snug opacity-75 mb-2">
+                  {isGoodie
+                    ? "Impression haute définition de votre logo ou visuel, couleurs éclatantes et durables."
+                    : TECHNIQUE_DESC[t]}
+                </p>
                 <div className="flex flex-col gap-0.5">
                   {(product.category === "goodies"
                     ? ["Impression logo ou visuel", "Zone personnalisable selon gabarit produit", "Validation du visuel avant production"]
@@ -316,27 +327,31 @@ export default function ProductFeaturesSection({ product }: Props) {
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--hm-text-soft)] mb-1">Composition</p>
             <p className="text-[12px] font-bold text-[var(--hm-text)] leading-snug">{product.composition}</p>
             {grams > 0 && (
-              <p className="text-[10px] text-[var(--hm-text-muted)] mt-0.5">{product.weight} · {wLabel}</p>
+              <p className="text-[10px] text-[var(--hm-text-muted)] mt-0.5">
+                {isGoodie ? product.weight : `${product.weight} · ${wLabel}`}
+              </p>
             )}
           </div>
 
-          {/* Scale bars */}
-          <div className="flex flex-col gap-3">
-            {grams > 0 && (
+          {/* Scale bars — concepts textile, sans objet pour les goodies (céramique, vinyle…) */}
+          {!isGoodie && (
+            <div className="flex flex-col gap-3">
+              {grams > 0 && (
+                <ScaleBar
+                  label="Épaisseur du tissu"
+                  leftLabel="Léger"
+                  rightLabel="Lourd"
+                  value={wPct}
+                />
+              )}
               <ScaleBar
-                label="Épaisseur du tissu"
-                leftLabel="Léger"
-                rightLabel="Lourd"
-                value={wPct}
+                label="Échelle de douceur"
+                leftLabel="Ferme"
+                rightLabel="Extra doux"
+                value={scales.douceur}
               />
-            )}
-            <ScaleBar
-              label="Échelle de douceur"
-              leftLabel="Ferme"
-              rightLabel="Extra doux"
-              value={scales.douceur}
-            />
-          </div>
+            </div>
+          )}
 
           {/* Certifications */}
           <div>

@@ -57,12 +57,18 @@ export default async function ProductPage({ params }: Props) {
     polaires:   ["Chaleur et légèreté combinées", "Broderie durable sur tissu polaire", "Parfait pour les équipes terrain hiver"],
     casquettes: ["Broderie haute définition garantie", "Finition premium longue durée", "Support idéal pour petits logos"],
     sacs:       ["Coton bio certifié", "Grande surface pour DTF et flex", "Impact positif sur l'image de marque"],
-    goodies:    ["Format universel 11 oz, standard entreprise", "Impression couleur adaptée aux logos et visuels", "Simple à commander en quantité, dès 1 pièce"],
+    // Fallback générique — chaque goodie doit définir product.strengths dans data/products.ts.
+    goodies:    ["Objet publicitaire simple et efficace", "Impression couleur adaptée aux logos et visuels", "Simple à commander en quantité, dès 1 pièce"],
     enfants:    ["Matières douces certifiées Oeko-Tex", "Coupes adaptées de 3 à 12 ans", "Rendu DTF vibrant sur petites tailles"],
   };
 
-  const useCases  = USE_CASES[product.category]  ?? USE_CASES.tshirts;
-  const strengths = STRENGTHS[product.category] ?? STRENGTHS.tshirts;
+  // Goodies : objets hétérogènes (mugs, stickers, dessous de verre…) → données
+  // par produit (ideaPour / strengths de data/products.ts), jamais le texte catégorie.
+  const useCases  =
+    product.category === "goodies" && product.ideaPour
+      ? product.ideaPour
+      : USE_CASES[product.category] ?? USE_CASES.tshirts;
+  const strengths = product.strengths ?? STRENGTHS[product.category] ?? STRENGTHS.tshirts;
 
   // Recommandation dynamique selon les techniques réellement disponibles
   const techs = product.techniques;
