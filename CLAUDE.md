@@ -110,3 +110,25 @@ Claude Code must not start editing before summarizing:
 6. do-not-touch areas.
 
 If the requested task conflicts with the memory files, Claude Code must stop and ask for validation.
+
+---
+
+# Suivi de lancement — règles obligatoires (2026-06-12)
+
+- **Source de vérité de l'avancement** : `docs/agent-memory/16_LAUNCH_CHECKLIST.md`.
+  Numérotation stable (jamais renuméroter). Début de session : la lire.
+  Fin de tâche : mettre à jour le statut de l'item (✅ + date + commit) et le
+  signaler à Kaan sous la forme « n° X corrigé / n° Y pas corrigé ».
+- **Ne modifier le site que sur demande explicite de Kaan**, ou pour un item
+  de la checklist qu'il a déjà validé. Toute découverte hors périmètre :
+  l'ajouter en ⏳ à la checklist, ne PAS la corriger d'office.
+- **Compte QA** pour les vérifications E2E : identifiants dans `.env.local`
+  (`QA_CLAUDE_EMAIL` / `QA_CLAUDE_PASSWORD`, rôle client). Ne jamais les
+  committer ni les afficher. Paniers et commandes de TEST autorisés en local ;
+  jamais de commande fournisseur confirmée (brouillons `confirm: false`
+  uniquement, à supprimer après usage).
+- ⚠️ **Plusieurs agents travaillent en parallèle sur ce repo** : ne jamais
+  `git add -A` ni `git add .` — toujours stager explicitement ses fichiers
+  (un commit du 2026-06-12 a embarqué le travail en cours d'une autre session).
+  Le navigateur Playwright est lui aussi partagé : faire les parcours E2E dans
+  un onglet dédié et en un seul script atomique.

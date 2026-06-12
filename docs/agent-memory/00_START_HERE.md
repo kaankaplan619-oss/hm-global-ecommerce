@@ -76,6 +76,7 @@ Détail complet et nuances → `08_DO_NOT_TOUCH.md`.
 | `13_PROMPT_STARTER.md` | Template prompt de démarrage de session | Pratique pour relancer un agent dans le bon état |
 | `14_PRODUCT_VISION_HM_GLOBAL_PLATFORM.md` | Vision produit long terme — stratégie plateforme | Discussions roadmap V2-V5, refonte structurelle |
 | `15_STUDIO_SPEC.md` | Spécifications fonctionnelles complètes du studio personnalisation | Toute évolution du studio ou de l'expérience Canva-style |
+| `16_LAUNCH_CHECKLIST.md` | **Checklist de lancement numérotée** — source de vérité fait / pas fait, statuts à maintenir | **Début de chaque session** + après chaque tâche terminée |
 
 ---
 
