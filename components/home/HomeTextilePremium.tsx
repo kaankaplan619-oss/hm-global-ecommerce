@@ -92,7 +92,9 @@ export default function HomeTextilePremium() {
                 border: "1px solid rgba(45,35,64,0.08)",
               }}
             >
-              <div className="relative aspect-[16/10]">
+              {/* 4/3 = ratio exact de la photo Okami → object-cover ne coupe rien
+                  (en 16/10 le grand logo dos partait hors cadre — retour Kaan) */}
+              <div className="relative aspect-[4/3]">
                 <TextileImage
                   src="/images/realisations/okami-softshells.jpg"
                   alt="Vestes softshell noires Okami Protection marquées en blanc par HM Global — logo cœur et grand logo dos, commande client réelle."
