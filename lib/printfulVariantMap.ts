@@ -557,6 +557,14 @@ export const PRINTFUL_PRODUCT_IDS: Record<string, number> = {
 // broderie : type du placement avant ; print : type impression (DTG/sublim).
 
 const PRODUCT_FILE_TYPES: Record<string, { broderie?: string; print?: string }> = {
+  // Textiles DTG — impression = front/back (historique), broderie cœur =
+  // chest left (audit API 2026-06-12 : EMBROIDERY dispo, mais PAS de broderie
+  // dos sur ces produits → contrainte placements dans data/products.ts).
+  "gildan-5000":         { broderie: "embroidery_chest_left", print: "front" },
+  "bella-3001":          { broderie: "embroidery_chest_left", print: "front" },
+  "comfort-colors-1717": { broderie: "embroidery_chest_left", print: "front" },
+  "gildan-18000":        { broderie: "embroidery_chest_left", print: "front" },
+  "gildan-18500":        { broderie: "embroidery_chest_left", print: "front" },
   // Polos & veste — broderie cœur = chest left
   "polo-sols-prescott":     { broderie: "embroidery_chest_left" },
   "polo-gildan-64800l":     { broderie: "embroidery_chest_left" },
@@ -572,7 +580,10 @@ const PRODUCT_FILE_TYPES: Record<string, { broderie?: string; print?: string }> 
   // Sacs
   "tote-bagbase-w101":      { broderie: "embroidery_apparel_front", print: "default" },
   "tote-denim-mantis-m196": { broderie: "embroidery_apparel_front" },
-  "sacoche-bagbase-qs309":  { print: "default" }, // PAS de broderie sur ce produit
+  // ⚠️ QS309 : technique Printful par défaut = EMBROIDERY → le fichier "default"
+  // est un fichier BRODERIE. Le produit est vendu en impression → fichier DTF
+  // "front_dtf_backpack" (audit API 2026-06-12 ; surcoût Printful +5,25 $/pc).
+  "sacoche-bagbase-qs309":  { print: "front_dtf_backpack" },
   // Goodies — sublimation/impression digitale
   "stickers-logo":       { print: "default" },
   "planche-stickers":    { print: "default" },

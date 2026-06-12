@@ -96,6 +96,26 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
+      // Garde-fous conformité (audit 2026-06-12) — bloquer AVANT le brouillon
+      // plutôt que laisser Printful produire silencieusement autre chose :
+      // - DTFlex = techno atelier, inexistante chez Printful (DTG ≠ DTFlex) ;
+      // - broderie dos/cœur-dos : pas de broderie dos sur les textiles Printful
+      //   (getFilesForPlacement enverrait "back" = fichier impression DTG).
+      if (item.technique === "dtflex") {
+        return NextResponse.json(
+          { error: `DTFlex non productible chez Printful (article ${item.product_id}) — production atelier à partir de ${ATELIER_QTY_THRESHOLD} pièces.` },
+          { status: 422 }
+        );
+      }
+      const isBroderieFamily =
+        item.technique === "broderie" || item.technique === "broderie_illimitee";
+      if (isBroderieFamily && item.placement !== "coeur") {
+        return NextResponse.json(
+          { error: `Broderie « ${item.placement} » indisponible chez Printful pour ${item.product_id} — seul le placement cœur est brodable.` },
+          { status: 422 }
+        );
+      }
+
       const variantId = getPrintfulVariantId(item.product_id, item.color_id, item.size);
       if (!variantId) {
         return NextResponse.json(

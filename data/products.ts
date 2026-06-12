@@ -1888,8 +1888,13 @@ export const PRODUCT_GILDAN_5000: Product = {
     { label: "XL",  available: true },
     { label: "XXL", available: true },
   ],
-  techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
+  // Conformité Printful : broderie_illimitee retirée (offre atelier, pas en POD).
+  techniques: ["dtf", "dtflex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
+  techniqueConstraints: {
+    broderie: { placements: ["coeur"] }, // pas de broderie dos chez Printful
+    dtflex:   { minQty: 10 },            // DTFlex = atelier (bascule ≥ 10 pcs)
+  },
   pricing: {
     dtf:                GILDAN_5000_PRICES.dtf,
     dtflex:             GILDAN_5000_PRICES.dtflex,
@@ -1989,8 +1994,13 @@ export const PRODUCT_BELLA_3001: Product = {
     { label: "XL",   available: true },
     { label: "XXL",  available: true },
   ],
-  techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
+  // Conformité Printful : broderie_illimitee retirée (offre atelier, pas en POD).
+  techniques: ["dtf", "dtflex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
+  techniqueConstraints: {
+    broderie: { placements: ["coeur"] }, // pas de broderie dos chez Printful
+    dtflex:   { minQty: 10 },            // DTFlex = atelier (bascule ≥ 10 pcs)
+  },
   pricing: {
     dtf:                BELLA_3001_PRICES.dtf,
     dtflex:             BELLA_3001_PRICES.dtflex,
@@ -2089,8 +2099,13 @@ export const PRODUCT_GILDAN_18000: Product = {
     { label: "XXL",  available: true },
     { label: "3XL",  available: true },
   ],
-  techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
+  // Conformité Printful : broderie_illimitee retirée (offre atelier, pas en POD).
+  techniques: ["dtf", "dtflex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
+  techniqueConstraints: {
+    broderie: { placements: ["coeur"] }, // pas de broderie dos chez Printful
+    dtflex:   { minQty: 10 },            // DTFlex = atelier (bascule ≥ 10 pcs)
+  },
   pricing: {
     dtf:                GILDAN_18000_PRICES.dtf,
     dtflex:             GILDAN_18000_PRICES.dtflex,
@@ -2183,8 +2198,13 @@ export const PRODUCT_GILDAN_18500: Product = {
     { label: "XXL",  available: true },
     { label: "3XL",  available: true },
   ],
-  techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
+  // Conformité Printful : broderie_illimitee retirée (offre atelier, pas en POD).
+  techniques: ["dtf", "dtflex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
+  techniqueConstraints: {
+    broderie: { placements: ["coeur"] }, // pas de broderie dos chez Printful
+    dtflex:   { minQty: 10 },            // DTFlex = atelier (bascule ≥ 10 pcs)
+  },
   pricing: {
     dtf:                GILDAN_18500_PRICES.dtf,
     dtflex:             GILDAN_18500_PRICES.dtflex,
@@ -2271,8 +2291,13 @@ export const PRODUCT_COMFORT_COLORS_1717: Product = {
     { label: "XL",  available: true },
     { label: "XXL", available: true },
   ],
-  techniques: ["dtf", "dtflex", "broderie", "broderie_illimitee"],
+  // Conformité Printful : broderie_illimitee retirée (offre atelier, pas en POD).
+  techniques: ["dtf", "dtflex", "broderie"],
   placements: ["coeur", "dos", "coeur-dos"],
+  techniqueConstraints: {
+    broderie: { placements: ["coeur"] }, // pas de broderie dos chez Printful
+    dtflex:   { minQty: 10 },            // DTFlex = atelier (bascule ≥ 10 pcs)
+  },
   pricing: {
     dtf:                COMFORT_COLORS_1717_PRICES.dtf,
     dtflex:             COMFORT_COLORS_1717_PRICES.dtflex,
@@ -2445,7 +2470,10 @@ export const PRODUCT_GILDAN_64800: Product = {
     broDeriePlacementSurcharge: POLO_GILDAN_64800_PLACEMENT_SURCHARGES,
   },
   featured: false,
-  visible: true,
+  // Masqué (audit conformité 2026-06-12) : aucun circuit de production —
+  // absent du variant map Printful (seul le 64800L femme existe en POD, id 664)
+  // et l'atelier ne brode pas. Réactivable quand un circuit broderie existera.
+  visible: false,
   badge: "Broderie incluse",
   supplierName: "printful",
   ideaPour: ["Corporate", "Restauration", "Accueil & événements"],

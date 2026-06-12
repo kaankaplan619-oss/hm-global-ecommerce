@@ -32,8 +32,8 @@ const SIGNATURE  = "L'équipe HM Global Agence";
 // Adresse de contact / réponse — configurable (le domaine n'est pas encore actif).
 // Par défaut l'adresse de marque ; surchargeable tant que le domaine n'est pas en
 // place via EMAIL_REPLY_TO (ex. une boîte qui fonctionne déjà).
-const REPLY_TO   = process.env.EMAIL_REPLY_TO ?? "contact@hmglobalagence.fr";
-const SITE_URL   = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmglobalagence.fr";
+const REPLY_TO   = process.env.EMAIL_REPLY_TO ?? "contact@hmga.fr";
+const SITE_URL   = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.hm-global.fr";
 
 /**
  * URL ABSOLUE et PUBLIQUE du logo affiché en en-tête des emails.

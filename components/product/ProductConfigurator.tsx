@@ -203,16 +203,37 @@ export default function ProductConfigurator({
   const unitPrice = Math.round((basePrice + placementSurcharge) * 100) / 100;
   const totalPrice = Math.round(unitPrice * quantity * 100) / 100;
   const freeShipping = quantity >= PRICING_CONFIG.freeShippingThreshold;
-  const minQty = product.minOrderQty ?? 1;
+  // Contraintes de production de la technique sélectionnée (ex : textiles
+  // Printful — broderie au cœur uniquement, DTFlex dès 10 pièces).
+  const techConstraint = product.techniqueConstraints?.[technique];
+  const minQty = Math.max(product.minOrderQty ?? 1, techConstraint?.minQty ?? 1);
 
   const availableTechniques = TECHNIQUES.filter((t) => product.techniques.includes(t.id));
-  const availablePlacements = PLACEMENTS.filter((p) => product.placements.includes(p.id));
+  const availablePlacements = PLACEMENTS.filter(
+    (p) =>
+      product.placements.includes(p.id) &&
+      (!techConstraint?.placements || techConstraint.placements.includes(p.id))
+  );
 
   // Placement change — met à jour l'état interne ET notifie le parent
   const handlePlacementChange = useCallback((p: Placement) => {
     setInternalPlacement(p);
     onPlacementChange?.(p);
   }, [onPlacementChange]);
+
+  // Réaligne placement et quantité sur les contraintes de la technique active
+  // (couvre aussi les états restaurés du localStorage : ex broderie + dos).
+  useEffect(() => {
+    if (techConstraint?.placements && !techConstraint.placements.includes(placement)) {
+      const fallback = techConstraint.placements[0];
+      setInternalPlacement(fallback);
+      onPlacementChange?.(fallback);
+    }
+    if (quantity < minQty) {
+      setInternalQuantity(minQty);
+      onQuantityChange?.(minQty);
+    }
+  }, [techConstraint, placement, quantity, minQty, onPlacementChange, onQuantityChange]);
 
   // File handling — upload immédiat dès la sélection (utilisateur authentifié)
   const handleFileChange = useCallback(async (file: File | null) => {
@@ -551,6 +572,11 @@ export default function ProductConfigurator({
                       {tech.id === "dtf" && (
                         <span className="ml-2 badge badge-gold text-[8px]">Populaire</span>
                       )}
+                      {(product.techniqueConstraints?.[tech.id]?.minQty ?? 1) > 1 && (
+                        <span className="ml-2 badge badge-info text-[8px]">
+                          dès {product.techniqueConstraints?.[tech.id]?.minQty} pcs
+                        </span>
+                      )}
                     </div>
                   </div>
                   <span
@@ -675,8 +701,9 @@ export default function ProductConfigurator({
                       key={tier.from}
                       type="button"
                       onClick={() => {
-                        setInternalQuantity(tier.from);
-                        onQuantityChange?.(tier.from);
+                        const nq = Math.max(minQty, tier.from);
+                        setInternalQuantity(nq);
+                        onQuantityChange?.(nq);
                       }}
                       className={`flex flex-col rounded-xl border px-3 py-2.5 text-left transition-all ${
                         isActive

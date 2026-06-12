@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { ALL_PRODUCTS } from "@/data/products";
 import { ALL_PRINT_PRODUCTS, printConfigHref } from "@/data/print-catalogue";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmglobalagence.fr";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.hm-global.fr";
 
 // Catégories textile réellement proposées (cf. catalogue).
 const PUBLIC_CATEGORIES = [

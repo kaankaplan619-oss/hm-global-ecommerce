@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "Souffelweyersheim",
   ],
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmglobalagence.fr"
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.hm-global.fr"
   ),
   icons: {
     icon: "/favicon.ico",

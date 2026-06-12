@@ -9,7 +9,7 @@
  * layout → présent sur tout le site.
  */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmglobalagence.fr";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.hm-global.fr";
 
 const DATA = {
   "@context": "https://schema.org",

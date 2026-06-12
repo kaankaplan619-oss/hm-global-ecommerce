@@ -136,6 +136,15 @@ export interface Product {
   featureHighlights?: string[];
   /** Section « Pourquoi ce modèle » de la fiche produit — écrase la liste par catégorie si présent. */
   strengths?: string[];
+  /**
+   * Contraintes de production par technique (conformité circuit POD).
+   * Exemple textiles Printful : la broderie n'existe qu'au cœur (l'API ne
+   * propose pas de broderie dos), le DTFlex n'est productible qu'à l'atelier
+   * (bascule à partir de ATELIER_QTY_THRESHOLD pièces).
+   */
+  techniqueConstraints?: Partial<
+    Record<Technique, { placements?: Placement[]; minQty?: number }>
+  >;
   // Toptex supplier data
   toptexRef?: string;        // e.g. "IB320"
   toptexUrl?: string;        // fiche Toptex URL

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -76,6 +76,18 @@ export default function StudioClient({ product }: Props) {
   const [technique,     setTechnique]     = useState<Technique>(initTechnique);
   const [placement,     setPlacement]     = useState<Placement>(initPlacement);
   const [quantity,      setQuantity]      = useState(initQuantity);
+
+  // Contraintes de production de la technique active (ex : textiles Printful —
+  // broderie au cœur uniquement, DTFlex dès 10 pièces). Réaligne placement et
+  // quantité, y compris pour un état initial venu de l'URL ou du panier.
+  const techConstraint = product.techniqueConstraints?.[technique];
+  const minQty = Math.max(product.minOrderQty ?? 1, techConstraint?.minQty ?? 1);
+  useEffect(() => {
+    if (techConstraint?.placements && !techConstraint.placements.includes(placement)) {
+      setPlacement(techConstraint.placements[0]);
+    }
+    if (quantity < minQty) setQuantity(minQty);
+  }, [techConstraint, placement, quantity, minQty]);
 
   // ── 3D Viewer state (Printful products only) ─────────────────────────────
   const isPrintful   = product.supplierName === "printful";
@@ -371,24 +383,32 @@ export default function StudioClient({ product }: Props) {
             <div className="hidden rounded-2xl border border-[var(--hm-line)] bg-white p-4 lg:block">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Technique</p>
               <div className="flex gap-1.5">
-                {product.techniques.map((t) => (
-                  <button key={t} type="button" onClick={() => setTechnique(t)}
-                    className={`flex-1 rounded-xl border py-1.5 text-xs font-semibold transition ${
-                      technique === t
-                        ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
-                        : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
-                    }`}
-                  >
-                    {t === "dtf" ? "DTF" : t === "dtflex" ? "DTFlex" : t === "flex" ? "Flex" : t === "broderie_illimitee" ? "Broderie ∞" : "Broderie"}
-                  </button>
-                ))}
+                {product.techniques.map((t) => {
+                  const tMinQty = product.techniqueConstraints?.[t]?.minQty ?? 1;
+                  return (
+                    <button key={t} type="button" onClick={() => setTechnique(t)}
+                      className={`flex-1 rounded-xl border py-1.5 text-xs font-semibold transition ${
+                        technique === t
+                          ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                          : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+                      }`}
+                    >
+                      {t === "dtf" ? "DTF" : t === "dtflex" ? "DTFlex" : t === "flex" ? "Flex" : t === "broderie_illimitee" ? "Broderie ∞" : "Broderie"}
+                      {tMinQty > 1 && (
+                        <span className="block text-[9px] font-normal opacity-70">dès {tMinQty} pcs</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="my-3 h-px bg-[var(--hm-line)]" />
 
               <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Placement</p>
               <div className="flex flex-col gap-1">
-                {product.placements.map((p) => (
+                {product.placements
+                  .filter((p) => !techConstraint?.placements || techConstraint.placements.includes(p))
+                  .map((p) => (
                   <button key={p} type="button" onClick={() => setPlacement(p)}
                     className={`rounded-xl border py-1.5 text-xs font-semibold transition ${
                       placement === p
@@ -405,7 +425,7 @@ export default function StudioClient({ product }: Props) {
 
               <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Quantité</p>
               <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                <button type="button" onClick={() => setQuantity((q) => Math.max(minQty, q - 1))}
                   className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--hm-line)] bg-white text-sm font-bold text-[var(--hm-text)] transition hover:border-[var(--hm-primary)]">
                   −
                 </button>

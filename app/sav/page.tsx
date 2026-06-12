@@ -32,7 +32,7 @@ const SITUATIONS = [
     icon: AlertTriangle,
     title: "Un problème à la réception",
     text: "Article défectueux, marquage abîmé ou colis endommagé : envoyez-nous une photo et votre numéro de commande sous 14 jours. Réponse sous 24 h ouvrées.",
-    cta: { label: "Signaler un problème", href: "mailto:contact@hmglobalagence.fr?subject=SAV%20—%20commande%20%23" },
+    cta: { label: "Signaler un problème", href: "mailto:contact@hmga.fr?subject=SAV%20—%20commande%20%23" },
   },
   {
     icon: RefreshCcw,
@@ -158,7 +158,7 @@ export default function SavPage() {
               possible, une photo — on vous répond d&apos;autant plus vite.
             </p>
             <div className="flex flex-col gap-3">
-              <a href="mailto:contact@hmglobalagence.fr?subject=SAV%20—%20commande%20%23" className="btn-primary justify-center gap-2 text-sm">
+              <a href="mailto:contact@hmga.fr?subject=SAV%20—%20commande%20%23" className="btn-primary justify-center gap-2 text-sm">
                 <Mail size={15} /> Écrire au SAV
               </a>
               <a href="tel:+33676161188" className="btn-outline justify-center gap-2 text-sm">

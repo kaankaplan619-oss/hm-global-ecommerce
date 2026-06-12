@@ -46,6 +46,36 @@ const PLACEMENT_LABELS_SIMPLE: Record<string, string> = {
   "coeur-dos": "Cœur + Dos (recto/verso)",
 };
 
+// Wording non-vestimentaire : « poitrine gauche / manches » n'a pas de sens
+// sur une casquette ou un sac.
+const OBJECT_PLACEMENT_LABELS: Record<string, string> = {
+  coeur:      "Face avant",
+  dos:        "Dos",
+  "coeur-dos": "Avant + Dos",
+};
+
+// Emplacements affichés pour une technique sur un produit donné :
+// goodies → wording objet ; contrainte produit (techniqueConstraints) → liste
+// réellement commandable ; casquettes/sacs → emplacements réels du produit ;
+// sinon → liste indicative par technique (textile atelier).
+function getDisplayedPlacements(product: Product, t: Technique): string[] {
+  if (product.category === "goodies") {
+    return [
+      "Impression logo ou visuel",
+      "Zone personnalisable selon gabarit produit",
+      "Validation du visuel avant production",
+    ];
+  }
+  const constrained = product.techniqueConstraints?.[t]?.placements;
+  if (constrained) {
+    return constrained.map((p) => PLACEMENT_LABELS_SIMPLE[p] ?? p);
+  }
+  if (product.category === "casquettes" || product.category === "sacs") {
+    return product.placements.map((p) => OBJECT_PLACEMENT_LABELS[p] ?? p);
+  }
+  return PLACEMENTS_BY_TECHNIQUE[t];
+}
+
 // ── Style & coupe par catégorie ───────────────────────────────────────────────
 
 type StyleInfo = {
@@ -266,10 +296,7 @@ export default function ProductFeaturesSection({ product }: Props) {
                     : TECHNIQUE_DESC[t]}
                 </p>
                 <div className="flex flex-col gap-0.5">
-                  {(product.category === "goodies"
-                    ? ["Impression logo ou visuel", "Zone personnalisable selon gabarit produit", "Validation du visuel avant production"]
-                    : PLACEMENTS_BY_TECHNIQUE[t]
-                  ).map((pl) => (
+                  {getDisplayedPlacements(product, t).map((pl) => (
                     <div key={pl} className="flex items-center gap-1.5 text-[10px] opacity-80">
                       <span className="text-[8px]">✓</span>
                       {pl}
