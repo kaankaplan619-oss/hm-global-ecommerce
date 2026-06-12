@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { createPrintfulDraft, getFilesForPlacement } from "@/lib/printful";
-import { getPrintfulVariantId, isPrintfulProduct, getPrintfulFrontFileType } from "@/lib/printfulVariantMap";
+import {
+  getPrintfulVariantId,
+  isPrintfulProduct,
+  getPrintfulFrontFileType,
+  getThreadColorsOptionId,
+  DEFAULT_THREAD_COLORS,
+} from "@/lib/printfulVariantMap";
 import { buildPrintfulPosition } from "@/lib/printful-placement";
 import { ATELIER_QTY_THRESHOLD } from "@/data/pricing";
 import type { PrintfulOrderItem, PrintfulRecipient } from "@/lib/printful";
@@ -145,6 +151,12 @@ export async function POST(req: NextRequest) {
         variant_id: variantId,
         quantity:   item.quantity,
         files:      getFilesForPlacement(item.placement, logoUrl, position ?? undefined, frontType),
+        // Broderie : l'option thread_colors* est OBLIGATOIRE (400 sinon).
+        // Couleurs par défaut → Kaan ajuste dans le dashboard Printful avant
+        // de confirmer le brouillon.
+        ...(isBroderieFamily
+          ? { options: [{ id: getThreadColorsOptionId(frontType), value: DEFAULT_THREAD_COLORS }] }
+          : {}),
       });
     }
 

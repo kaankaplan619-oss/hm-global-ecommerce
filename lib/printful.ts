@@ -55,6 +55,10 @@ export interface PrintfulOrderItem {
   variant_id: number;
   quantity:   number;
   files:      PrintfulOrderFile[];
+  /** Options item Printful — obligatoire pour la broderie : sans l'option
+   *  thread_colors* la création du brouillon échoue en 400 (testé 2026-06-12).
+   *  cf getThreadColorsOptionId (lib/printfulVariantMap.ts). */
+  options?: { id: string; value: string[] }[];
 }
 
 export interface PrintfulCreateOrderPayload {

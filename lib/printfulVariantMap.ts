@@ -591,6 +591,27 @@ const PRODUCT_FILE_TYPES: Record<string, { broderie?: string; print?: string }> 
   "dessous-verre-liege": { print: "default" },
 };
 
+// ─── Couleurs de fil broderie ─────────────────────────────────────────────────
+// Printful REFUSE (400) tout brouillon broderie sans l'option thread_colors*.
+// Identifiants vérifiés par création de brouillons réels le 2026-06-12 :
+//   - "default" / "embroidery_front" (casquettes, bonnet) → thread_colors
+//   - "embroidery_chest_left" (textiles, polos, veste)    → thread_colors_chest_left
+//   - "embroidery_apparel_front" (totes)                  → thread_colors_apparel
+
+/** Identifiant d'option couleurs de fil exigé pour un type de fichier broderie. */
+export function getThreadColorsOptionId(fileType: string): string {
+  if (fileType === "embroidery_chest_left")    return "thread_colors_chest_left";
+  if (fileType === "embroidery_apparel_front") return "thread_colors_apparel";
+  return "thread_colors";
+}
+
+/**
+ * Couleurs de fil par défaut du brouillon (palette autorisée Printful).
+ * Placeholder volontaire : Kaan ajuste les fils dans le dashboard Printful
+ * pendant la revue du brouillon — la confirmation reste manuelle.
+ */
+export const DEFAULT_THREAD_COLORS = ["#FFFFFF", "#000000"];
+
 /**
  * Type de fichier Printful pour le placement AVANT d'un article.
  * Retourne "front" (textile DTG historique) si le produit n'est pas mappé.
