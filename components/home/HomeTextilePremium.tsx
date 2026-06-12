@@ -10,11 +10,12 @@ import { ArrowRight, Shirt } from "lucide-react";
  *
  * Combine deux visuels :
  *   - softshells Okami Protection logo cœur + grand dos (image principale)
- *   - macro textile avec logo HM Global (image secondaire qualité/détail)
+ *   - gros plan marquage Good Eye Deer (image secondaire qualité/détail,
+ *     recadrage réel — remplace l'ancienne macro de synthèse)
  *
  * Sources attendues :
  *   /images/realisations/okami-softshells.jpg
- *   /images/home/hm-macro-textile-logo.webp
+ *   /images/home/hm-detail-finition-good-eye-deer.jpg
  *
  * Fallback graphique premium si une image est absente.
  */
@@ -168,8 +169,8 @@ export default function HomeTextilePremium() {
             >
               <div className="relative aspect-[4/3]">
                 <TextileImage
-                  src="/images/home/hm-macro-textile-logo.webp"
-                  alt="Macro textile avec logo HM Global brodé, gros plan sur la qualité du marquage."
+                  src="/images/home/hm-detail-finition-good-eye-deer.jpg"
+                  alt="Gros plan sur le marquage blanc Good Eye Deer réalisé par HM Global — netteté du rendu sur t-shirt noir, commande client réelle."
                   sizes="(min-width: 1024px) 25vw, 100vw"
                   fallbackGradient="linear-gradient(135deg, #54B6D2 0%, #4B2A6F 60%, #3B235A 100%)"
                 />
