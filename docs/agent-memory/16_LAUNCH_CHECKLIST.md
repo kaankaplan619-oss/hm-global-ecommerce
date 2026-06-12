@@ -31,7 +31,12 @@ Dernière mise à jour : 2026-06-12 (session audit impression/Printful).
 11. 🟡 **Mug céramique EU (Printify)** : aucune route de commande automatique → l'admin affiche « Atelier » alors que c'est une commande manuelle Printify. Créer un badge dédié ou assumer le flux manuel.
 12. 🟡 **Texte sur produits broderie POD** (casquettes…) : le fichier texte part comme fichier broderie — Printful le digitalise. À valider sur UN brouillon réel avant d'ouvrir l'offre.
 
-## D. Vérifications restantes avant publication
+## D. Déploiement & domaine
+
+19. ✅ **Production à jour** (2026-06-12) : `main` était bloqué sur l'ancien site (45bcc58) → production Vercel montrait l'ancienne version. Fast-forward `codex/hermes-os-cockpit-v1` → `main` (propre, 178 commits, 0 conflit). Production déployée READY (commit 15b08ed), nouveau site confirmé sur `https://hm-global.vercel.app` (hero « On habille votre équipe… », favicon HM, section METEM). ⚠️ **Flux à retenir** : la prod se déploie depuis `main`. Pour la mettre à jour, `git push origin codex/hermes-os-cockpit-v1:main`.
+20. ⏳ **SSL domaine hm-global.fr** : DNS CORRECT (apex → 76.76.21.21, www → cname.vercel-dns.com, CAA autorise Let's Encrypt) mais TLS fermé (ERR_CONNECTION_CLOSED) → **certificat Vercel en cours de provisionnement**. À faire côté Vercel : Dashboard → hm-global → Settings → Domains → vérifier l'état de hm-global.fr + www (Refresh si « pending »). Se résout en général < 1 h après propagation DNS. Lien fonctionnel en attendant : `https://hm-global.vercel.app`.
+
+## E. Vérifications restantes avant publication (commerce réel)
 
 13. ⏳ **Compte QA Claude** : `claude.qa@hm-global.fr` créé via l'inscription publique (identifiants dans `.env.local`, rôle client). **Kaan : confirmer l'email** (lien reçu sur la boîte du domaine) pour permettre les E2E connectés.
 14. ⏳ **E2E connecté complet** : commande test payée (Stripe test) → bouton Printful admin → brouillon créé sans 422, visuel conforme dans le dashboard, **ne pas confirmer**.
