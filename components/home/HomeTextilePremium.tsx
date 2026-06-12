@@ -9,11 +9,11 @@ import { ArrowRight, Shirt } from "lucide-react";
  * HomeTextilePremium — Section "Des textiles personnalisés pensés pour votre image."
  *
  * Combine deux visuels :
- *   - hoodie noir porté avec logo cœur (image principale grande)
+ *   - softshells Okami Protection logo cœur + grand dos (image principale)
  *   - macro textile avec logo HM Global (image secondaire qualité/détail)
  *
  * Sources attendues :
- *   /images/realisations/good-eye-deer-tshirts.jpg
+ *   /images/realisations/okami-softshells.jpg
  *   /images/home/hm-macro-textile-logo.webp
  *
  * Fallback graphique premium si une image est absente.
@@ -93,8 +93,8 @@ export default function HomeTextilePremium() {
             >
               <div className="relative aspect-[16/10]">
                 <TextileImage
-                  src="/images/realisations/good-eye-deer-tshirts.jpg"
-                  alt="Série de t-shirts noirs Good Eye Deer marqués en blanc par HM Global — commande client réelle, recto et dos."
+                  src="/images/realisations/okami-softshells.jpg"
+                  alt="Vestes softshell noires Okami Protection marquées en blanc par HM Global — logo cœur et grand logo dos, commande client réelle."
                   sizes="(min-width: 1024px) 55vw, 100vw"
                 />
                 {/* Légende discrète bas-gauche */}
@@ -110,7 +110,7 @@ export default function HomeTextilePremium() {
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ background: "var(--hm-cyan)" }}
                   />
-                  Logo cœur · broderie
+                  Logo cœur + grand dos
                 </span>
               </div>
             </div>
