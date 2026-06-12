@@ -171,6 +171,11 @@ export default function StudioClient({ product }: Props) {
     return result ?? { front: "", back: "" };
   }, []);
 
+  const exportPrintFiles = useCallback(async () => {
+    const result = await canvasRef.current?.exportPrintFiles();
+    return result ?? { front: "", back: "" };
+  }, []);
+
   const getContainerSize = useCallback(() => {
     return canvasRef.current?.getContainerSize() ?? 0;
   }, []);
@@ -451,6 +456,7 @@ export default function StudioClient({ product }: Props) {
                 slug={product.slug}
                 exportPNG={exportPNG}
                 exportComposed={exportComposed}
+                exportPrintFiles={exportPrintFiles}
                 getContainerSize={getContainerSize}
                 editItemId={editItem ? editItemId : null}
               />

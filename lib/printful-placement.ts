@@ -67,6 +67,34 @@ export interface PrintfulFilePosition {
   limit_to_print_area: boolean;
 }
 
+/** Dimensions px du fichier d'impression plein-zone (12″×16″ @150 dpi). */
+export const PRINT_AREA_PX = { width: DEFAULT_AREA.width, height: DEFAULT_AREA.height };
+
+export interface PrintAreaCanvasRect {
+  leftFrac: number;
+  topFrac:  number;
+  wFrac:    number;
+  hFrac:    number;
+}
+
+/**
+ * Rectangle de la print area DTG dans le canvas Studio (fractions du canvas
+ * carré). Source unique partagée entre la conversion de position (ci-dessous)
+ * et l'export des fichiers d'impression du Studio (StudioCanvas.exportPrintFiles)
+ * — toute dérive entre les deux casserait « aperçu = imprimé ».
+ */
+export function getPrintAreaCanvasRect(productId: string): PrintAreaCanvasRect {
+  const wFrac = (DEFAULT_AREA.width  / PX_PER_CM) / CM_PER_CANVAS; // ≈ 0,340
+  const hFrac = (DEFAULT_AREA.height / PX_PER_CM) / CM_PER_CANVAS; // ≈ 0,453
+  const bbox  = GARMENT_BBOX[productId] ?? GARMENT_BBOX_DEFAULT;
+  return {
+    leftFrac: 0.5 - wFrac / 2,                  // centrée sur l'axe
+    topFrac:  bbox.top + COLLAR_FRAC * bbox.height, // base du col
+    wFrac,
+    hFrac,
+  };
+}
+
 /**
  * Convertit le transform Studio d'un article en position Printful.
  * Retourne null si la conversion n'est pas possible (transform absent/dégénéré,
@@ -96,12 +124,11 @@ export function buildPrintfulPosition(
   const hFrac = (height * (scaleY || scaleX)) / canvasSize;
   if (wFrac <= 0 || hFrac <= 0) return null;
 
-  // 2. Ancrage de la print area dans le canvas (fractions).
-  // (hauteur de zone ≈ 0,453 canvas — même échelle px/cm que la largeur)
-  const areaWFrac   = (DEFAULT_AREA.width  / PX_PER_CM) / CM_PER_CANVAS; // ≈ 0,340
-  const bbox        = GARMENT_BBOX[productId] ?? GARMENT_BBOX_DEFAULT;
-  const areaLeftFrac = 0.5 - areaWFrac / 2;                  // centrée sur l'axe
-  const areaTopFrac  = bbox.top + COLLAR_FRAC * bbox.height; // base du col
+  // 2. Ancrage de la print area dans le canvas (fractions) — source unique.
+  const rect = getPrintAreaCanvasRect(productId);
+  const areaWFrac    = rect.wFrac;
+  const areaLeftFrac = rect.leftFrac;
+  const areaTopFrac  = rect.topFrac;
 
   // 3. Fractions canvas → pixels print area (même échelle X/Y, pixels carrés).
   const pxPerFrac = DEFAULT_AREA.width / areaWFrac;

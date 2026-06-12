@@ -45,6 +45,8 @@ interface Props {
   slug: string;
   exportPNG: () => string;
   exportComposed?: () => Promise<{ front: string; back: string }>;
+  /** Fichiers d'impression par face (objets seuls, cadrés zone DTG) — cf StudioCanvasHandle. */
+  exportPrintFiles?: () => Promise<{ front: string; back: string }>;
   /** Taille reelle du canvas studio (px) — fournie par StudioCanvasHandle. */
   getContainerSize?: () => number;
   /** Mode édition : id de l'article du panier à remplacer (replaceItem au lieu d'addItem). */
@@ -63,6 +65,7 @@ export default function StudioSummaryPanel({
   slug,
   exportPNG,
   exportComposed,
+  exportPrintFiles,
   getContainerSize,
   editItemId,
 }: Props) {
@@ -102,8 +105,35 @@ export default function StudioSummaryPanel({
     try {
       const timestamp = Date.now();
 
-      // ── Logo URL ────────────────────────────────────────────────────────
-      const logoObj = objects.find(o => o.type === "logo") ?? objects.find(o => o.type === "design");
+      // ── Quels objets partent à l'impression ? ───────────────────────────
+      // Le fichier envoyé à Printful est déterminé par la face du PLACEMENT
+      // choisi — pas par la vue active du canvas.
+      const printable = objects.filter(
+        (o) => o.type === "logo" || o.type === "design" || o.type === "text"
+      );
+      const frontObjs = printable.filter((o) => o.face === "front");
+      const backObjs  = printable.filter((o) => o.face === "back");
+
+      // Cœur + Dos imprime le MÊME visuel sur les deux faces (limitation V1
+      // documentée dans lib/printful-placement.ts) — refuser une face arrière
+      // distincte plutôt que de la perdre silencieusement à la production.
+      if (placement === "coeur-dos" && backObjs.length > 0) {
+        throw new Error(
+          "« Cœur + Dos » imprime le même visuel sur les deux faces : créez votre visuel sur la face avant uniquement (la vue dos doit rester vide)."
+        );
+      }
+
+      const relevant = placement === "dos" && backObjs.length > 0 ? backObjs : frontObjs;
+      if (relevant.length === 0) {
+        throw new Error("Ajoutez un logo, un texte ou un design avant de valider.");
+      }
+
+      // Un SEUL objet image → on envoie le fichier original (qualité maximale)
+      // avec sa position exacte. Texte ou composition multi-objets → export
+      // d'impression dédié (objets seuls, cadrés sur la zone, sans position).
+      const single  = relevant.length === 1 ? relevant[0] : null;
+      const logoObj = single && single.type !== "text" ? single : null;
+      let printFileComposed = false;
 
       let logoFileUrl  = "";
       let logoFileName = `studio-export-${timestamp}.png`;
@@ -173,26 +203,42 @@ export default function StudioSummaryPanel({
         }
 
       } else {
-        const dataURL = exportPNG();
-        if (!dataURL) throw new Error("Impossible d'exporter le canvas.");
-        logoFileUrl  = dataURL;
-        logoFileSize = Math.round(dataURL.length * 0.75);
+        // Texte ou composition multi-objets : export d'impression dédié —
+        // objets seuls, fond transparent, cadré sur la zone d'impression.
+        // (L'ancien export envoyait la PHOTO du produit comme fichier print :
+        // Printful aurait imprimé un t-shirt sur le t-shirt.)
+        if (!exportPrintFiles) throw new Error("Export d'impression indisponible — rechargez la page.");
+        const prints  = await exportPrintFiles();
+        const face: "front" | "back" =
+          placement === "dos" && backObjs.length > 0 ? "back" : "front";
+        const dataURL = face === "back" ? prints.back : prints.front;
+        if (!dataURL) throw new Error("Impossible de générer le fichier d'impression.");
 
-        void (async () => {
-          try {
-            const res  = await fetch(dataURL);
-            const blob = await res.blob();
-            const file = new File([blob], logoFileName, { type: "image/png" });
-            const supabase = getSupabaseBrowserClient();
-            await supabase.storage
-              .from("customer-logos")
-              .upload(storagePath, file, { contentType: "image/png", upsert: true });
-          } catch { /* silent */ }
-        })();
+        printFileComposed = true;
+        logoFileName = `print-${timestamp}-${face}.png`;
+        logoFileType = "image/png";
+        logoFileSize = Math.round(dataURL.length * 0.75);
+        storagePath  = `studio-exports/${timestamp}-print-${face}.png`;
+
+        try {
+          const blob = await (await fetch(dataURL)).blob();
+          const supabase = getSupabaseBrowserClient();
+          const { error: upErr } = await supabase.storage
+            .from("customer-logos")
+            .upload(storagePath, blob, { contentType: "image/png", upsert: true });
+          if (!upErr) {
+            const { data: pub } = supabase.storage.from("customer-logos").getPublicUrl(storagePath);
+            logoFileUrl = pub?.publicUrl ?? "";
+          }
+        } catch { /* fallback data URL ci-dessous */ }
+        if (!logoFileUrl) logoFileUrl = dataURL;
       }
 
-      // ── Position du premier objet ────────────────────────────────────────
-      const firstObj = objects.find(o => o.type === "logo") ?? objects[0];
+      // ── Position de l'objet image unique ─────────────────────────────────
+      // Fichier d'impression composé : déjà cadré sur la zone → AUCUNE position
+      // Printful (elle dédoublerait le placement). Sinon : transform de l'objet
+      // image envoyé comme fichier original.
+      const firstObj = printFileComposed ? null : logoObj;
       // canvasSize : taille reelle mesuree par StudioCanvas (ResizeObserver),
       // pas une valeur hardcodee. Fallback 544 si le canvas n'est pas encore monte.
       const measuredCanvasSize = getContainerSize?.() || 544;

@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import type { Placement } from "@/types";
 import { proxyCdnUrl } from "@/lib/proxy-cdn-url";
+import { getPrintAreaCanvasRect, PRINT_AREA_PX } from "@/lib/printful-placement";
 import {
   MOCKUP_FILES,
   COLOR_TO_MOCKUP,
@@ -76,6 +77,14 @@ export interface StudioCanvasHandle {
    * Retourne "" pour une face si aucun logo n'est présent dessus.
    */
   exportComposed: () => Promise<{ front: string; back: string }>;
+  /**
+   * Fichiers d'IMPRESSION par face : objets seuls (logos, designs, textes),
+   * SANS mockup produit, fond transparent, cadrés sur le rectangle exact de
+   * la print area DTG (1800×2400 px = 12″×16″ @150 dpi). Envoyé à Printful
+   * sans position : le fichier mappe la zone 1:1 → rendu = aperçu Studio.
+   * Retourne "" pour une face sans objet.
+   */
+  exportPrintFiles: () => Promise<{ front: string; back: string }>;
   /**
    * Taille réelle du container canvas (px), mesurée via ResizeObserver.
    * Permet aux consommateurs (BAT serveur, StudioSummaryPanel) de rapporter
@@ -567,8 +576,110 @@ const StudioCanvas = forwardRef<StudioCanvasHandle, Props>(function StudioCanvas
       return { front, back };
     },
 
+    exportPrintFiles: async () => {
+      const rect  = getPrintAreaCanvasRect(productId ?? "");
+      const OUT_W = PRINT_AREA_PX.width;
+      const OUT_H = PRINT_AREA_PX.height;
+
+      const loadImg = (src: string): Promise<HTMLImageElement> =>
+        new Promise((resolve, reject) => {
+          const img = new window.Image();
+          img.crossOrigin = "anonymous";
+          img.onload  = () => resolve(img);
+          img.onerror = () => reject(new Error(`load failed: ${src}`));
+          img.src = src;
+        });
+
+      const renderFace = async (face: "front" | "back"): Promise<string> => {
+        const faceObjs = objectsRef.current.filter(
+          (o) => o.face === face && (o.type === "logo" || o.type === "design" || o.type === "text")
+        );
+        if (faceObjs.length === 0) return "";
+
+        const cSize = containerSizeRef.current || 480;
+        // px d'impression par px de canvas — même échelle X/Y (pixels carrés,
+        // garanti par getPrintAreaCanvasRect : wFrac/hFrac partagent px/cm).
+        const K    = OUT_W / (rect.wFrac * cSize);
+        const offX = rect.leftFrac * cSize;
+        const offY = rect.topFrac  * cSize;
+
+        const cv = document.createElement("canvas");
+        cv.width  = OUT_W;
+        cv.height = OUT_H;
+        const pctx = cv.getContext("2d");
+        if (!pctx) return "";
+
+        for (const obj of faceObjs) {
+          const fs = obj.fabricState;
+          if (!fs) continue;
+          const cx    = ((fs.cx ?? 0.5) * cSize - offX) * K;
+          const cy    = ((fs.cy ?? 0.5) * cSize - offY) * K;
+          const scale = (fs.scale ?? 1) * K;
+          const angle = ((fs.angle ?? 0) * Math.PI) / 180;
+
+          if (obj.type === "text") {
+            const scaledSize = (obj.fontSize ?? 24) * scale;
+            const weight     = obj.fontWeight ?? "bold";
+            const fStyle     = obj.fontStyle  ?? "normal";
+            const lSpacing   = (obj.letterSpacing ?? 0) * scale;
+            pctx.save();
+            pctx.translate(cx, cy);
+            pctx.rotate(angle);
+            pctx.font         = `${fStyle} ${weight} ${scaledSize}px "${obj.fontFamily ?? "Arial"}"`;
+            pctx.fillStyle    = obj.color ?? "#000000";
+            pctx.textAlign    = (obj.textAlign as CanvasTextAlign) ?? "center";
+            pctx.textBaseline = "middle";
+            if (lSpacing !== 0 && obj.text) {
+              const chars  = obj.text.split("");
+              const widths = chars.map((c) => pctx.measureText(c).width);
+              const total  = widths.reduce((a, b) => a + b, 0) + lSpacing * (chars.length - 1);
+              let xOff = -total / 2;
+              for (let i = 0; i < chars.length; i++) {
+                pctx.fillText(chars[i], xOff + widths[i] / 2, 0);
+                xOff += widths[i] + lSpacing;
+              }
+            } else {
+              pctx.fillText(obj.text ?? "", 0, 0);
+            }
+            if (obj.textDecoration === "underline" && obj.text) {
+              const tw = pctx.measureText(obj.text).width;
+              pctx.fillRect(-tw / 2, scaledSize * 0.6, tw, Math.max(1, scaledSize * 0.07));
+            }
+            pctx.restore();
+            continue;
+          }
+
+          let blobUrl: string | null = null;
+          let logoSrc: string;
+          if (obj.file) {
+            blobUrl = URL.createObjectURL(obj.file);
+            logoSrc = blobUrl;
+          } else if (obj.src) {
+            logoSrc = obj.src;
+          } else continue;
+
+          try {
+            const logoImg = await loadImg(logoSrc);
+            const nw = fs.nw ?? logoImg.naturalWidth;
+            const nh = fs.nh ?? logoImg.naturalHeight;
+            pctx.save();
+            pctx.translate(cx, cy);
+            pctx.rotate(angle);
+            pctx.drawImage(logoImg, -(nw * scale) / 2, -(nh * scale) / 2, nw * scale, nh * scale);
+            pctx.restore();
+          } catch { /* logo load failed — skip */ }
+          finally { if (blobUrl) URL.revokeObjectURL(blobUrl); }
+        }
+
+        return cv.toDataURL("image/png");
+      };
+
+      const [front, back] = await Promise.all([renderFace("front"), renderFace("back")]);
+      return { front, back };
+    },
+
     getContainerSize: () => containerSizeRef.current || 0,
-  }), [colorId, packshot, packshotBack]);
+  }), [colorId, packshot, packshotBack, productId]);
 
   // ── Drag state ───────────────────────────────────────────────────────────
   const dragRef = useRef({
