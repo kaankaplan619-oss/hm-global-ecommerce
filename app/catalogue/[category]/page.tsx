@@ -10,7 +10,7 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
     label: "T-shirts personnalisés",
     short: "T-shirts",
     description:
-      "T-shirts personnalisés en DTF, flex ou broderie. Modèles homme, femme, unisex. Qualité B&C Select & iDeal, livraison rapide.",
+      "T-shirts personnalisés en DTF, flex ou broderie. Modèles homme, femme, unisexe — du coton léger au heavyweight premium. Livraison rapide.",
   },
   polos: {
     label: "Polos personnalisés",
@@ -22,13 +22,13 @@ const CATEGORY_META: Record<string, { label: string; short: string; description:
     label: "Hoodies & Sweats personnalisés",
     short: "Hoodies",
     description:
-      "Hoodies et sweatshirts personnalisés. Intérieur molletonné doux, qualité professionnelle. Gamme B&C, iDeal & Native Spirit. À partir de 34,90 €.",
+      "Hoodies et sweatshirts personnalisés. Intérieur molletonné doux, qualité professionnelle. À partir de 39,90 €.",
   },
   softshells: {
     label: "Softshells & Vestes personnalisées",
     short: "Softshells",
     description:
-      "Vestes softshell imperméables personnalisées. Broderie premium recommandée. Gamme B&C 3 couches.",
+      "Vestes et softshells personnalisés. Broderie premium recommandée pour un rendu corporate durable.",
   },
   casquettes: {
     label: "Casquettes personnalisées",

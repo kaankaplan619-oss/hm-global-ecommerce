@@ -143,7 +143,7 @@ export default function ImpressionPage() {
             {[
               { src: "/images/realisations/foch-cartes.jpg",        alt: "Cartes de visite imprimées — client Foch",   label: "Cartes de visite" },
               { src: "/images/realisations/ncm-flyers.jpg",         alt: "Flyers imprimés — client NCM",                label: "Flyers" },
-              { src: "/images/realisations/metem-autocollants.jpg", alt: "Autocollants imprimés — client Metem",        label: "Autocollants" },
+              { src: "/images/realisations/illico-panneau.jpg",     alt: "Panneau imprimé grand format — client Illico", label: "Affiches & panneaux" },
             ].map((r) => (
               <figure key={r.src} className="group relative overflow-hidden rounded-[1.4rem] border border-[var(--hm-line)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

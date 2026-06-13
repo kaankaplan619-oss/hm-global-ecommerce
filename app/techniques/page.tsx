@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BackLink from "@/components/ui/BackLink";
+import { TechniqueArtById } from "@/components/illustrations/TechniqueArt";
 import {
   ArrowRight,
   Award,
@@ -200,6 +201,10 @@ export default function TechniquesPage() {
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${iconBg}`}>
                     <Icon className={`h-5 w-5 ${accent}`} />
                   </span>
+                </div>
+
+                <div className={`mt-5 rounded-[1.25rem] ${iconBg} px-3 py-4`}>
+                  <TechniqueArtById id={id} className="h-auto w-full" />
                 </div>
 
                 <p className="mt-5 text-sm leading-7 text-[var(--hm-text-soft)]">{description}</p>

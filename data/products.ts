@@ -297,7 +297,7 @@ export const PRODUCT_TU03T: Product = {
     "Le meilleur rapport qualité/prix de notre gamme. Tissu plus dense, col côtelé renforcé, finitions premium. Idéal pour les marques exigeantes qui veulent un résultat professionnel impeccable.",
   composition: "100% coton ring-spun peigné",
   weight: "190 g/m²",
-  images: PLACEHOLDER_IMAGES("tu03t"),
+  images: [],
   colors: [
     ...TSHIRT_COLORS_CLASSIC,
     { id: "khaki", label: "Kaki", hex: "#65721F", available: true },
@@ -328,7 +328,9 @@ export const PRODUCT_TU03T: Product = {
   supplierName: "falk-ross",
   supplierRef: "TU03T",
   toptexRef: "CGTU03T",
-  hmHeroImage: "/mockups/tshirt/bordeaux-front.png",
+  // 2026-06-13 — PAS de mockup Gildan/Printful ici (≠ produit — demande Kaan,
+  // « ne mélange pas »). Visuel propre EN ATTENTE : photo réelle du t-shirt B&C
+  // en stock, à fournir par Kaan. D'ici là la carte affiche « Visuel à venir ».
 };
 
 // ─── HOODIES / SWEATS ────────────────────────────────────────────────────────
@@ -3848,8 +3850,23 @@ const _ALL_PRODUCTS: Product[] = [
 // V1 Printful : seuls les produits avec visible: true explicite sont exposés.
 // Les anciens produits (visible absent ou visible: false) sont masqués du catalogue.
 // Les données restent intactes pour la compatibilité avec les commandes existantes.
+// 2026-06-13 — Fournisseurs retirés du catalogue front : TopTex & Falk&Ross.
+// Non automatisables (le fournisseur ne marque pas, pas d'API de commande →
+// fulfillment atelier manuel uniquement). Décision Kaan : on ne vend en ligne
+// que de l'automatisé (Printful/Gelato). Données conservées dans _ALL_PRODUCTS
+// (ADMIN + compatibilité commandes existantes). Réactiver une réf en stock =
+// retirer son fournisseur d'ici, ou ajouter une exception par id.
+const HIDDEN_SUPPLIERS = new Set<string>(["toptex", "falk-ross"]);
+// Exceptions : références EN STOCK à l'atelier HM Global, qu'on assume de
+// produire à la main (le blanc est déjà sur place → pas de perte de temps).
+// wg004 = sweat B&C Set In Sweat (Falk&Ross), stock agence. SEULE exception
+// gardée (Kaan 2026-06-13). tu03t (t-shirt B&C Premium) finalement retiré :
+// pas sur Printful → hors catalogue comme le reste du non-automatisé.
+const STOCK_EXCEPTION_IDS = new Set<string>(["wg004"]);
 export const ALL_PRODUCTS: Product[] = _ALL_PRODUCTS.filter(
-  (p) => p.visible === true
+  (p) =>
+    p.visible === true &&
+    (STOCK_EXCEPTION_IDS.has(p.id) || !HIDDEN_SUPPLIERS.has(p.supplierName ?? ""))
 );
 
 // Tous les produits (y compris masqués) — pour l'admin et la compatibilité commandes.

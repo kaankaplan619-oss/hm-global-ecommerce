@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import BackLink from "@/components/ui/BackLink";
-import { MapPin, Phone, Mail, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
+import { MapPin, Phone, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
+import ContactForm from "@/components/contact/ContactForm";
 
 function IconInstagram() {
   return (
@@ -32,12 +33,6 @@ const CONTACT_ITEMS = [
     label: "Téléphone",
     value: "06 76 16 11 88",
     href: "tel:+33676161188",
-  },
-  {
-    icon: Mail,
-    label: "Email",
-    value: "contact@hmga.fr",
-    href: "mailto:contact@hmga.fr",
   },
   {
     icon: MapPin,
@@ -74,6 +69,7 @@ export default async function ContactPage({
     sujet === "impression"
       ? { href: "/impression", label: "Retour au print" }
       : { href: "/", label: "Retour à l'accueil" };
+  const defaultSubject = sujet === "impression" ? "Signalétique / print" : undefined;
 
   return (
     <div className="pt-24 pb-20 bg-white">
@@ -138,33 +134,7 @@ export default async function ContactPage({
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-3xl border border-[var(--hm-line)] bg-white shadow-[0_18px_48px_rgba(63,45,88,0.08)] p-7">
-              <h2 className="text-2xl font-semibold text-[var(--hm-text)] mb-4">
-                Une réponse claire et concrète
-              </h2>
-              <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed mb-6">
-                Pour une première prise de contact, l&apos;idéal est de nous indiquer votre besoin, le type de support souhaité et si vous avez déjà un visuel ou un logo prêt à être exploité.
-              </p>
-              <div className="space-y-3 text-sm text-[var(--hm-text-soft)]">
-                <p>Vous pouvez nous contacter pour :</p>
-                <ul className="space-y-2">
-                  <li>• un projet de textile personnalisé pour votre équipe</li>
-                  <li>• une demande de DTF, flex ou broderie</li>
-                  <li>• la création d&apos;un logo ou d&apos;une identité visuelle</li>
-                  <li>• la préparation de fichiers / PAO</li>
-                  <li>• du lettrage, un habillage véhicule, un totem ou de la signalétique</li>
-                </ul>
-              </div>
-              <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                <a href="mailto:contact@hmga.fr" className="btn-primary gap-2">
-                  Nous écrire
-                  <ArrowRight size={16} />
-                </a>
-                <a href="tel:+33676161188" className="btn-outline">
-                  Appeler HM Global
-                </a>
-              </div>
-            </div>
+            <ContactForm defaultSubject={defaultSubject} />
 
             <div className="rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-accent-soft-blue)] p-6">
               <h3 className="text-lg font-semibold text-[var(--hm-text)] mb-4">

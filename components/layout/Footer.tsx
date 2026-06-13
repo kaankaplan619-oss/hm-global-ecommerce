@@ -150,7 +150,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="mailto:contact@hmga.fr"
+                href="/contact"
                 className="flex items-center gap-2.5 text-[13px] transition hover:opacity-80"
                 style={{ color: "var(--hm-text-muted-2)" }}
               >
@@ -160,7 +160,7 @@ export default function Footer() {
                   style={{ color: "var(--hm-cyan)" }}
                 />
                 <span style={{ color: "var(--hm-text-main)" }}>
-                  contact@hmga.fr
+                  Nous écrire
                 </span>
               </a>
 

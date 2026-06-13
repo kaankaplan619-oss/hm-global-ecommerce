@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ShieldCheck, Layers, Truck, Star } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 
 /**
  * HomeHeroPremium — Hero principal homepage HM Global.
@@ -12,12 +12,6 @@ import { ArrowRight, ShieldCheck, Layers, Truck, Star } from "lucide-react";
  *   - Copy textile-first, ancrée atelier Souffelweyersheim / depuis 2018.
  *   - Mise en page conservée : texte à gauche, visuel à droite.
  */
-
-const HERO_BADGES = [
-  { icon: ShieldCheck, label: "BAT avant production" },
-  { icon: Layers,      label: "Textile + print" },
-  { icon: Truck,       label: "Livraison France" },
-] as const;
 
 export default function HomeHeroPremium() {
   return (
@@ -33,15 +27,12 @@ export default function HomeHeroPremium() {
           <div className="order-1 max-w-[42rem] lg:order-1">
 
             <p
-              className="mb-5 inline-flex items-center gap-2 rounded-full border bg-white px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em]"
-              style={{
-                borderColor: "rgba(45,35,64,0.10)",
-                color: "var(--hm-violet)",
-              }}
+              className="mb-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.16em]"
+              style={{ color: "var(--hm-text-muted-2)" }}
             >
               <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ background: "var(--hm-cyan)" }}
+                className="inline-block h-px w-8"
+                style={{ background: "rgba(45,35,64,0.22)" }}
               />
               Atelier &amp; agence · Souffelweyersheim · depuis 2018
             </p>
@@ -90,19 +81,18 @@ export default function HomeHeroPremium() {
               style={{ color: "var(--hm-text-muted-2)" }}
             >
               <span className="inline-flex items-center gap-1.5">
-                <Star size={13} className="fill-current" style={{ color: "var(--hm-cyan)" }} />
+                <Star size={13} className="fill-current" style={{ color: "var(--hm-magenta)" }} />
                 <span>
-                  <strong style={{ color: "var(--hm-text-main)" }}>4.9/5</strong>{" "}
+                  <strong style={{ color: "var(--hm-text-main)" }}>4,9/5</strong>{" "}
                   · 200+ projets livrés
                 </span>
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: "var(--hm-magenta)" }}
-                />
-                Réponse devis sous 24h
-              </span>
+              <span
+                aria-hidden
+                className="hidden h-3 w-px sm:inline-block"
+                style={{ background: "rgba(45,35,64,0.15)" }}
+              />
+              <span>Réponse à votre devis sous 24h</span>
             </div>
           </div>
 
@@ -134,24 +124,6 @@ export default function HomeHeroPremium() {
                     sizes="(min-width: 1024px) 45vw, 100vw"
                     className="hm-kenburns object-cover"
                   />
-
-                  {/* Badges flottants sur la photo principale */}
-                  <div className="absolute inset-x-3 bottom-3 z-10 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
-                    {HERO_BADGES.map(({ icon: Icon, label }) => (
-                      <span
-                        key={label}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[10.5px] font-semibold backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-[11px]"
-                        style={{
-                          color: "var(--hm-violet)",
-                          boxShadow: "0 6px 16px rgba(59,35,90,0.12)",
-                          border: "1px solid rgba(84,182,210,0.20)",
-                        }}
-                      >
-                        <Icon size={12} style={{ color: "var(--hm-cyan)" }} />
-                        {label}
-                      </span>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5 sm:gap-3">

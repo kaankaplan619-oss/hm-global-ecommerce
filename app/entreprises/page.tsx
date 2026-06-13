@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BackLink from "@/components/ui/BackLink";
+import { SectorArt } from "@/components/illustrations/SectorArt";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -195,8 +196,8 @@ export default function CompaniesPage() {
             </h2>
             <p className="text-base leading-7 text-[var(--hm-text-soft)]">
               Le produit et la technique ne se choisissent pas de la même manière pour un
-              restaurant, une équipe chantier, une association ou une PME. L'objectif est
-              d'aller vers une solution simple à exploiter, cohérente et durable.
+              restaurant, une équipe chantier, une association ou une PME. L&apos;objectif est
+              d&apos;aller vers une solution simple à exploiter, cohérente et durable.
             </p>
           </div>
 
@@ -206,6 +207,10 @@ export default function CompaniesPage() {
                 key={id}
                 className="flex h-full flex-col rounded-[1.75rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-6"
               >
+                <div className="mb-5 overflow-hidden rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-accent-soft-rose)] px-4 py-3">
+                  <SectorArt id={id} />
+                </div>
+
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-text-soft)]">
@@ -290,8 +295,8 @@ export default function CompaniesPage() {
               </h2>
               <p className="text-base leading-7 text-[var(--hm-text-soft)]">
                 Si le produit, le visuel et la technique sont déjà clairs, le catalogue permet
-                d'avancer rapidement. Si le projet concerne plusieurs équipes, plusieurs usages
-                ou une logique de communication plus large, la demande de devis reste le bon point d'entrée.
+                d&apos;avancer rapidement. Si le projet concerne plusieurs équipes, plusieurs usages
+                ou une logique de communication plus large, la demande de devis reste le bon point d&apos;entrée.
               </p>
             </div>
 

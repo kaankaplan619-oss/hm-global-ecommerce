@@ -7,7 +7,6 @@ import {
   Clock3,
   MapPin,
   Phone,
-  Mail,
   GraduationCap,
   MessageSquare,
   Lightbulb,
@@ -151,7 +150,6 @@ const CONTACT = [
   { icon: MapPin, label: "Adresse", value: "20 Rue des Tuileries, 67460 Souffelweyersheim" },
   { icon: Clock3, label: "Horaires", value: "Du lundi au vendredi, 9h – 18h" },
   { icon: Phone, label: "Téléphone", value: "06 76 16 11 88" },
-  { icon: Mail, label: "Email", value: "contact@hmga.fr" },
 ] as const;
 
 export default function AboutPage() {
