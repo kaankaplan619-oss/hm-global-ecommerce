@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { getFeaturedProducts } from "@/data/products";
@@ -7,8 +9,10 @@ import { getVisualMode } from "@/lib/hm-visual-utils";
 import { getDisplayedColors } from "@/lib/suppliers/printify/printify-colors";
 import HMProductVisual from "@/components/product/HMProductVisual";
 import ProductImageStage from "@/components/product/ProductImageStage";
+import { useT } from "@/components/i18n/I18nProvider";
 
 export default function BestSellers() {
+  const t = useT();
   const products = getFeaturedProducts().slice(0, 4);
 
   return (
@@ -20,7 +24,7 @@ export default function BestSellers() {
               className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: "var(--hm-cyan)" }}
             >
-              Bestsellers textile
+              {t("home.bestsellers.eyebrow")}
             </p>
             <h2
               className="max-w-[22ch] font-semibold leading-[1.05] tracking-[-0.025em]"
@@ -29,9 +33,9 @@ export default function BestSellers() {
                 color: "var(--hm-text-main)",
               }}
             >
-              Les textiles{" "}
+              {t("home.bestsellers.titleLead")}{" "}
               <span style={{ color: "var(--hm-violet)" }}>
-                les plus demandés par nos clients
+                {t("home.bestsellers.titleHighlight")}
               </span>
               .
             </h2>
@@ -39,8 +43,7 @@ export default function BestSellers() {
               className="mt-3 max-w-[40rem] text-[13.5px] leading-6"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Pour équiper une équipe, lancer un événement ou créer une tenue
-              professionnelle cohérente.
+              {t("home.bestsellers.subtitle")}
             </p>
             {/* Mini-réassurance proche du titre */}
             <div
@@ -52,21 +55,21 @@ export default function BestSellers() {
                   className="h-1.5 w-1.5 rounded-full"
                   style={{ background: "var(--hm-cyan)" }}
                 />
-                BAT avant production
+                {t("home.bestsellers.reassuranceProof")}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <span
                   className="h-1.5 w-1.5 rounded-full"
                   style={{ background: "var(--hm-magenta)" }}
                 />
-                Logo cœur ou dos
+                {t("home.bestsellers.reassurancePlacement")}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <span
                   className="h-1.5 w-1.5 rounded-full"
                   style={{ background: "var(--hm-violet)" }}
                 />
-                DTF · Flex · Broderie
+                {t("home.bestsellers.reassuranceTechniques")}
               </span>
             </div>
           </div>
@@ -78,17 +81,17 @@ export default function BestSellers() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-[var(--hm-text)]">
-                  Commandez en 3 étapes, livré en 7-10 jours
+                  {t("home.bestsellers.stepsTitle")}
                 </p>
                 <div className="mt-3 space-y-2">
                   {[
-                    "Choisissez votre support et technique",
-                    "Envoyez votre logo — on adapte le fichier",
-                    "Validez le BAT, on lance la production",
-                  ].map((step) => (
-                    <div key={step} className="flex items-start gap-2.5">
+                    "home.bestsellers.step1",
+                    "home.bestsellers.step2",
+                    "home.bestsellers.step3",
+                  ].map((stepKey) => (
+                    <div key={stepKey} className="flex items-start gap-2.5">
                       <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
-                      <span className="text-[13px] leading-6 text-[var(--hm-text-soft)]">{step}</span>
+                      <span className="text-[13px] leading-6 text-[var(--hm-text-soft)]">{t(stepKey)}</span>
                     </div>
                   ))}
                 </div>
@@ -154,7 +157,7 @@ export default function BestSellers() {
                       </span>
                     ) : null}
                     <span className="rounded-full bg-[var(--hm-surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--hm-text-soft)]">
-                      {product.category === "tshirts" ? "T-shirt" : product.category === "hoodies" ? "Hoodie / Sweat" : "Corporate"}
+                      {product.category === "tshirts" ? t("home.bestsellers.categoryTshirt") : product.category === "hoodies" ? t("home.bestsellers.categoryHoodie") : t("home.bestsellers.categoryCorporate")}
                     </span>
                   </div>
                 </div>
@@ -165,10 +168,10 @@ export default function BestSellers() {
                   </h3>
                   <p className="mt-2 text-[13px] leading-6 text-[var(--hm-text-soft)]">
                     {product.category === "tshirts"
-                      ? "Le point d’entrée le plus simple pour une commande rapide et nette."
+                      ? t("home.bestsellers.cardDescTshirt")
                       : product.category === "hoodies"
-                      ? "Une option plus premium pour renforcer la présence de marque."
-                      : "Un support pensé pour les équipes visibles et les besoins terrain."}
+                      ? t("home.bestsellers.cardDescHoodie")
+                      : t("home.bestsellers.cardDescCorporate")}
                   </p>
 
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -177,7 +180,7 @@ export default function BestSellers() {
                         key={tech}
                         className="rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--hm-text-soft)]"
                       >
-                        {tech === "broderie" ? "Broderie" : tech.toUpperCase()}
+                        {tech === "broderie" ? t("home.bestsellers.techBroderie") : tech.toUpperCase()}
                       </span>
                     ))}
                   </div>
@@ -185,7 +188,7 @@ export default function BestSellers() {
                   <div className="mt-auto pt-5">
                     <div className="rounded-[1.2rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-4">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-text-muted)]">
-                        À partir de
+                        {t("home.bestsellers.priceFrom")}
                       </p>
                       <div className="mt-2 flex items-end justify-between gap-3">
                         <div>
@@ -193,11 +196,11 @@ export default function BestSellers() {
                             {formatPrice(card.price)}
                           </p>
                           <p className="text-[11px] text-[var(--hm-text-soft)]">
-                            TTC{card.qty ? ` · dès ${card.qty} pièces` : ""}
+                            {t("home.bestsellers.priceTaxIncl")}{card.qty ? ` · ${t("home.bestsellers.priceFromQty").replace("{qty}", String(card.qty))}` : ""}
                           </p>
                         </div>
                         <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--hm-text)] transition group-hover:text-[var(--hm-primary)]">
-                          Voir
+                          {t("home.bestsellers.view")}
                           <ArrowRight size={12} />
                         </span>
                       </div>
@@ -222,18 +225,17 @@ export default function BestSellers() {
               className="text-[10px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: "var(--hm-cyan)" }}
             >
-              Pour aller plus loin
+              {t("home.bestsellers.ctaEyebrow")}
             </p>
             <p
               className="mt-2 max-w-[44rem] text-[14px] leading-7 sm:text-[15px]"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Retrouvez une sélection courte de textiles efficaces pour lancer
-              rapidement une commande propre et professionnelle.
+              {t("home.bestsellers.ctaText")}
             </p>
           </div>
           <Link href="/catalogue" className="btn-hm-violet-outline shrink-0">
-            Voir tout le catalogue
+            {t("home.bestsellers.ctaButton")}
           </Link>
         </div>
       </div>

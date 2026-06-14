@@ -5,25 +5,26 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, X, ArrowLeft, ShoppingCart, RotateCcw, Shirt } from "lucide-react";
 import { formatPrice, PRICING_CONFIG, getVolumePricedRate } from "@/data/pricing";
+import { useT } from "@/components/i18n/I18nProvider";
 import { uploadLogoToSupabase } from "@/lib/uploadLogo";
 import { uploadStudioAsset } from "@/lib/uploadStudioAsset";
 import { useCartStore } from "@/store/cart";
 import type { StudioObject } from "./StudioCanvas";
 import type { Product, Placement, Technique, ProductColor, CartFile } from "@/types";
 
-const TECHNIQUE_LABELS: Record<Technique, string> = {
-  dtf:                "DTF",
-  dtflex:             "DTFlex",
-  flex:               "Flex",
-  broderie:           "Broderie",
-  broderie_illimitee: "Broderie · Illimitée",
-  print:              "Impression",
+const TECHNIQUE_LABEL_KEYS: Record<Technique, string> = {
+  dtf:                "studioSummary.technique.dtf",
+  dtflex:             "studioSummary.technique.dtflex",
+  flex:               "studioSummary.technique.flex",
+  broderie:           "studioSummary.technique.broderie",
+  broderie_illimitee: "studioSummary.technique.broderie_illimitee",
+  print:              "studioSummary.technique.print",
 };
 
-const PLACEMENT_LABELS: Record<Placement, string> = {
-  coeur:      "Cœur (poitrine)",
-  dos:        "Dos",
-  "coeur-dos": "Cœur + Dos",
+const PLACEMENT_LABEL_KEYS: Record<Placement, string> = {
+  coeur:      "studioSummary.placement.coeur",
+  dos:        "studioSummary.placement.dos",
+  "coeur-dos": "studioSummary.placement.coeur_dos",
 };
 
 function getStudioSessionId() {
@@ -81,6 +82,7 @@ export default function StudioSummaryPanel({
   getContainerSize,
   editItemId,
 }: Props) {
+  const t = useT();
   const router = useRouter();
   const { addItem, replaceItem } = useCartStore();
   const [validating,   setValidating]   = useState(false);
@@ -131,13 +133,13 @@ export default function StudioSummaryPanel({
       // distincte plutôt que de la perdre silencieusement à la production.
       if (placement === "coeur-dos" && backObjs.length > 0) {
         throw new Error(
-          "« Cœur + Dos » imprime le même visuel sur les deux faces : créez votre visuel sur la face avant uniquement (la vue dos doit rester vide)."
+          t("studioSummary.error.coeurDosSameVisual")
         );
       }
 
       const relevant = placement === "dos" && backObjs.length > 0 ? backObjs : frontObjs;
       if (relevant.length === 0) {
-        throw new Error("Ajoutez un logo, un texte ou un design avant de valider.");
+        throw new Error(t("studioSummary.error.addElement"));
       }
 
       // Un SEUL objet image → on envoie le fichier original (qualité maximale)
@@ -163,7 +165,7 @@ export default function StudioSummaryPanel({
         const { data, error } = await uploadLogoToSupabase(logoObj.file, sessionId);
         if (!data || error) {
           throw new Error(
-            "Votre logo n'a pas pu être enregistré. Vérifiez votre connexion puis réessayez.",
+            t("studioSummary.error.logoUploadFailed"),
           );
         }
         logoFileUrl = data.logoFileUrl;
@@ -201,12 +203,12 @@ export default function StudioSummaryPanel({
         // objets seuls, fond transparent, cadré sur la zone d'impression.
         // (L'ancien export envoyait la PHOTO du produit comme fichier print :
         // Printful aurait imprimé un t-shirt sur le t-shirt.)
-        if (!exportPrintFiles) throw new Error("Export d'impression indisponible — rechargez la page.");
+        if (!exportPrintFiles) throw new Error(t("studioSummary.error.printExportUnavailable"));
         const prints  = await exportPrintFiles();
         const face: "front" | "back" =
           placement === "dos" && backObjs.length > 0 ? "back" : "front";
         const dataURL = face === "back" ? prints.back : prints.front;
-        if (!dataURL) throw new Error("Impossible de générer le fichier d'impression.");
+        if (!dataURL) throw new Error(t("studioSummary.error.printFileGeneration"));
 
         printFileComposed = true;
         logoFileName = `print-${timestamp}-${face}.png`;
@@ -316,7 +318,7 @@ export default function StudioSummaryPanel({
       setPreview({ composedFront, composedBack, studioResult, redirectUrl });
 
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Une erreur est survenue.";
+      const msg = err instanceof Error ? err.message : t("studioSummary.error.generic");
       setError(msg);
     } finally {
       setValidating(false);
@@ -389,7 +391,7 @@ export default function StudioSummaryPanel({
       router.push("/panier");
     } catch {
       setConfirming(false);
-      setError("Erreur lors de l'ajout au panier. Réessayez.");
+      setError(t("studioSummary.error.addToCart"));
     }
   };
 
@@ -414,10 +416,10 @@ export default function StudioSummaryPanel({
             <div className="flex items-center justify-between border-b border-[var(--hm-line)] px-6 py-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-[var(--hm-primary)]">
-                  Aperçu de votre personnalisation
+                  {t("studioSummary.modal.title")}
                 </p>
                 <p className="mt-0.5 text-[11px] text-[var(--hm-text-soft)]">
-                  Vérifiez le rendu avant d&apos;ajouter au panier
+                  {t("studioSummary.modal.subtitle")}
                 </p>
               </div>
               <button
@@ -446,12 +448,12 @@ export default function StudioSummaryPanel({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={previewSrc}
-                    alt="Aperçu personnalisation"
+                    alt={t("studioSummary.modal.previewAlt")}
                     className="h-auto max-h-[480px] w-full object-contain"
                   />
                 ) : (
                   <div className="flex h-56 w-full items-center justify-center rounded-2xl bg-[var(--hm-bg)] text-[var(--hm-text-muted)] text-xs">
-                    Aperçu non disponible
+                    {t("studioSummary.modal.previewUnavailable")}
                   </div>
                 )}
 
@@ -467,7 +469,7 @@ export default function StudioSummaryPanel({
                           : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
                       }`}
                     >
-                      <Shirt size={11} /> Face
+                      <Shirt size={11} /> {t("studioSummary.face.front")}
                     </button>
                     <button
                       type="button"
@@ -478,14 +480,14 @@ export default function StudioSummaryPanel({
                           : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]"
                       }`}
                     >
-                      <RotateCcw size={11} /> Dos
+                      <RotateCcw size={11} /> {t("studioSummary.face.back")}
                     </button>
                   </div>
                 )}
 
                 {previewImages.length === 1 && (
                   <p className="text-[10px] text-[var(--hm-text-muted)]">
-                    {preview.composedFront ? "Vue face" : "Vue dos"}
+                    {preview.composedFront ? t("studioSummary.view.front") : t("studioSummary.view.back")}
                   </p>
                 )}
               </div>
@@ -494,26 +496,26 @@ export default function StudioSummaryPanel({
               <div className="flex flex-1 flex-col justify-between gap-4 p-6">
                 <div>
                   <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[var(--hm-text-soft)]">
-                    Récapitulatif
+                    {t("studioSummary.recap.title")}
                   </p>
 
                   <div className="flex flex-col gap-2 text-sm">
                     {/* Produit */}
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-[var(--hm-text-soft)]">Produit</span>
+                      <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.product")}</span>
                       <span className="text-right font-semibold text-[var(--hm-text)] leading-snug">{product.shortName}</span>
                     </div>
 
                     {/* Technique */}
                     <div className="flex items-center justify-between">
-                      <span className="text-[var(--hm-text-soft)]">Technique</span>
-                      <span className="font-semibold text-[var(--hm-text)]">{TECHNIQUE_LABELS[technique]}</span>
+                      <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.technique")}</span>
+                      <span className="font-semibold text-[var(--hm-text)]">{t(TECHNIQUE_LABEL_KEYS[technique])}</span>
                     </div>
 
                     {/* Couleur */}
                     {selectedColor && (
                       <div className="flex items-center justify-between">
-                        <span className="text-[var(--hm-text-soft)]">Couleur</span>
+                        <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.color")}</span>
                         <div className="flex items-center gap-1.5">
                           <span
                             className="h-3.5 w-3.5 rounded-full border border-[var(--hm-line)]"
@@ -527,8 +529,8 @@ export default function StudioSummaryPanel({
                     {/* Taille — sélecteur interactif */}
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[var(--hm-text-soft)]">Taille</span>
-                        {!modalSize && <span className="text-[10px] text-amber-500 font-semibold">Obligatoire !</span>}
+                        <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.size")}</span>
+                        {!modalSize && <span className="text-[10px] text-amber-500 font-semibold">{t("studioSummary.recap.required")}</span>}
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {product.sizes.filter((s) => s.available).map((s) => (
@@ -551,13 +553,13 @@ export default function StudioSummaryPanel({
 
                     {/* Placement */}
                     <div className="flex items-center justify-between">
-                      <span className="text-[var(--hm-text-soft)]">Placement</span>
-                      <span className="font-semibold text-[var(--hm-text)]">{PLACEMENT_LABELS[placement]}</span>
+                      <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.placement")}</span>
+                      <span className="font-semibold text-[var(--hm-text)]">{t(PLACEMENT_LABEL_KEYS[placement])}</span>
                     </div>
 
                     {/* Quantité — sélecteur +/- interactif */}
                     <div className="flex items-center justify-between">
-                      <span className="text-[var(--hm-text-soft)]">Quantité</span>
+                      <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.quantity")}</span>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -576,7 +578,7 @@ export default function StudioSummaryPanel({
                         >
                           +
                         </button>
-                        <span className="text-xs text-[var(--hm-text-muted)]">pcs</span>
+                        <span className="text-xs text-[var(--hm-text-muted)]">{t("studioSummary.unit.pcs")}</span>
                       </div>
                     </div>
 
@@ -584,16 +586,16 @@ export default function StudioSummaryPanel({
 
                     {/* Total */}
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[var(--hm-text)]">Total TTC</span>
+                      <span className="font-bold text-[var(--hm-text)]">{t("studioSummary.recap.totalTTC")}</span>
                       <span className="text-xl font-black text-[var(--hm-primary)]">{formatPrice(totalTTC)}</span>
                     </div>
 
                     {/* Livraison */}
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-[var(--hm-text-soft)]">Livraison</span>
+                      <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.delivery")}</span>
                       {freeShip ? (
                         <span className="flex items-center gap-1 font-semibold text-green-600">
-                          <CheckCircle2 size={11} /> Offerte
+                          <CheckCircle2 size={11} /> {t("studioSummary.recap.free")}
                         </span>
                       ) : (
                         <span className="font-semibold text-[var(--hm-text)]">{formatPrice(shipping)}</span>
@@ -609,17 +611,17 @@ export default function StudioSummaryPanel({
                     disabled={confirming || !modalSize}
                     onClick={handleConfirm}
                     className="btn-primary w-full gap-2 disabled:cursor-not-allowed disabled:opacity-60"
-                    title={!modalSize ? "Veuillez sélectionner une taille" : undefined}
+                    title={!modalSize ? t("studioSummary.action.selectSizeTitle") : undefined}
                   >
                     {confirming ? (
-                      <><Loader2 size={15} className="animate-spin" /> {editItemId ? "Mise à jour…" : "Ajout en cours…"}</>
+                      <><Loader2 size={15} className="animate-spin" /> {editItemId ? t("studioSummary.action.updating") : t("studioSummary.action.adding")}</>
                     ) : (
-                      <><ShoppingCart size={15} /> {editItemId ? "Mettre à jour mon article" : "Confirmer et ajouter au panier"}</>
+                      <><ShoppingCart size={15} /> {editItemId ? t("studioSummary.action.updateItem") : t("studioSummary.action.confirmAddToCart")}</>
                     )}
                   </button>
                   {!modalSize && (
                     <p className="text-center text-[10px] text-amber-600 font-semibold">
-                      ⚠ Sélectionnez une taille avant de confirmer
+                      {t("studioSummary.action.selectSizeWarning")}
                     </p>
                   )}
 
@@ -628,7 +630,7 @@ export default function StudioSummaryPanel({
                     onClick={() => setPreview(null)}
                     className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[var(--hm-line)] bg-white px-4 py-2.5 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)]/40 hover:text-[var(--hm-text)]"
                   >
-                    <ArrowLeft size={13} /> Modifier ma personnalisation
+                    <ArrowLeft size={13} /> {t("studioSummary.action.editCustomization")}
                   </button>
                 </div>
               </div>
@@ -646,12 +648,12 @@ export default function StudioSummaryPanel({
         {/* ── Objects list ─────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-2">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-            Éléments sur le canvas
+            {t("studioSummary.canvas.elements")}
           </p>
           {objects.length === 0 ? (
             <div className="rounded-xl border border-dashed border-[var(--hm-line)] bg-[var(--hm-bg)] px-4 py-6 text-center">
               <p className="text-xs text-[var(--hm-text-muted)]">
-                Aucun élément ajouté. Utilisez les outils à gauche.
+                {t("studioSummary.canvas.empty")}
               </p>
             </div>
           ) : (
@@ -690,7 +692,7 @@ export default function StudioSummaryPanel({
                       {obj.label}
                     </span>
                     <span className="text-[10px] text-[var(--hm-text-muted)] capitalize">
-                      {obj.type === "logo" ? "Logo" : obj.type === "text" ? "Texte" : "Design"} · {obj.face === "front" ? "Face" : "Dos"}
+                      {obj.type === "logo" ? t("studioSummary.objType.logo") : obj.type === "text" ? t("studioSummary.objType.text") : t("studioSummary.objType.design")} · {obj.face === "front" ? t("studioSummary.face.front") : t("studioSummary.face.back")}
                     </span>
                   </div>
 
@@ -710,18 +712,18 @@ export default function StudioSummaryPanel({
         {/* ── Order summary ────────────────────────────────────────────────── */}
         <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4">
           <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-            Récapitulatif commande
+            {t("studioSummary.summary.title")}
           </p>
 
           <div className="flex flex-col gap-2 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-[var(--hm-text-soft)]">Technique</span>
-              <span className="font-semibold text-[var(--hm-text)]">{TECHNIQUE_LABELS[technique]}</span>
+              <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.technique")}</span>
+              <span className="font-semibold text-[var(--hm-text)]">{t(TECHNIQUE_LABEL_KEYS[technique])}</span>
             </div>
 
             {selectedColor && (
               <div className="flex items-center justify-between">
-                <span className="text-[var(--hm-text-soft)]">Couleur</span>
+                <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.color")}</span>
                 <div className="flex items-center gap-2">
                   <span
                     className="h-4 w-4 rounded-full border border-[var(--hm-line)]"
@@ -733,39 +735,39 @@ export default function StudioSummaryPanel({
             )}
 
             <div className="flex items-center justify-between">
-              <span className="text-[var(--hm-text-soft)]">Taille</span>
+              <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.size")}</span>
               <span className="font-semibold text-[var(--hm-text)]">
-                {selectedSize || <span className="text-amber-500">Non sélectionnée</span>}
+                {selectedSize || <span className="text-amber-500">{t("studioSummary.summary.notSelected")}</span>}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-[var(--hm-text-soft)]">Placement</span>
-              <span className="font-semibold text-[var(--hm-text)]">{PLACEMENT_LABELS[placement]}</span>
+              <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.placement")}</span>
+              <span className="font-semibold text-[var(--hm-text)]">{t(PLACEMENT_LABEL_KEYS[placement])}</span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-[var(--hm-text-soft)]">Quantité</span>
-              <span className="font-semibold text-[var(--hm-text)]">{quantity} pcs</span>
+              <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.quantity")}</span>
+              <span className="font-semibold text-[var(--hm-text)]">{quantity} {t("studioSummary.unit.pcs")}</span>
             </div>
 
             <div className="my-1 h-px bg-[var(--hm-line)]" />
 
             <div className="flex items-center justify-between">
-              <span className="text-[var(--hm-text-soft)]">Prix unitaire TTC</span>
+              <span className="text-[var(--hm-text-soft)]">{t("studioSummary.summary.unitPriceTTC")}</span>
               <span className="font-semibold text-[var(--hm-text)]">{formatPrice(unitPrice)}</span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[var(--hm-text)]">Total TTC</span>
+              <span className="font-bold text-[var(--hm-text)]">{t("studioSummary.recap.totalTTC")}</span>
               <span className="text-lg font-black text-[var(--hm-primary)]">{formatPrice(totalTTC)}</span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-[var(--hm-text-soft)]">Livraison</span>
+              <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.delivery")}</span>
               {freeShip ? (
                 <span className="flex items-center gap-1 font-semibold text-green-600">
-                  <CheckCircle2 size={12} /> Offerte
+                  <CheckCircle2 size={12} /> {t("studioSummary.recap.free")}
                 </span>
               ) : (
                 <span className="font-semibold text-[var(--hm-text)]">{formatPrice(shipping)}</span>
@@ -774,7 +776,7 @@ export default function StudioSummaryPanel({
 
             {!freeShip && (
               <p className="text-[10px] text-[var(--hm-text-muted)]">
-                Livraison offerte dès {PRICING_CONFIG.freeShippingThreshold} pièces
+                {t("studioSummary.summary.freeShipFrom").replace("{n}", String(PRICING_CONFIG.freeShippingThreshold))}
               </p>
             )}
 
@@ -782,7 +784,7 @@ export default function StudioSummaryPanel({
             {activeTiers && activeTiers.length > 1 && (
               <div className="mt-1 border-t border-[var(--hm-line)] pt-3">
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                  Plus vous commandez, moins c&apos;est cher
+                  {t("studioSummary.tiers.title")}
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {activeTiers.map((tier, tierIdx) => {
@@ -802,17 +804,17 @@ export default function StudioSummaryPanel({
                       >
                         {isPopular && (
                           <span className="absolute -top-2 right-1.5 rounded-full bg-[var(--hm-primary)] px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
-                            Le + choisi
+                            {t("studioSummary.tiers.popular")}
                           </span>
                         )}
                         <span className={`text-[10px] font-semibold ${tierActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text-soft)]"}`}>
-                          {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs
+                          {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} {t("studioSummary.unit.pcs")}
                         </span>
                         <span className={`text-sm font-black ${tierActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text)]"}`}>
                           {formatPrice(tier.unitPrice)}
                         </span>
                         {saving > 0 && (
-                          <span className="text-[9px] font-bold text-[#166534]">−{formatPrice(saving)}/pce</span>
+                          <span className="text-[9px] font-bold text-[#166534]">−{formatPrice(saving)}{t("studioSummary.tiers.perPiece")}</span>
                         )}
                       </button>
                     );
@@ -838,15 +840,15 @@ export default function StudioSummaryPanel({
           className="btn-primary w-full gap-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {validating ? (
-            <><Loader2 size={16} className="animate-spin" /> Génération de l&apos;aperçu…</>
+            <><Loader2 size={16} className="animate-spin" /> {t("studioSummary.cta.generating")}</>
           ) : (
-            <>👁 Prévisualiser ma personnalisation</>
+            <>👁 {t("studioSummary.cta.preview")}</>
           )}
         </button>
 
         {objects.length === 0 && (
           <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
-            Ajoutez au moins un élément pour prévisualiser.
+            {t("studioSummary.cta.addAtLeastOne")}
           </p>
         )}
       </div>

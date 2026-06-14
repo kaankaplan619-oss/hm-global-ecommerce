@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Sparkles, Check, Package } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * HomePack360 — "Tout pour lancer ou renforcer votre image."
@@ -19,14 +20,15 @@ import { ArrowRight, Sparkles, Check, Package } from "lucide-react";
  */
 
 const DELIVERABLES = [
-  "Logo & identité visuelle",
-  "Textile équipe personnalisé",
-  "Cartes & flyers",
-  "Enseigne & signalétique",
-  "Supports entreprise cohérents",
+  "home.pack360.deliverableLogo",
+  "home.pack360.deliverableTextile",
+  "home.pack360.deliverableCards",
+  "home.pack360.deliverableSignage",
+  "home.pack360.deliverableSupports",
 ] as const;
 
 function PackClientImage() {
+  const t = useT();
   const [failed, setFailed] = useState(false);
 
   if (failed) {
@@ -52,7 +54,7 @@ function PackClientImage() {
   return (
     <Image
       src="/images/realisations/hm-global-print.jpg"
-      alt="Cartes de visite et flyers HM Global imprimés, en piles, prêts à livrer — commande réelle."
+      alt={t("home.pack360.imageAlt")}
       fill
       sizes="(min-width: 1024px) 45vw, 100vw"
       className="object-cover"
@@ -62,6 +64,7 @@ function PackClientImage() {
 }
 
 export default function HomePack360() {
+  const t = useT();
   return (
     <section className="py-12 sm:py-16" style={{ background: "#ffffff" }}>
       <div className="container">
@@ -87,7 +90,7 @@ export default function HomePack360() {
                 }}
               >
                 <Sparkles size={11} style={{ color: "var(--hm-cyan)" }} />
-                Pack communication complet
+                {t("home.pack360.eyebrow")}
               </span>
 
               <h2
@@ -97,19 +100,18 @@ export default function HomePack360() {
                   color: "var(--hm-text-main)",
                 }}
               >
-                Tout pour lancer ou renforcer{" "}
+                {t("home.pack360.titleLead")}{" "}
                 <span style={{ color: "var(--hm-magenta)" }}>
-                  votre image
+                  {t("home.pack360.titleHighlight")}
                 </span>
-                .
+                {t("home.pack360.titleSuffix")}
               </h2>
 
               <p
                 className="mt-4 max-w-[40rem] text-[14px] leading-[1.7] sm:text-[14.5px]"
                 style={{ color: "var(--hm-text-muted-2)" }}
               >
-                Cartes de visite, flyers, textile, enseignes, supports imprimés
-                et communication digitale : vous gardez un seul interlocuteur.
+                {t("home.pack360.description")}
               </p>
 
               {/* Liste livrables — checkmarks cyan sur fond clair */}
@@ -130,14 +132,14 @@ export default function HomePack360() {
                         style={{ color: "var(--hm-cyan)" }}
                       />
                     </span>
-                    {item}
+                    {t(item)}
                   </li>
                 ))}
               </ul>
 
               <div className="mt-6">
                 <Link href="/contact" className="btn-hm-magenta">
-                  Parler de mon projet
+                  {t("home.pack360.cta")}
                   <ArrowRight size={15} />
                 </Link>
               </div>
@@ -167,7 +169,7 @@ export default function HomePack360() {
                       className="h-1.5 w-1.5 rounded-full"
                       style={{ background: "var(--hm-cyan)" }}
                     />
-                    Livré clé en main
+                    {t("home.pack360.badge")}
                   </span>
                 </div>
               </div>

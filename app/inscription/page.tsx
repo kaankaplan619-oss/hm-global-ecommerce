@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import GoogleAuthSection from "@/components/auth/GoogleAuthSection";
+import { useT } from "@/components/i18n/I18nProvider";
 
 export default function InscriptionPage() {
+  const t = useT();
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
 
@@ -45,7 +47,7 @@ export default function InscriptionPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.message ?? "Erreur lors de la création du compte");
+        setError(data.message ?? t("signup.error.create"));
         return;
       }
 
@@ -55,12 +57,9 @@ export default function InscriptionPage() {
         router.push("/mon-compte");
         return;
       }
-      setSuccessMessage(
-        data.message ??
-          "Votre compte a été créé. Vérifiez votre boîte mail pour confirmer votre adresse email avant de vous connecter."
-      );
+      setSuccessMessage(data.message ?? t("signup.success.default"));
     } catch {
-      setError("Une erreur est survenue. Réessayez.");
+      setError(t("signup.error.generic"));
     } finally {
       setLoading(false);
     }
@@ -74,29 +73,28 @@ export default function InscriptionPage() {
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-primary)]" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-primary)]">
-                Espace client HM Global
+                {t("signup.badge")}
               </span>
             </div>
             <h1 className="mb-3 text-3xl font-black text-[var(--hm-text)] md:text-4xl">
-              Créer un compte
+              {t("signup.intro.title")}
             </h1>
             <p className="max-w-md text-sm leading-7 text-[var(--hm-text-soft)]">
-              Créez votre espace client pour retrouver votre panier, suivre vos commandes
-              et valider votre checkout simplement.
+              {t("signup.intro.subtitle")}
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
-              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">Compte clair et simple</p>
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">{t("signup.feature1.title")}</p>
               <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
-                Inscription rapide pour enregistrer vos informations utiles et suivre vos projets.
+                {t("signup.feature1.body")}
               </p>
             </div>
             <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
-              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">Confirmation email</p>
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">{t("signup.feature2.title")}</p>
               <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
-                Votre adresse email doit être confirmée avant la première connexion.
+                {t("signup.feature2.body")}
               </p>
             </div>
           </div>
@@ -114,9 +112,9 @@ export default function InscriptionPage() {
                 priority
               />
             </Link>
-            <h2 className="mb-2 text-2xl font-black text-[var(--hm-text)]">Créer mon compte</h2>
+            <h2 className="mb-2 text-2xl font-black text-[var(--hm-text)]">{t("signup.form.title")}</h2>
             <p className="text-sm text-[var(--hm-text-soft)]">
-              Renseignez vos informations pour accéder à votre espace client.
+              {t("signup.form.subtitle")}
             </p>
           </div>
 
@@ -126,7 +124,7 @@ export default function InscriptionPage() {
                 {successMessage}
               </div>
               <p className="text-sm leading-relaxed text-[var(--hm-text-soft)]">
-                Une fois votre adresse email confirmée, vous pourrez vous connecter et accéder à votre espace client.
+                {t("signup.success.note")}
               </p>
               <div className="flex flex-col gap-3 pt-2">
                 <button
@@ -134,14 +132,14 @@ export default function InscriptionPage() {
                   onClick={() => router.push("/connexion")}
                   className="btn-primary w-full"
                 >
-                  Aller à la connexion
+                  {t("signup.success.goToLogin")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setSuccessMessage("")}
                   className="btn-outline w-full"
                 >
-                  Modifier mon inscription
+                  {t("signup.success.edit")}
                 </button>
               </div>
             </div>
@@ -160,20 +158,22 @@ export default function InscriptionPage() {
 
             {/* Type selector */}
             <div>
-              <label className="label">Type de compte</label>
+              <label className="label">{t("signup.accountType.label")}</label>
               <div className="grid grid-cols-2 gap-2">
-                {(["particulier", "entreprise"] as const).map((t) => (
+                {(["particulier", "entreprise"] as const).map((t2) => (
                   <button
-                    key={t}
+                    key={t2}
                     type="button"
-                    onClick={() => setType(t)}
+                    onClick={() => setType(t2)}
                     className={`rounded-lg border p-3 text-sm font-semibold transition-all capitalize
-                      ${type === t
+                      ${type === t2
                         ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-text)]"
                         : "border-[var(--hm-line)] text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/35"
                       }`}
                   >
-                    {t === "particulier" ? "👤 Particulier" : "🏢 Entreprise"}
+                    {t2 === "particulier"
+                      ? `👤 ${t("signup.accountType.individual")}`
+                      : `🏢 ${t("signup.accountType.company")}`}
                   </button>
                 ))}
               </div>
@@ -183,18 +183,18 @@ export default function InscriptionPage() {
             {type === "entreprise" && (
               <>
                 <div>
-                  <label className="label">Société *</label>
+                  <label className="label">{t("signup.field.company")}</label>
                   <input
                     type="text"
                     className="input"
-                    placeholder="Ma Société SARL"
+                    placeholder={t("signup.field.companyPlaceholder")}
                     value={form.company}
                     onChange={(e) => update("company", e.target.value)}
                     required
                   />
                 </div>
                 <div>
-                  <label className="label">SIRET *</label>
+                  <label className="label">{t("signup.field.siret")}</label>
                   <input
                     type="text"
                     className="input"
@@ -210,22 +210,22 @@ export default function InscriptionPage() {
             {/* Personal info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Prénom *</label>
+                <label className="label">{t("signup.field.firstName")}</label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="Jean"
+                  placeholder={t("signup.field.firstNamePlaceholder")}
                   value={form.firstName}
                   onChange={(e) => update("firstName", e.target.value)}
                   required
                 />
               </div>
               <div>
-                <label className="label">Nom *</label>
+                <label className="label">{t("signup.field.lastName")}</label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="Dupont"
+                  placeholder={t("signup.field.lastNamePlaceholder")}
                   value={form.lastName}
                   onChange={(e) => update("lastName", e.target.value)}
                   required
@@ -234,11 +234,11 @@ export default function InscriptionPage() {
             </div>
 
             <div>
-              <label className="label">Email *</label>
+              <label className="label">{t("signup.field.email")}</label>
               <input
                 type="email"
                 className="input"
-                placeholder="vous@exemple.fr"
+                placeholder={t("signup.field.emailPlaceholder")}
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
                 required
@@ -247,7 +247,7 @@ export default function InscriptionPage() {
             </div>
 
             <div>
-              <label className="label">Téléphone *</label>
+              <label className="label">{t("signup.field.phone")}</label>
               <input
                 type="tel"
                 className="input"
@@ -259,7 +259,7 @@ export default function InscriptionPage() {
             </div>
 
             <div>
-              <label className="label">Mot de passe *</label>
+              <label className="label">{t("signup.field.password")}</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -278,9 +278,9 @@ export default function InscriptionPage() {
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
-              <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">Minimum 8 caractères</p>
+              <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">{t("signup.field.passwordHint")}</p>
               <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">
-                Après inscription, vous devrez confirmer votre adresse email avant de vous connecter.
+                {t("signup.field.confirmHint")}
               </p>
             </div>
 
@@ -289,10 +289,10 @@ export default function InscriptionPage() {
               disabled={loading}
               className="btn-primary w-full gap-2 mt-2"
             >
-              {loading ? "Création en cours..." : (
+              {loading ? t("signup.submit.loading") : (
                 <>
                   <UserPlus size={14} />
-                  Créer mon compte
+                  {t("signup.submit.label")}
                 </>
               )}
             </button>
@@ -301,13 +301,13 @@ export default function InscriptionPage() {
           )}
 
           <p className="mt-6 text-center text-sm text-[var(--hm-text-soft)]">
-            Déjà un compte ?{" "}
+            {t("signup.footer.haveAccount")}{" "}
             <Link href="/connexion" className="font-semibold text-[var(--hm-primary)] hover:underline">
-              Se connecter
+              {t("signup.footer.login")}
             </Link>
           </p>
           <p className="mt-4 text-center text-xs text-[var(--hm-text-muted)]">
-            Le compte client vous permet ensuite de suivre vos commandes et vos validations.
+            {t("signup.footer.note")}
           </p>
         </div>
       </div>

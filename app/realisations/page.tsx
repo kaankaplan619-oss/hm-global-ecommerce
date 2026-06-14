@@ -5,6 +5,7 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import RealisationsGallery from "@/components/realisations/RealisationsGallery";
 import AtelierVideos from "@/components/realisations/AtelierVideos";
 import ClientLogos from "@/components/realisations/ClientLogos";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "Réalisations",
@@ -17,29 +18,29 @@ export const metadata: Metadata = {
  * héro court → galerie photos réelles → vidéos atelier → CTA. Pas de blocs
  * de texte théoriques (avant/après, services) : la preuve passe par l'image.
  */
-export default function RealisationsPage() {
+export default async function RealisationsPage() {
+  const t = await getT();
   return (
     <div className="bg-white pb-20 pt-24">
       <div className="container">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t("realisationsPage.backLink")} />
 
         {/* Héro court */}
         <section className="mb-10">
-          <p className="section-tag">Réalisations HM Global</p>
+          <p className="section-tag">{t("realisationsPage.hero.tag")}</p>
           <h1 className="mb-4 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[var(--hm-text)] md:text-5xl">
-            Fait à l&apos;atelier, livré à de vraies entreprises.
+            {t("realisationsPage.hero.title")}
           </h1>
           <p className="max-w-2xl text-base leading-8 text-[var(--hm-text-soft)]">
-            Textile marqué en DTF et flex, enseignes posées, print : tout ce que vous voyez
-            ici a été produit chez nous, à Souffelweyersheim.
+            {t("realisationsPage.hero.subtitle")}
           </p>
           <div className="mt-6 flex flex-wrap gap-3.5">
             <Link href="/catalogue" className="btn-primary gap-2">
-              Voir le catalogue
+              {t("realisationsPage.hero.ctaCatalogue")}
               <ArrowRight size={16} />
             </Link>
             <Link href="/contact" className="btn-outline">
-              Demander un devis
+              {t("realisationsPage.hero.ctaQuote")}
             </Link>
           </div>
         </section>
@@ -52,9 +53,9 @@ export default function RealisationsPage() {
         {/* Vidéos atelier / chantier */}
         <section className="mb-14">
           <div className="mb-8 max-w-2xl">
-            <p className="section-tag">L&apos;atelier en action</p>
+            <p className="section-tag">{t("realisationsPage.atelier.tag")}</p>
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Produit chez nous, posé par nous.
+              {t("realisationsPage.atelier.title")}
             </h2>
           </div>
 
@@ -64,13 +65,12 @@ export default function RealisationsPage() {
         {/* Logos clients */}
         <section className="mb-14">
           <div className="mb-8 max-w-2xl">
-            <p className="section-tag">Ils nous font confiance</p>
+            <p className="section-tag">{t("realisationsPage.clients.tag")}</p>
             <h2 className="mb-3 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Des identités créées ou produites chez nous.
+              {t("realisationsPage.clients.title")}
             </h2>
             <p className="text-sm leading-7 text-[var(--hm-text-soft)]">
-              Restaurants, artisans, entreprises du bâtiment, automobile : ces logos
-              ont été créés, déclinés ou produits par l&apos;agence.
+              {t("realisationsPage.clients.subtitle")}
             </p>
           </div>
           <ClientLogos />
@@ -80,13 +80,12 @@ export default function RealisationsPage() {
         <section className="rounded-[2rem] border border-[var(--hm-line)] bg-[var(--hm-accent-soft-blue)] p-8 sm:p-10">
           <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <div>
-              <p className="section-tag">Passer à l&apos;action</p>
+              <p className="section-tag">{t("realisationsPage.cta.tag")}</p>
               <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-                Vous avez un besoin proche de ces réalisations ?
+                {t("realisationsPage.cta.title")}
               </h2>
               <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-                Textile, enseigne, print ou projet mixte : on cadre votre besoin
-                et on produit, comme pour les projets ci-dessus.
+                {t("realisationsPage.cta.subtitle")}
               </p>
             </div>
 
@@ -96,13 +95,13 @@ export default function RealisationsPage() {
                 className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 transition-all duration-200 hover:border-[rgba(177,63,116,0.22)] hover:shadow-[0_18px_40px_rgba(63,45,88,0.08)]"
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-primary)]">
-                  Commande textile
+                  {t("realisationsPage.cta.textile.label")}
                 </p>
                 <h3 className="mt-3 text-xl font-semibold text-[var(--hm-text)]">
-                  Voir les produits disponibles
+                  {t("realisationsPage.cta.textile.title")}
                 </h3>
                 <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hm-primary)]">
-                  Accéder au catalogue
+                  {t("realisationsPage.cta.textile.link")}
                   <ChevronRight className="h-4 w-4" />
                 </span>
               </Link>
@@ -112,13 +111,13 @@ export default function RealisationsPage() {
                 className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 transition-all duration-200 hover:border-[rgba(177,63,116,0.22)] hover:shadow-[0_18px_40px_rgba(63,45,88,0.08)]"
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-primary)]">
-                  Projet sur mesure
+                  {t("realisationsPage.cta.custom.label")}
                 </p>
                 <h3 className="mt-3 text-xl font-semibold text-[var(--hm-text)]">
-                  Demander un devis ou un cadrage
+                  {t("realisationsPage.cta.custom.title")}
                 </h3>
                 <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hm-primary)]">
-                  Ouvrir la demande
+                  {t("realisationsPage.cta.custom.link")}
                   <ChevronRight className="h-4 w-4" />
                 </span>
               </Link>

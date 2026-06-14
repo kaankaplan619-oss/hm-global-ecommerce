@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Shirt } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * HomeTextilePremium — Section "Des textiles personnalisés pensés pour votre image."
@@ -75,6 +76,7 @@ function TextileImage({
 }
 
 export default function HomeTextilePremium() {
+  const t = useT();
   return (
     <section
       className="py-14 sm:py-20"
@@ -97,7 +99,7 @@ export default function HomeTextilePremium() {
               <div className="relative aspect-[4/3]">
                 <TextileImage
                   src="/images/realisations/metem-softshell-dos.jpg"
-                  alt="Veste softshell noire METEM marquée par HM Global — grand logo dos blanc et rouge « Votre partenaire de confiance », commande client réelle."
+                  alt={t("home.textile.softshellAlt")}
                   sizes="(min-width: 1024px) 55vw, 100vw"
                 />
                 {/* Légende discrète bas-gauche */}
@@ -113,7 +115,7 @@ export default function HomeTextilePremium() {
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ background: "var(--hm-cyan)" }}
                   />
-                  Marquage dos · softshell
+                  {t("home.textile.softshellBadge")}
                 </span>
               </div>
             </div>
@@ -126,7 +128,7 @@ export default function HomeTextilePremium() {
                 className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.22em]"
                 style={{ color: "var(--hm-cyan)" }}
               >
-                Textile personnalisé
+                {t("home.textile.eyebrow")}
               </p>
               <h2
                 className="font-semibold leading-[1.08] tracking-[-0.02em]"
@@ -135,19 +137,17 @@ export default function HomeTextilePremium() {
                   color: "var(--hm-text-main)",
                 }}
               >
-                Des textiles personnalisés pensés{" "}
+                {t("home.textile.headingPrefix")}{" "}
                 <span style={{ color: "var(--hm-violet)" }}>
-                  pour votre image
+                  {t("home.textile.headingHighlight")}
                 </span>
-                .
+                {t("home.textile.headingSuffix")}
               </h2>
               <p
                 className="mt-4 text-[14px] leading-[1.65]"
                 style={{ color: "var(--hm-text-muted-2)" }}
               >
-                Logo cœur, marquage dos, broderie, DTF ou flex : nous préparons
-                votre BAT avant production pour garantir un rendu propre et
-                cohérent.
+                {t("home.textile.description")}
               </p>
               <div className="mt-5">
                 <Link
@@ -155,7 +155,7 @@ export default function HomeTextilePremium() {
                   className="inline-flex items-center gap-1.5 text-[13px] font-semibold transition hover:gap-2.5"
                   style={{ color: "var(--hm-magenta)" }}
                 >
-                  Voir les textiles
+                  {t("home.textile.ctaLink")}
                   <ArrowRight size={13} />
                 </Link>
               </div>
@@ -172,7 +172,7 @@ export default function HomeTextilePremium() {
               <div className="relative aspect-[4/3]">
                 <TextileImage
                   src="/images/home/hm-detail-finition-good-eye-deer.jpg"
-                  alt="Gros plan sur le marquage blanc Good Eye Deer réalisé par HM Global — netteté du rendu sur t-shirt noir, commande client réelle."
+                  alt={t("home.textile.detailAlt")}
                   sizes="(min-width: 1024px) 25vw, 100vw"
                   fallbackGradient="linear-gradient(135deg, #54B6D2 0%, #4B2A6F 60%, #3B235A 100%)"
                 />
@@ -188,7 +188,7 @@ export default function HomeTextilePremium() {
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ background: "var(--hm-magenta)" }}
                   />
-                  Détail finition
+                  {t("home.textile.detailBadge")}
                 </span>
               </div>
             </div>

@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useT } from "@/components/i18n/I18nProvider";
 
 export default function ResetPasswordPage() {
+  const t = useT();
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -49,12 +51,12 @@ export default function ResetPasswordPage() {
     setError("");
 
     if (password.length < 8) {
-      setError("Le mot de passe doit comporter au moins 8 caractères.");
+      setError(t("resetPassword.errorMinLength"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
+      setError(t("resetPassword.errorMismatch"));
       return;
     }
 
@@ -65,7 +67,7 @@ export default function ResetPasswordPage() {
       const { error: updateError } = await supabase.auth.updateUser({ password });
 
       if (updateError) {
-        setError("Le lien est invalide ou expiré. Demandez un nouveau lien de réinitialisation.");
+        setError(t("resetPassword.errorInvalidLink"));
         return;
       }
 
@@ -74,7 +76,7 @@ export default function ResetPasswordPage() {
         router.push("/connexion?reset=success");
       }, 1500);
     } catch {
-      setError("Une erreur est survenue. Réessayez.");
+      setError(t("resetPassword.errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -88,22 +90,22 @@ export default function ResetPasswordPage() {
             <div className="text-[#f5f5f5] font-black text-xl tracking-wider uppercase">HM GLOBAL</div>
             <div className="text-[#c9a96e] font-light text-[10px] tracking-[0.25em] uppercase">Agence</div>
           </Link>
-          <h1 className="text-2xl font-black text-[#f5f5f5] mb-2">Nouveau mot de passe</h1>
+          <h1 className="text-2xl font-black text-[#f5f5f5] mb-2">{t("resetPassword.title")}</h1>
           <p className="text-sm text-[#555555]">
-            Définissez un nouveau mot de passe pour votre compte client.
+            {t("resetPassword.subtitle")}
           </p>
         </div>
 
         <div className="p-6 bg-[#111111] border border-[#1e1e1e] rounded-xl">
           {checkingSession ? (
-            <p className="text-sm text-[#555555]">Vérification du lien...</p>
+            <p className="text-sm text-[#555555]">{t("resetPassword.checkingLink")}</p>
           ) : !hasRecoverySession ? (
             <div className="space-y-4">
               <div className="p-3 bg-[#f8717111] border border-[#f8717133] rounded-lg text-sm text-[#f87171]">
-                Le lien de réinitialisation est invalide ou expiré.
+                {t("resetPassword.linkInvalid")}
               </div>
               <Link href="/mot-de-passe-oublie" className="btn-outline w-full text-center">
-                Demander un nouveau lien
+                {t("resetPassword.requestNewLink")}
               </Link>
             </div>
           ) : (
@@ -116,12 +118,12 @@ export default function ResetPasswordPage() {
 
               {success && (
                 <div className="p-3 bg-[#4ade8011] border border-[#4ade8033] rounded-lg text-sm text-[#86efac]">
-                  Votre mot de passe a été mis à jour. Redirection vers la connexion...
+                  {t("resetPassword.success")}
                 </div>
               )}
 
               <div>
-                <label className="label">Nouveau mot de passe</label>
+                <label className="label">{t("resetPassword.newPasswordLabel")}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -144,7 +146,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <div>
-                <label className="label">Confirmer le mot de passe</label>
+                <label className="label">{t("resetPassword.confirmPasswordLabel")}</label>
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -168,11 +170,11 @@ export default function ResetPasswordPage() {
 
               <button type="submit" disabled={loading || success} className="btn-primary w-full gap-2 mt-2">
                 {loading ? (
-                  "Mise à jour..."
+                  t("resetPassword.updating")
                 ) : (
                   <>
                     <KeyRound size={14} />
-                    Mettre à jour le mot de passe
+                    {t("resetPassword.submit")}
                   </>
                 )}
               </button>

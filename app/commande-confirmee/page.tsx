@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2, ArrowRight, Mail, Clock, Landmark, Copy, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { formatPrice } from "@/data/pricing";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ─── Bank transfer block ──────────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ function BankTransferDetails({
   orderNumber: string;
   totalTTC:    number | null;
 }) {
+  const t = useT();
   const [bank,  setBank]  = useState<BankInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
@@ -31,7 +33,7 @@ function BankTransferDetails({
     let cancelled = false;
     fetch("/api/payment/bank-info")
       .then(async (res) => {
-        if (!res.ok) throw new Error("Coordonnées bancaires indisponibles");
+        if (!res.ok) throw new Error(t("confirmation.bank.unavailableError"));
         return res.json();
       })
       .then((data) => { if (!cancelled) setBank(data); })
@@ -49,14 +51,14 @@ function BankTransferDetails({
 
   const rows: { key: string; label: string; value: string; mono?: boolean }[] = [
     ...(bank ? [
-      { key: "beneficiary", label: "Bénéficiaire",  value: bank.beneficiary },
+      { key: "beneficiary", label: t("confirmation.bank.beneficiary"), value: bank.beneficiary },
       { key: "iban",        label: "IBAN",          value: bank.iban, mono: true },
       { key: "bic",         label: "BIC",           value: bank.bic,  mono: true },
     ] : []),
     ...(totalTTC !== null ? [
-      { key: "amount",      label: "Montant exact", value: formatPrice(totalTTC) },
+      { key: "amount",      label: t("confirmation.bank.exactAmount"), value: formatPrice(totalTTC) },
     ] : []),
-    { key: "reference",     label: "Référence (obligatoire)", value: orderNumber, mono: true },
+    { key: "reference",     label: t("confirmation.bank.reference"), value: orderNumber, mono: true },
   ];
 
   return (
@@ -66,9 +68,9 @@ function BankTransferDetails({
           <Landmark size={18} />
         </div>
         <div>
-          <p className="text-sm font-bold text-[var(--hm-text)]">Coordonnées bancaires</p>
+          <p className="text-sm font-bold text-[var(--hm-text)]">{t("confirmation.bank.title")}</p>
           <p className="text-[11px] text-[var(--hm-text-soft)]">
-            Effectuez le virement depuis votre banque en utilisant les informations ci-dessous.
+            {t("confirmation.bank.subtitle")}
           </p>
         </div>
       </div>
@@ -77,8 +79,7 @@ function BankTransferDetails({
         <div className="mb-4 flex items-start gap-2 rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-xs text-[#b91c1c]">
           <AlertCircle size={12} className="mt-0.5 shrink-0" />
           <span>
-            Coordonnées bancaires temporairement indisponibles.
-            Contactez-nous pour obtenir l&rsquo;IBAN — référence : <strong>{orderNumber}</strong>.
+            {t("confirmation.bank.errorText")} <strong>{orderNumber}</strong>.
           </span>
         </div>
       )}
@@ -97,13 +98,13 @@ function BankTransferDetails({
                 type="button"
                 onClick={() => copy(row.value, row.key)}
                 className="rounded-md border border-[var(--hm-line)] p-1.5 text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
-                aria-label={`Copier ${row.label}`}
-                title="Copier"
+                aria-label={`${t("confirmation.bank.copyAria")} ${row.label}`}
+                title={t("confirmation.bank.copy")}
               >
                 <Copy size={11} />
               </button>
               {copied === row.key && (
-                <span className="text-[10px] font-semibold text-[#16a34a]">Copié</span>
+                <span className="text-[10px] font-semibold text-[#16a34a]">{t("confirmation.bank.copied")}</span>
               )}
             </dd>
           </div>
@@ -111,9 +112,9 @@ function BankTransferDetails({
       </dl>
 
       <p className="mt-4 rounded-lg border border-[#fde68a] bg-[#fffbeb] px-3 py-2 text-[11px] leading-relaxed text-[#92400e]">
-        ⏳ <strong>La production démarre après réception du virement.</strong>{" "}
-        Indiquez bien la référence <span className="font-mono font-bold">{orderNumber}</span> dans
-        le libellé de votre virement pour que nous puissions associer le paiement à votre commande.
+        ⏳ <strong>{t("confirmation.bank.noticeLead")}</strong>{" "}
+        {t("confirmation.bank.noticeBefore")} <span className="font-mono font-bold">{orderNumber}</span>{" "}
+        {t("confirmation.bank.noticeAfter")}
       </p>
     </div>
   );
@@ -122,6 +123,7 @@ function BankTransferDetails({
 // ─── Confirmation content ─────────────────────────────────────────────────────
 
 function ConfirmationContent() {
+  const t = useT();
   const searchParams = useSearchParams();
   const orderId     = searchParams.get("orderId");
   const orderNumber = searchParams.get("orderNumber");
@@ -166,13 +168,13 @@ function ConfirmationContent() {
 
         {/* Titre */}
         <h1 className="mb-3 text-3xl font-black text-[var(--hm-text)]">
-          {isBankTransfer ? "Commande enregistrée !" : "Commande confirmée !"}
+          {isBankTransfer ? t("confirmation.hero.titleBank") : t("confirmation.hero.title")}
         </h1>
 
         {orderNumber && (
           <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--hm-line)]
             bg-[var(--hm-surface)] px-4 py-2 text-sm font-semibold text-[var(--hm-text-soft)]">
-            Référence : <span className="font-black text-[var(--hm-primary)]">{orderNumber}</span>
+            {t("confirmation.referenceLabel")} <span className="font-black text-[var(--hm-primary)]">{orderNumber}</span>
           </p>
         )}
 
@@ -190,10 +192,10 @@ function ConfirmationContent() {
             <Mail size={16} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
             <div>
               <p className="text-sm font-semibold text-[var(--hm-text)] mb-1">
-                Un email de confirmation va vous être envoyé
+                {t("confirmation.email.title")}
               </p>
               <p className="text-xs leading-6 text-[var(--hm-text-soft)]">
-                Conservez le numéro de commande ci-dessus pour tout suivi.
+                {t("confirmation.email.body")}
               </p>
             </div>
           </div>
@@ -201,12 +203,10 @@ function ConfirmationContent() {
             <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
             <div>
               <p className="text-sm font-semibold text-[var(--hm-text)] mb-1">
-                Votre fichier sera vérifié avant production
+                {t("confirmation.check.title")}
               </p>
               <p className="text-xs leading-6 text-[var(--hm-text-soft)]">
-                Nous vous contacterons si votre fichier nécessite des ajustements
-                avant le lancement en production. Aucune pièce n&apos;est produite sans
-                votre validation.
+                {t("confirmation.check.body")}
               </p>
             </div>
           </div>
@@ -214,12 +214,12 @@ function ConfirmationContent() {
             <Clock size={16} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
             <div>
               <p className="text-sm font-semibold text-[var(--hm-text)] mb-1">
-                Délai de production : 7 à 10 jours ouvrés
+                {t("confirmation.delay.title")}
               </p>
               <p className="text-xs leading-6 text-[var(--hm-text-soft)]">
                 {isBankTransfer
-                  ? "Décompté à partir de la réception de votre virement et de la validation du fichier."
-                  : "Après validation du fichier. Livraison par transporteur avec numéro de suivi."}
+                  ? t("confirmation.delay.bodyBank")
+                  : t("confirmation.delay.body")}
               </p>
             </div>
           </div>
@@ -232,22 +232,22 @@ function ConfirmationContent() {
               href={`/mon-compte/commandes/${orderId}`}
               className="btn-primary gap-2"
             >
-              Voir ma commande
+              {t("confirmation.cta.viewOrder")}
               <ArrowRight size={14} />
             </Link>
           )}
           <Link href="/catalogue" className="btn-outline gap-2">
-            Continuer mes achats
+            {t("confirmation.cta.continueShopping")}
           </Link>
         </div>
 
         {/* Contact */}
         <p className="mt-8 text-xs text-[var(--hm-text-muted)]">
-          Une question ?{" "}
+          {t("confirmation.contact.lead")}{" "}
           <Link href="/contact" className="font-semibold text-[var(--hm-primary)] hover:underline">
-            Contactez-nous
+            {t("confirmation.contact.link")}
           </Link>
-          {" "}— nous répondons sous 24h ouvrées.
+          {" "}{t("confirmation.contact.tail")}
         </p>
 
       </div>

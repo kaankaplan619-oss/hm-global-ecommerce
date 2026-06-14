@@ -7,9 +7,11 @@ import { ShoppingBag, Package, Minus, Plus, Trash2, ArrowRight, Upload, X, ZoomI
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/data/pricing";
 import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ── Lightbox simple ────────────────────────────────────────────────────────────
 function Lightbox({ src, label, onClose }: { src: string; label: string; onClose: () => void }) {
+  const t = useT();
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
@@ -22,7 +24,7 @@ function Lightbox({ src, label, onClose }: { src: string; label: string; onClose
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--hm-line)] bg-white">
           <span className="text-xs font-bold text-[var(--hm-text)] uppercase tracking-wider">
-            Aperçu · {label}
+            {t("cartPage.lightbox.preview")} · {label}
           </span>
           <button
             type="button"
@@ -36,11 +38,11 @@ function Lightbox({ src, label, onClose }: { src: string; label: string; onClose
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
-          alt={`Aperçu ${label}`}
+          alt={`${t("cartPage.lightbox.preview")} ${label}`}
           className="w-full h-auto object-contain max-h-[70vh]"
         />
         <p className="py-2 text-center text-[10px] text-[var(--hm-text-muted)]">
-          Cliquez en dehors pour fermer
+          {t("cartPage.lightbox.clickOutside")}
         </p>
       </div>
     </div>
@@ -49,6 +51,7 @@ function Lightbox({ src, label, onClose }: { src: string; label: string; onClose
 
 // ── Page principale ────────────────────────────────────────────────────────────
 export default function PanierPage() {
+  const t = useT();
   const { items, removeItem, updateQuantity, getTotals, clearCart } = useCartStore();
   const totals = getTotals();
 
@@ -62,12 +65,12 @@ export default function PanierPage() {
           <div className="w-20 h-20 rounded-full bg-[var(--hm-surface)] border border-[var(--hm-line)] flex items-center justify-center mx-auto mb-6">
             <ShoppingBag size={32} className="text-[var(--hm-text-muted)]" />
           </div>
-          <h1 className="text-xl font-bold text-[var(--hm-text)] mb-3">Votre panier est vide</h1>
+          <h1 className="text-xl font-bold text-[var(--hm-text)] mb-3">{t("cartPage.empty.title")}</h1>
           <p className="text-sm text-[var(--hm-text-soft)] mb-8">
-            Découvrez notre catalogue de textile personnalisé.
+            {t("cartPage.empty.subtitle")}
           </p>
           <Link href="/catalogue" className="btn-primary">
-            Voir le catalogue
+            {t("cartPage.empty.cta")}
           </Link>
         </div>
       </div>
@@ -88,9 +91,10 @@ export default function PanierPage() {
       <div className="pt-24 pb-20">
         <div className="container">
           <div className="mb-8">
-            <h1 className="text-2xl md:text-3xl font-black text-[var(--hm-text)] mb-2">Mon panier</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[var(--hm-text)] mb-2">{t("cartPage.title")}</h1>
             <p className="text-sm text-[var(--hm-text-soft)]">
-              {totals.totalItems} article{totals.totalItems > 1 ? "s" : ""} sélectionné{totals.totalItems > 1 ? "s" : ""}
+              {totals.totalItems}{" "}
+              {totals.totalItems > 1 ? t("cartPage.itemsSelected.plural") : t("cartPage.itemsSelected.singular")}
             </p>
           </div>
 
@@ -101,12 +105,12 @@ export default function PanierPage() {
                 // Print : on n'affiche que le RECTO (aperçu carte) — plus simple.
                 // Textile : aperçu composé face + dos (BAT Studio).
                 const previewImages = (item.printConfig
-                  ? [{ src: item.printConfig.frontPreviewUrl ?? undefined, label: "Recto" }]
+                  ? [{ src: item.printConfig.frontPreviewUrl ?? undefined, key: "Recto", label: t("cartPage.preview.recto") }]
                   : [
-                      { src: item.composedPreviewUrl,  label: "Face" },
-                      { src: item.composedPreviewBack, label: "Dos"  },
+                      { src: item.composedPreviewUrl,  key: "Face", label: t("cartPage.preview.face") },
+                      { src: item.composedPreviewBack, key: "Dos",  label: t("cartPage.preview.dos")  },
                     ]
-                ).filter((v) => !!v.src) as { src: string; label: string }[];
+                ).filter((v) => !!v.src) as { src: string; key: string; label: string }[];
 
                 return (
                   <div
@@ -118,17 +122,17 @@ export default function PanierPage() {
                       <div className="border-b border-[var(--hm-line)] bg-[#fafaf9] px-5 py-4">
                         <div className="mb-3 flex items-center gap-2">
                           <span className="inline-flex items-center gap-1 rounded-full border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-2.5 py-0.5 text-[10px] font-bold text-[var(--hm-primary)]">
-                            ✨ Personnalisation
+                            ✨ {t("cartPage.customization.badge")}
                           </span>
                           <span className="text-[10px] text-[var(--hm-text-muted)]">
-                            Cliquez pour agrandir
+                            {t("cartPage.customization.clickToZoom")}
                           </span>
                         </div>
 
                         <div className="flex gap-4">
-                          {previewImages.map(({ src, label }) => (
+                          {previewImages.map(({ src, key, label }) => (
                             <button
-                              key={label}
+                              key={key}
                               type="button"
                               onClick={() => setLightbox({ src, label })}
                               className="group flex flex-col items-center gap-1.5"
@@ -138,7 +142,7 @@ export default function PanierPage() {
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={src}
-                                  alt={`Aperçu ${label}`}
+                                  alt={`${t("cartPage.lightbox.preview")} ${label}`}
                                   className="h-full w-full object-contain transition group-hover:scale-105"
                                 />
                                 {/* Overlay loupe */}
@@ -199,7 +203,7 @@ export default function PanierPage() {
                             {PLACEMENT_LABELS[item.placement]}
                           </span>
                           <span className="text-[10px] px-2 py-0.5 bg-[var(--hm-accent-soft-purple)] border border-[var(--hm-line)] rounded font-bold text-[var(--hm-text)]">
-                            Taille {item.size}
+                            {t("cartPage.size")} {item.size}
                           </span>
                           <span className="text-[10px] px-2 py-0.5 bg-[var(--hm-accent-soft-purple)] border border-[var(--hm-line)] rounded text-[var(--hm-text-soft)] flex items-center gap-1">
                             <span
@@ -236,7 +240,7 @@ export default function PanierPage() {
                               <Plus size={10} />
                             </button>
                             <span className="text-[10px] text-[var(--hm-text-soft)]">
-                              × {formatPrice(item.unitPrice)}/pce
+                              × {formatPrice(item.unitPrice)}{t("cartPage.perUnitSuffix")}
                             </span>
                           </div>
                           <span className="text-base font-black text-[var(--hm-text)]">
@@ -253,29 +257,29 @@ export default function PanierPage() {
                 onClick={clearCart}
                 className="text-xs text-[var(--hm-text-muted)] hover:text-red-500 transition-colors self-start"
               >
-                Vider le panier
+                {t("cartPage.clearCart")}
               </button>
             </div>
 
             {/* Order summary */}
             <div className="lg:col-span-1">
               <div className="sticky top-24 p-6 bg-white border border-[var(--hm-line)] rounded-xl shadow-[var(--hm-shadow-sm)]">
-                <h2 className="text-sm font-bold text-[var(--hm-text)] mb-5">Récapitulatif</h2>
+                <h2 className="text-sm font-bold text-[var(--hm-text)] mb-5">{t("cartPage.summary.title")}</h2>
 
                 {/* Totals */}
                 <div className="flex flex-col gap-3 mb-5">
                   <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
-                    <span>Sous-total HT</span>
+                    <span>{t("cartPage.summary.subtotalHT")}</span>
                     <span>{formatPrice(totals.subtotalHT)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
-                    <span>TVA (20%)</span>
+                    <span>{t("cartPage.summary.vat")}</span>
                     <span>{formatPrice(totals.tva)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
-                    <span>Livraison</span>
+                    <span>{t("cartPage.summary.delivery")}</span>
                     <span className={totals.freeShipping ? "text-[#4ade80] font-semibold" : ""}>
-                      {totals.freeShipping ? "Offerte ✓" : formatPrice(totals.shipping)}
+                      {totals.freeShipping ? t("cartPage.summary.free") : formatPrice(totals.shipping)}
                     </span>
                   </div>
                 </div>
@@ -284,7 +288,8 @@ export default function PanierPage() {
                 {!totals.freeShipping && (
                   <div className="mb-5 p-3 bg-[var(--hm-surface)] rounded-lg">
                     <p className="text-xs text-[var(--hm-text-soft)] mb-2">
-                      Livraison offerte dès <strong className="text-[var(--hm-primary)]">10 pièces</strong>
+                      {t("cartPage.freeShipping.before")}{" "}
+                      <strong className="text-[var(--hm-primary)]">{t("cartPage.freeShipping.threshold")}</strong>
                     </p>
                     <div className="h-1.5 bg-[var(--hm-line)] rounded-full overflow-hidden">
                       <div
@@ -293,7 +298,8 @@ export default function PanierPage() {
                       />
                     </div>
                     <p className="text-[10px] text-[var(--hm-text-muted)] mt-1.5">
-                      {totals.totalItems}/10 articles ({10 - totals.totalItems} restant{totals.totalItems < 9 ? "s" : ""})
+                      {totals.totalItems}/10 {t("cartPage.freeShipping.items")} ({10 - totals.totalItems}{" "}
+                      {totals.totalItems < 9 ? t("cartPage.freeShipping.remaining.plural") : t("cartPage.freeShipping.remaining.singular")})
                     </p>
                   </div>
                 )}
@@ -301,25 +307,29 @@ export default function PanierPage() {
                 <div className="divider-brand mb-5" />
 
                 <div className="flex justify-between items-center mb-5">
-                  <span className="font-bold text-[var(--hm-text)]">Total TTC</span>
+                  <span className="font-bold text-[var(--hm-text)]">{t("cartPage.summary.totalTTC")}</span>
                   <span className="text-2xl font-black text-[var(--hm-primary)]">
                     {formatPrice(totals.totalTTC)}
                   </span>
                 </div>
 
                 <Link href="/checkout" className="btn-primary w-full text-center gap-2">
-                  Passer la commande
+                  {t("cartPage.checkout")}
                   <ArrowRight size={14} />
                 </Link>
 
                 <Link href="/catalogue" className="btn-ghost w-full text-center mt-2 text-xs">
-                  Continuer mes achats
+                  {t("cartPage.continueShopping")}
                 </Link>
 
                 {/* Trust */}
                 <div className="mt-5 pt-4 border-t border-[var(--hm-line)] flex flex-col gap-2">
-                  {["🔒 Paiement sécurisé Stripe", "📦 Suivi de commande inclus", "↩ Annulation 30 minutes"].map((t) => (
-                    <p key={t} className="text-[10px] text-[var(--hm-text-muted)]">{t}</p>
+                  {[
+                    `🔒 ${t("cartPage.trust.payment")}`,
+                    `📦 ${t("cartPage.trust.tracking")}`,
+                    `↩ ${t("cartPage.trust.cancellation")}`,
+                  ].map((line) => (
+                    <p key={line} className="text-[10px] text-[var(--hm-text-muted)]">{line}</p>
                   ))}
                 </div>
               </div>

@@ -9,6 +9,8 @@ import LocalBusinessJsonLd from "@/components/seo/LocalBusinessJsonLd";
 import AuthSync from "@/components/auth/AuthSync";
 import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import { I18nProvider } from "@/components/i18n/I18nProvider";
+import { getLocale } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: {
@@ -64,24 +66,27 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
   return (
-    <html lang="fr">
+    <html lang={locale}>
       <body className="bg-white text-[var(--hm-text)] antialiased">
-        <AuthSync />
-        <LocalBusinessJsonLd />
-        <Header />
-        <CartDrawer />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <QuoteAssistant />
-        <CookieConsent />
-        <AnalyticsTracker />
-        <GoogleAnalytics />
+        <I18nProvider initialLocale={locale}>
+          <AuthSync />
+          <LocalBusinessJsonLd />
+          <Header />
+          <CartDrawer />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <QuoteAssistant />
+          <CookieConsent />
+          <AnalyticsTracker />
+          <GoogleAnalytics />
+        </I18nProvider>
       </body>
     </html>
   );

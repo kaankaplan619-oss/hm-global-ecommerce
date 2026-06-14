@@ -1,24 +1,28 @@
+"use client";
+
 import type { Product, Technique, ProductCategory } from "@/types";
 import { Printer, Layers, Star, Tag, Leaf, Ruler, Shield, Sparkles } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ── Technique labels & descriptions ──────────────────────────────────────────
+// Les valeurs sont des CLÉS de traduction résolues via t() dans le rendu.
 
 const TECHNIQUE_LABELS: Record<Technique, string> = {
-  dtf:                "Impression DTF",
-  dtflex:             "DTFlex",
-  flex:               "Flocage Flex",
-  broderie:           "Broderie Standard",
-  broderie_illimitee: "Broderie · Couleur illimitée",
-  print:              "Impression",
+  dtf:                "features.technique.dtf.label",
+  dtflex:             "features.technique.dtflex.label",
+  flex:               "features.technique.flex.label",
+  broderie:           "features.technique.broderie.label",
+  broderie_illimitee: "features.technique.broderie_illimitee.label",
+  print:              "features.technique.print.label",
 };
 
 const TECHNIQUE_DESC: Record<Technique, string> = {
-  dtf:                "Couleurs vives, dégradés, visuels complexes. Rendu photo-réaliste.",
-  dtflex:             "DTF sur film flex — toucher soyeux, très longue durée de vie.",
-  flex:               "Logos simples, typographies, aplats de couleur. Très durable.",
-  broderie:           "Finition premium en relief, jusqu'à 6 couleurs incluses.",
-  broderie_illimitee: "Broderie en couleurs illimitées — aucun surcoût couleur.",
-  print:              "Impression offset numérique haute résolution.",
+  dtf:                "features.technique.dtf.desc",
+  dtflex:             "features.technique.dtflex.desc",
+  flex:               "features.technique.flex.desc",
+  broderie:           "features.technique.broderie.desc",
+  broderie_illimitee: "features.technique.broderie_illimitee.desc",
+  print:              "features.technique.print.desc",
 };
 
 const TECHNIQUE_COLOR_CLASS: Record<Technique, string> = {
@@ -30,40 +34,42 @@ const TECHNIQUE_COLOR_CLASS: Record<Technique, string> = {
   print:              "bg-gray-50 text-gray-700 border-gray-200",
 };
 
-// Emplacements par technique (Printful-style, enrichis)
+// Emplacements par technique (Printful-style, enrichis) — CLÉS de traduction.
 const PLACEMENTS_BY_TECHNIQUE: Record<Technique, string[]> = {
-  dtf:                ["Cœur (poitrine gauche)", "Dos centré", "Cœur + Dos"],
-  dtflex:             ["Cœur (poitrine gauche)", "Dos centré", "Manche gauche", "Manche droite", "Étiquette intérieure"],
-  flex:               ["Cœur (poitrine gauche)", "Dos centré", "Cœur + Dos"],
-  broderie:           ["Cœur (poitrine gauche)", "Dos centré", "Manche gauche", "Manche droite"],
-  broderie_illimitee: ["Cœur (poitrine gauche)", "Dos centré", "Manche gauche"],
-  print:              ["Recto", "Recto-verso"],
+  dtf:                ["features.placement.coeur", "features.placement.dos", "features.placement.coeur_dos"],
+  dtflex:             ["features.placement.coeur", "features.placement.dos", "features.placement.manche_gauche", "features.placement.manche_droite", "features.placement.etiquette_interieure"],
+  flex:               ["features.placement.coeur", "features.placement.dos", "features.placement.coeur_dos"],
+  broderie:           ["features.placement.coeur", "features.placement.dos", "features.placement.manche_gauche", "features.placement.manche_droite"],
+  broderie_illimitee: ["features.placement.coeur", "features.placement.dos", "features.placement.manche_gauche"],
+  print:              ["features.placement.recto", "features.placement.recto_verso"],
 };
 
 const PLACEMENT_LABELS_SIMPLE: Record<string, string> = {
-  coeur:      "Cœur (poitrine gauche)",
-  dos:        "Dos centré",
-  "coeur-dos": "Cœur + Dos (recto/verso)",
+  coeur:      "features.placement.coeur",
+  dos:        "features.placement.dos",
+  "coeur-dos": "features.placement.coeur_dos_rv",
 };
 
 // Wording non-vestimentaire : « poitrine gauche / manches » n'a pas de sens
-// sur une casquette ou un sac.
+// sur une casquette ou un sac. — CLÉS de traduction.
 const OBJECT_PLACEMENT_LABELS: Record<string, string> = {
-  coeur:      "Face avant",
-  dos:        "Dos",
-  "coeur-dos": "Avant + Dos",
+  coeur:      "features.placement.face_avant",
+  dos:        "features.placement.dos_objet",
+  "coeur-dos": "features.placement.avant_dos",
 };
 
 // Emplacements affichés pour une technique sur un produit donné :
 // goodies → wording objet ; contrainte produit (techniqueConstraints) → liste
 // réellement commandable ; casquettes/sacs → emplacements réels du produit ;
 // sinon → liste indicative par technique (textile atelier).
+// Retourne soit une CLÉ de traduction, soit un libellé brut (issu des données
+// produit) ; le rendu résout les clés via t() et laisse les libellés tels quels.
 function getDisplayedPlacements(product: Product, t: Technique): string[] {
   if (product.category === "goodies") {
     return [
-      "Impression logo ou visuel",
-      "Zone personnalisable selon gabarit produit",
-      "Validation du visuel avant production",
+      "features.goodies.placement.impression",
+      "features.goodies.placement.zone",
+      "features.goodies.placement.validation",
     ];
   }
   const constrained = product.techniqueConstraints?.[t]?.placements;
@@ -87,80 +93,81 @@ type StyleInfo = {
   extraDesc:  string;
 };
 
+// Valeurs = CLÉS de traduction résolues via t() dans le rendu.
 const STYLE_BY_CATEGORY: Record<ProductCategory, StyleInfo> = {
   tshirts: {
-    lookTitle:  "Look polyvalent",
-    lookDesc:   "Coton épais qui donne une belle tenue sans être rigide, parfait pour tous les usages.",
-    coupeTitle: "Coupe régulière",
-    coupeDesc:  "Longueur standard, tissu qui s'adapte aux mouvements sans tirer.",
-    extraTitle: "Construction tubulaire",
-    extraDesc:  "Fabriqué d'une seule pièce de tissu, sans coutures latérales.",
+    lookTitle:  "features.style.tshirts.lookTitle",
+    lookDesc:   "features.style.tshirts.lookDesc",
+    coupeTitle: "features.style.tshirts.coupeTitle",
+    coupeDesc:  "features.style.tshirts.coupeDesc",
+    extraTitle: "features.style.tshirts.extraTitle",
+    extraDesc:  "features.style.tshirts.extraDesc",
   },
   hoodies: {
-    lookTitle:  "Look streetwear",
-    lookDesc:   "Coton épais et capuche structurée pour un rendu premium immédiat.",
-    coupeTitle: "Coupe décontractée",
-    coupeDesc:  "Silhouette ample confortable, épaules bien placées.",
-    extraTitle: "Poche kangourou",
-    extraDesc:  "Grande poche avant pour les mains, pratique et stylée.",
+    lookTitle:  "features.style.hoodies.lookTitle",
+    lookDesc:   "features.style.hoodies.lookDesc",
+    coupeTitle: "features.style.hoodies.coupeTitle",
+    coupeDesc:  "features.style.hoodies.coupeDesc",
+    extraTitle: "features.style.hoodies.extraTitle",
+    extraDesc:  "features.style.hoodies.extraDesc",
   },
   softshells: {
-    lookTitle:  "Look technique premium",
-    lookDesc:   "Tissu tricoté 3 couches, aspect professionnel et moderne.",
-    coupeTitle: "Coupe ajustée (Slim fit)",
-    coupeDesc:  "Silhouette affinée qui valorise la morphologie.",
-    extraTitle: "Traitement déperlant",
-    extraDesc:  "Résistant aux projections d'eau légères et au vent.",
+    lookTitle:  "features.style.softshells.lookTitle",
+    lookDesc:   "features.style.softshells.lookDesc",
+    coupeTitle: "features.style.softshells.coupeTitle",
+    coupeDesc:  "features.style.softshells.coupeDesc",
+    extraTitle: "features.style.softshells.extraTitle",
+    extraDesc:  "features.style.softshells.extraDesc",
   },
   polos: {
-    lookTitle:  "Look professionnel",
-    lookDesc:   "Col polo tricoté et finitions soignées pour un rendu corporate.",
-    coupeTitle: "Coupe classique",
-    coupeDesc:  "Ni trop ample ni trop ajusté, idéal pour le travail.",
-    extraTitle: "Tissu respirant",
-    extraDesc:  "Fil peigné pour un toucher doux et une bonne évacuation de l'humidité.",
+    lookTitle:  "features.style.polos.lookTitle",
+    lookDesc:   "features.style.polos.lookDesc",
+    coupeTitle: "features.style.polos.coupeTitle",
+    coupeDesc:  "features.style.polos.coupeDesc",
+    extraTitle: "features.style.polos.extraTitle",
+    extraDesc:  "features.style.polos.extraDesc",
   },
   polaires: {
-    lookTitle:  "Look chaud & léger",
-    lookDesc:   "Polaire microfibre pour une chaleur optimale sans alourdissement.",
-    coupeTitle: "Coupe confort",
-    coupeDesc:  "Espace suffisant pour se superposer sur un t-shirt.",
-    extraTitle: "Anti-boulochage",
-    extraDesc:  "Tissu traité pour garder son aspect neuf sur la durée.",
+    lookTitle:  "features.style.polaires.lookTitle",
+    lookDesc:   "features.style.polaires.lookDesc",
+    coupeTitle: "features.style.polaires.coupeTitle",
+    coupeDesc:  "features.style.polaires.coupeDesc",
+    extraTitle: "features.style.polaires.extraTitle",
+    extraDesc:  "features.style.polaires.extraDesc",
   },
   casquettes: {
-    lookTitle:  "Profil structuré",
-    lookDesc:   "Panneau avant rigide qui maintient parfaitement la forme.",
-    coupeTitle: "Taille universelle",
-    coupeDesc:  "Fermeture réglable à l'arrière pour s'adapter à toutes les têtes.",
-    extraTitle: "Visière pré-courbée",
-    extraDesc:  "Cambre parfait prêt à porter, sans besoin de formage.",
+    lookTitle:  "features.style.casquettes.lookTitle",
+    lookDesc:   "features.style.casquettes.lookDesc",
+    coupeTitle: "features.style.casquettes.coupeTitle",
+    coupeDesc:  "features.style.casquettes.coupeDesc",
+    extraTitle: "features.style.casquettes.extraTitle",
+    extraDesc:  "features.style.casquettes.extraDesc",
   },
   sacs: {
-    lookTitle:  "Format généreux",
-    lookDesc:   "Grande surface d'impression visible, impact visuel maximal.",
-    coupeTitle: "Anses longues",
-    coupeDesc:  "Portage épaule confortable, adapté à un usage quotidien.",
-    extraTitle: "Fond plat renforcé",
-    extraDesc:  "Tient debout seul, stable pour les courses ou les goodies.",
+    lookTitle:  "features.style.sacs.lookTitle",
+    lookDesc:   "features.style.sacs.lookDesc",
+    coupeTitle: "features.style.sacs.coupeTitle",
+    coupeDesc:  "features.style.sacs.coupeDesc",
+    extraTitle: "features.style.sacs.extraTitle",
+    extraDesc:  "features.style.sacs.extraDesc",
   },
   // Fallback générique — chaque goodie (mug, sticker, dessous de verre…) doit
   // définir son propre product.styleInfo dans data/products.ts.
   goodies: {
-    lookTitle:  "Impression pleine couleur",
-    lookDesc:   "Votre logo ou visuel imprimé en haute définition, couleurs éclatantes.",
-    coupeTitle: "Format adapté à l'objet",
-    coupeDesc:  "Dimensions et zone d'impression détaillées sur chaque fiche produit.",
-    extraTitle: "Qualité durable",
-    extraDesc:  "Matériaux sélectionnés pour un usage quotidien en entreprise.",
+    lookTitle:  "features.style.goodies.lookTitle",
+    lookDesc:   "features.style.goodies.lookDesc",
+    coupeTitle: "features.style.goodies.coupeTitle",
+    coupeDesc:  "features.style.goodies.coupeDesc",
+    extraTitle: "features.style.goodies.extraTitle",
+    extraDesc:  "features.style.goodies.extraDesc",
   },
   enfants: {
-    lookTitle:  "Coupe enfant",
-    lookDesc:   "Proportions adaptées pour un confort optimal de 3 à 14 ans.",
-    coupeTitle: "Coupe régulière",
-    coupeDesc:  "Ni trop ample ni trop étroit, laisse de la liberté de mouvement.",
-    extraTitle: "Matières douces",
-    extraDesc:  "Coton certifié Oeko-Tex, doux pour les peaux sensibles.",
+    lookTitle:  "features.style.enfants.lookTitle",
+    lookDesc:   "features.style.enfants.lookDesc",
+    coupeTitle: "features.style.enfants.coupeTitle",
+    coupeDesc:  "features.style.enfants.coupeDesc",
+    extraTitle: "features.style.enfants.extraTitle",
+    extraDesc:  "features.style.enfants.extraDesc",
   },
 };
 
@@ -185,18 +192,19 @@ const FABRIC_SCALES: Record<ProductCategory, FabricScales> = {
 };
 
 // ── Caractéristiques par catégorie ────────────────────────────────────────────
+// Valeurs = CLÉS de traduction résolues via t() dans le rendu.
 
 const FEATURES_BY_CATEGORY: Record<ProductCategory, string[]> = {
-  tshirts:    ["Coutures double-aiguille renforcées", "Col côtelé avec fil Lycra®", "Lavable en machine à 60°", "Certifié Oeko-Tex Standard 100", "Compatible tous types de marquage"],
-  hoodies:    ["Poche kangourou double épaisseur", "Cordon de serrage en coton", "Poignets et bas côtelés 1×1", "Certifié Oeko-Tex Standard 100", "Lavable en machine à 40°"],
-  softshells: ["3 couches : polyester / polaire / membrane", "Résistant au vent & déperlant DWR", "Doublure polaire intérieure 100 g", "2 poches zippées + poche intérieure", "Manchettes élastiques anti-froid"],
-  polos:      ["Col polo tricoté sans couture", "Boutons nacre ton-sur-ton", "Tissu Jersey respirant", "Entretien facile 40°C", "Coutures épaule à épaule"],
-  polaires:   ["100% polyester recyclé", "Traitement déperlant DWR", "Col zippé 1/4 ou intégral", "Résistant aux lavages intensifs", "Anti-boulochage longue durée"],
-  casquettes: ["Bande de sueur intégrée absorbante", "Bouton supérieur tressé", "Visière pré-courbée 6 panneaux", "Fermeture réglable à scratch ou boucle", "Construction structurée haute tenue"],
-  sacs:       ["Anses renforcées double couture", "Fond plat stable portage aisé", "Coton bio certifié GOTS", "Grande zone d'impression recto", "Résistant charges jusqu'à 10 kg"],
+  tshirts:    ["features.list.tshirts.0", "features.list.tshirts.1", "features.list.tshirts.2", "features.list.tshirts.3", "features.list.tshirts.4"],
+  hoodies:    ["features.list.hoodies.0", "features.list.hoodies.1", "features.list.hoodies.2", "features.list.hoodies.3", "features.list.hoodies.4"],
+  softshells: ["features.list.softshells.0", "features.list.softshells.1", "features.list.softshells.2", "features.list.softshells.3", "features.list.softshells.4"],
+  polos:      ["features.list.polos.0", "features.list.polos.1", "features.list.polos.2", "features.list.polos.3", "features.list.polos.4"],
+  polaires:   ["features.list.polaires.0", "features.list.polaires.1", "features.list.polaires.2", "features.list.polaires.3", "features.list.polaires.4"],
+  casquettes: ["features.list.casquettes.0", "features.list.casquettes.1", "features.list.casquettes.2", "features.list.casquettes.3", "features.list.casquettes.4"],
+  sacs:       ["features.list.sacs.0", "features.list.sacs.1", "features.list.sacs.2", "features.list.sacs.3", "features.list.sacs.4"],
   // Fallback générique — chaque goodie doit définir product.featureHighlights dans data/products.ts.
-  goodies:    ["Impression pleine couleur haute définition", "Matériaux qualité supérieure", "Visuel vérifié avant production", "Commande possible dès 1 pièce", "Production et expédition UE"],
-  enfants:    ["Matières certifiées Oeko-Tex", "Coutures plates sans irritation", "Étiquette repositionnable", "Lavable à 40°C sans déformation", "Coupe adaptée de 3 à 12 ans"],
+  goodies:    ["features.list.goodies.0", "features.list.goodies.1", "features.list.goodies.2", "features.list.goodies.3", "features.list.goodies.4"],
+  enfants:    ["features.list.enfants.0", "features.list.enfants.1", "features.list.enfants.2", "features.list.enfants.3", "features.list.enfants.4"],
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -206,18 +214,20 @@ function parseGrams(w: string): number {
   return m ? parseInt(m[1], 10) : 0;
 }
 
-function weightLabel(g: number): string {
-  if (g < 150) return "Très léger";
-  if (g < 200) return "Léger / Medium";
-  if (g < 260) return "Épais";
-  if (g < 320) return "Très épais";
-  return "Lourd";
+// Retourne une CLÉ de traduction (résolue via t() dans le rendu).
+function weightLabelKey(g: number): string {
+  if (g < 150) return "features.weight.tresLeger";
+  if (g < 200) return "features.weight.legerMedium";
+  if (g < 260) return "features.weight.epais";
+  if (g < 320) return "features.weight.tresEpais";
+  return "features.weight.lourd";
 }
 
 function weightPercent(g: number): number {
   return Math.min(100, Math.max(0, ((g - 100) / 300) * 100));
 }
 
+// Certifications fournisseur = données catalogue, non traduites.
 const CERTS_BY_SUPPLIER: Record<string, string[]> = {
   "falk-ross": ["Oeko-Tex Standard 100", "REACH conforme"],
   "toptex":    ["Oeko-Tex Standard 100", "GOTS (coton bio certifié)"],
@@ -253,6 +263,8 @@ interface Props {
 }
 
 export default function ProductFeaturesSection({ product }: Props) {
+  const t = useT();
+
   const style    = product.styleInfo ?? STYLE_BY_CATEGORY[product.category] ?? STYLE_BY_CATEGORY.tshirts;
   const scales   = FABRIC_SCALES[product.category]      ?? { epaisseur: 50, douceur: 60 };
   const features = product.featureHighlights ?? FEATURES_BY_CATEGORY[product.category] ?? [];
@@ -260,13 +272,17 @@ export default function ProductFeaturesSection({ product }: Props) {
   const certs    = CERTS_BY_SUPPLIER[product.supplierName ?? ""] ?? ["Oeko-Tex Standard 100"];
   const grams    = parseGrams(product.weight);
   const wPct     = weightPercent(grams);
-  const wLabel   = weightLabel(grams);
+  const wLabel   = t(weightLabelKey(grams));
+
+  // Résout une valeur : si c'est une clé de traduction "features.*", renvoie la
+  // traduction ; sinon (libellé brut issu des données produit) renvoie tel quel.
+  const resolve = (v: string) => (v.startsWith("features.") ? t(v) : v);
 
   return (
     <section className="mb-16">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <h2 className="text-lg font-bold text-[var(--hm-text)] whitespace-nowrap">Caractéristiques du produit</h2>
+        <h2 className="text-lg font-bold text-[var(--hm-text)] whitespace-nowrap">{t("features.section.title")}</h2>
         <div className="h-[1px] flex-1 bg-[var(--hm-line)]" />
       </div>
 
@@ -279,27 +295,27 @@ export default function ProductFeaturesSection({ product }: Props) {
               <Printer size={15} className="text-[var(--hm-rose)]" />
             </div>
             <p className="text-xs font-bold uppercase tracking-widest text-[var(--hm-text)]">
-              Options de personnalisation
+              {t("features.card.customization")}
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
-            {product.techniques.map((t) => (
-              <div key={t} className={`rounded-xl border px-3 py-2.5 ${TECHNIQUE_COLOR_CLASS[t]}`}>
+            {product.techniques.map((tech) => (
+              <div key={tech} className={`rounded-xl border px-3 py-2.5 ${TECHNIQUE_COLOR_CLASS[tech]}`}>
                 {/* Goodies : pas de DTF textile — impression pleine couleur (sublimation, vinyle…) */}
                 <p className="text-[11px] font-bold leading-tight mb-1.5">
-                  {isGoodie ? "Impression pleine couleur" : TECHNIQUE_LABELS[t]}
+                  {isGoodie ? t("features.goodies.printTitle") : t(TECHNIQUE_LABELS[tech])}
                 </p>
                 <p className="text-[10px] leading-snug opacity-75 mb-2">
                   {isGoodie
-                    ? "Impression haute définition de votre logo ou visuel, couleurs éclatantes et durables."
-                    : TECHNIQUE_DESC[t]}
+                    ? t("features.goodies.printDesc")
+                    : t(TECHNIQUE_DESC[tech])}
                 </p>
                 <div className="flex flex-col gap-0.5">
-                  {getDisplayedPlacements(product, t).map((pl) => (
+                  {getDisplayedPlacements(product, tech).map((pl) => (
                     <div key={pl} className="flex items-center gap-1.5 text-[10px] opacity-80">
                       <span className="text-[8px]">✓</span>
-                      {pl}
+                      {resolve(pl)}
                     </div>
                   ))}
                 </div>
@@ -315,25 +331,25 @@ export default function ProductFeaturesSection({ product }: Props) {
               <Ruler size={15} className="text-[var(--hm-purple)]" />
             </div>
             <p className="text-xs font-bold uppercase tracking-widest text-[var(--hm-text)]">
-              Style et coupe
+              {t("features.card.style")}
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
             {/* Look */}
             <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-3">
-              <p className="text-[11px] font-bold text-[var(--hm-text)] mb-1">{style.lookTitle}</p>
-              <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">{style.lookDesc}</p>
+              <p className="text-[11px] font-bold text-[var(--hm-text)] mb-1">{resolve(style.lookTitle)}</p>
+              <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">{resolve(style.lookDesc)}</p>
             </div>
             {/* Coupe */}
             <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-3">
-              <p className="text-[11px] font-bold text-[var(--hm-text)] mb-1">{style.coupeTitle}</p>
-              <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">{style.coupeDesc}</p>
+              <p className="text-[11px] font-bold text-[var(--hm-text)] mb-1">{resolve(style.coupeTitle)}</p>
+              <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">{resolve(style.coupeDesc)}</p>
             </div>
             {/* Extra */}
             <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-3">
-              <p className="text-[11px] font-bold text-[var(--hm-text)] mb-1">{style.extraTitle}</p>
-              <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">{style.extraDesc}</p>
+              <p className="text-[11px] font-bold text-[var(--hm-text)] mb-1">{resolve(style.extraTitle)}</p>
+              <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">{resolve(style.extraDesc)}</p>
             </div>
           </div>
         </div>
@@ -345,13 +361,13 @@ export default function ProductFeaturesSection({ product }: Props) {
               <Layers size={15} className="text-[var(--hm-primary)]" />
             </div>
             <p className="text-xs font-bold uppercase tracking-widest text-[var(--hm-text)]">
-              Matériau
+              {t("features.card.material")}
             </p>
           </div>
 
           {/* Composition */}
           <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-2.5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--hm-text-soft)] mb-1">Composition</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--hm-text-soft)] mb-1">{t("features.material.composition")}</p>
             <p className="text-[12px] font-bold text-[var(--hm-text)] leading-snug">{product.composition}</p>
             {grams > 0 && (
               <p className="text-[10px] text-[var(--hm-text-muted)] mt-0.5">
@@ -365,16 +381,16 @@ export default function ProductFeaturesSection({ product }: Props) {
             <div className="flex flex-col gap-3">
               {grams > 0 && (
                 <ScaleBar
-                  label="Épaisseur du tissu"
-                  leftLabel="Léger"
-                  rightLabel="Lourd"
+                  label={t("features.scale.thickness.label")}
+                  leftLabel={t("features.scale.thickness.left")}
+                  rightLabel={t("features.scale.thickness.right")}
                   value={wPct}
                 />
               )}
               <ScaleBar
-                label="Échelle de douceur"
-                leftLabel="Ferme"
-                rightLabel="Extra doux"
+                label={t("features.scale.softness.label")}
+                leftLabel={t("features.scale.softness.left")}
+                rightLabel={t("features.scale.softness.right")}
                 value={scales.douceur}
               />
             </div>
@@ -383,7 +399,7 @@ export default function ProductFeaturesSection({ product }: Props) {
           {/* Certifications */}
           <div>
             <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--hm-text-soft)]">
-              Certifications
+              {t("features.material.certifications")}
             </p>
             <div className="flex flex-col gap-1.5">
               {certs.map((c) => (
@@ -403,7 +419,7 @@ export default function ProductFeaturesSection({ product }: Props) {
               <Star size={15} className="text-[var(--hm-rose)]" />
             </div>
             <p className="text-xs font-bold uppercase tracking-widest text-[var(--hm-text)]">
-              Caractéristiques
+              {t("features.card.features")}
             </p>
           </div>
 
@@ -411,7 +427,7 @@ export default function ProductFeaturesSection({ product }: Props) {
             {features.map((f) => (
               <div key={f} className="flex items-start gap-2.5">
                 <Shield size={11} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
-                <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">{f}</p>
+                <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">{resolve(f)}</p>
               </div>
             ))}
           </div>
@@ -422,13 +438,13 @@ export default function ProductFeaturesSection({ product }: Props) {
               <div className="flex items-center gap-2 mb-1">
                 <Tag size={11} className="text-[var(--hm-primary)] shrink-0" />
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--hm-primary)]">
-                  Étiquette détachable
+                  {t("features.label.title")}
                 </p>
               </div>
               <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">
                 {product.category === "casquettes" || product.category === "sacs"
-                  ? "Étiquette tissée permanente."
-                  : "Étiquette repositionnable retirable — idéal pour ajouter votre propre étiquette intérieure personnalisée."}
+                  ? t("features.label.woven")
+                  : t("features.label.removable")}
               </p>
             </div>
           )}
@@ -437,7 +453,7 @@ export default function ProductFeaturesSection({ product }: Props) {
           <div className="flex items-start gap-2">
             <Sparkles size={11} className="mt-0.5 shrink-0 text-[var(--hm-purple)]" />
             <p className="text-[10px] text-[var(--hm-text-soft)] leading-snug italic">
-              HM Global valide chaque fichier avant production pour garantir un rendu parfait.
+              {t("features.note.validation")}
             </p>
           </div>
         </div>

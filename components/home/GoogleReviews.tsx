@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import { getGoogleReviews, FALLBACK_MAPS_URI } from "@/lib/google-reviews";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * GoogleReviews — Bandeau d'avis Google (server component async).
@@ -23,6 +24,7 @@ function fmtRating(n: number): string {
 
 export default async function GoogleReviews() {
   const data = await getGoogleReviews();
+  const t = await getT();
   const rating  = data?.rating  ?? FALLBACK_RATING;
   const total   = data?.total   ?? FALLBACK_TOTAL;
   const mapsUri = data?.mapsUri ?? FALLBACK_MAPS_URI;
@@ -39,7 +41,7 @@ export default async function GoogleReviews() {
               <span className="text-xl font-bold text-amber-600">{fmtRating(rating)}</span>
             </div>
             <div>
-              <div className="flex items-center gap-0.5" aria-label={`Note ${fmtRating(rating)} sur 5`}>
+              <div className="flex items-center gap-0.5" aria-label={`${t("home.reviews.rating")} ${fmtRating(rating)}/5`}>
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
@@ -50,14 +52,14 @@ export default async function GoogleReviews() {
                 ))}
               </div>
               <p className="mt-1 text-[12px] text-[var(--hm-text-soft)]">
-                Note moyenne ·{" "}
+                {t("home.reviews.averageRating")} ·{" "}
                 <a
                   href={mapsUri}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-semibold text-[var(--hm-text)] underline decoration-dotted underline-offset-2 transition hover:text-[var(--hm-primary)]"
                 >
-                  {total} avis Google
+                  {total} {t("home.reviews.googleReviews")}
                 </a>
               </p>
             </div>
@@ -68,7 +70,7 @@ export default async function GoogleReviews() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hm-line)] bg-white px-4 py-2 text-[12px] font-semibold text-[var(--hm-text)] shadow-sm transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
           >
-            Lire les avis sur Google
+            {t("home.reviews.readOnGoogle")}
           </a>
         </div>
 

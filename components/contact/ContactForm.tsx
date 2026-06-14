@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * ContactForm — formulaire de contact public (demande Kaan 2026-06-13).
@@ -20,11 +21,20 @@ const SUBJECTS = [
   "Autre demande",
 ];
 
+const SUBJECT_KEYS = [
+  "contactForm.subjects.textile",
+  "contactForm.subjects.dtfFlexEmbroidery",
+  "contactForm.subjects.logoIdentity",
+  "contactForm.subjects.signagePrint",
+  "contactForm.subjects.other",
+];
+
 const inputClass =
   "w-full rounded-xl border border-[var(--hm-line)] bg-white px-4 py-3 text-sm text-[var(--hm-text)] placeholder:text-[var(--hm-text-muted)] outline-none transition-colors focus:border-[rgba(177,63,116,0.4)] focus:ring-2 focus:ring-[rgba(177,63,116,0.12)]";
 const labelClass = "mb-1.5 block text-[13px] font-semibold text-[var(--hm-text)]";
 
 export default function ContactForm({ defaultSubject }: { defaultSubject?: string }) {
+  const t = useT();
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -54,14 +64,14 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setErrorMsg(json.error || "L'envoi a échoué. Réessayez.");
+        setErrorMsg(json.error || t("contactForm.errors.sendFailed"));
         setStatus("error");
         return;
       }
       setStatus("sent");
       form.reset();
     } catch {
-      setErrorMsg("Connexion impossible. Vérifiez votre réseau et réessayez.");
+      setErrorMsg(t("contactForm.errors.network"));
       setStatus("error");
     }
   }
@@ -72,21 +82,20 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--hm-accent-soft-rose)]">
           <CheckCircle2 className="h-7 w-7 text-[var(--hm-rose)]" />
         </div>
-        <h3 className="text-xl font-semibold text-[var(--hm-text)]">Message envoyé, merci !</h3>
+        <h3 className="text-xl font-semibold text-[var(--hm-text)]">{t("contactForm.success.title")}</h3>
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--hm-text-soft)]">
-          Nous revenons vers vous au plus vite, généralement sous 24 h ouvrées. Pour une demande
-          urgente, vous pouvez aussi nous appeler au{" "}
+          {t("contactForm.success.bodyBeforePhone")}{" "}
           <a href="tel:+33676161188" className="font-semibold text-[var(--hm-rose)]">
             06 76 16 11 88
           </a>
-          .
+          {t("contactForm.success.bodyAfterPhone")}
         </p>
         <button
           type="button"
           onClick={() => setStatus("idle")}
           className="mt-6 text-sm font-semibold text-[var(--hm-rose)] underline-offset-4 hover:underline"
         >
-          Envoyer un autre message
+          {t("contactForm.success.again")}
         </button>
       </div>
     );
@@ -97,38 +106,38 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
       onSubmit={handleSubmit}
       className="rounded-3xl border border-[var(--hm-line)] bg-white p-7 shadow-[0_18px_48px_rgba(63,45,88,0.08)]"
     >
-      <h2 className="mb-1 text-2xl font-semibold text-[var(--hm-text)]">Écrivez-nous</h2>
+      <h2 className="mb-1 text-2xl font-semibold text-[var(--hm-text)]">{t("contactForm.heading")}</h2>
       <p className="mb-6 text-sm leading-6 text-[var(--hm-text-soft)]">
-        Décrivez votre besoin en quelques lignes — nous vous répondons directement par email.
+        {t("contactForm.intro")}
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="ct-name" className={labelClass}>
-            Nom / structure *
+            {t("contactForm.fields.name")}
           </label>
-          <input id="ct-name" name="name" type="text" required autoComplete="name" className={inputClass} placeholder="Votre nom ou société" />
+          <input id="ct-name" name="name" type="text" required autoComplete="name" className={inputClass} placeholder={t("contactForm.placeholders.name")} />
         </div>
         <div>
           <label htmlFor="ct-email" className={labelClass}>
-            Email *
+            {t("contactForm.fields.email")}
           </label>
-          <input id="ct-email" name="email" type="email" required autoComplete="email" className={inputClass} placeholder="vous@exemple.fr" />
+          <input id="ct-email" name="email" type="email" required autoComplete="email" className={inputClass} placeholder={t("contactForm.placeholders.email")} />
         </div>
         <div>
           <label htmlFor="ct-phone" className={labelClass}>
-            Téléphone <span className="font-normal text-[var(--hm-text-muted)]">(facultatif)</span>
+            {t("contactForm.fields.phone")} <span className="font-normal text-[var(--hm-text-muted)]">{t("contactForm.fields.optional")}</span>
           </label>
-          <input id="ct-phone" name="phone" type="tel" autoComplete="tel" className={inputClass} placeholder="06 …" />
+          <input id="ct-phone" name="phone" type="tel" autoComplete="tel" className={inputClass} placeholder={t("contactForm.placeholders.phone")} />
         </div>
         <div>
           <label htmlFor="ct-subject" className={labelClass}>
-            Sujet
+            {t("contactForm.fields.subject")}
           </label>
           <select id="ct-subject" name="subject" defaultValue={defaultSubject ?? SUBJECTS[0]} className={inputClass}>
-            {SUBJECTS.map((s) => (
+            {SUBJECTS.map((s, i) => (
               <option key={s} value={s}>
-                {s}
+                {t(SUBJECT_KEYS[i])}
               </option>
             ))}
           </select>
@@ -137,7 +146,7 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
 
       <div className="mt-4">
         <label htmlFor="ct-message" className={labelClass}>
-          Votre message *
+          {t("contactForm.fields.message")}
         </label>
         <textarea
           id="ct-message"
@@ -145,24 +154,24 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
           required
           rows={5}
           className={`${inputClass} resize-y`}
-          placeholder="Produit souhaité, quantité, technique, délai, et si vous avez déjà un logo prêt…"
+          placeholder={t("contactForm.placeholders.message")}
         />
       </div>
 
       {/* Honeypot anti-bot — caché aux humains */}
       <div className="absolute left-[-9999px]" aria-hidden="true">
-        <label htmlFor="ct-website">Ne pas remplir</label>
+        <label htmlFor="ct-website">{t("contactForm.honeypotLabel")}</label>
         <input id="ct-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
       <label className="mt-5 flex items-start gap-3 text-[13px] leading-6 text-[var(--hm-text-soft)]">
         <input type="checkbox" name="consent" required className="mt-1 h-4 w-4 shrink-0 accent-[var(--hm-rose)]" />
         <span>
-          J&apos;accepte que mes informations soient utilisées pour traiter ma demande, conformément à la{" "}
+          {t("contactForm.consent.before")}{" "}
           <Link href="/confidentialite" className="font-semibold text-[var(--hm-rose)] underline-offset-2 hover:underline">
-            politique de confidentialité
+            {t("contactForm.consent.link")}
           </Link>
-          .
+          {t("contactForm.consent.after")}
         </span>
       </label>
 
@@ -176,11 +185,11 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
         {status === "sending" ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Envoi…
+            {t("contactForm.submit.sending")}
           </>
         ) : (
           <>
-            Envoyer le message
+            {t("contactForm.submit.send")}
             <ArrowRight size={16} />
           </>
         )}

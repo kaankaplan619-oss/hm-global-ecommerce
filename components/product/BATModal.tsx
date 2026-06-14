@@ -14,6 +14,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { X, Printer, FileCheck, CheckCircle2 } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 import BATPreviewCard from "@/components/product/BATPreviewCard";
 import {
   type BATData,
@@ -54,11 +55,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Détermine la source lisible de l'URL logo. */
-function getLogoUrlSource(logoUrl: string | null): string | undefined {
+function getLogoUrlSource(
+  logoUrl: string | null,
+  t: (key: string) => string,
+): string | undefined {
   if (!logoUrl) return undefined;
-  if (logoUrl.startsWith("blob:"))  return "Fichier local (aperçu session)";
-  if (logoUrl.startsWith("https:")) return "URL Supabase — stable ✓";
-  return "URL distante";
+  if (logoUrl.startsWith("blob:"))  return t("batModal.logoSourceLocal");
+  if (logoUrl.startsWith("https:")) return t("batModal.logoSourceSupabase");
+  return t("batModal.logoSourceRemote");
 }
 
 // ── BATModal ──────────────────────────────────────────────────────────────────
@@ -68,6 +72,7 @@ interface Props {
 }
 
 export default function BATModal({ bat, onClose }: Props) {
+  const t = useT();
   // createPortal requiert document côté client
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -89,7 +94,7 @@ export default function BATModal({ bat, onClose }: Props) {
 
   if (!mounted) return null;
 
-  const logoUrlSource = getLogoUrlSource(bat.logoUrl);
+  const logoUrlSource = getLogoUrlSource(bat.logoUrl, t);
   const hasTransform  = !!bat.logoTransform;
 
   const content = (
@@ -106,7 +111,7 @@ export default function BATModal({ bat, onClose }: Props) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Bon à Tirer"
+        aria-label={t("batModal.title")}
         className="fixed inset-x-4 bottom-4 top-4 z-[9999] mx-auto flex max-w-3xl flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl
                    sm:inset-x-8 sm:bottom-8 sm:top-8"
       >
@@ -118,10 +123,10 @@ export default function BATModal({ bat, onClose }: Props) {
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--hm-text-soft,#8b7a9a)]">
-                Aperçu
+                {t("batModal.preview")}
               </p>
               <h2 className="text-sm font-black text-[var(--hm-text,#1a1225)]">
-                Bon à Tirer
+                {t("batModal.title")}
               </h2>
             </div>
           </div>
@@ -132,13 +137,13 @@ export default function BATModal({ bat, onClose }: Props) {
               className="flex items-center gap-2 rounded-xl bg-[var(--hm-primary,#b13f74)] px-4 py-2 text-xs font-bold text-white shadow-sm transition-opacity hover:opacity-90 active:opacity-80"
             >
               <Printer size={14} />
-              Imprimer / PDF
+              {t("batModal.printPdf")}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--hm-line,#ede8f4)] text-[var(--hm-text-soft,#8b7a9a)] transition-colors hover:bg-[var(--hm-surface)]"
-              aria-label="Fermer"
+              aria-label={t("batModal.close")}
             >
               <X size={16} />
             </button>
@@ -158,17 +163,17 @@ export default function BATModal({ bat, onClose }: Props) {
                   HM Global Agence
                 </p>
                 <h1 className="mt-0.5 text-xl font-black text-[var(--hm-text)]">
-                  Bon à Tirer
+                  {t("batModal.title")}
                 </h1>
-                <p className="mt-0.5 text-[11px] text-[var(--hm-text-muted)]">Réf. {bat.batRef}</p>
+                <p className="mt-0.5 text-[11px] text-[var(--hm-text-muted)]">{t("batModal.ref")} {bat.batRef}</p>
                 {/* Badge statut */}
                 <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                  À valider
+                  {t("batModal.toValidate")}
                 </span>
               </div>
               <div className="text-right">
-                <p className="text-[11px] text-[var(--hm-text-muted)]">Généré le</p>
+                <p className="text-[11px] text-[var(--hm-text-muted)]">{t("batModal.generatedOn")}</p>
                 <p className="text-sm font-bold text-[var(--hm-text)]">{bat.generatedAt}</p>
               </div>
             </div>
@@ -180,49 +185,49 @@ export default function BATModal({ bat, onClose }: Props) {
               <div>
 
                 {/* Produit */}
-                <Section title="Produit">
-                  <Row label="Nom"         value={bat.productName} />
-                  <Row label="Référence"   value={bat.productReference} />
-                  <Row label="Catégorie"   value={CATEGORY_LABELS[bat.productCategory] ?? bat.productCategory} />
-                  <Row label="Marque"      value={bat.supplierName ? SUPPLIER_LABELS[bat.supplierName] ?? bat.supplierName : undefined} />
-                  <Row label="Composition" value={bat.composition} />
-                  <Row label="Grammage"    value={bat.weight} />
+                <Section title={t("batModal.sectionProduct")}>
+                  <Row label={t("batModal.fieldName")}         value={bat.productName} />
+                  <Row label={t("batModal.fieldReference")}    value={bat.productReference} />
+                  <Row label={t("batModal.fieldCategory")}     value={CATEGORY_LABELS[bat.productCategory] ?? bat.productCategory} />
+                  <Row label={t("batModal.fieldBrand")}        value={bat.supplierName ? SUPPLIER_LABELS[bat.supplierName] ?? bat.supplierName : undefined} />
+                  <Row label={t("batModal.fieldComposition")}  value={bat.composition} />
+                  <Row label={t("batModal.fieldWeight")}       value={bat.weight} />
                 </Section>
 
                 {/* Configuration */}
-                <Section title="Personnalisation">
-                  <Row label="Couleur"     value={bat.color ? `${bat.color.label} (${bat.color.id})` : "—"} />
-                  <Row label="Taille"      value={bat.size || "—"} />
-                  <Row label="Quantité"    value={bat.quantity} />
-                  <Row label="Technique"   value={TECHNIQUE_LABELS[bat.technique]} />
-                  <Row label="Emplacement" value={PLACEMENT_LABELS[bat.placement]} />
+                <Section title={t("batModal.sectionCustomization")}>
+                  <Row label={t("batModal.fieldColor")}        value={bat.color ? `${bat.color.label} (${bat.color.id})` : "—"} />
+                  <Row label={t("batModal.fieldSize")}         value={bat.size || "—"} />
+                  <Row label={t("batModal.fieldQuantity")}     value={bat.quantity} />
+                  <Row label={t("batModal.fieldTechnique")}    value={TECHNIQUE_LABELS[bat.technique]} />
+                  <Row label={t("batModal.fieldPlacement")}    value={PLACEMENT_LABELS[bat.placement]} />
                 </Section>
 
                 {/* Logo */}
-                <Section title="Logo & visuel">
-                  <Row label="Fichier"     value={bat.logoFileName ?? "Aucun logo"} />
-                  <Row label="Effet"       value={bat.logoFileName ? LOGO_EFFECT_LABELS[bat.logoEffect] : undefined} />
-                  <Row label="Source URL"  value={logoUrlSource} />
+                <Section title={t("batModal.sectionLogo")}>
+                  <Row label={t("batModal.fieldFile")}         value={bat.logoFileName ?? t("batModal.noLogo")} />
+                  <Row label={t("batModal.fieldEffect")}       value={bat.logoFileName ? LOGO_EFFECT_LABELS[bat.logoEffect] : undefined} />
+                  <Row label={t("batModal.fieldSourceUrl")}    value={logoUrlSource} />
                 </Section>
 
                 {/* Position Fabric.js — affiché uniquement si logoTransform disponible */}
                 {hasTransform && (
-                  <Section title="Position logo enregistrée">
+                  <Section title={t("batModal.sectionPosition")}>
                     <Row
-                      label="Centre (X / Y)"
+                      label={t("batModal.fieldCenter")}
                       value={`${Math.round(bat.logoTransform!.left)} px / ${Math.round(bat.logoTransform!.top)} px`}
                     />
                     <Row
-                      label="Échelle"
+                      label={t("batModal.fieldScale")}
                       value={`${(bat.logoTransform!.scaleX * 100).toFixed(0)} %`}
                     />
                     <Row
-                      label="Canevas"
+                      label={t("batModal.fieldCanvas")}
                       value={`${bat.logoTransform!.canvasSize} × ${bat.logoTransform!.canvasSize} px`}
                     />
                     <Row
-                      label="Source"
-                      value="Fabric.js — position capturée après drag/resize"
+                      label={t("batModal.fieldSource")}
+                      value={t("batModal.positionCaptured")}
                     />
                   </Section>
                 )}
@@ -232,7 +237,7 @@ export default function BATModal({ bat, onClose }: Props) {
               {/* ── Aperçu visuel ── */}
               <div className="flex flex-col gap-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--hm-primary,#b13f74)]">
-                  Aperçu visuel
+                  {t("batModal.visualPreview")}
                 </p>
                 {bat.imageUrl ? (
                   <BATPreviewCard
@@ -246,7 +251,7 @@ export default function BATModal({ bat, onClose }: Props) {
                   />
                 ) : (
                   <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-[var(--hm-line)] text-[11px] text-[var(--hm-text-muted)]">
-                    Pas d&apos;image
+                    {t("batModal.noImage")}
                   </div>
                 )}
                 {bat.color && (
@@ -261,14 +266,14 @@ export default function BATModal({ bat, onClose }: Props) {
                 {/* Indication aperçu (sans transform) */}
                 {!hasTransform && bat.logoFileName && (
                   <p className="text-[10px] leading-tight text-[var(--hm-text-muted)]">
-                    Position indicative — basée sur le type d&apos;emplacement.
+                    {t("batModal.positionIndicative")}
                   </p>
                 )}
                 {/* Indication aperçu (avec transform Fabric.js) */}
                 {hasTransform && (
                   <p className="text-[10px] leading-tight text-green-600 flex items-start gap-1">
                     <CheckCircle2 size={11} className="mt-0.5 shrink-0" />
-                    Position Fabric.js capturée
+                    {t("batModal.positionFabricCaptured")}
                   </p>
                 )}
               </div>
@@ -279,17 +284,17 @@ export default function BATModal({ bat, onClose }: Props) {
             {/* ── Mentions importantes ──────────────────────────────────────── */}
             <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
               <p className="mb-1.5 text-[11px] font-bold text-amber-800">
-                ⚠ BAT à vérifier par le client avant production. Toute validation vaut accord pour impression / personnalisation.
+                {t("batModal.warningHeader")}
               </p>
               <ul className="space-y-0.5">
                 <li className="text-[11px] text-amber-700">
-                  • La position du logo est indicative — le positionnement exact est confirmé avant impression.
+                  {t("batModal.warningPosition")}
                 </li>
                 <li className="text-[11px] text-amber-700">
-                  • Les couleurs à l&apos;écran peuvent différer légèrement du rendu final selon le support et la technique de marquage.
+                  {t("batModal.warningColors")}
                 </li>
                 <li className="text-[11px] text-amber-700">
-                  • Vérifiez la lisibilité du logo, les proportions, la technique choisie et l&apos;emplacement avant de signer.
+                  {t("batModal.warningCheck")}
                 </li>
               </ul>
             </div>
@@ -297,30 +302,28 @@ export default function BATModal({ bat, onClose }: Props) {
             {/* ── Bloc validation client ────────────────────────────────────── */}
             <div className="validation-block rounded-xl border-2 border-[var(--hm-line)] p-5">
               <p className="mb-4 text-[10px] font-black uppercase tracking-widest text-[var(--hm-text-soft)]">
-                Validation client — Bon pour accord
+                {t("batModal.validationTitle")}
               </p>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 <div>
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">Nom / Société</p>
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">{t("batModal.fieldNameCompany")}</p>
                   <div className="h-8 border-b border-[var(--hm-line)]" />
                 </div>
                 <div>
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">Date</p>
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">{t("batModal.fieldDate")}</p>
                   <div className="h-8 border-b border-[var(--hm-line)]" />
                 </div>
                 <div className="col-span-2">
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">Signature</p>
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">{t("batModal.fieldSignature")}</p>
                   <div className="h-16 border-b border-[var(--hm-line)]" />
                 </div>
                 <div className="col-span-2">
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">Bon pour accord</p>
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--hm-text-muted)]">{t("batModal.fieldApproval")}</p>
                   <div className="h-8 border-b border-[var(--hm-line)]" />
                 </div>
               </div>
               <p className="mt-4 text-[10px] leading-relaxed text-[var(--hm-text-muted)]">
-                BAT à vérifier par le client avant production. Toute validation vaut accord pour impression/personnalisation.
-                En signant ce document, le client confirme avoir vérifié et approuvé le visuel, les couleurs, les textes et
-                le positionnement du logo. HM Global Agence ne pourra être tenu responsable des erreurs non signalées avant production.
+                {t("batModal.validationLegal")}
               </p>
             </div>
 

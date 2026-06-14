@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BackLink from "@/components/ui/BackLink";
 import { TechniqueArtById } from "@/components/illustrations/TechniqueArt";
+import { getT } from "@/lib/i18n/server";
 import {
   ArrowRight,
   Award,
@@ -24,138 +25,133 @@ const TECHNIQUES = [
   {
     id: "dtf",
     icon: Zap,
-    label: "DTF",
-    tagline: "Le bon choix pour les visuels détaillés et les logos en couleur",
+    labelKey: "techniquesPage.tech.dtf.label",
+    taglineKey: "techniquesPage.tech.dtf.tagline",
     accent: "text-[var(--hm-primary)]",
     iconBg: "bg-[var(--hm-accent-soft-rose)]",
-    description:
-      "Le DTF permet d'imprimer des visuels riches, avec plusieurs couleurs, dégradés ou détails fins. C'est la solution la plus polyvalente quand le logo ou le graphisme ne se limite pas à une forme simple.",
-    strengths: [
-      "Très bon rendu sur les logos multicolores",
-      "Adapté aux petites et moyennes séries",
-      "Bon équilibre entre qualité visuelle et souplesse",
+    descriptionKey: "techniquesPage.tech.dtf.description",
+    strengthKeys: [
+      "techniquesPage.tech.dtf.strength1",
+      "techniquesPage.tech.dtf.strength2",
+      "techniquesPage.tech.dtf.strength3",
     ],
-    limits: "Moins pertinent si le besoin est très simple et monocolore.",
-    bestFor: "T-shirts, sweats, hoodies, événements, équipes, visuels détaillés",
+    limitsKey: "techniquesPage.tech.dtf.limits",
+    bestForKey: "techniquesPage.tech.dtf.bestFor",
   },
   {
     id: "flex",
     icon: Scissors,
-    label: "Flex",
-    tagline: "Une solution nette et efficace pour les marquages simples",
+    labelKey: "techniquesPage.tech.flex.label",
+    taglineKey: "techniquesPage.tech.flex.tagline",
     accent: "text-[var(--hm-blue)]",
     iconBg: "bg-[var(--hm-accent-soft-blue)]",
-    description:
-      "Le flex convient très bien aux lettrages, noms, numéros et logos simples. Le rendu est net, propre et lisible. C'est une bonne option quand le besoin est clair et sans complexité graphique.",
-    strengths: [
-      "Très lisible sur textes et formes simples",
-      "Intéressant pour les séries courtes ou ciblées",
-      "Rendu propre sur vêtements de travail ou de sport",
+    descriptionKey: "techniquesPage.tech.flex.description",
+    strengthKeys: [
+      "techniquesPage.tech.flex.strength1",
+      "techniquesPage.tech.flex.strength2",
+      "techniquesPage.tech.flex.strength3",
     ],
-    limits: "Pas adapté aux dégradés, photos ou visuels très complexes.",
-    bestFor: "Textes, numéros, marquages simples, petites séries, tenues de travail",
+    limitsKey: "techniquesPage.tech.flex.limits",
+    bestForKey: "techniquesPage.tech.flex.bestFor",
   },
   {
     id: "broderie",
     icon: Award,
-    label: "Broderie",
-    tagline: "La finition premium pour une image plus corporate",
+    labelKey: "techniquesPage.tech.broderie.label",
+    taglineKey: "techniquesPage.tech.broderie.tagline",
     accent: "text-[var(--hm-purple)]",
     iconBg: "bg-[var(--hm-accent-soft-purple)]",
-    description:
-      "La broderie apporte du relief, de la tenue et une perception plus haut de gamme. Elle est particulièrement pertinente sur les supports plus épais ou quand le rendu doit être durable, sobre et valorisant.",
-    strengths: [
-      "Très bonne tenue dans le temps",
-      "Rendu premium sur les vêtements professionnels",
-      "Parfait pour les logos corporate ou institutionnels",
+    descriptionKey: "techniquesPage.tech.broderie.description",
+    strengthKeys: [
+      "techniquesPage.tech.broderie.strength1",
+      "techniquesPage.tech.broderie.strength2",
+      "techniquesPage.tech.broderie.strength3",
     ],
-    limits: "Moins adaptée aux détails très fins ou aux visuels trop complexes.",
-    bestFor: "Softshells, polos, vestes, tenues corporate, logos sobres",
+    limitsKey: "techniquesPage.tech.broderie.limits",
+    bestForKey: "techniquesPage.tech.broderie.bestFor",
   },
 ] as const;
 
 const CHOICE_GUIDE = [
   {
-    title: "Vous avez un logo multicolore ou détaillé",
-    answer: "Le DTF est généralement la solution la plus naturelle.",
+    titleKey: "techniquesPage.choice.multicolor.title",
+    answerKey: "techniquesPage.choice.multicolor.answer",
   },
   {
-    title: "Vous avez un texte, un nom ou un marquage simple",
-    answer: "Le flex est souvent le plus lisible et le plus direct.",
+    titleKey: "techniquesPage.choice.text.title",
+    answerKey: "techniquesPage.choice.text.answer",
   },
   {
-    title: "Vous cherchez un rendu plus premium et durable",
-    answer: "La broderie est à privilégier sur les bons supports.",
+    titleKey: "techniquesPage.choice.premium.title",
+    answerKey: "techniquesPage.choice.premium.answer",
   },
   {
-    title: "Vous hésitez entre plusieurs supports ou usages",
-    answer: "Le plus efficace est de nous demander conseil avant validation.",
+    titleKey: "techniquesPage.choice.hesitate.title",
+    answerKey: "techniquesPage.choice.hesitate.answer",
   },
 ] as const;
 
 const PRODUCT_FIT = [
   {
-    product: "T-shirts",
-    dtf: "Très adapté",
-    flex: "Très adapté",
-    embroidery: "Possible selon le projet",
+    productKey: "techniquesPage.fit.tshirts.product",
+    dtfKey: "techniquesPage.fit.tshirts.dtf",
+    flexKey: "techniquesPage.fit.tshirts.flex",
+    embroideryKey: "techniquesPage.fit.tshirts.embroidery",
   },
   {
-    product: "Hoodies / Sweats",
-    dtf: "Très adapté",
-    flex: "Adapté",
-    embroidery: "Très adapté",
+    productKey: "techniquesPage.fit.hoodies.product",
+    dtfKey: "techniquesPage.fit.hoodies.dtf",
+    flexKey: "techniquesPage.fit.hoodies.flex",
+    embroideryKey: "techniquesPage.fit.hoodies.embroidery",
   },
   {
-    product: "Softshells / Vestes",
-    dtf: "Possible selon le visuel",
-    flex: "Plus rare",
-    embroidery: "Le plus cohérent",
+    productKey: "techniquesPage.fit.softshells.product",
+    dtfKey: "techniquesPage.fit.softshells.dtf",
+    flexKey: "techniquesPage.fit.softshells.flex",
+    embroideryKey: "techniquesPage.fit.softshells.embroidery",
   },
 ] as const;
 
 const PROJECT_SIGNALS = [
-  "Le visuel n'est pas encore prêt ou doit être ajusté",
-  "Vous avez un mix de produits ou plusieurs supports",
-  "Le besoin est corporate, événementiel ou récurrent",
-  "Vous voulez éviter une mauvaise technique dès le départ",
+  "techniquesPage.signals.signal1",
+  "techniquesPage.signals.signal2",
+  "techniquesPage.signals.signal3",
+  "techniquesPage.signals.signal4",
 ] as const;
 
-export default function TechniquesPage() {
+export default async function TechniquesPage() {
+  const t = await getT();
   return (
     <div className="bg-white pb-20 pt-24">
       <div className="container">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t("techniquesPage.back")} />
 
         <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,rgba(248,249,251,0.95)_0%,rgba(255,255,255,1)_72%)] px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-end">
             <div>
-              <p className="section-tag">Techniques de marquage</p>
+              <p className="section-tag">{t("techniquesPage.hero.tag")}</p>
               <h1 className="mb-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[var(--hm-text)] md:text-5xl">
-                DTF, flex ou broderie :
+                {t("techniquesPage.hero.titleLine1")}
                 <br />
-                choisir la bonne technique sans complexifier le projet.
+                {t("techniquesPage.hero.titleLine2")}
               </h1>
               <p className="max-w-2xl text-base leading-8 text-[var(--hm-text-soft)]">
-                Cette page aide à comprendre les différences entre les trois principales
-                techniques utilisées par HM Global. Le but n&apos;est pas d&apos;entrer dans
-                une fiche technique brute, mais de savoir ce qui convient le mieux selon
-                le textile, le visuel et l&apos;usage attendu.
+                {t("techniquesPage.hero.intro")}
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3.5">
                 <Link href="/catalogue" className="btn-primary gap-2">
-                  Voir les produits
+                  {t("techniquesPage.hero.ctaProducts")}
                   <ArrowRight size={16} />
                 </Link>
                 <Link href="/contact" className="btn-outline">
-                  Demander un conseil
+                  {t("techniquesPage.hero.ctaAdvice")}
                 </Link>
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              {TECHNIQUES.map(({ id, icon: Icon, label, tagline, iconBg, accent }) => (
+              {TECHNIQUES.map(({ id, icon: Icon, labelKey, taglineKey, iconBg, accent }) => (
                 <article
                   key={id}
                   className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 shadow-[0_14px_34px_rgba(63,45,88,0.05)]"
@@ -165,8 +161,8 @@ export default function TechniquesPage() {
                   >
                     <Icon className={`h-5 w-5 ${accent}`} />
                   </span>
-                  <h2 className="mt-4 text-lg font-semibold text-[var(--hm-text)]">{label}</h2>
-                  <p className="mt-2 text-sm leading-6 text-[var(--hm-text-soft)]">{tagline}</p>
+                  <h2 className="mt-4 text-lg font-semibold text-[var(--hm-text)]">{t(labelKey)}</h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--hm-text-soft)]">{t(taglineKey)}</p>
                 </article>
               ))}
             </div>
@@ -175,18 +171,17 @@ export default function TechniquesPage() {
 
         <section className="mb-14">
           <div className="mb-8 max-w-2xl">
-            <p className="section-tag">Comprendre simplement</p>
+            <p className="section-tag">{t("techniquesPage.understand.tag")}</p>
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Trois techniques, trois logiques d&apos;usage.
+              {t("techniquesPage.understand.title")}
             </h2>
             <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-              Le bon choix dépend rarement d&apos;un seul critère. Il faut regarder le visuel,
-              le textile, la durabilité attendue et l&apos;image que vous voulez donner.
+              {t("techniquesPage.understand.intro")}
             </p>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-3">
-            {TECHNIQUES.map(({ id, icon: Icon, label, tagline, description, strengths, limits, bestFor, iconBg, accent }) => (
+            {TECHNIQUES.map(({ id, icon: Icon, labelKey, taglineKey, descriptionKey, strengthKeys, limitsKey, bestForKey, iconBg, accent }) => (
               <article
                 key={id}
                 className="flex h-full flex-col rounded-[1.75rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-6"
@@ -194,9 +189,9 @@ export default function TechniquesPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-text-soft)]">
-                      {label}
+                      {t(labelKey)}
                     </p>
-                    <h3 className="mt-2 text-2xl font-semibold text-[var(--hm-text)]">{tagline}</h3>
+                    <h3 className="mt-2 text-2xl font-semibold text-[var(--hm-text)]">{t(taglineKey)}</h3>
                   </div>
                   <span className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${iconBg}`}>
                     <Icon className={`h-5 w-5 ${accent}`} />
@@ -207,29 +202,29 @@ export default function TechniquesPage() {
                   <TechniqueArtById id={id} className="h-auto w-full" />
                 </div>
 
-                <p className="mt-5 text-sm leading-7 text-[var(--hm-text-soft)]">{description}</p>
+                <p className="mt-5 text-sm leading-7 text-[var(--hm-text-soft)]">{t(descriptionKey)}</p>
 
                 <div className="mt-6 rounded-[1.25rem] border border-[var(--hm-line)] bg-white p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
-                    Idéal pour
+                    {t("techniquesPage.card.idealFor")}
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-[var(--hm-text)]">{bestFor}</p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--hm-text)]">{t(bestForKey)}</p>
                 </div>
 
                 <div className="mt-5 space-y-3">
-                  {strengths.map((item) => (
+                  {strengthKeys.map((item) => (
                     <div key={item} className="flex items-start gap-3">
                       <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--hm-rose)]" />
-                      <p className="text-sm leading-6 text-[var(--hm-text)]">{item}</p>
+                      <p className="text-sm leading-6 text-[var(--hm-text)]">{t(item)}</p>
                     </div>
                   ))}
                 </div>
 
                 <div className="mt-5 border-t border-[var(--hm-line)] pt-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
-                    Point de vigilance
+                    {t("techniquesPage.card.caution")}
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-[var(--hm-text-soft)]">{limits}</p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--hm-text-soft)]">{t(limitsKey)}</p>
                 </div>
               </article>
             ))}
@@ -244,10 +239,10 @@ export default function TechniquesPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-text-soft)]">
-                  Aide au choix
+                  {t("techniquesPage.choice.tag")}
                 </p>
                 <h2 className="text-2xl font-semibold text-[var(--hm-text)]">
-                  Quel marquage pour quel besoin ?
+                  {t("techniquesPage.choice.title")}
                 </h2>
               </div>
             </div>
@@ -255,11 +250,11 @@ export default function TechniquesPage() {
             <div className="space-y-4">
               {CHOICE_GUIDE.map((item) => (
                 <div
-                  key={item.title}
+                  key={item.titleKey}
                   className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4"
                 >
-                  <p className="text-sm font-semibold text-[var(--hm-text)]">{item.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-[var(--hm-text-soft)]">{item.answer}</p>
+                  <p className="text-sm font-semibold text-[var(--hm-text)]">{t(item.titleKey)}</p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--hm-text-soft)]">{t(item.answerKey)}</p>
                 </div>
               ))}
             </div>
@@ -272,10 +267,10 @@ export default function TechniquesPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-text-soft)]">
-                  Selon le support
+                  {t("techniquesPage.fit.tag")}
                 </p>
                 <h2 className="text-2xl font-semibold text-[var(--hm-text)]">
-                  Lecture rapide par famille de produit
+                  {t("techniquesPage.fit.title")}
                 </h2>
               </div>
             </div>
@@ -283,19 +278,19 @@ export default function TechniquesPage() {
             <div className="space-y-3">
               {PRODUCT_FIT.map((row) => (
                 <div
-                  key={row.product}
+                  key={row.productKey}
                   className="rounded-[1.25rem] border border-[var(--hm-line)] bg-white p-4"
                 >
-                  <p className="text-sm font-semibold text-[var(--hm-text)]">{row.product}</p>
+                  <p className="text-sm font-semibold text-[var(--hm-text)]">{t(row.productKey)}</p>
                   <div className="mt-3 grid gap-2 text-sm text-[var(--hm-text-soft)]">
                     <p>
-                      <span className="font-medium text-[var(--hm-text)]">DTF :</span> {row.dtf}
+                      <span className="font-medium text-[var(--hm-text)]">{t("techniquesPage.fit.dtfLabel")}</span> {t(row.dtfKey)}
                     </p>
                     <p>
-                      <span className="font-medium text-[var(--hm-text)]">Flex :</span> {row.flex}
+                      <span className="font-medium text-[var(--hm-text)]">{t("techniquesPage.fit.flexLabel")}</span> {t(row.flexKey)}
                     </p>
                     <p>
-                      <span className="font-medium text-[var(--hm-text)]">Broderie :</span> {row.embroidery}
+                      <span className="font-medium text-[var(--hm-text)]">{t("techniquesPage.fit.embroideryLabel")}</span> {t(row.embroideryKey)}
                     </p>
                   </div>
                 </div>
@@ -307,14 +302,12 @@ export default function TechniquesPage() {
         <section className="mb-14 rounded-[1.75rem] border border-[var(--hm-line)] bg-[var(--hm-accent-soft-blue)] p-7 sm:p-8">
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
             <div>
-              <p className="section-tag">Quand demander un devis</p>
+              <p className="section-tag">{t("techniquesPage.quote.tag")}</p>
               <h2 className="mb-4 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-                Le bon choix technique ne se décide pas toujours seul.
+                {t("techniquesPage.quote.title")}
               </h2>
               <p className="text-base leading-7 text-[var(--hm-text-soft)]">
-                Si le projet mélange plusieurs supports, un visuel à adapter, une demande urgente
-                ou une logique corporate plus poussée, HM Global peut vous orienter avant de lancer
-                la commande.
+                {t("techniquesPage.quote.intro")}
               </p>
             </div>
 
@@ -326,7 +319,7 @@ export default function TechniquesPage() {
                 >
                   <div className="flex items-start gap-3">
                     <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--hm-primary)]" />
-                    <p className="text-sm leading-6 text-[var(--hm-text)]">{item}</p>
+                    <p className="text-sm leading-6 text-[var(--hm-text)]">{t(item)}</p>
                   </div>
                 </div>
               ))}
@@ -336,23 +329,22 @@ export default function TechniquesPage() {
 
         <section className="rounded-[2rem] border border-[var(--hm-line)] bg-white p-8 text-center shadow-[0_18px_48px_rgba(63,45,88,0.06)] sm:p-10">
           <p className="mx-auto mb-3 inline-flex items-center justify-center rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--hm-primary)]">
-            Aller plus loin
+            {t("techniquesPage.final.tag")}
           </p>
           <h2 className="mx-auto max-w-3xl text-3xl font-semibold tracking-tight text-[var(--hm-text)] sm:text-4xl">
-            Vous savez déjà quoi commander, ou vous préférez être guidé ?
+            {t("techniquesPage.final.title")}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[var(--hm-text-soft)]">
-            Si votre besoin est simple, le catalogue permet d&apos;avancer rapidement.
-            Si le projet mérite un conseil ou un devis, HM Global reprend le sujet avec vous.
+            {t("techniquesPage.final.intro")}
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/catalogue" className="btn-primary gap-2">
-              Voir le catalogue
+              {t("techniquesPage.final.ctaCatalogue")}
               <ChevronRight size={16} />
             </Link>
             <Link href="/contact" className="btn-outline">
-              Demander un devis
+              {t("techniquesPage.final.ctaQuote")}
             </Link>
           </div>
         </section>

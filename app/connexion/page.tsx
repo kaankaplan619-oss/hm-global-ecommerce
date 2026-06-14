@@ -7,8 +7,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import GoogleAuthSection from "@/components/auth/GoogleAuthSection";
+import { useT } from "@/components/i18n/I18nProvider";
 
 function ConnexionForm() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/";
@@ -36,7 +38,7 @@ function ConnexionForm() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.message ?? "Email ou mot de passe incorrect");
+        setError(data.message ?? t("login.error.invalid"));
         return;
       }
 
@@ -44,7 +46,7 @@ function ConnexionForm() {
       setUser(user);
       router.push(redirect);
     } catch {
-      setError("Une erreur est survenue. Réessayez.");
+      setError(t("login.error.generic"));
     } finally {
       setLoading(false);
     }
@@ -58,29 +60,28 @@ function ConnexionForm() {
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--hm-line)] bg-[var(--hm-surface)] px-4 py-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-primary)]" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--hm-primary)]">
-                Espace client HM Global
+                {t("login.badge")}
               </span>
             </div>
             <h1 className="mb-3 text-3xl font-black text-[var(--hm-text)] md:text-4xl">
-              Connexion
+              {t("login.title")}
             </h1>
             <p className="max-w-md text-sm leading-7 text-[var(--hm-text-soft)]">
-              Accédez à votre espace client pour suivre vos commandes, retrouver vos fichiers
-              et finaliser votre passage au checkout en toute simplicité.
+              {t("login.intro")}
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
-              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">Suivi de commande</p>
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">{t("login.feature.tracking.title")}</p>
               <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
-                Consultez vos commandes, vos statuts et vos informations de livraison.
+                {t("login.feature.tracking.desc")}
               </p>
             </div>
             <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
-              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">Fichiers centralisés</p>
+              <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">{t("login.feature.files.title")}</p>
               <p className="text-[11px] leading-6 text-[var(--hm-text-soft)]">
-                Déposez vos logos et retrouvez les éléments utiles à votre projet.
+                {t("login.feature.files.desc")}
               </p>
             </div>
           </div>
@@ -98,9 +99,9 @@ function ConnexionForm() {
               priority
             />
           </Link>
-          <h2 className="mb-2 text-2xl font-black text-[var(--hm-text)]">Se connecter</h2>
+          <h2 className="mb-2 text-2xl font-black text-[var(--hm-text)]">{t("login.form.heading")}</h2>
           <p className="text-sm text-[var(--hm-text-soft)]">
-            Retrouvez votre panier et finalisez votre commande.
+            {t("login.form.subtitle")}
           </p>
           </div>
 
@@ -111,13 +112,13 @@ function ConnexionForm() {
         >
           {resetSuccess && (
             <div className="rounded-lg border border-[#86efac] bg-[#ecfdf5] p-3 text-sm text-[#166534]">
-              Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.
+              {t("login.banner.resetSuccess")}
             </div>
           )}
 
           {callbackError && (
             <div className="rounded-lg border border-[#fecaca] bg-[#fef2f2] p-3 text-sm text-[#b91c1c]">
-              Le lien de confirmation ou de réinitialisation est invalide ou expiré.
+              {t("login.banner.callbackError")}
             </div>
           )}
 
@@ -128,11 +129,11 @@ function ConnexionForm() {
           )}
 
           <div>
-            <label className="label">Email</label>
+            <label className="label">{t("login.field.email")}</label>
             <input
               type="email"
               className="input"
-              placeholder="vous@exemple.fr"
+              placeholder={t("login.field.email.placeholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -141,7 +142,7 @@ function ConnexionForm() {
           </div>
 
           <div>
-            <label className="label">Mot de passe</label>
+            <label className="label">{t("login.field.password")}</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -165,20 +166,20 @@ function ConnexionForm() {
                 href="/mot-de-passe-oublie"
                 className="text-[10px] text-[var(--hm-text-soft)] hover:text-[var(--hm-rose)]"
               >
-                Mot de passe oublié ?
+                {t("login.forgotPassword")}
               </Link>
             </div>
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary w-full gap-2 mt-2">
-            {loading ? "Connexion..." : (<><LogIn size={14} />Se connecter</>)}
+            {loading ? t("login.submit.loading") : (<><LogIn size={14} />{t("login.submit")}</>)}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-[var(--hm-text-soft)]">
-          Pas encore de compte ?{" "}
+          {t("login.noAccount")}{" "}
           <Link href="/inscription" className="font-semibold text-[var(--hm-primary)] hover:underline">
-            Créer un compte
+            {t("login.createAccount")}
           </Link>
         </p>
 
@@ -186,22 +187,22 @@ function ConnexionForm() {
         {redirect === "/checkout" && (
           <div className="mt-5 rounded-[1.5rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-5 text-center">
             <p className="mb-1 text-sm font-semibold text-[var(--hm-text)]">
-              Commander sans compte
+              {t("login.guest.title")}
             </p>
             <p className="mb-4 text-xs leading-6 text-[var(--hm-text-soft)]">
-              Saisissez votre email directement au checkout — votre compte sera créé automatiquement après le paiement.
+              {t("login.guest.desc")}
             </p>
             <Link
               href="/checkout"
               className="btn-outline w-full py-3 text-center text-xs"
             >
-              Continuer sans me connecter →
+              {t("login.guest.cta")}
             </Link>
           </div>
         )}
 
         <p className="mt-4 text-center text-xs text-[var(--hm-text-muted)]">
-          Le compte client est demandé au moment du checkout, pas dès la configuration produit.
+          {t("login.note")}
         </p>
         </div>
       </div>

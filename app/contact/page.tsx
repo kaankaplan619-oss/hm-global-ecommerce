@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import BackLink from "@/components/ui/BackLink";
 import { MapPin, Phone, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
 import ContactForm from "@/components/contact/ContactForm";
+import { getT } from "@/lib/i18n/server";
 
 function IconInstagram() {
   return (
@@ -27,48 +28,50 @@ export const metadata: Metadata = {
     "Contactez HM Global Agence à Souffelweyersheim pour vos projets de textile personnalisé, communication visuelle, design et production.",
 };
 
-const CONTACT_ITEMS = [
-  {
-    icon: Phone,
-    label: "Téléphone",
-    value: "06 76 16 11 88",
-    href: "tel:+33676161188",
-  },
-  {
-    icon: MapPin,
-    label: "Adresse",
-    value: "20 Rue des Tuileries, 67460 Souffelweyersheim",
-    href: "https://maps.google.com/?q=20+Rue+des+Tuileries,+67460+Souffelweyersheim",
-  },
-  {
-    icon: Clock,
-    label: "Horaires",
-    value: "Du lundi au vendredi, de 9h à 18h",
-  },
-];
-
-const EXPERTISES = [
-  "Textile personnalisé",
-  "DTF, flex et broderie",
-  "Design, logo et préparation de fichier / PAO",
-  "Lettrage et habillage véhicule",
-  "Totems, signalétique et print",
-  "Communication visuelle",
-];
-
 export default async function ContactPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getT();
+
+  const CONTACT_ITEMS = [
+    {
+      icon: Phone,
+      label: t("contactPage.contact.phone.label"),
+      value: "06 76 16 11 88",
+      href: "tel:+33676161188",
+    },
+    {
+      icon: MapPin,
+      label: t("contactPage.contact.address.label"),
+      value: "20 Rue des Tuileries, 67460 Souffelweyersheim",
+      href: "https://maps.google.com/?q=20+Rue+des+Tuileries,+67460+Souffelweyersheim",
+    },
+    {
+      icon: Clock,
+      label: t("contactPage.contact.hours.label"),
+      value: t("contactPage.contact.hours.value"),
+    },
+  ];
+
+  const EXPERTISES = [
+    t("contactPage.expertises.textile"),
+    t("contactPage.expertises.dtfFlexEmbroidery"),
+    t("contactPage.expertises.designPao"),
+    t("contactPage.expertises.vehicle"),
+    t("contactPage.expertises.signage"),
+    t("contactPage.expertises.visual"),
+  ];
+
   // Retour contextuel : si on arrive depuis le print (devis cartes/flyers/…),
   // on revient au print, pas à l'accueil (cohérence des couches de navigation).
   const params = await searchParams;
   const sujet = typeof params.sujet === "string" ? params.sujet : "";
   const back =
     sujet === "impression"
-      ? { href: "/impression", label: "Retour au print" }
-      : { href: "/", label: "Retour à l'accueil" };
+      ? { href: "/impression", label: t("contactPage.back.print") }
+      : { href: "/", label: t("contactPage.back.home") };
   const defaultSubject = sujet === "impression" ? "Signalétique / print" : undefined;
 
   return (
@@ -78,14 +81,12 @@ export default async function ContactPage({
 
         <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,rgba(248,249,251,0.95)_0%,rgba(255,255,255,1)_72%)] px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
           <div className="max-w-3xl">
-            <p className="section-tag">Contact</p>
+            <p className="section-tag">{t("contactPage.hero.tag")}</p>
             <h1 className="mb-5 text-4xl font-semibold leading-tight tracking-tight text-[var(--hm-text)] md:text-5xl">
-              Parlons de votre besoin textile, visuel ou projet sur mesure.
+              {t("contactPage.hero.title")}
             </h1>
             <p className="max-w-2xl text-base leading-8 text-[var(--hm-text-soft)]">
-              HM Global Agence accompagne les entreprises, associations et équipes qui veulent
-              une image de marque cohérente, visible et bien produite. Nous intervenons à la fois
-              comme agence créative et comme atelier de production.
+              {t("contactPage.hero.description")}
             </p>
           </div>
         </section>
@@ -120,7 +121,7 @@ export default async function ContactPage({
 
             <div className="rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-6">
               <h2 className="text-xl font-semibold text-[var(--hm-text)] mb-4">
-                Ce que nous pouvons produire pour vous
+                {t("contactPage.expertises.title")}
               </h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 {EXPERTISES.map((item) => (
@@ -138,7 +139,7 @@ export default async function ContactPage({
 
             <div className="rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-accent-soft-blue)] p-6">
               <h3 className="text-lg font-semibold text-[var(--hm-text)] mb-4">
-                Réseaux sociaux
+                {t("contactPage.social.title")}
               </h3>
               <div className="flex flex-col gap-3">
                 <a

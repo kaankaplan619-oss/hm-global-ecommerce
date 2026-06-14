@@ -10,10 +10,12 @@ import { TECHNIQUE_LABELS, PLACEMENT_LABELS } from "@/data/techniques";
 import CartUpsell from "@/components/cart/CartUpsell";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { isSimpleFlowProduct } from "@/data/products";
+import { useT } from "@/components/i18n/I18nProvider";
 import type { Placement, Product, ProductColor, Technique } from "@/types";
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
 function Lightbox({ src, label, onClose }: { src: string; label: string; onClose: () => void }) {
+  const t = useT();
   // Fermeture clavier
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -33,7 +35,7 @@ function Lightbox({ src, label, onClose }: { src: string; label: string; onClose
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--hm-line)] bg-white px-5 py-3">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--hm-text)]">
-            Aperçu · {label}
+            {t("cart.lightbox.title")} · {label}
           </span>
           <button
             type="button"
@@ -46,11 +48,11 @@ function Lightbox({ src, label, onClose }: { src: string; label: string; onClose
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
-          alt={`Aperçu ${label}`}
+          alt={`${t("cart.preview.alt")} ${label}`}
           className="max-h-[65vh] w-full object-contain"
         />
         <p className="py-2 text-center text-[10px] text-[var(--hm-text-muted)]">
-          Cliquez en dehors pour fermer
+          {t("cart.lightbox.closeHint")}
         </p>
       </div>
     </div>
@@ -59,6 +61,7 @@ function Lightbox({ src, label, onClose }: { src: string; label: string; onClose
 
 // ── CartDrawer ─────────────────────────────────────────────────────────────────
 export default function CartDrawer() {
+  const t = useT();
   const {
     items,
     isOpen,
@@ -118,9 +121,9 @@ export default function CartDrawer() {
         <div className="flex items-center justify-between border-b border-[var(--hm-line)] px-6 py-5">
           <div className="flex items-center gap-3">
             <ShoppingBag size={18} className="text-[var(--hm-primary)]" />
-            <h2 className="font-semibold text-[var(--hm-text)]">Mon panier</h2>
+            <h2 className="font-semibold text-[var(--hm-text)]">{t("cart.title")}</h2>
             {items.length > 0 && (
-              <span className="badge badge-gold">{totals.totalItems} article{totals.totalItems > 1 ? "s" : ""}</span>
+              <span className="badge badge-gold">{totals.totalItems} {totals.totalItems > 1 ? t("cart.itemsPlural") : t("cart.itemsSingular")}</span>
             )}
           </div>
           <button onClick={closeCart} className="btn-ghost p-2">
@@ -137,12 +140,12 @@ export default function CartDrawer() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-[var(--hm-text)]">
-                    {lastAddedName} vient d&apos;arriver dans le panier
+                    {lastAddedName} {t("cart.celebration.added")}
                   </p>
                   <p className="mt-1 text-xs text-[var(--hm-text-soft)]">
                     {piecesToFreeShipping > 0
-                      ? `Encore ${piecesToFreeShipping} pièce${piecesToFreeShipping > 1 ? "s" : ""} pour débloquer la livraison offerte.`
-                      : "Vous avez débloqué la livraison offerte, c'est le bon moment pour compléter la commande."}
+                      ? `${t("cart.celebration.remainingPrefix")} ${piecesToFreeShipping} ${piecesToFreeShipping > 1 ? t("cart.piecesPlural") : t("cart.piecesSingular")} ${t("cart.celebration.remainingSuffix")}`
+                      : t("cart.celebration.unlocked")}
                   </p>
                 </div>
               </div>
@@ -157,9 +160,9 @@ export default function CartDrawer() {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--hm-surface)]">
                 <Package size={28} className="text-[var(--hm-text-muted)]" />
               </div>
-              <p className="text-sm text-[var(--hm-text-soft)]">Votre panier est vide</p>
+              <p className="text-sm text-[var(--hm-text-soft)]">{t("cart.empty.title")}</p>
               <Link href="/catalogue" onClick={closeCart} className="btn-primary text-xs">
-                Découvrir le catalogue
+                {t("cart.empty.cta")}
               </Link>
             </div>
           ) : (
@@ -167,10 +170,10 @@ export default function CartDrawer() {
               {items.map((item) => {
                 // Print : recto seul (plus simple). Textile : face + dos.
                 const previewImages = (item.printConfig
-                  ? [{ src: item.printConfig.frontPreviewUrl ?? undefined, label: "Recto" }]
+                  ? [{ src: item.printConfig.frontPreviewUrl ?? undefined, label: t("cart.face.front") }]
                   : [
-                      { src: item.composedPreviewUrl,  label: "Face" },
-                      { src: item.composedPreviewBack, label: "Dos"  },
+                      { src: item.composedPreviewUrl,  label: t("cart.face.front") },
+                      { src: item.composedPreviewBack, label: t("cart.face.back")  },
                     ]
                 ).filter((v) => !!v.src) as { src: string; label: string }[];
 
@@ -188,9 +191,9 @@ export default function CartDrawer() {
                       <div className="border-b border-[var(--hm-line)] bg-[#fafaf9] px-4 py-3">
                         <div className="mb-2 flex items-center gap-2">
                           <span className="inline-flex items-center gap-1 rounded-full border border-[var(--hm-primary)]/30 bg-[var(--hm-accent-soft-rose)] px-2 py-0.5 text-[9px] font-bold text-[var(--hm-primary)]">
-                            ✨ Personnalisé
+                            ✨ {t("cart.customized")}
                           </span>
-                          <span className="text-[9px] text-[var(--hm-text-muted)]">Cliquez pour agrandir</span>
+                          <span className="text-[9px] text-[var(--hm-text-muted)]">{t("cart.clickToZoom")}</span>
                         </div>
 
                         <div className="flex gap-3">
@@ -205,7 +208,7 @@ export default function CartDrawer() {
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={src}
-                                  alt={`Aperçu ${label}`}
+                                  alt={`${t("cart.preview.alt")} ${label}`}
                                   className="h-full w-full object-contain transition group-hover:scale-105"
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/20">
@@ -269,7 +272,7 @@ export default function CartDrawer() {
                         })();
                         const boxClass = "flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--hm-line)] bg-white";
                         return editHref ? (
-                          <Link href={editHref} onClick={closeCart} className={`${boxClass} transition hover:border-[var(--hm-primary)]`} title="Modifier la personnalisation">
+                          <Link href={editHref} onClick={closeCart} className={`${boxClass} transition hover:border-[var(--hm-primary)]`} title={t("cart.editCustomization")}>
                             {thumb}
                           </Link>
                         ) : (
@@ -289,7 +292,7 @@ export default function CartDrawer() {
                           )}
                           {item.printConfig && (
                             <span className="ml-1.5 rounded-full bg-[var(--hm-accent-soft-rose)] px-2 py-0.5 text-[9px] font-bold text-[var(--hm-primary)]">
-                              Impression
+                              {t("cart.printBadge")}
                             </span>
                           )}
                         </p>
@@ -298,24 +301,24 @@ export default function CartDrawer() {
                           /* ── Print : détails lot ── */
                           <div className="mt-1 flex flex-wrap items-center gap-1">
                             <span className="text-[10px] font-semibold text-[var(--hm-text)]">
-                              {item.printConfig.quantity} ex.
+                              {item.printConfig.quantity} {t("cart.print.unitsSuffix")}
                             </span>
                             <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
                             <span className="text-[10px] text-[var(--hm-text-soft)]">
                               {item.printConfig.finish === "mat"
-                                ? "Mat"
+                                ? t("cart.print.finishMat")
                                 : item.printConfig.finish === "brillant"
-                                ? "Brillant"
-                                : "Premium"}
+                                ? t("cart.print.finishGlossy")
+                                : t("cart.print.finishPremium")}
                             </span>
                             <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
                             <span className="text-[10px] text-[var(--hm-text-soft)]">
-                              {item.printConfig.faces === "recto" ? "Recto seul" : "Recto-verso"}
+                              {item.printConfig.faces === "recto" ? t("cart.print.singleSided") : t("cart.print.doubleSided")}
                             </span>
                             {item.printConfig.corners === "rounded" && (
                               <>
                                 <span className="text-[10px] text-[var(--hm-text-muted)]">·</span>
-                                <span className="text-[10px] text-[var(--hm-text-soft)]">Coins arrondis</span>
+                                <span className="text-[10px] text-[var(--hm-text-soft)]">{t("cart.print.roundedCorners")}</span>
                               </>
                             )}
                           </div>
@@ -350,7 +353,7 @@ export default function CartDrawer() {
                           {item.printConfig ? (
                             /* ── Print : "1 lot" — boutons +/- désactivés pour éviter ×prix ── */
                             <span className="rounded-lg border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3 py-1 text-[11px] font-semibold text-[var(--hm-text-muted)]">
-                              1 lot
+                              {t("cart.oneBatch")}
                             </span>
                           ) : (
                             /* ── Textile : boutons +/- normaux ── */
@@ -381,8 +384,8 @@ export default function CartDrawer() {
                                 href={editHref}
                                 onClick={closeCart}
                                 className="text-[var(--hm-text-muted)] transition hover:text-[var(--hm-primary)]"
-                                aria-label="Modifier la personnalisation"
-                                title="Modifier la personnalisation"
+                                aria-label={t("cart.editCustomization")}
+                                title={t("cart.editCustomization")}
                               >
                                 <Pencil size={14} />
                               </Link>
@@ -390,7 +393,7 @@ export default function CartDrawer() {
                             <button
                               onClick={() => removeItem(item.id)}
                               className="text-[var(--hm-text-muted)] transition hover:text-red-500"
-                              aria-label="Supprimer"
+                              aria-label={t("cart.remove")}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -418,12 +421,12 @@ export default function CartDrawer() {
             {/* Livraison offerte */}
             {totals.freeShipping ? (
               <div className="mb-4 flex items-center gap-2 rounded-2xl border border-[#4ade8033] bg-[#4ade8011] p-3">
-                <span className="text-[#4ade80] text-xs font-semibold">✓ Livraison offerte</span>
+                <span className="text-[#4ade80] text-xs font-semibold">✓ {t("cart.freeShipping")}</span>
               </div>
             ) : (
               <div className="mb-4 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-3">
                 <p className="text-xs text-[var(--hm-text-soft)]">
-                  Livraison offerte dès <strong className="text-[var(--hm-primary)]">10 pièces</strong>
+                  {t("cart.freeShippingFromPrefix")} <strong className="text-[var(--hm-primary)]">{t("cart.tenPieces")}</strong>
                 </p>
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-white">
                   <div
@@ -432,7 +435,7 @@ export default function CartDrawer() {
                   />
                 </div>
                 <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">
-                  {totals.totalItems}/10 pièces
+                  {totals.totalItems}/10 {t("cart.piecesPlural")}
                 </p>
               </div>
             )}
@@ -440,22 +443,22 @@ export default function CartDrawer() {
             {/* Totaux */}
             <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
               <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
-                <span>Sous-total HT</span>
+                <span>{t("cart.subtotalHT")}</span>
                 <span>{formatPrice(totals.subtotalHT)}</span>
               </div>
               <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
-                <span>TVA (20%)</span>
+                <span>{t("cart.vat")}</span>
                 <span>{formatPrice(totals.tva)}</span>
               </div>
               <div className="flex justify-between text-sm text-[var(--hm-text-soft)]">
-                <span>Livraison</span>
+                <span>{t("cart.delivery")}</span>
                 <span className={totals.freeShipping ? "text-[#4ade80]" : ""}>
-                  {totals.freeShipping ? "Offerte" : formatPrice(totals.shipping)}
+                  {totals.freeShipping ? t("cart.deliveryFree") : formatPrice(totals.shipping)}
                 </span>
               </div>
               <div className="divider-gold my-1" />
               <div className="flex justify-between font-bold text-[var(--hm-text)]">
-                <span>Total TTC</span>
+                <span>{t("cart.totalTTC")}</span>
                 <span className="text-lg text-[var(--hm-primary)]">{formatPrice(totals.totalTTC)}</span>
               </div>
             </div>
@@ -465,13 +468,13 @@ export default function CartDrawer() {
               onClick={closeCart}
               className="btn-primary w-full text-center"
             >
-              Passer la commande
+              {t("cart.checkout")}
             </Link>
             <button
               onClick={closeCart}
               className="btn-ghost w-full text-center mt-2 text-xs"
             >
-              Continuer mes achats
+              {t("cart.continueShopping")}
             </button>
           </div>
         )}

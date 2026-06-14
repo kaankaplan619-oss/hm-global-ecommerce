@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Upload, Type, Sparkles, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, QrCode } from "lucide-react";
 import QRCode from "qrcode";
 import { EFFECT_OPTIONS } from "@/lib/color-utils";
+import { useT } from "@/components/i18n/I18nProvider";
 import type { StudioObject } from "./StudioCanvas";
 
 const FONT_OPTIONS = [
@@ -27,11 +28,11 @@ const DESIGNS = [
   "circle", "triangle", "cross", "infinity",
 ] as const;
 
-const DESIGN_LABELS: Record<string, string> = {
-  "star": "Étoile", "football": "Football", "crown": "Couronne",
-  "arrow-right": "Flèche", "heart": "Cœur", "lightning": "Éclair",
-  "diamond": "Diamant", "shield": "Bouclier", "circle": "Cercle",
-  "triangle": "Triangle", "cross": "Croix", "infinity": "Infini",
+const DESIGN_LABEL_KEYS: Record<string, string> = {
+  "star": "studioTools.design.star", "football": "studioTools.design.football", "crown": "studioTools.design.crown",
+  "arrow-right": "studioTools.design.arrow", "heart": "studioTools.design.heart", "lightning": "studioTools.design.lightning",
+  "diamond": "studioTools.design.diamond", "shield": "studioTools.design.shield", "circle": "studioTools.design.circle",
+  "triangle": "studioTools.design.triangle", "cross": "studioTools.design.cross", "infinity": "studioTools.design.infinity",
 };
 
 type Face = "front" | "back";
@@ -44,6 +45,7 @@ interface Props {
 }
 
 export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) {
+  const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<"logo" | "text" | "design" | "qr">("logo");
 
@@ -80,10 +82,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
 
     // JPEG → toujours un fond opaque, avertissement immédiat
     if (isJpeg) {
-      setLogoWarning(
-        "⚠️ JPEG détecté — ce format a toujours un fond opaque (blanc ou coloré). " +
-        "Le fond apparaîtra sur le t-shirt. Utilisez un PNG fond transparent ou un fichier SVG."
-      );
+      setLogoWarning(t("studioTools.logo.jpegWarning"));
     }
 
     // Check dimensions (PNG + JPEG)
@@ -92,7 +91,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
       const url = URL.createObjectURL(file);
       img.onload = () => {
         if (img.naturalWidth < 300 || img.naturalHeight < 300) {
-          const dimWarning = `Résolution faible (${img.naturalWidth}×${img.naturalHeight}px). Pour un rendu net sur textile, utilisez au minimum 300×300px — idéalement 1000px+.`;
+          const dimWarning = `${t("studioTools.logo.lowResPrefix")} (${img.naturalWidth}×${img.naturalHeight}px). ${t("studioTools.logo.lowResSuffix")}`;
           setLogoWarning((prev) => prev ? `${prev}\n${dimWarning}` : dimWarning);
         }
         URL.revokeObjectURL(url);
@@ -136,7 +135,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
       id: `design-${name}-${Date.now()}`,
       type: "design",
       src: `/designs/${name}.svg`,
-      label: DESIGN_LABELS[name] ?? name,
+      label: DESIGN_LABEL_KEYS[name] ? t(DESIGN_LABEL_KEYS[name]) : name,
       face,
     });
   };
@@ -145,7 +144,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
   const generateQR = async () => {
     const trimmed = qrUrl.trim();
     if (!trimmed || trimmed === "https://") {
-      setQrError("Saisissez une URL ou un texte.");
+      setQrError(t("studioTools.qr.errorEmpty"));
       return;
     }
     setQrError(null);
@@ -162,7 +161,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
       });
       setQrPreview(dataUrl);
     } catch {
-      setQrError("Impossible de générer le QR code. Vérifiez le texte saisi.");
+      setQrError(t("studioTools.qr.errorGenerate"));
     } finally {
       setQrGenerating(false);
     }
@@ -181,10 +180,10 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
   };
 
   const tabs = [
-    { id: "logo"    as const, label: "Logo",    icon: <Upload size={16} /> },
-    { id: "text"    as const, label: "Texte",   icon: <Type size={16} /> },
-    { id: "design"  as const, label: "Designs", icon: <Sparkles size={16} /> },
-    { id: "qr"      as const, label: "QR Code", icon: <QrCode size={16} /> },
+    { id: "logo"    as const, label: t("studioTools.tab.logo"),   icon: <Upload size={16} /> },
+    { id: "text"    as const, label: t("studioTools.tab.text"),   icon: <Type size={16} /> },
+    { id: "design"  as const, label: t("studioTools.tab.designs"), icon: <Sparkles size={16} /> },
+    { id: "qr"      as const, label: t("studioTools.tab.qr"),     icon: <QrCode size={16} /> },
   ];
 
   return (
@@ -228,10 +227,10 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
           >
             <Upload size={24} className="text-[var(--hm-primary)]" />
             <span className="text-sm font-semibold text-[var(--hm-text)]">
-              {hasLogo ? "Remplacer le logo" : "Importer votre logo"}
+              {hasLogo ? t("studioTools.logo.replace") : t("studioTools.logo.import")}
             </span>
             <span className="text-xs text-[var(--hm-text-soft)]">
-              SVG · PNG fond transparent · min. 300px
+              {t("studioTools.logo.formats")}
             </span>
           </label>
 
@@ -246,47 +245,46 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
 
           {/* Guide format */}
           <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-3">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Format recommandé</p>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">{t("studioTools.logo.recommendedFormat")}</p>
             <div className="flex flex-col gap-1.5 text-[11px]">
               <div className="flex items-center gap-2">
                 <span className="flex h-5 w-8 items-center justify-center rounded bg-green-100 text-[9px] font-bold text-green-700">SVG</span>
-                <span className="text-[var(--hm-text)]">Vecteur — qualité parfaite, aucun fond</span>
+                <span className="text-[var(--hm-text)]">{t("studioTools.logo.svgDesc")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="flex h-5 w-8 items-center justify-center rounded bg-blue-100 text-[9px] font-bold text-blue-700">PNG</span>
-                <span className="text-[var(--hm-text)]">Fond transparent obligatoire · 1000px+</span>
+                <span className="text-[var(--hm-text)]">{t("studioTools.logo.pngDesc")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="flex h-5 w-8 items-center justify-center rounded bg-red-100 text-[9px] font-bold text-red-600">JPG</span>
-                <span className="text-[var(--hm-text-soft)]">Déconseillé — fond opaque visible sur textile</span>
+                <span className="text-[var(--hm-text-soft)]">{t("studioTools.logo.jpgDesc")}</span>
               </div>
             </div>
           </div>
 
           <p className="text-[10px] text-[var(--hm-text-muted)]">
-            Pour la broderie, privilégiez des logos simples avec peu de couleurs.
-            Si votre logo n'est disponible qu'en JPEG, demandez-nous un détourage professionnel.
+            {t("studioTools.logo.embroideryTip")}
           </p>
 
           {/* Logo effects section */}
           <div className="border-t border-[var(--hm-line)] pt-4">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-              Lisibilité sur textile
+              {t("studioTools.logo.readabilityTitle")}
             </p>
             <div className="flex flex-col gap-2">
               {EFFECT_OPTIONS.map(({ value, label }) => (
                 <div key={value} className="flex items-center gap-2 rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-xs text-[var(--hm-text-soft)]">
                   <span className="font-medium">{label}</span>
                   <span className="ml-auto text-[10px] text-[var(--hm-text-muted)]">
-                    {value === "none" && "Aucun traitement"}
-                    {value === "white-outline" && "Halo blanc léger"}
-                    {value === "white-bg" && "Halo blanc fort"}
+                    {value === "none" && t("studioTools.logo.effectNone")}
+                    {value === "white-outline" && t("studioTools.logo.effectOutline")}
+                    {value === "white-bg" && t("studioTools.logo.effectBg")}
                   </span>
                 </div>
               ))}
             </div>
             <p className="mt-2 text-[10px] text-[var(--hm-text-muted)]">
-              Les effets de lisibilité sont disponibles dans le MockupViewer classique.
+              {t("studioTools.logo.effectsAvailability")}
             </p>
           </div>
         </div>
@@ -300,7 +298,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
           <textarea
             value={textValue}
             onChange={(e) => setTextValue(e.target.value)}
-            placeholder="Ex: Mon Club, Mon Équipe..."
+            placeholder={t("studioTools.text.placeholder")}
             rows={2}
             className="w-full resize-none rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-sm text-[var(--hm-text)] placeholder:text-[var(--hm-text-muted)] focus:border-[var(--hm-primary)] focus:outline-none"
           />
@@ -335,7 +333,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
             <button
               type="button"
               onClick={() => setFontWeight(w => w === "bold" ? "normal" : "bold")}
-              title="Gras"
+              title={t("studioTools.text.bold")}
               className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-bold transition ${
                 fontWeight === "bold"
                   ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
@@ -348,7 +346,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
             <button
               type="button"
               onClick={() => setFontStyle(s => s === "italic" ? "normal" : "italic")}
-              title="Italique"
+              title={t("studioTools.text.italic")}
               className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
                 fontStyle === "italic"
                   ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
@@ -361,7 +359,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
             <button
               type="button"
               onClick={() => setTextDecoration(d => d === "underline" ? "none" : "underline")}
-              title="Souligné"
+              title={t("studioTools.text.underline")}
               className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
                 textDecoration === "underline"
                   ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
@@ -382,7 +380,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
                 key={align}
                 type="button"
                 onClick={() => setTextAlign(align)}
-                title={`Aligner ${align === "left" ? "à gauche" : align === "center" ? "au centre" : "à droite"}`}
+                title={align === "left" ? t("studioTools.text.alignLeft") : align === "center" ? t("studioTools.text.alignCenter") : t("studioTools.text.alignRight")}
                 className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
                   textAlign === align
                     ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
@@ -398,7 +396,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                Espacement lettres
+                {t("studioTools.text.letterSpacing")}
               </span>
               <span className="text-[10px] font-mono text-[var(--hm-text-soft)]">{letterSpacing} px</span>
             </div>
@@ -416,7 +414,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
           {/* ── Couleur ───────────────────────────────────────────────── */}
           <div className="flex flex-col gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-              Couleur
+              {t("studioTools.text.color")}
             </span>
             <div className="flex flex-wrap gap-2">
               {COLOR_PRESETS.map((color) => (
@@ -462,7 +460,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
             onClick={handleAddText}
             className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Ajouter le texte
+            {t("studioTools.text.addButton")}
           </button>
         </div>
       )}
@@ -471,7 +469,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
       {activeTab === "design" && (
         <div className="flex flex-col gap-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-            Designs prédéfinis
+            {t("studioTools.design.heading")}
           </p>
           <div className="grid grid-cols-3 gap-2">
             {DESIGNS.map((name) => (
@@ -480,23 +478,23 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
                 type="button"
                 onClick={() => handleAddDesign(name)}
                 className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--hm-line)] bg-white p-3 text-[var(--hm-primary)] transition hover:border-[var(--hm-primary)] hover:bg-[var(--hm-accent-soft-rose)] hover:shadow-sm"
-                title={DESIGN_LABELS[name]}
+                title={t(DESIGN_LABEL_KEYS[name])}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`/designs/${name}.svg`}
-                  alt={DESIGN_LABELS[name] ?? name}
+                  alt={DESIGN_LABEL_KEYS[name] ? t(DESIGN_LABEL_KEYS[name]) : name}
                   className="h-8 w-8 object-contain"
                   style={{ filter: "invert(26%) sepia(43%) saturate(889%) hue-rotate(287deg) brightness(94%) contrast(96%)" }}
                 />
                 <span className="text-[9px] font-semibold text-[var(--hm-text-soft)]">
-                  {DESIGN_LABELS[name]}
+                  {t(DESIGN_LABEL_KEYS[name])}
                 </span>
               </button>
             ))}
           </div>
           <p className="text-[10px] text-[var(--hm-text-muted)]">
-            Cliquez sur un design pour l&apos;ajouter au canvas. Vous pouvez le déplacer et redimensionner après.
+            {t("studioTools.design.help")}
           </p>
         </div>
       )}
@@ -505,17 +503,17 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
       {activeTab === "qr" && (
         <div className="flex flex-col gap-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-            Générer un QR code
+            {t("studioTools.qr.heading")}
           </p>
 
           {/* URL / texte */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">URL ou texte</label>
+            <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">{t("studioTools.qr.urlLabel")}</label>
             <input
               type="text"
               value={qrUrl}
               onChange={(e) => { setQrUrl(e.target.value); setQrPreview(null); setQrError(null); }}
-              placeholder="https://votre-site.com"
+              placeholder={t("studioTools.qr.urlPlaceholder")}
               className="w-full rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-xs text-[var(--hm-text)] placeholder:text-[var(--hm-text-muted)] focus:border-[var(--hm-primary)] focus:outline-none"
             />
           </div>
@@ -523,7 +521,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
           {/* Couleurs */}
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">Couleur QR</label>
+              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">{t("studioTools.qr.fgLabel")}</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -540,7 +538,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">Fond</label>
+              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">{t("studioTools.qr.bgLabel")}</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -551,7 +549,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
                 />
                 <input
                   type="text"
-                  value={qrTransparent ? "Transparent" : qrBgColor}
+                  value={qrTransparent ? t("studioTools.qr.transparentValue") : qrBgColor}
                   readOnly
                   className="flex-1 rounded-lg border border-[var(--hm-line)] bg-white px-2 py-1.5 text-[10px] font-mono text-[var(--hm-text-muted)] focus:outline-none"
                 />
@@ -567,13 +565,13 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
               onChange={(e) => { setQrTransparent(e.target.checked); setQrPreview(null); }}
               className="h-4 w-4 accent-[var(--hm-primary)]"
             />
-            <span className="text-xs text-[var(--hm-text)]">Fond transparent (PNG)</span>
+            <span className="text-xs text-[var(--hm-text)]">{t("studioTools.qr.transparentToggle")}</span>
           </label>
 
           {/* Taille */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">Taille de génération</label>
+              <label className="text-[10px] font-medium text-[var(--hm-text-soft)]">{t("studioTools.qr.sizeLabel")}</label>
               <span className="text-[10px] font-mono text-[var(--hm-text-soft)]">{qrSize} px</span>
             </div>
             <input
@@ -586,7 +584,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
               className="w-full accent-[var(--hm-primary)]"
             />
             <p className="text-[9px] text-[var(--hm-text-muted)]">
-              Recommandé : 300 px minimum pour une impression nette.
+              {t("studioTools.qr.sizeHint")}
             </p>
           </div>
 
@@ -600,11 +598,11 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
           {/* Prévisualisation */}
           {qrPreview && (
             <div className="flex flex-col items-center gap-2 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">Aperçu</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">{t("studioTools.qr.previewHeading")}</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={qrPreview}
-                alt="QR Code prévisualisation"
+                alt={t("studioTools.qr.previewAlt")}
                 className="h-32 w-32 rounded-lg"
                 style={{ imageRendering: "pixelated", background: qrTransparent ? "repeating-conic-gradient(#ddd 0% 25%, #fff 0% 50%) 0 0 / 10px 10px" : "transparent" }}
               />
@@ -620,7 +618,7 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
               disabled={qrGenerating}
               className="flex-1 rounded-xl border border-[var(--hm-primary)] bg-white px-3 py-2.5 text-xs font-semibold text-[var(--hm-primary)] transition hover:bg-[var(--hm-accent-soft-rose)] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {qrGenerating ? "Génération…" : qrPreview ? "Regénérer" : "Générer"}
+              {qrGenerating ? t("studioTools.qr.generating") : qrPreview ? t("studioTools.qr.regenerate") : t("studioTools.qr.generate")}
             </button>
             {qrPreview && (
               <button
@@ -628,17 +626,17 @@ export default function StudioToolsPanel({ face, onAddObject, hasLogo }: Props) 
                 onClick={handleAddQR}
                 className="btn-primary flex-1"
               >
-                Ajouter au canvas
+                {t("studioTools.qr.addToCanvas")}
               </button>
             )}
           </div>
 
           <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] p-3 text-[10px] text-[var(--hm-text-soft)]">
-            <p className="font-semibold mb-1">Conseils :</p>
+            <p className="font-semibold mb-1">{t("studioTools.qr.tipsTitle")}</p>
             <ul className="list-disc list-inside space-y-0.5">
-              <li>Testez le QR code avec votre téléphone avant d&apos;imprimer</li>
-              <li>Fond transparent = idéal sur textile coloré</li>
-              <li>Choisissez un contraste fort pour une meilleure lisibilité</li>
+              <li>{t("studioTools.qr.tip1")}</li>
+              <li>{t("studioTools.qr.tip2")}</li>
+              <li>{t("studioTools.qr.tip3")}</li>
             </ul>
           </div>
         </div>

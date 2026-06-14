@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/data/pricing";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ─── Stripe singleton — jamais appelé server-side ─────────────────────────────
 const stripePromise = loadStripe(
@@ -85,6 +86,7 @@ function PaymentForm({
   userName:   string;
   userEmail:  string;
 }) {
+  const t             = useT();
   const stripe        = useStripe();
   const elements      = useElements();
   const router        = useRouter();
@@ -113,7 +115,7 @@ function PaymentForm({
       if (stripeError) {
         setError(
           stripeError.message ??
-            "Une erreur est survenue lors du paiement. Réessayez."
+            t("stripePayment.error.generic")
         );
         setLoading(false);
         return;
@@ -132,11 +134,11 @@ function PaymentForm({
           router.push(`/commande-confirmee?${params.toString()}`);
         }, 1200);
       } else {
-        setError("Statut de paiement inattendu. Contactez le support.");
+        setError(t("stripePayment.error.unexpectedStatus"));
         setLoading(false);
       }
     },
-    [stripe, elements, orderId, orderNumber, router, clearCart]
+    [stripe, elements, orderId, orderNumber, router, clearCart, t]
   );
 
   if (succeeded) {
@@ -145,9 +147,9 @@ function PaymentForm({
         <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
           <CheckCircle size={32} className="text-green-600" />
         </div>
-        <h2 className="text-xl font-black text-[var(--hm-text)]">Paiement accepté !</h2>
+        <h2 className="text-xl font-black text-[var(--hm-text)]">{t("stripePayment.success.title")}</h2>
         <p className="text-sm text-[var(--hm-text-soft)]">
-          Vous allez être redirigé vers votre commande…
+          {t("stripePayment.success.redirect")}
         </p>
       </div>
     );
@@ -189,14 +191,14 @@ function PaymentForm({
       >
         <Lock size={14} />
         {loading
-          ? "Traitement en cours…"
+          ? t("stripePayment.button.processing")
           : totalTTC
-          ? `Payer ${formatPrice(totalTTC)}`
-          : "Payer"}
+          ? `${t("stripePayment.button.pay")} ${formatPrice(totalTTC)}`
+          : t("stripePayment.button.payShort")}
       </button>
 
       <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
-        🔒 Paiement chiffré SSL — propulsé par Stripe
+        🔒 {t("stripePayment.footer.ssl")}
       </p>
     </form>
   );
@@ -205,6 +207,7 @@ function PaymentForm({
 // ─── Wrapper complet (lit les params URL, charge Elements) ────────────────────
 
 export default function StripePayment() {
+  const t             = useT();
   const searchParams  = useSearchParams();
   const clientSecret  = searchParams.get("clientSecret");
   const orderId       = searchParams.get("orderId")     ?? "";
@@ -233,9 +236,9 @@ export default function StripePayment() {
   if (!clientSecret) {
     return (
       <div className="pt-24 pb-20 text-center">
-        <p className="text-[#555555] mb-4">Session de paiement expirée ou invalide.</p>
+        <p className="text-[#555555] mb-4">{t("stripePayment.invalidSession")}</p>
         <Link href="/checkout" className="btn-outline text-sm">
-          Retour au panier
+          {t("stripePayment.backToCart")}
         </Link>
       </div>
     );
@@ -250,11 +253,11 @@ export default function StripePayment() {
             className="flex items-center gap-1 text-xs text-[var(--hm-text-soft)] hover:text-[var(--hm-primary)] transition-colors mb-4"
           >
             <ArrowLeft size={12} />
-            Retour
+            {t("stripePayment.back")}
           </Link>
-          <h1 className="text-2xl font-black text-[var(--hm-text)]">Paiement sécurisé</h1>
+          <h1 className="text-2xl font-black text-[var(--hm-text)]">{t("stripePayment.heading")}</h1>
           <p className="text-sm text-[var(--hm-text-soft)] mt-1">
-            Vos données de paiement sont chiffrées et traitées par Stripe.
+            {t("stripePayment.subheading")}
           </p>
         </div>
 
@@ -262,7 +265,7 @@ export default function StripePayment() {
           <div className="flex items-center gap-2 mb-6 pb-5 border-b border-[var(--hm-line)]">
             <Lock size={12} className="text-green-500" />
             <span className="text-[11px] text-[var(--hm-text-muted)]">
-              Connexion sécurisée — TLS 1.3 — Stripe PCI-DSS niveau 1
+              {t("stripePayment.secureConnection")}
             </span>
           </div>
 
@@ -286,7 +289,7 @@ export default function StripePayment() {
 
         {orderId && (
           <p className="text-center text-[10px] text-[var(--hm-text-muted)] mt-4">
-            Référence commande : {orderId}
+            {t("stripePayment.orderRef")} {orderId}
           </p>
         )}
       </div>

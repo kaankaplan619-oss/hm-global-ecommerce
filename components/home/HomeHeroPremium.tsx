@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Star } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * HomeHeroPremium — Hero principal homepage HM Global.
@@ -14,6 +17,7 @@ import { ArrowRight, Star } from "lucide-react";
  */
 
 export default function HomeHeroPremium() {
+  const t = useT();
   return (
     <section
       className="relative overflow-hidden pt-[var(--site-header-offset)]"
@@ -34,7 +38,7 @@ export default function HomeHeroPremium() {
                 className="inline-block h-px w-8"
                 style={{ background: "rgba(45,35,64,0.22)" }}
               />
-              Atelier &amp; agence · Souffelweyersheim · depuis 2018
+              {t("home.hero.eyebrow")}
             </p>
 
             <h1
@@ -46,16 +50,14 @@ export default function HomeHeroPremium() {
                 color: "var(--hm-text-main)",
               }}
             >
-              On habille votre équipe, vos murs et votre vitrine.
+              {t("home.hero.title")}
             </h1>
 
             <p
               className="mt-5 max-w-[38rem] text-[14.5px] leading-[1.65] sm:text-[15px]"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Textile à votre logo, supports imprimés et enseignes — un seul
-              atelier, à Souffelweyersheim. Vous validez votre BAT avant
-              qu&apos;on lance la machine.
+              {t("home.hero.subtitle")}
             </p>
 
             {/* CTAs orientés achat (trafic Instagram → boutique directe).
@@ -66,14 +68,14 @@ export default function HomeHeroPremium() {
                 href="/catalogue"
                 className="btn-hm-magenta w-full justify-center sm:w-auto"
               >
-                Je personnalise mon textile
+                {t("home.hero.ctaPrimary")}
                 <ArrowRight size={16} />
               </Link>
               <Link
                 href="/devis-rapide"
                 className="btn-hm-violet-outline w-full justify-center sm:w-auto"
               >
-                Devis gratuit en 24h
+                {t("home.hero.ctaSecondary")}
               </Link>
             </div>
 
@@ -86,7 +88,7 @@ export default function HomeHeroPremium() {
                 <Star size={13} className="fill-current" style={{ color: "var(--hm-magenta)" }} />
                 <span>
                   <strong style={{ color: "var(--hm-text-main)" }}>4,7/5</strong>{" "}
-                  · 14 avis Google
+                  · {t("home.hero.reviews")}
                 </span>
               </span>
               <span
@@ -94,7 +96,7 @@ export default function HomeHeroPremium() {
                 className="hidden h-3 w-px sm:inline-block"
                 style={{ background: "rgba(45,35,64,0.15)" }}
               />
-              <span>Réponse à votre devis sous 24h</span>
+              <span>{t("home.hero.responseTime")}</span>
             </div>
           </div>
 

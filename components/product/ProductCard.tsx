@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Layers3 } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 import { formatPrice, getProductCardPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getVisualMode } from "@/lib/hm-visual-utils";
@@ -23,28 +24,30 @@ interface ProductCardProps {
   product: Product;
 }
 
-const CATEGORY_LABEL: Record<string, string> = {
-  tshirts:    "T-shirt",
-  hoodies:    "Hoodie / Sweat",
-  softshells: "Softshell",
-  polos:      "Polo",
-  polaires:   "Polaire / Doudoune",
-  casquettes: "Casquette",
-  sacs:       "Sac & Tote",
-  goodies:    "Mug & Goodie",
-  enfants:    "Enfant",
+type TranslateFn = (key: string) => string;
+
+const CATEGORY_LABEL_KEY: Record<string, string> = {
+  tshirts:    "productCard.category.tshirts",
+  hoodies:    "productCard.category.hoodies",
+  softshells: "productCard.category.softshells",
+  polos:      "productCard.category.polos",
+  polaires:   "productCard.category.polaires",
+  casquettes: "productCard.category.casquettes",
+  sacs:       "productCard.category.sacs",
+  goodies:    "productCard.category.goodies",
+  enfants:    "productCard.category.enfants",
 };
 
-const CATEGORY_USAGE: Record<string, string> = {
-  tshirts:    "Équipes, événements, associations",
-  hoodies:    "Marque, équipe, merch premium",
-  softshells: "Terrain, chantier, nettoyage",
-  polos:      "Entreprise, restaurant, accueil",
-  polaires:   "Extérieur, logistique, équipe terrain",
-  casquettes: "Événement, club, staff",
-  sacs:       "Goodies, boutique, événement",
-  goodies:    "Cadeaux clients, séminaires",
-  enfants:    "Écoles, clubs, sorties",
+const CATEGORY_USAGE_KEY: Record<string, string> = {
+  tshirts:    "productCard.usage.tshirts",
+  hoodies:    "productCard.usage.hoodies",
+  softshells: "productCard.usage.softshells",
+  polos:      "productCard.usage.polos",
+  polaires:   "productCard.usage.polaires",
+  casquettes: "productCard.usage.casquettes",
+  sacs:       "productCard.usage.sacs",
+  goodies:    "productCard.usage.goodies",
+  enfants:    "productCard.usage.enfants",
 };
 
 const TECHNIQUE_LABEL: Record<string, string> = {
@@ -56,25 +59,29 @@ const TECHNIQUE_LABEL: Record<string, string> = {
   print:              "Print",
 };
 
-function recommendedTechnique(product: Product): string {
+function recommendedTechnique(product: Product, t: TranslateFn): string {
   const preferred = product.techniqueRecommandee ?? product.techniques[0];
+  if (preferred === "broderie" || preferred === "broderie_illimitee") {
+    return t("productCard.technique.broderie");
+  }
   return TECHNIQUE_LABEL[preferred] ?? preferred.toUpperCase();
 }
 
-function recommendedMinimum(product: Product): string {
-  if (product.quoteOnly) return "Sur devis";
-  return `${product.minOrderQty ?? 10} pcs`;
+function recommendedMinimum(product: Product, t: TranslateFn): string {
+  if (product.quoteOnly) return t("productCard.minimum.quote");
+  return `${product.minOrderQty ?? 10} ${t("productCard.minimum.unit")}`;
 }
 
-function indicativeDelay(product: Product): string {
-  if (product.category === "goodies") return "3-7 j ouvrés";
+function indicativeDelay(product: Product, t: TranslateFn): string {
+  if (product.category === "goodies") return t("productCard.delay.goodies");
   if (product.techniques.includes("broderie") || product.techniques.includes("broderie_illimitee")) {
-    return "7-12 j ouvrés";
+    return t("productCard.delay.embroidery");
   }
-  return "5-10 j ouvrés";
+  return t("productCard.delay.standard");
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const t = useT();
   // Prix affiché = prix au seuil atelier (10 pièces), honnête + compétitif,
   // avec la quantité indiquée (card.qty). Fallback : prix de base, sans seuil.
   const card = getProductCardPrice(product);
@@ -166,7 +173,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               }}
             >
               <span className="text-6xl leading-none">☕</span>
-              <span className="text-[10px] font-medium text-[var(--hm-text-soft)] tracking-wide">Visuel à venir</span>
+              <span className="text-[10px] font-medium text-[var(--hm-text-soft)] tracking-wide">{t("productCard.visualSoon")}</span>
             </div>
           )
         ) : (
@@ -197,7 +204,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Rupture de stock */}
         {displayedColors.length > 0 && displayedColors.every((c) => !c.available) && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="badge badge-neutral text-base">Rupture de stock</span>
+            <span className="badge badge-neutral text-base">{t("productCard.outOfStock")}</span>
           </div>
         )}
 
@@ -244,7 +251,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <p className="text-[10px] text-[var(--hm-text-soft)] font-mono">{product.reference}</p>
           <span className="text-[10px] text-[var(--hm-text-soft)] inline-flex items-center gap-1">
             <Layers3 size={11} />
-            {CATEGORY_LABEL[product.category] ?? product.category}
+            {CATEGORY_LABEL_KEY[product.category] ? t(CATEGORY_LABEL_KEY[product.category]) : product.category}
           </span>
         </div>
 
@@ -254,16 +261,16 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="mb-3 grid gap-1.5 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-3">
           <p className="line-clamp-1 text-[11px] text-[var(--hm-text-soft)]">
-            <span className="font-semibold text-[var(--hm-text)]">Usage :</span>{" "}
-            {product.ideaPour?.[0] ?? CATEGORY_USAGE[product.category] ?? "Projet textile"}
+            <span className="font-semibold text-[var(--hm-text)]">{t("productCard.label.usage")}</span>{" "}
+            {product.ideaPour?.[0] ?? (CATEGORY_USAGE_KEY[product.category] ? t(CATEGORY_USAGE_KEY[product.category]) : t("productCard.usage.fallback"))}
           </p>
           <p className="text-[11px] text-[var(--hm-text-soft)]">
-            <span className="font-semibold text-[var(--hm-text)]">Technique :</span>{" "}
-            {recommendedTechnique(product)}
+            <span className="font-semibold text-[var(--hm-text)]">{t("productCard.label.technique")}</span>{" "}
+            {recommendedTechnique(product, t)}
           </p>
           <p className="text-[11px] text-[var(--hm-text-soft)]">
-            <span className="font-semibold text-[var(--hm-text)]">Min. :</span>{" "}
-            {recommendedMinimum(product)} · {indicativeDelay(product)}
+            <span className="font-semibold text-[var(--hm-text)]">{t("productCard.label.min")}</span>{" "}
+            {recommendedMinimum(product, t)} · {indicativeDelay(product, t)}
           </p>
         </div>
 
@@ -273,19 +280,19 @@ export default function ProductCard({ product }: ProductCardProps) {
               <span className="text-base font-black text-[var(--hm-rose)]">
                 {formatPrice(card.price)}
               </span>
-              <span className="text-[10px] text-[var(--hm-text-soft)]"> TTC</span>
+              <span className="text-[10px] text-[var(--hm-text-soft)]"> {t("productCard.price.inclVat")}</span>
             </div>
             <span className="text-[10px] text-[var(--hm-text-soft)]">
-              {formatPrice(card.price / 1.2)} HT
+              {formatPrice(card.price / 1.2)} {t("productCard.price.exclVat")}
             </span>
           </div>
           {card.qty ? (
-            <p className="mt-0.5 text-[10px] text-[var(--hm-text-soft)]">dès {card.qty} pièces</p>
+            <p className="mt-0.5 text-[10px] text-[var(--hm-text-soft)]">{`${t("productCard.fromQty.prefix")}${card.qty}${t("productCard.fromQty.suffix")}`}</p>
           ) : null}
         </div>
 
         <span className="mt-3 flex w-full items-center justify-center rounded-xl bg-[var(--hm-primary)] px-3 py-2 text-[11px] font-bold text-white transition group-hover:bg-[var(--hm-rose-dark)]">
-          Voir la fiche
+          {t("productCard.cta")}
         </span>
       </div>
     </Link>

@@ -7,6 +7,7 @@ import ProductCard from "@/components/product/ProductCard";
 import ProductDetailClient from "@/components/product/ProductDetailClient";
 import ProductFeaturesSection from "@/components/product/ProductFeaturesSection";
 import { getProductBySlug, ALL_PRODUCTS } from "@/data/products";
+import { getT } from "@/lib/i18n/server";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -27,6 +28,7 @@ export async function generateStaticParams() {
 }
 
 export default async function ProductPage({ params }: Props) {
+  const t = await getT();
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) notFound();
@@ -38,28 +40,28 @@ export default async function ProductPage({ params }: Props) {
 
   // ── Données par catégorie ─────────────────────────────────────────────────
   const USE_CASES: Record<string, string[]> = {
-    tshirts:    ["Équipes événementielles", "Staff commerce & restauration", "Associations et opérations terrain"],
-    hoodies:    ["Tenues staff en mi-saison", "Uniformes casual d'équipe", "Merchandising et image de marque"],
-    softshells: ["Équipes terrain & commerciaux", "Personnel technique extérieur", "Image corporate premium"],
-    polos:      ["Hôtellerie & restauration", "Commerce & accueil client", "Uniformes professionnels classiques"],
-    polaires:   ["Équipes BTP & outdoor", "Personnel sécurité & technique", "Vêtements de travail hiver"],
-    casquettes: ["Équipes sportives & clubs", "Événementiel & promotionnel", "Goodies corporate"],
-    sacs:       ["Événements & salons professionnels", "Boutiques, associations & ONG", "Goodies clients & partenaires"],
-    goodies:    ["Cadeaux clients & partenaires", "Bureaux et équipes", "Restaurants, cafés et événements"],
-    enfants:    ["Événements familiaux & école", "Associations jeunesse & sport", "Tenues d'équipe enfants"],
+    tshirts:    [t("productPage.useCases.tshirts.0"), t("productPage.useCases.tshirts.1"), t("productPage.useCases.tshirts.2")],
+    hoodies:    [t("productPage.useCases.hoodies.0"), t("productPage.useCases.hoodies.1"), t("productPage.useCases.hoodies.2")],
+    softshells: [t("productPage.useCases.softshells.0"), t("productPage.useCases.softshells.1"), t("productPage.useCases.softshells.2")],
+    polos:      [t("productPage.useCases.polos.0"), t("productPage.useCases.polos.1"), t("productPage.useCases.polos.2")],
+    polaires:   [t("productPage.useCases.polaires.0"), t("productPage.useCases.polaires.1"), t("productPage.useCases.polaires.2")],
+    casquettes: [t("productPage.useCases.casquettes.0"), t("productPage.useCases.casquettes.1"), t("productPage.useCases.casquettes.2")],
+    sacs:       [t("productPage.useCases.sacs.0"), t("productPage.useCases.sacs.1"), t("productPage.useCases.sacs.2")],
+    goodies:    [t("productPage.useCases.goodies.0"), t("productPage.useCases.goodies.1"), t("productPage.useCases.goodies.2")],
+    enfants:    [t("productPage.useCases.enfants.0"), t("productPage.useCases.enfants.1"), t("productPage.useCases.enfants.2")],
   };
 
   const STRENGTHS: Record<string, string[]> = {
-    tshirts:    ["Coupe polyvalente homme, femme et unisexe", "Support idéal pour DTF, flex ou broderie", "Excellent rapport qualité/prix"],
-    hoodies:    ["Bonne tenue dans le temps", "Look plus premium pour les équipes", "Excellent rendu sur poitrine ou dos"],
-    softshells: ["Aspect premium immédiat", "Très bon support pour broderie", "Parfait pour un usage professionnel extérieur"],
-    polos:      ["Tissu respirant et professionnel", "Idéal pour le flex et la broderie", "Look soigné pour l'accueil client"],
-    polaires:   ["Chaleur et légèreté combinées", "Broderie durable sur tissu polaire", "Parfait pour les équipes terrain hiver"],
-    casquettes: ["Broderie haute définition garantie", "Finition premium longue durée", "Support idéal pour petits logos"],
-    sacs:       ["Coton bio certifié", "Grande surface pour DTF et flex", "Impact positif sur l'image de marque"],
+    tshirts:    [t("productPage.strengths.tshirts.0"), t("productPage.strengths.tshirts.1"), t("productPage.strengths.tshirts.2")],
+    hoodies:    [t("productPage.strengths.hoodies.0"), t("productPage.strengths.hoodies.1"), t("productPage.strengths.hoodies.2")],
+    softshells: [t("productPage.strengths.softshells.0"), t("productPage.strengths.softshells.1"), t("productPage.strengths.softshells.2")],
+    polos:      [t("productPage.strengths.polos.0"), t("productPage.strengths.polos.1"), t("productPage.strengths.polos.2")],
+    polaires:   [t("productPage.strengths.polaires.0"), t("productPage.strengths.polaires.1"), t("productPage.strengths.polaires.2")],
+    casquettes: [t("productPage.strengths.casquettes.0"), t("productPage.strengths.casquettes.1"), t("productPage.strengths.casquettes.2")],
+    sacs:       [t("productPage.strengths.sacs.0"), t("productPage.strengths.sacs.1"), t("productPage.strengths.sacs.2")],
     // Fallback générique — chaque goodie doit définir product.strengths dans data/products.ts.
-    goodies:    ["Objet publicitaire simple et efficace", "Impression couleur adaptée aux logos et visuels", "Simple à commander en quantité, dès 1 pièce"],
-    enfants:    ["Matières douces certifiées Oeko-Tex", "Coupes adaptées de 3 à 12 ans", "Rendu DTF vibrant sur petites tailles"],
+    goodies:    [t("productPage.strengths.goodies.0"), t("productPage.strengths.goodies.1"), t("productPage.strengths.goodies.2")],
+    enfants:    [t("productPage.strengths.enfants.0"), t("productPage.strengths.enfants.1"), t("productPage.strengths.enfants.2")],
   };
 
   // Goodies : objets hétérogènes (mugs, stickers, dessous de verre…) → données
@@ -75,38 +77,38 @@ export default async function ProductPage({ params }: Props) {
   const recommendation: string = (() => {
     // Goodies (mugs, objets) — wording non-textile
     if (product.category === "goodies") {
-      return "Produit simple et efficace pour vos cadeaux clients, bureaux, événements ou packs de bienvenue. Notre équipe vérifie votre visuel avant impression pour garantir un rendu propre et professionnel.";
+      return t("productPage.recommendation.goodies");
     }
     if (techs.length === 1 && techs[0] === "broderie") {
-      return "La broderie est la seule technique disponible sur ce produit — et c'est aussi la plus adaptée : finition premium, durée de vie maximale et rendu professionnel garanti.";
+      return t("productPage.recommendation.broderieOnly");
     }
     if (techs.length === 1 && techs[0] === "dtf") {
-      return "Le DTF est la technique disponible sur ce produit. Rendu vif, couleurs illimitées et excellente durée de vie sur tissu.";
+      return t("productPage.recommendation.dtfOnly");
     }
     if (!techs.includes("dtf")) {
-      return "Le flex et la broderie sont les techniques disponibles sur ce produit. La broderie apporte la finition la plus premium et durable, le flex convient aux logos simples et aux typographies.";
+      return t("productPage.recommendation.noDtf");
     }
     if (product.category === "softshells") {
-      return "Pour les softshells, la broderie reste la finition la plus cohérente pour un rendu durable et professionnel. DTF et flex sont disponibles mais à utiliser avec précaution sur tissu technique.";
+      return t("productPage.recommendation.softshells");
     }
     if (product.category === "hoodies" || product.category === "enfants") {
-      return "Sur ce type de textile, la broderie apporte une vraie montée en gamme tandis que le DTF reste très efficace pour les visuels complexes et les dégradés.";
+      return t("productPage.recommendation.hoodiesEnfants");
     }
-    return "Le DTF est souvent le meilleur compromis entre précision, souplesse visuelle et rendu des couleurs. Le flex convient aux logos simples, la broderie aux finitions premium.";
+    return t("productPage.recommendation.default");
   })();
 
   return (
     <div className="pt-24 pb-20 md:pt-28">
       <div className="container">
         {/* ── Breadcrumb ──────────────────────────────────────────────────────── */}
-        <nav aria-label="Fil d'Ariane" className="mb-10 flex flex-wrap items-center gap-1.5">
+        <nav aria-label={t("productPage.breadcrumb.aria")} className="mb-10 flex flex-wrap items-center gap-1.5">
           {/* Accueil */}
           <Link
             href="/"
             className="group flex items-center gap-1.5 rounded-full border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--hm-text-soft)] shadow-sm transition hover:border-[var(--hm-rose)]/40 hover:bg-[var(--hm-accent-soft-rose)] hover:text-[var(--hm-rose)]"
           >
             <Home size={11} className="transition group-hover:text-[var(--hm-rose)]" />
-            Accueil
+            {t("productPage.breadcrumb.home")}
           </Link>
 
           {/* Separator */}
@@ -120,7 +122,7 @@ export default async function ProductPage({ params }: Props) {
             className="group flex items-center gap-1.5 rounded-full border border-[var(--hm-line)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--hm-text-soft)] shadow-sm transition hover:border-[var(--hm-rose)]/40 hover:bg-[var(--hm-accent-soft-rose)] hover:text-[var(--hm-rose)]"
           >
             <LayoutGrid size={11} className="transition group-hover:text-[var(--hm-rose)]" />
-            Catalogue
+            {t("productPage.breadcrumb.catalogue")}
           </Link>
 
           {/* Separator */}
@@ -135,15 +137,15 @@ export default async function ProductPage({ params }: Props) {
           >
             <Shirt size={11} className="transition group-hover:text-[var(--hm-rose)]" />
             {({
-              tshirts:    "T-shirts",
-              hoodies:    "Hoodies & Sweats",
-              softshells: "Softshells",
-              polos:      "Polos",
-              polaires:   "Polaires",
-              casquettes: "Casquettes",
-              sacs:       "Sacs",
-              goodies:    "Mugs & Goodies",
-              enfants:    "Enfants",
+              tshirts:    t("productPage.category.tshirts"),
+              hoodies:    t("productPage.category.hoodies"),
+              softshells: t("productPage.category.softshells"),
+              polos:      t("productPage.category.polos"),
+              polaires:   t("productPage.category.polaires"),
+              casquettes: t("productPage.category.casquettes"),
+              sacs:       t("productPage.category.sacs"),
+              goodies:    t("productPage.category.goodies"),
+              enfants:    t("productPage.category.enfants"),
             } as Record<string, string>)[product.category] ?? product.category}
           </Link>
 
@@ -170,7 +172,7 @@ export default async function ProductPage({ params }: Props) {
         <div className="grid gap-6 mb-16 lg:grid-cols-3">
           <section className="card p-6">
             <h2 className="text-lg font-black text-[var(--hm-text)] mb-4">
-              Idéal pour
+              {t("productPage.idealFor")}
             </h2>
             <div className="space-y-3">
               {useCases.map((item) => (
@@ -184,7 +186,7 @@ export default async function ProductPage({ params }: Props) {
 
           <section className="card p-6">
             <h2 className="text-lg font-black text-[var(--hm-text)] mb-4">
-              Pourquoi ce modèle
+              {t("productPage.whyThisModel")}
             </h2>
             <div className="space-y-3">
               {strengths.map((item) => (
@@ -198,7 +200,7 @@ export default async function ProductPage({ params }: Props) {
 
           <section className="card p-6 bg-[var(--hm-accent-soft-blue)]">
             <h2 className="text-lg font-black text-[var(--hm-text)] mb-4">
-              Conseil HM Global
+              {t("productPage.hmAdvice")}
             </h2>
             <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed">
               {recommendation}
@@ -209,7 +211,7 @@ export default async function ProductPage({ params }: Props) {
         {related.length > 0 && (
           <div className="border-t border-[var(--hm-line)] pt-8 md:pt-10">
             <div className="flex items-center gap-4 mb-6">
-              <h2 className="text-lg font-bold text-[var(--hm-text)]">Produits similaires</h2>
+              <h2 className="text-lg font-bold text-[var(--hm-text)]">{t("productPage.relatedProducts")}</h2>
               <div className="h-[1px] flex-1 bg-[var(--hm-line)]" />
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

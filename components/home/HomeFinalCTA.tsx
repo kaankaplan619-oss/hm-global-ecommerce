@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * HomeFinalCTA — Bloc CTA final homepage.
@@ -13,6 +16,7 @@ import { ArrowRight } from "lucide-react";
  */
 
 export default function HomeFinalCTA() {
+  const t = useT();
   return (
     <section className="py-12 sm:py-18" style={{ background: "#ffffff" }}>
       <div className="container">
@@ -33,9 +37,9 @@ export default function HomeFinalCTA() {
                 color: "var(--hm-text-main)",
               }}
             >
-              Un projet complet pour{" "}
+              {t("home.finalcta.titleLead")}{" "}
               <span style={{ color: "var(--hm-magenta)" }}>
-                votre entreprise
+                {t("home.finalcta.titleHighlight")}
               </span>{" "}
               ?
             </h2>
@@ -44,8 +48,7 @@ export default function HomeFinalCTA() {
               className="mt-4 text-[14px] leading-[1.7] sm:text-[14.5px]"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Envoyez-nous votre idée, votre logo ou votre besoin : on vous
-              aide à choisir les bons supports.
+              {t("home.finalcta.subtitle")}
             </p>
 
             <div className="mt-7 flex flex-col items-center justify-center gap-2.5 sm:flex-row">
@@ -53,14 +56,14 @@ export default function HomeFinalCTA() {
                 href="/contact?sujet=devis"
                 className="btn-hm-magenta w-full sm:w-auto"
               >
-                Demander un devis global
+                {t("home.finalcta.ctaQuote")}
                 <ArrowRight size={15} />
               </Link>
               <Link
                 href="/catalogue"
                 className="btn-hm-violet-outline w-full sm:w-auto"
               >
-                Voir le textile
+                {t("home.finalcta.ctaCatalogue")}
                 <ArrowRight size={13} />
               </Link>
             </div>

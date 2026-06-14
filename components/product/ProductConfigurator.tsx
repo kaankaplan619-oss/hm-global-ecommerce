@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Upload, X, CheckCircle, AlertCircle, Minus, Plus, ShoppingBag, Loader2, Truck } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ── Calcul date d'expédition estimée ──────────────────────────────────────────
 // Production + livraison : 5 à 7 jours ouvrés selon le volume
@@ -113,6 +114,7 @@ export default function ProductConfigurator({
   studioComposedFront,
   studioComposedBack,
 }: Props) {
+  const t = useT();
   const { addItem } = useCartStore();
 
   // Couleurs affichées : filtrées Printify V1 si applicable, sinon liste complète
@@ -384,7 +386,7 @@ export default function ProductConfigurator({
       {/* ── Couleur ───────────────────────────────────────────── */}
       <div>
         <label className="label">
-          Couleur
+          {t("configurator.color")}
           {color && (
             <span className="ml-2 font-medium normal-case text-[var(--hm-text)]">{color.label}</span>
           )}
@@ -403,7 +405,7 @@ export default function ProductConfigurator({
                 key={c.id}
                 onClick={() => !unavailable && handleColorChange(c)}
                 disabled={unavailable}
-                title={unavailable ? `${c.label} — rupture de stock` : c.label}
+                title={unavailable ? `${c.label} — ${t("configurator.outOfStock")}` : c.label}
                 className={`relative h-9 min-w-9 rounded-full border-2 transition-all
                   ${unavailable
                     ? "cursor-not-allowed opacity-30"
@@ -456,14 +458,14 @@ export default function ProductConfigurator({
             toutes les couleurs affichées ont obligatoirement un mockup local généré */}
         {!isPrintifyV1 && color && !colorHasImages(product.images, color, colorImages) && !product.hmMockupImages?.[color.id] && (
           <p className="mt-1.5 text-[11px] text-[var(--hm-text-muted)]">
-            Visuel non disponible pour cette couleur — vous pouvez tout de même la commander.
+            {t("configurator.noVisualForColor")}
           </p>
         )}
       </div>
 
       {/* ── Taille ────────────────────────────────────────────── */}
       <div>
-        <label className="label">Taille</label>
+        <label className="label">{t("configurator.size")}</label>
         <div className="flex flex-wrap gap-2">
           {product.sizes.map((s) => {
             const active = size === s.label;
@@ -499,7 +501,7 @@ export default function ProductConfigurator({
                   s.soldOut || !s.available ? "text-red-500" : "text-green-600"
                 }`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${s.soldOut || !s.available ? "bg-red-500" : "bg-green-500"}`} />
-                  {s.soldOut || !s.available ? "Épuisé" : "Dispo"}
+                  {s.soldOut || !s.available ? t("configurator.soldOut") : t("configurator.inStock")}
                 </span>
               </div>
             );
@@ -507,14 +509,14 @@ export default function ProductConfigurator({
         </div>
         {!size && (
           <p className="mt-2 text-[11px] text-[var(--hm-text-muted)]">
-            Sélectionnez une taille pour continuer
+            {t("configurator.selectSizeToContinue")}
           </p>
         )}
       </div>
 
       {/* ── Technique ─────────────────────────────────────────── */}
       <div>
-        <label className="label">Technique de personnalisation</label>
+        <label className="label">{t("configurator.techniqueLabel")}</label>
         <div className="flex flex-col gap-2">
           {availableTechniques.map((tech) => {
             // Utilise les surcharges spécifiques au produit — cohérent avec le récap prix
@@ -552,14 +554,14 @@ export default function ProductConfigurator({
                         {tech.label}
                       </span>
                       {tech.id === "broderie" && (
-                        <span className="ml-2 badge badge-info text-[8px]">Premium</span>
+                        <span className="ml-2 badge badge-info text-[8px]">{t("configurator.badgePremium")}</span>
                       )}
                       {tech.id === "dtf" && (
-                        <span className="ml-2 badge badge-gold text-[8px]">Populaire</span>
+                        <span className="ml-2 badge badge-gold text-[8px]">{t("configurator.badgePopular")}</span>
                       )}
                       {(product.techniqueConstraints?.[tech.id]?.minQty ?? 1) > 1 && (
                         <span className="ml-2 badge badge-info text-[8px]">
-                          dès {product.techniqueConstraints?.[tech.id]?.minQty} pcs
+                          {t("configurator.fromQtyPrefix")} {product.techniqueConstraints?.[tech.id]?.minQty} {t("configurator.pcs")}
                         </span>
                       )}
                     </div>
@@ -584,7 +586,7 @@ export default function ProductConfigurator({
         <div className="-mt-2 flex items-start gap-2 rounded-lg border border-[#facc1533] bg-[#facc1511] p-3">
           <AlertCircle size={14} className="mt-0.5 shrink-0 text-[#b45309]" />
           <p className="text-xs text-[#b45309]">
-            La broderie est recommandée pour les softshells — le tissu technique supporte moins bien l&rsquo;impression DTF/Flex sur le long terme.
+            {t("configurator.softshellWarning")}
           </p>
         </div>
       )}
@@ -595,7 +597,7 @@ export default function ProductConfigurator({
            Textiles & polo 64800 (cœur/dos/cœur+dos) : sélecteur intact. */}
       {availablePlacements.length > 1 && (
       <div>
-        <label className="label">Emplacement du marquage</label>
+        <label className="label">{t("configurator.placementLabel")}</label>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {availablePlacements.map((plc) => {
             const placementSurcharge =
@@ -623,7 +625,7 @@ export default function ProductConfigurator({
                   <span className="text-[10px] text-[var(--hm-primary)]">+{formatPrice(placementSurcharge)}</span>
                 )}
                 {placementSurcharge === 0 && (
-                  <span className="text-[10px] text-[var(--hm-text-muted)]">Inclus</span>
+                  <span className="text-[10px] text-[var(--hm-text-muted)]">{t("configurator.included")}</span>
                 )}
               </button>
             );
@@ -634,7 +636,7 @@ export default function ProductConfigurator({
 
       {/* ── Quantité ──────────────────────────────────────────── */}
       <div>
-        <label className="label">Quantité</label>
+        <label className="label">{t("configurator.quantity")}</label>
         <div className="rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -657,17 +659,17 @@ export default function ProductConfigurator({
             <div className="flex flex-col items-start gap-2 sm:items-end">
               {freeShipping ? (
                 <span className="inline-flex rounded-full bg-[#dcfce7] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#166534]">
-                  Livraison offerte
+                  {t("configurator.freeShipping")}
                 </span>
               ) : (
                 <span className="inline-flex rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)] ring-1 ring-[var(--hm-line)]">
-                  Livraison dès {PRICING_CONFIG.freeShippingThreshold} pièces
+                  {t("configurator.shippingFromPrefix")} {PRICING_CONFIG.freeShippingThreshold} {t("configurator.shippingFromSuffix")}
                 </span>
               )}
               <p className="text-[11px] text-[var(--hm-text-soft)]">
                 {freeShipping
-                  ? "Seuil atteint pour cette commande."
-                  : `Encore ${shippingPiecesLeft} pièce${shippingPiecesLeft > 1 ? "s" : ""} pour l'obtenir.`}
+                  ? t("configurator.thresholdReached")
+                  : `${t("configurator.piecesLeftPrefix")} ${shippingPiecesLeft} ${shippingPiecesLeft > 1 ? t("configurator.piecesPlural") : t("configurator.pieceSingular")} ${t("configurator.piecesLeftSuffix")}`}
               </p>
             </div>
           </div>
@@ -676,11 +678,11 @@ export default function ProductConfigurator({
           {activeVolumeTiers && (
             <div className="mt-4 border-t border-[var(--hm-line)] pt-4">
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
-                Prix par palier · à partir de{" "}
+                {t("configurator.volumePriceLabel")}{" "}
                 <span className="text-[var(--hm-primary)]">
                   {formatPrice(activeVolumeTiers[activeVolumeTiers.length - 1].unitPrice)}
                 </span>{" "}
-                /pièce
+                {t("configurator.perPiece")}
               </p>
               <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                 {activeVolumeTiers.map((tier, tierIdx) => {
@@ -704,21 +706,21 @@ export default function ProductConfigurator({
                     >
                       {isPopular && (
                         <span className="absolute -top-2 right-2 rounded-full bg-[var(--hm-primary)] px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
-                          Le + choisi
+                          {t("configurator.mostChosen")}
                         </span>
                       )}
                       <span className={`text-[11px] font-semibold ${isActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text-soft)]"}`}>
-                        {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs
+                        {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} {t("configurator.pcs")}
                       </span>
                       <span className={`text-sm font-black ${isActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text)]"}`}>
                         {formatPrice(tier.unitPrice)}
                       </span>
                       {saving > 0 ? (
                         <span className="text-[9px] font-bold text-[#166534]">
-                          −{formatPrice(saving)}/pce
+                          −{formatPrice(saving)}{t("configurator.perPieceShort")}
                         </span>
                       ) : (
-                        <span className="text-[9px] text-[var(--hm-text-muted)]">Prix de base</span>
+                        <span className="text-[9px] text-[var(--hm-text-muted)]">{t("configurator.basePrice")}</span>
                       )}
                     </button>
                   );
@@ -726,7 +728,7 @@ export default function ProductConfigurator({
               </div>
               {minQty > 1 && (
                 <p className="mt-2 text-[10px] text-[var(--hm-text-soft)]">
-                  Minimum de commande : {minQty} pièces
+                  {t("configurator.minOrderPrefix")} {minQty} {t("configurator.piecesPlural")}
                 </p>
               )}
             </div>
@@ -741,10 +743,10 @@ export default function ProductConfigurator({
       {!hideLogoUpload && isSimpleFlowProduct(product) && (
         <div className="rounded-2xl border border-[var(--hm-primary)]/20 bg-[var(--hm-accent-soft-rose)] px-4 py-3">
           <p className="text-[11px] leading-relaxed text-[var(--hm-text)]">
-            <span className="font-semibold text-[var(--hm-primary)]">Ajoutez votre logo ou visuel.</span>{" "}
+            <span className="font-semibold text-[var(--hm-primary)]">{t("configurator.addYourLogo")}</span>{" "}
             {product.techniques.includes("broderie")
-              ? "Notre équipe vérifie votre fichier et prépare le rendu de la broderie avant production."
-              : "Notre équipe vérifie votre fichier et prépare le rendu avant production."}
+              ? t("configurator.teamVerifyEmbroidery")
+              : t("configurator.teamVerify")}
           </p>
         </div>
       )}
@@ -752,7 +754,7 @@ export default function ProductConfigurator({
       {/* ── Logo upload ───────────────────────────────────────── */}
       {/* Masqué quand hideLogoUpload=true → l'upload se fait dans le studio */}
       {!hideLogoUpload && <div>
-        <label className="label">Votre logo / fichier</label>
+        <label className="label">{t("configurator.yourLogoFile")}</label>
         {!logoFile ? (
           <div
             onDrop={handleDrop}
@@ -762,14 +764,13 @@ export default function ProductConfigurator({
           >
             <Upload size={20} className="mx-auto mb-3 text-[var(--hm-primary)]" />
             <p className="text-sm font-semibold text-[var(--hm-text)]">
-              Glissez votre fichier ici ou cliquez pour parcourir
+              {t("configurator.dropFileHere")}
             </p>
             <p className="mt-2 text-[11px] text-[var(--hm-text-soft)]">
-              Formats : {ALLOWED_FILE_EXTENSIONS.join(", ")} — Max 10 Mo
+              {t("configurator.formatsPrefix")} {ALLOWED_FILE_EXTENSIONS.join(", ")} {t("configurator.formatsMaxSize")}
             </p>
             <p className="mt-2 text-[11px] text-[var(--hm-text-muted)]">
-              Vous pouvez envoyer un logo, un visuel à imprimer ou un fichier déjà préparé.
-              Les formats SVG et PDF restent les plus confortables pour la production.
+              {t("configurator.uploadHint")}
             </p>
             <input
               id="logo-input"
@@ -794,9 +795,9 @@ export default function ProductConfigurator({
               <p className="truncate text-sm font-semibold text-[var(--hm-text)]">{logoFile.name}</p>
               <p className="text-[11px] text-[var(--hm-text-soft)]">
                 {isUploadingOnSelect
-                  ? "Envoi en cours…"
+                  ? t("configurator.uploading")
                   : logoUploadResult
-                  ? `${formatFileSize(logoFile.size)} · Enregistré ✓`
+                  ? `${formatFileSize(logoFile.size)} · ${t("configurator.saved")}`
                   : formatFileSize(logoFile.size)}
               </p>
             </div>
@@ -841,27 +842,27 @@ export default function ProductConfigurator({
         )}
 
         <p className="mt-2 text-[11px] text-[var(--hm-text-muted)]">
-          Si votre fichier n&apos;est pas finalisé, nous le vérifierons avec vous avant production.
+          {t("configurator.fileNotFinalizedNote")}
         </p>
       </div>}
 
       {/* ── Aperçu marquage par zones ─────────────────────────── */}
       {!hideLogoUpload && !hidePreview && logoPreviewUrl && (
         <div>
-          <label className="label">Aperçu du marquage</label>
+          <label className="label">{t("configurator.markingPreview")}</label>
           <div className="flex flex-col gap-3 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4">
 
             {/* Zone cœur */}
             {(placement === "coeur" || placement === "coeur-dos") && (
               <div>
                 <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
-                  Zone cœur — poitrine gauche
+                  {t("configurator.zoneHeart")}
                 </p>
                 <div className="flex min-h-[72px] items-center justify-center rounded-xl border-2 border-dashed border-[var(--hm-primary)]/25 bg-white p-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={logoPreviewUrl}
-                    alt="Votre logo — zone cœur"
+                    alt={t("configurator.altLogoHeart")}
                     className="max-h-14 max-w-[45%] object-contain"
                   />
                 </div>
@@ -872,13 +873,13 @@ export default function ProductConfigurator({
             {(placement === "dos" || placement === "coeur-dos") && (
               <div>
                 <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
-                  Zone dos — plein dos
+                  {t("configurator.zoneBack")}
                 </p>
                 <div className="flex min-h-[96px] items-center justify-center rounded-xl border-2 border-dashed border-[var(--hm-primary)]/25 bg-white p-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={logoPreviewUrl}
-                    alt="Votre logo — zone dos"
+                    alt={t("configurator.altLogoBack")}
                     className="max-h-20 max-w-[62%] object-contain"
                   />
                 </div>
@@ -887,7 +888,7 @@ export default function ProductConfigurator({
 
           </div>
           <p className="mt-1.5 text-center text-[10px] text-[var(--hm-text-muted)]">
-            Aperçu indicatif · taille et rendu finaux validés avec vous avant lancement.
+            {t("configurator.previewIndicativeNote")}
           </p>
         </div>
       )}
@@ -898,25 +899,25 @@ export default function ProductConfigurator({
       {/* ── Prix récapitulatif ────────────────────────────────── */}
         <div className="rounded-[1.5rem] border border-[var(--hm-line)] bg-white p-5 shadow-[0_14px_34px_rgba(63,45,88,0.05)]">
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-xs font-medium text-[var(--hm-text-soft)]">Prix unitaire TTC</span>
+          <span className="text-xs font-medium text-[var(--hm-text-soft)]">{t("configurator.unitPriceTTC")}</span>
           <span className="text-base font-semibold text-[var(--hm-text)]">{formatPrice(unitPrice)}</span>
         </div>
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs font-medium text-[var(--hm-text-soft)]">Quantité</span>
+          <span className="text-xs font-medium text-[var(--hm-text-soft)]">{t("configurator.quantity")}</span>
           <span className="text-sm font-medium text-[var(--hm-text)]">× {quantity}</span>
         </div>
         <div className="divider-gold my-3" />
         <div className="flex items-end justify-between gap-4">
           <div>
-            <span className="text-base font-semibold text-[var(--hm-text)]">Total TTC</span>
+            <span className="text-base font-semibold text-[var(--hm-text)]">{t("configurator.totalTTC")}</span>
             <p className="mt-1 text-[11px] text-[var(--hm-text-soft)]">
-              {size ? `Taille ${size} · ${technique.toUpperCase()}` : "Configurez votre produit pour commander"}
+              {size ? `${t("configurator.sizePrefix")} ${size} · ${technique.toUpperCase()}` : t("configurator.configureToOrder")}
             </p>
           </div>
           <div className="text-right">
             <span className="text-2xl font-black text-[var(--hm-primary)]">{formatPrice(totalPrice)}</span>
             <p className="text-[11px] text-[var(--hm-text-soft)]">
-              soit {formatPrice(totalPrice / 1.2)} HT
+              {t("configurator.netPricePrefix")} {formatPrice(totalPrice / 1.2)} {t("configurator.netPriceSuffix")}
             </p>
           </div>
         </div>
@@ -927,17 +928,17 @@ export default function ProductConfigurator({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-              Expédition estimée · {getEstimatedShipDate()}
+              {t("configurator.estimatedShipping")} · {getEstimatedShipDate()}
             </p>
             <p className="text-[11px] leading-snug text-[var(--hm-text-soft)]">
               {freeShipping
-                ? "Livraison offerte pour cette configuration."
-                : `Livraison offerte dès ${PRICING_CONFIG.freeShippingThreshold} pièces — il vous manque ${shippingPiecesLeft} pièce${shippingPiecesLeft > 1 ? "s" : ""}.`}
+                ? t("configurator.freeShippingForConfig")
+                : `${t("configurator.freeShippingFromPrefix")} ${PRICING_CONFIG.freeShippingThreshold} ${t("configurator.piecesPlural")} — ${t("configurator.youNeedPrefix")} ${shippingPiecesLeft} ${shippingPiecesLeft > 1 ? t("configurator.piecesPlural") : t("configurator.pieceSingular")}.`}
             </p>
           </div>
           {freeShipping && (
             <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-[9px] font-bold text-green-700">
-              Offerte
+              {t("configurator.freeBadge")}
             </span>
           )}
         </div>
@@ -966,7 +967,7 @@ export default function ProductConfigurator({
             </div>
           </div>
           <p className="text-[11px] leading-relaxed text-[var(--hm-text)]">
-            J&apos;ai vérifié ma création et je la valide. Je comprends que le visuel affiché est un aperçu indicatif — le rendu final peut varier légèrement selon la technique d&apos;impression.
+            {t("configurator.creationValidationLabel")}
           </p>
         </label>
       )}
@@ -981,36 +982,36 @@ export default function ProductConfigurator({
         {addedToCart ? (
           <>
             <CheckCircle size={16} />
-            Ajouté au panier !
+            {t("configurator.addedToCart")}
           </>
         ) : isUploadingOnSelect ? (
           <>
             <Loader2 size={16} className="animate-spin" />
-            Envoi du logo…
+            {t("configurator.sendingLogo")}
           </>
         ) : isUploading ? (
           <>
             <Loader2 size={16} className="animate-spin" />
-            Envoi du logo…
+            {t("configurator.sendingLogo")}
           </>
         ) : (
           <>
             <ShoppingBag size={16} />
             {!size
-              ? "Sélectionnez une taille"
+              ? t("configurator.selectSize")
               : requirePersonalization && !hasLogo
               ? (isSimpleFlowProduct(product)
-                  ? "Ajoutez votre visuel pour commander"
-                  : "Personnalisez d'abord votre article")
+                  ? t("configurator.addVisualToOrder")
+                  : t("configurator.personalizeFirst"))
               : (product.id.includes("mug")
-                  ? "Ajouter mon mug au panier"
+                  ? t("configurator.addMugToCart")
                   : product.category === "casquettes"
-                  ? (product.id.startsWith("bonnet") ? "Ajouter mon bonnet au panier" : product.id.startsWith("bob") ? "Ajouter mon bob au panier" : "Ajouter ma casquette au panier")
+                  ? (product.id.startsWith("bonnet") ? t("configurator.addBeanieToCart") : product.id.startsWith("bob") ? t("configurator.addBucketHatToCart") : t("configurator.addCapToCart"))
                   : product.category === "polos"
-                  ? "Ajouter mon polo au panier"
+                  ? t("configurator.addPoloToCart")
                   : product.category === "sacs"
-                  ? "Ajouter mon sac au panier"
-                  : "Ajouter au panier")}
+                  ? t("configurator.addBagToCart")
+                  : t("configurator.addToCart"))}
           </>
         )}
       </button>
@@ -1023,21 +1024,19 @@ export default function ProductConfigurator({
            ouvre le Studio Fabric.js. */}
       {isSimpleFlowProduct(product) && product.techniques.includes("broderie") ? (
         <p className="text-center text-[10px] text-[var(--hm-text-soft)] leading-snug">
-          Pour les articles brodés, nous vérifions votre visuel avant production
-          afin d&apos;assurer une broderie nette.
+          {t("configurator.embroideryCheckNote")}
         </p>
       ) : isSimpleFlowProduct(product) ? (
         <p className="text-center text-[10px] text-[var(--hm-text-soft)] leading-snug">
-          Nous vérifions votre visuel avant production afin d&apos;assurer un
-          rendu propre sur la zone d&apos;impression.
+          {t("configurator.visualCheckNote")}
         </p>
       ) : requirePersonalization && !hasLogo ? (
         <p className="text-center text-[10px] text-[var(--hm-primary)]">
-          Utilisez le bouton <strong>🎨 Personnaliser mon article</strong> pour ajouter votre logo.
+          {t("configurator.personalizeButtonNotePrefix")} <strong>{t("configurator.personalizeButtonLabel")}</strong> {t("configurator.personalizeButtonNoteSuffix")}
         </p>
       ) : (
         <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
-          Vous pouvez configurer, ajouter au panier et commander sans créer de compte.
+          {t("configurator.noAccountNote")}
         </p>
       )}
 
@@ -1050,7 +1049,7 @@ export default function ProductConfigurator({
           href={`/devis-rapide?produit=${encodeURIComponent(product.slug)}`}
           className="block text-center text-[11px] text-[var(--hm-text-soft)] underline-offset-2 transition hover:text-[var(--hm-primary)] hover:underline"
         >
-          Besoin d&apos;un gros volume ? Demander un devis
+          {t("configurator.volumeQuoteLink")}
         </a>
       )}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useT } from "@/components/i18n/I18nProvider";
 import { track } from "@/lib/track";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -34,6 +35,7 @@ function LogoConfirmationSection({
 }: {
   sessionId: string;
 }) {
+  const t = useT();
   const { items, updateLogoFile } = useCartStore();
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,13 +63,13 @@ function LogoConfirmationSection({
       } else if (error) {
         setErrors((prev) => ({
           ...prev,
-          [itemId]: "Erreur lors de l'envoi. Veuillez réessayer.",
+          [itemId]: t("checkout.logo_upload_error"),
         }));
       }
     } catch {
       setErrors((prev) => ({
         ...prev,
-        [itemId]: "Erreur lors de l'envoi. Veuillez réessayer.",
+        [itemId]: t("checkout.logo_upload_error"),
       }));
     } finally {
       setUploading((prev) => ({ ...prev, [itemId]: false }));
@@ -80,12 +82,12 @@ function LogoConfirmationSection({
         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#f59e0b] text-[10px] font-black text-white">
           !
         </span>
-        {itemsNeedingLogo.length === 1 ? "Logo à enregistrer" : "Logos à enregistrer"}
+        {itemsNeedingLogo.length === 1 ? t("checkout.logo_to_save_one") : t("checkout.logo_to_save_many")}
       </h2>
       <p className="mb-4 text-xs text-[#92400e]">
         {itemsNeedingLogo.length === 1
-          ? "Un logo a été sélectionné localement mais n'a pas encore été envoyé vers le serveur. Sélectionnez à nouveau le fichier pour finaliser votre commande."
-          : `${itemsNeedingLogo.length} logos doivent être confirmés avant de finaliser votre commande.`}
+          ? t("checkout.logo_save_intro_one")
+          : `${itemsNeedingLogo.length} ${t("checkout.logo_save_intro_many")}`}
       </p>
 
       <div className="flex flex-col gap-3">
@@ -105,16 +107,16 @@ function LogoConfirmationSection({
               }`}
             >
               <p className="mb-1 text-xs font-semibold text-[var(--hm-text)]">
-                {item.product.shortName} · {item.color.label} · Taille {item.size}
+                {item.product.shortName} · {item.color.label} · {t("checkout.size_label")} {item.size}
               </p>
               <p className="mb-3 text-[11px] text-[var(--hm-text-soft)]">
-                Fichier : <span className="font-mono">{item.logoFile.name}</span>
+                {t("checkout.file_label")} <span className="font-mono">{item.logoFile.name}</span>
               </p>
 
               {done ? (
                 <div className="flex items-center gap-2 text-xs text-[#166534]">
                   <CheckCircle size={13} />
-                  Logo enregistré
+                  {t("checkout.logo_saved")}
                 </div>
               ) : (
                 <>
@@ -126,12 +128,12 @@ function LogoConfirmationSection({
                     {isUploading ? (
                       <>
                         <Loader2 size={13} className="animate-spin" />
-                        Envoi en cours…
+                        {t("checkout.uploading")}
                       </>
                     ) : (
                       <>
                         <Upload size={13} />
-                        Sélectionner {item.logoFile.name}
+                        {t("checkout.select_file")} {item.logoFile.name}
                       </>
                     )}
                     <input
@@ -164,6 +166,7 @@ function LogoConfirmationSection({
 // ─── Main checkout ────────────────────────────────────────────────────────────
 
 export default function CheckoutPage() {
+  const t = useT();
   const router = useRouter();
   const { items, getTotals } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
@@ -406,7 +409,7 @@ export default function CheckoutPage() {
         });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw new Error(body.error ?? "Erreur création commande virement");
+          throw new Error(body.error ?? t("checkout.error_create_bank_transfer"));
         }
         const { orderId, orderNumber } = await res.json();
         useCartStore.getState().clearCart();
@@ -425,7 +428,7 @@ export default function CheckoutPage() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? "Erreur lors de la création du paiement");
+        throw new Error(body.error ?? t("checkout.error_create_payment"));
       }
 
       const { clientSecret, orderId, orderNumber } = await res.json();
@@ -435,7 +438,7 @@ export default function CheckoutPage() {
       );
     } catch (err) {
       console.error(err);
-      setOrderError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez.");
+      setOrderError(err instanceof Error ? err.message : t("checkout.error_generic"));
       setLoading(false);
     }
   };
@@ -460,20 +463,20 @@ export default function CheckoutPage() {
     <div className="pb-20 pt-24">
       <div className="container max-w-5xl">
         <h1 className="mb-8 text-2xl font-black text-[var(--hm-text)]">
-          Finaliser ma commande
+          {t("checkout.page_title")}
         </h1>
 
         {!isAuthenticated && (
           <div className="mb-6 flex flex-col gap-2 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-5 py-4 text-xs text-[var(--hm-text-soft)] sm:flex-row sm:items-center sm:justify-between">
             <p>
-              <strong className="text-[var(--hm-text)]">Commande sans compte.</strong>{" "}
-              Renseignez simplement votre email pour recevoir le suivi.
+              <strong className="text-[var(--hm-text)]">{t("checkout.guest_title")}</strong>{" "}
+              {t("checkout.guest_subtitle")}
             </p>
             <Link
               href="/connexion?redirect=/checkout"
               className="shrink-0 font-bold text-[var(--hm-primary)] hover:underline"
             >
-              Déjà client ? Se connecter
+              {t("checkout.guest_login_link")}
             </Link>
           </div>
         )}
@@ -489,7 +492,7 @@ export default function CheckoutPage() {
             {!allLogosReady && (
               <div className="flex items-start gap-2 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-xs text-[#92400e]">
                 <AlertCircle size={12} className="mt-0.5 shrink-0" />
-                Veuillez enregistrer tous les logos ci-dessus avant de procéder au paiement.
+                {t("checkout.logos_warning")}
               </div>
             )}
 
@@ -498,14 +501,13 @@ export default function CheckoutPage() {
               <div className="flex items-start gap-3 rounded-xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3 text-xs text-[#b91c1c]">
                 <AlertCircle size={13} className="mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-semibold">Configuration impression incomplète</p>
+                  <p className="font-semibold">{t("checkout.print_config_incomplete_title")}</p>
                   <p className="mt-0.5 text-[#b91c1c]/80">
-                    La configuration de votre carte de visite est introuvable (session expirée ou page rechargée).
-                    Veuillez{" "}
+                    {t("checkout.print_config_incomplete_body_before")}{" "}
                     <Link href="/impression/cartes-de-visite" className="font-bold underline hover:text-[#b91c1c]">
-                      recommencer la personnalisation
+                      {t("checkout.print_config_incomplete_link")}
                     </Link>
-                    {" "}pour finaliser votre commande.
+                    {" "}{t("checkout.print_config_incomplete_body_after")}
                   </p>
                 </div>
               </div>
@@ -517,7 +519,7 @@ export default function CheckoutPage() {
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--hm-primary)] text-[10px] font-black text-white">
                   1
                 </span>
-                Adresse de facturation
+                {t("checkout.billing_address_title")}
               </h2>
 
               {/* ── Toggle Particulier / Entreprise ─────────────────────
@@ -529,8 +531,8 @@ export default function CheckoutPage() {
                  est sélectionné, pour ne pas alourdir le checkout B2C. */}
               <div className="mb-5 flex gap-2 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-1">
                 {[
-                  { id: "particulier" as const, label: "Particulier", icon: "👤" },
-                  { id: "entreprise"  as const, label: "Entreprise",  icon: "🏢" },
+                  { id: "particulier" as const, label: t("checkout.account_type_individual"), icon: "👤" },
+                  { id: "entreprise"  as const, label: t("checkout.account_type_company"),    icon: "🏢" },
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -553,9 +555,9 @@ export default function CheckoutPage() {
                 <div className="mb-4 grid grid-cols-1 gap-4 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-accent-soft-rose)]/30 p-4 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <label className="label">
-                      Nom de la société *
+                      {t("checkout.company_name_label")}
                       <span className="ml-1 text-[10px] font-normal text-[var(--hm-text-muted)]">
-                        — tape le nom ou le SIRET, on remplit le reste
+                        {t("checkout.company_name_hint")}
                       </span>
                     </label>
                     {/* Autocomplete via recherche-entreprises.api.gouv.fr.
@@ -581,7 +583,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="label">SIRET *</label>
+                    <label className="label">{t("checkout.siret_label")}</label>
                     <input
                       type="text"
                       className="input"
@@ -591,22 +593,22 @@ export default function CheckoutPage() {
                         const cleaned = e.target.value.replace(/\D/g, "").slice(0, 14);
                         setBillingAddress({ ...billingAddress, siret: cleaned });
                       }}
-                      placeholder="14 chiffres"
+                      placeholder={t("checkout.siret_placeholder")}
                       inputMode="numeric"
                       pattern="[0-9]{14}"
                       maxLength={14}
                     />
                     {(billingAddress.siret?.length ?? 0) > 0 && (billingAddress.siret?.length ?? 0) !== 14 && (
                       <p className="mt-1 text-[10px] text-[var(--hm-primary)]">
-                        {billingAddress.siret?.length ?? 0}/14 chiffres
+                        {billingAddress.siret?.length ?? 0}{t("checkout.siret_counter_suffix")}
                       </p>
                     )}
                   </div>
                   <div>
                     <label className="label">
-                      TVA intracommunautaire
+                      {t("checkout.vat_label")}
                       <span className="ml-1 text-[10px] font-normal text-[var(--hm-text-muted)]">
-                        (optionnel — UE hors FR)
+                        {t("checkout.vat_hint")}
                       </span>
                     </label>
                     <input
@@ -623,13 +625,13 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="label">Email *</label>
+                  <label className="label">{t("checkout.email_label")}</label>
                   <input
                     type="email"
                     className="input"
                     value={billingAddress.email}
                     onChange={(e) => setBillingAddress({ ...billingAddress, email: e.target.value })}
-                    placeholder="vous@exemple.fr"
+                    placeholder={t("checkout.email_placeholder")}
                     autoComplete="email"
                     required
                     readOnly={isAuthenticated}
@@ -637,24 +639,24 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <label className="label">Prénom *</label>
+                  <label className="label">{t("checkout.first_name_label")}</label>
                   <input
                     type="text"
                     className="input"
                     value={billingAddress.firstName}
                     onChange={(e) => setBillingAddress({ ...billingAddress, firstName: e.target.value })}
-                    placeholder="Jean"
+                    placeholder={t("checkout.first_name_placeholder")}
                     autoComplete="given-name"
                   />
                 </div>
                 <div>
-                  <label className="label">Nom *</label>
+                  <label className="label">{t("checkout.last_name_label")}</label>
                   <input
                     type="text"
                     className="input"
                     value={billingAddress.lastName}
                     onChange={(e) => setBillingAddress({ ...billingAddress, lastName: e.target.value })}
-                    placeholder="Dupont"
+                    placeholder={t("checkout.last_name_placeholder")}
                     autoComplete="family-name"
                   />
                 </div>
@@ -662,21 +664,21 @@ export default function CheckoutPage() {
                 {(isAuthenticated && user?.type === "entreprise") && (
                   <>
                     <div className="sm:col-span-2">
-                      <label className="label">Société</label>
+                      <label className="label">{t("checkout.company_label")}</label>
                       <input
                         type="text"
                         className="input"
                         value={billingAddress.company}
                         onChange={(e) => setBillingAddress({ ...billingAddress, company: e.target.value })}
-                        placeholder="Ma Société SARL"
+                        placeholder={t("checkout.company_placeholder")}
                       />
                     </div>
                     {user.siret && (
                       <div className="sm:col-span-2">
-                        <label className="label">SIRET</label>
+                        <label className="label">{t("checkout.siret_label_short")}</label>
                         <div className="input flex cursor-default select-all items-center justify-between text-[var(--hm-text-soft)]">
                           <span className="font-mono tracking-wider">{user.siret}</span>
-                          <span className="ml-2 shrink-0 text-[10px] text-[var(--hm-text-muted)]">Enregistré</span>
+                          <span className="ml-2 shrink-0 text-[10px] text-[var(--hm-text-muted)]">{t("checkout.saved_badge")}</span>
                         </div>
                       </div>
                     )}
@@ -684,7 +686,7 @@ export default function CheckoutPage() {
                 )}
 
                 <div className="sm:col-span-2">
-                  <label className="label">Adresse *</label>
+                  <label className="label">{t("checkout.address_label")}</label>
                   {/* Autocomplete via api-adresse.data.gouv.fr (Base Adresse
                      Nationale, gratuit, sans clé). Au clic sur une suggestion,
                      code postal + ville se remplissent automatiquement. Si
@@ -702,11 +704,11 @@ export default function CheckoutPage() {
                         city: city || billingAddress.city,
                       })
                     }
-                    placeholder="12 rue de la Paix — commencez à taper…"
+                    placeholder={t("checkout.address_placeholder")}
                   />
                 </div>
                 <div>
-                  <label className="label">Code postal *</label>
+                  <label className="label">{t("checkout.postal_code_label")}</label>
                   <input
                     type="text"
                     className="input"
@@ -717,7 +719,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="label">Ville *</label>
+                  <label className="label">{t("checkout.city_label")}</label>
                   <input
                     type="text"
                     className="input"
@@ -728,7 +730,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="label">Téléphone</label>
+                  <label className="label">{t("checkout.phone_label")}</label>
                   <input
                     type="tel"
                     className="input"
@@ -752,7 +754,7 @@ export default function CheckoutPage() {
                   htmlFor="same-shipping"
                   className="cursor-pointer text-sm text-[var(--hm-text-soft)]"
                 >
-                  Adresse de livraison identique à la facturation
+                  {t("checkout.same_shipping_label")}
                 </label>
               </div>
 
@@ -791,9 +793,9 @@ export default function CheckoutPage() {
                   htmlFor="save-address"
                   className="cursor-pointer text-sm text-[var(--hm-text-soft)]"
                 >
-                  Enregistrer mes coordonnées pour mes prochaines commandes
+                  {t("checkout.save_address_label")}
                   <span className="ml-2 text-[10px] text-[var(--hm-text-muted)]">
-                    (stocké localement sur votre appareil)
+                    {t("checkout.save_address_hint")}
                   </span>
                 </label>
               </div>
@@ -813,11 +815,10 @@ export default function CheckoutPage() {
                   htmlFor="marketing-consent"
                   className="cursor-pointer text-[12.5px] leading-snug text-[var(--hm-text-soft)]"
                 >
-                  J&apos;accepte de recevoir les offres, nouveautés et conseils de
-                  HM Global Agence par email (facultatif — désinscription en un clic,{" "}
+                  {t("checkout.marketing_consent_before")}{" "}
                   <Link href="/confidentialite" className="text-[var(--hm-primary)] hover:underline">
-                    politique de confidentialité
-                  </Link>).
+                    {t("checkout.privacy_policy_link")}
+                  </Link>{t("checkout.marketing_consent_after")}
                 </label>
               </div>
             </div>
@@ -828,7 +829,7 @@ export default function CheckoutPage() {
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--hm-primary)] text-[10px] font-black text-white">
                   2
                 </span>
-                Paiement sécurisé
+                {t("checkout.payment_title")}
               </h2>
 
               {/* ── Sélecteur méthode de paiement ─────────────────────────
@@ -840,14 +841,14 @@ export default function CheckoutPage() {
                 {[
                   {
                     id: "stripe" as const,
-                    label: "Carte bancaire",
-                    sub: "CB, Apple Pay, Google Pay, Link",
+                    label: t("checkout.method_card_label"),
+                    sub: t("checkout.method_card_sub"),
                     icon: <CreditCard size={16} />,
                   },
                   {
                     id: "bank_transfer" as const,
-                    label: "Virement bancaire",
-                    sub: "Production après réception",
+                    label: t("checkout.method_bank_label"),
+                    sub: t("checkout.method_bank_sub"),
                     icon: <Landmark size={16} />,
                   },
                 ].map((opt) => {
@@ -891,16 +892,16 @@ export default function CheckoutPage() {
                     <Lock size={14} className="shrink-0 text-[#4ade80]" />
                     <div>
                       <p className="text-xs font-semibold text-[var(--hm-text)]">
-                        Paiement 100% sécurisé
+                        {t("checkout.secure_payment_title")}
                       </p>
                       <p className="text-[10px] text-[var(--hm-text-muted)]">
-                        Carte bancaire, Apple Pay, Google Pay, Stripe Link — Propulsé par Stripe
+                        {t("checkout.secure_payment_sub")}
                       </p>
                     </div>
                   </div>
 
                   <p className="mb-4 text-xs text-[var(--hm-text-muted)]">
-                    Vous serez redirigé vers la page de paiement sécurisée Stripe après validation.
+                    {t("checkout.stripe_redirect_note")}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-2">
@@ -932,12 +933,11 @@ export default function CheckoutPage() {
                   <p className="flex items-start gap-2 text-[var(--hm-text)]">
                     <Landmark size={14} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
                     <span className="font-semibold">
-                      Après validation, vous recevrez les coordonnées bancaires (IBAN/BIC) et votre référence de commande.
+                      {t("checkout.bank_info_main")}
                     </span>
                   </p>
                   <p className="text-[11px] leading-relaxed">
-                    La production démarre <strong>après réception du virement</strong> sur notre compte.
-                    Indiquez bien votre référence de commande dans le libellé du virement.
+                    {t("checkout.bank_info_detail_before")} <strong>{t("checkout.bank_info_detail_strong")}</strong> {t("checkout.bank_info_detail_after")}
                   </p>
                 </div>
               )}
@@ -945,13 +945,13 @@ export default function CheckoutPage() {
 
             {/* CGV */}
             <p className="text-[11px] leading-relaxed text-[var(--hm-text-muted)]">
-              En passant commande, vous acceptez nos{" "}
-              <Link href="/cgv" className="text-[var(--hm-primary)] hover:underline">CGV</Link>{" "}
-              et notre{" "}
+              {t("checkout.cgv_before")}{" "}
+              <Link href="/cgv" className="text-[var(--hm-primary)] hover:underline">{t("checkout.cgv_link")}</Link>{" "}
+              {t("checkout.cgv_between")}{" "}
               <Link href="/confidentialite" className="text-[var(--hm-primary)] hover:underline">
-                politique de confidentialité
+                {t("checkout.privacy_policy_link")}
               </Link>
-              . Vous avez 30 minutes après la commande pour l&rsquo;annuler.
+              {t("checkout.cgv_after")}
             </p>
           </div>
 
@@ -963,7 +963,7 @@ export default function CheckoutPage() {
                 onClick={() => setShowSummary(!showSummary)}
               >
                 <span className="text-sm font-bold text-[var(--hm-text)]">
-                  Récapitulatif ({totals.totalItems} article{totals.totalItems > 1 ? "s" : ""})
+                  {t("checkout.summary_title")} ({totals.totalItems} {totals.totalItems > 1 ? t("checkout.items_plural") : t("checkout.items_singular")})
                 </span>
                 {showSummary
                   ? <ChevronUp size={14} className="text-[var(--hm-text-muted)]" />
@@ -979,12 +979,12 @@ export default function CheckoutPage() {
                         <p className="truncate text-[var(--hm-text-soft)]">
                           {item.product.shortName}
                           {item.printConfig
-                            ? ` · ${item.printConfig.quantity} ex.`
+                            ? ` · ${item.printConfig.quantity} ${t("checkout.units_abbrev")}`
                             : ` × ${item.quantity}`}
                         </p>
                         <p className="text-[10px] text-[var(--hm-text-muted)]">
                           {item.printConfig
-                            ? `Impression · ${item.printConfig.finish === "mat" ? "Mat" : item.printConfig.finish === "brillant" ? "Brillant" : "Premium"} · ${item.printConfig.faces === "recto" ? "Recto" : "Recto-verso"}`
+                            ? `${t("checkout.print_label")} · ${item.printConfig.finish === "mat" ? t("checkout.finish_matte") : item.printConfig.finish === "brillant" ? t("checkout.finish_glossy") : t("checkout.finish_premium")} · ${item.printConfig.faces === "recto" ? t("checkout.faces_single") : t("checkout.faces_double")}`
                             : `${TECHNIQUE_LABELS[item.technique]} · ${PLACEMENT_LABELS[item.placement]} · ${item.size}`}
                         </p>
                       </div>
@@ -999,17 +999,17 @@ export default function CheckoutPage() {
 
               <div className="mb-4 flex flex-col gap-2">
                 <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
-                  <span>Sous-total HT</span>
+                  <span>{t("checkout.subtotal_ht")}</span>
                   <span>{formatPrice(totals.subtotalHT)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
-                  <span>TVA (20%)</span>
+                  <span>{t("checkout.vat_line")}</span>
                   <span>{formatPrice(totals.tva)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
-                  <span>Livraison</span>
+                  <span>{t("checkout.shipping_line")}</span>
                   <span className={totals.freeShipping ? "text-[#4ade80]" : ""}>
-                    {totals.freeShipping ? "Offerte" : formatPrice(totals.shipping)}
+                    {totals.freeShipping ? t("checkout.shipping_free") : formatPrice(totals.shipping)}
                   </span>
                 </div>
               </div>
@@ -1017,7 +1017,7 @@ export default function CheckoutPage() {
               <div className="divider-brand mb-4" />
 
               <div className="mb-5 flex items-center justify-between">
-                <span className="text-sm font-bold text-[var(--hm-text)]">Total TTC</span>
+                <span className="text-sm font-bold text-[var(--hm-text)]">{t("checkout.total_ttc")}</span>
                 <span className="text-xl font-black text-[var(--hm-primary)]">
                   {formatPrice(totals.totalTTC)}
                 </span>
@@ -1033,31 +1033,31 @@ export default function CheckoutPage() {
                 onClick={handlePlaceOrder}
                 disabled={loading || !canSubmit}
                 className="btn-primary w-full gap-2"
-                title={!allLogosReady ? "Enregistrez tous les logos avant de payer" : undefined}
+                title={!allLogosReady ? t("checkout.save_logos_title") : undefined}
               >
                 {loading ? (
-                  "Traitement en cours..."
+                  t("checkout.processing")
                 ) : paymentMethod === "bank_transfer" ? (
                   <>
                     <Landmark size={14} />
-                    Valider et obtenir les coordonnées bancaires
+                    {t("checkout.submit_bank_transfer")}
                   </>
                 ) : (
                   <>
                     <CreditCard size={14} />
-                    Payer {formatPrice(totals.totalTTC)}
+                    {t("checkout.pay")} {formatPrice(totals.totalTTC)}
                   </>
                 )}
               </button>
 
               {!allLogosReady && (
                 <p className="mt-2 text-center text-[10px] text-[#92400e]">
-                  Enregistrez les logos ci-dessus pour continuer.
+                  {t("checkout.save_logos_hint")}
                 </p>
               )}
 
               <p className="mt-3 text-center text-[10px] text-[var(--hm-text-muted)]">
-                🔒 Paiement chiffré SSL — Stripe
+                🔒 {t("checkout.ssl_footer")}
               </p>
             </div>
           </div>

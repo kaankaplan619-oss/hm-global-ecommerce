@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { REALISATIONS } from "@/data/realisations";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * HomeRealisations — vraies réalisations clients sur l'accueil.
@@ -18,6 +21,7 @@ const PICK_IDS = [
 ] as const;
 
 export default function HomeRealisations() {
+  const t = useT();
   const picks = PICK_IDS
     .map((id) => REALISATIONS.find((r) => r.id === id))
     .filter((r): r is NonNullable<typeof r> => Boolean(r));
@@ -28,21 +32,20 @@ export default function HomeRealisations() {
         <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--hm-magenta)" }}>
-              Réalisations · Fait chez nous
+              {t("home.realisations.eyebrow")}
             </p>
             <h2
               className="font-semibold leading-[1.08] tracking-[-0.02em]"
               style={{ fontSize: "clamp(1.5rem, 0.4rem + 2.6vw, 2.3rem)", color: "var(--hm-text-main)" }}
             >
-              Des projets réels, livrés à <span style={{ color: "var(--hm-violet)" }}>de vraies entreprises</span>.
+              {t("home.realisations.headingLead")} <span style={{ color: "var(--hm-violet)" }}>{t("home.realisations.headingHighlight")}</span>{t("home.realisations.headingTail")}
             </h2>
             <p className="mt-3 max-w-[44rem] text-[13.5px] leading-6" style={{ color: "var(--hm-text-muted-2)" }}>
-              Textile marqué, enseignes posées, véhicules, print : produit à l&apos;atelier de
-              Souffelweyersheim, pour des clients d&apos;Alsace.
+              {t("home.realisations.subtitle")}
             </p>
           </div>
           <Link href="/realisations" className="btn-hm-violet-outline shrink-0 self-start lg:self-auto">
-            Voir toutes nos réalisations
+            {t("home.realisations.viewAllCta")}
             <ArrowRight size={14} />
           </Link>
         </div>

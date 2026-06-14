@@ -3,6 +3,7 @@ import Link from "next/link";
 import BackLink from "@/components/ui/BackLink";
 import ProductCard from "@/components/product/ProductCard";
 import { ALL_PRODUCTS, SEASONAL_ORDER, CURRENT_SEASON } from "@/data/products";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "Catalogue — Textile personnalisé",
@@ -14,33 +15,34 @@ export const metadata: Metadata = {
 // Masquées du catalogue, des filtres et des routes (cf. [category]/page.tsx).
 const HIDDEN_CATEGORIES = new Set(["polaires", "enfants"]);
 
-const CATEGORY_LABELS: Record<string, string> = {
-  tshirts:    "T-shirts personnalisés",
-  polos:      "Polos",
-  hoodies:    "Hoodies & Sweats",
-  softshells: "Softshells & Vestes",
-  casquettes: "Casquettes & Bonnets",
-  sacs:       "Sacs & Tote bags",
-  goodies:    "Mugs & Goodies",
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+  tshirts:    "cataloguePage.category.tshirts",
+  polos:      "cataloguePage.category.polos",
+  hoodies:    "cataloguePage.category.hoodies",
+  softshells: "cataloguePage.category.softshells",
+  casquettes: "cataloguePage.category.casquettes",
+  sacs:       "cataloguePage.category.sacs",
+  goodies:    "cataloguePage.category.goodies",
 };
 
-export default function CataloguePage() {
+export default async function CataloguePage() {
+  const t = await getT();
   const order = SEASONAL_ORDER[CURRENT_SEASON];
 
   return (
     <div className="bg-white pb-20 pt-24">
       <div className="container">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t("cataloguePage.backToHome")} />
 
         {/* Header */}
         <div className="mb-12">
-          <p className="section-tag">Catalogue complet</p>
+          <p className="section-tag">{t("cataloguePage.hero.tag")}</p>
           <h1 className="mb-4 text-3xl font-black text-[var(--hm-text)] md:text-5xl">
-            Textile personnalisé<br />
-            <span className="text-gradient-gold">professionnel</span>
+            {t("cataloguePage.hero.titleLine1")}<br />
+            <span className="text-gradient-gold">{t("cataloguePage.hero.titleLine2")}</span>
           </h1>
           <p className="max-w-lg text-sm text-[var(--hm-text-soft)]">
-            Sélectionnez votre produit, configurez votre marquage et commandez directement en ligne. Livraison offerte dès 10 pièces.
+            {t("cataloguePage.hero.subtitle")}
           </p>
         </div>
 
@@ -50,15 +52,15 @@ export default function CataloguePage() {
               href="/catalogue"
               className="rounded-full border border-[var(--hm-primary)] px-4 py-2 text-xs font-semibold text-[var(--hm-primary)]"
             >
-              Tous les produits
+              {t("cataloguePage.filters.all")}
             </Link>
-          {Object.entries(CATEGORY_LABELS).map(([id, label]) => (
+          {Object.entries(CATEGORY_LABEL_KEYS).map(([id, labelKey]) => (
             <Link
               key={id}
               href={`/catalogue/${id}`}
               className="rounded-full border border-[var(--hm-line)] px-4 py-2 text-xs font-semibold text-[var(--hm-text-soft)] transition-colors hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
             >
-              {label}
+              {t(labelKey)}
             </Link>
           ))}
         </div>
@@ -79,14 +81,14 @@ export default function CataloguePage() {
             <div key={catId} className="mb-16">
               <div className="flex items-center gap-4 mb-6">
                 <h2 className="text-lg font-bold text-[var(--hm-text)]">
-                  {CATEGORY_LABELS[catId]}
+                  {t(CATEGORY_LABEL_KEYS[catId])}
                 </h2>
                 <div className="h-[1px] flex-1 bg-[var(--hm-line)]" />
                 <Link
                   href={`/catalogue/${catId}`}
                   className="text-xs text-[var(--hm-primary)] hover:underline"
                 >
-                  Voir tout →
+                  {t("cataloguePage.seeAll")}
                 </Link>
               </div>
 

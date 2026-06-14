@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { Factory, MapPin } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * HomeAtelier — Section "Une production suivie, pas automatisée à l'aveugle."
@@ -15,6 +16,7 @@ import { Factory, MapPin } from "lucide-react";
  */
 
 function AtelierImage() {
+  const t = useT();
   const [failed, setFailed] = useState(false);
 
   if (failed) {
@@ -48,7 +50,7 @@ function AtelierImage() {
   return (
     <Image
       src="/images/realisations/miammi-fabrication.jpg"
-      alt="Atelier HM Global : lettres d'enseigne rétroéclairées MiAMMi en cours d'assemblage."
+      alt={t("home.atelier.imageAlt")}
       fill
       sizes="100vw"
       className="object-cover"
@@ -58,6 +60,7 @@ function AtelierImage() {
 }
 
 export default function HomeAtelier() {
+  const t = useT();
   return (
     <section className="py-14 sm:py-20">
       <div className="container">
@@ -104,7 +107,7 @@ export default function HomeAtelier() {
                   }}
                 >
                   <MapPin size={11} style={{ color: "var(--hm-cyan-light)" }} />
-                  Atelier · Alsace
+                  {t("home.atelier.badge")}
                 </span>
 
                 <h2
@@ -113,9 +116,9 @@ export default function HomeAtelier() {
                     fontSize: "clamp(1.4rem, 2.6vw + 0.4rem, 2.2rem)",
                   }}
                 >
-                  Une production suivie,{" "}
+                  {t("home.atelier.headingLead")}{" "}
                   <span style={{ color: "var(--hm-cyan-light)" }}>
-                    pas automatisée à l&apos;aveugle
+                    {t("home.atelier.headingHighlight")}
                   </span>
                   .
                 </h2>
@@ -123,9 +126,7 @@ export default function HomeAtelier() {
                   className="mt-3 max-w-[36rem] text-[13.5px] leading-[1.65]"
                   style={{ color: "rgba(255,255,255,0.82)" }}
                 >
-                  Textile à la presse, enseignes assemblées sur place, pose en
-                  façade : chaque commande est vérifiée par notre équipe avant
-                  production.
+                  {t("home.atelier.description")}
                 </p>
               </div>
             </div>

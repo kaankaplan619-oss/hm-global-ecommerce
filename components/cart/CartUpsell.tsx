@@ -19,6 +19,7 @@
 
 import Image from "next/image";
 import { ArrowRight, Paperclip } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 import { ALL_PRODUCTS } from "@/data/products";
 import { computeUnitPriceWithVolume, formatPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
@@ -85,6 +86,7 @@ export default function CartUpsell({
     logoFile?: CartItem["logoFile"];
   }) => void;
 }) {
+  const t = useT();
   const suggestions = getUpsellSuggestions(items);
   const reusableLogo = findReusableLogo(items);
 
@@ -95,18 +97,18 @@ export default function CartUpsell({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--hm-text-soft)]">
-            Complétez votre commande
+            {t("upsell.eyebrow")}
           </p>
           <h3 className="mt-1 text-base font-semibold text-[var(--hm-text)]">
-            {reusableLogo ? "Votre logo sur d'autres supports" : "Souvent ajoutés ensemble"}
+            {reusableLogo ? t("upsell.title.withLogo") : t("upsell.title.default")}
           </h3>
           {reusableLogo && (
             <p className="mt-0.5 flex items-center gap-1 text-[10px] text-[var(--hm-text-muted)]">
-              <Paperclip size={10} /> {reusableLogo.name} — déjà prêt, en 1 clic
+              <Paperclip size={10} /> {reusableLogo.name} {t("upsell.logoReady")}
             </p>
           )}
         </div>
-        <span className="badge badge-gold">Suggestions</span>
+        <span className="badge badge-gold">{t("upsell.badge")}</span>
       </div>
 
       {/* Carrousel horizontal petit-ticket-d'abord */}
@@ -158,7 +160,7 @@ export default function CartUpsell({
                 }
                 className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-full border border-[var(--hm-primary)]/18 bg-[var(--hm-accent-soft-rose)] px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--hm-primary)] transition hover:border-[var(--hm-primary)]/35 hover:bg-white"
               >
-                {reusableLogo ? "Avec votre logo" : "Ajouter aussi"}
+                {reusableLogo ? t("upsell.cta.withLogo") : t("upsell.cta.default")}
                 <ArrowRight size={11} />
               </button>
             </div>

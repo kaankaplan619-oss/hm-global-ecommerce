@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, AlertCircle, ChevronLeft, Loader2, User, Lock, Mail } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ── Gradient signature HM Global ──────────────────────────────────────────────
 const HM_GRADIENT = "linear-gradient(135deg, #5BC4D8, #7B4FA6, #C4387A)";
@@ -20,6 +21,7 @@ type ProfileForm = {
 };
 
 export default function ParametresPage() {
+  const t = useT();
   const router = useRouter();
   const { user, isAuthenticated, _hasHydrated, setUser } = useAuthStore();
 
@@ -87,11 +89,11 @@ export default function ParametresPage() {
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Partial<ProfileForm> = {};
-    if (!form.firstName.trim()) errs.firstName = "Requis";
-    if (!form.lastName.trim())  errs.lastName  = "Requis";
+    if (!form.firstName.trim()) errs.firstName = t("accountSettings.errorRequired");
+    if (!form.lastName.trim())  errs.lastName  = t("accountSettings.errorRequired");
     if (form.siret) {
       const n = form.siret.replace(/[\s.]/g, "");
-      if (!/^\d{14}$/.test(n)) errs.siret = "14 chiffres requis";
+      if (!/^\d{14}$/.test(n)) errs.siret = t("accountSettings.errorSiretDigits");
     }
     setFieldErrors(errs);
     if (Object.keys(errs).length) return;
@@ -111,12 +113,12 @@ export default function ParametresPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setProfileError(data.error ?? "Une erreur est survenue"); return; }
+      if (!res.ok) { setProfileError(data.error ?? t("accountSettings.errorGeneric")); return; }
       if (data.user) setUser(data.user);
       setProfileSuccess(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
-      setProfileError("Impossible de joindre le serveur. Réessayez.");
+      setProfileError(t("accountSettings.errorServerUnreachable"));
     } finally {
       setProfileSaving(false);
     }
@@ -126,17 +128,17 @@ export default function ParametresPage() {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError(""); setPasswordSuccess(false);
-    if (newPassword.length < 8) { setPasswordError("Le mot de passe doit comporter au moins 8 caractères."); return; }
-    if (newPassword !== confirmPassword) { setPasswordError("Les mots de passe ne correspondent pas."); return; }
+    if (newPassword.length < 8) { setPasswordError(t("accountSettings.errorPasswordTooShort")); return; }
+    if (newPassword !== confirmPassword) { setPasswordError(t("accountSettings.errorPasswordMismatch")); return; }
     setPasswordSaving(true);
     try {
       const supabase = getSupabaseBrowserClient();
       const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) { setPasswordError("Erreur lors de la mise à jour. Reconnectez-vous et réessayez."); return; }
+      if (error) { setPasswordError(t("accountSettings.errorPasswordUpdate")); return; }
       setPasswordSuccess(true);
       setNewPassword(""); setConfirmPassword("");
     } catch {
-      setPasswordError("Une erreur est survenue. Réessayez.");
+      setPasswordError(t("accountSettings.errorGenericRetry"));
     } finally {
       setPasswordSaving(false);
     }
@@ -146,17 +148,17 @@ export default function ParametresPage() {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError(""); setEmailSuccess(false);
-    if (!newEmail.includes("@")) { setEmailError("Adresse email invalide."); return; }
-    if (newEmail === user?.email) { setEmailError("C'est déjà votre email actuel."); return; }
+    if (!newEmail.includes("@")) { setEmailError(t("accountSettings.errorEmailInvalid")); return; }
+    if (newEmail === user?.email) { setEmailError(t("accountSettings.errorEmailSame")); return; }
     setEmailSaving(true);
     try {
       const supabase = getSupabaseBrowserClient();
       const { error } = await supabase.auth.updateUser({ email: newEmail });
-      if (error) { setEmailError("Impossible de changer l'email. Réessayez."); return; }
+      if (error) { setEmailError(t("accountSettings.errorEmailUpdate")); return; }
       setEmailSuccess(true);
       setNewEmail("");
     } catch {
-      setEmailError("Une erreur est survenue. Réessayez.");
+      setEmailError(t("accountSettings.errorGenericRetry"));
     } finally {
       setEmailSaving(false);
     }
@@ -186,12 +188,12 @@ export default function ParametresPage() {
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
         >
           <ChevronLeft size={16} />
-          Retour sur mon compte
+          {t("accountSettings.backToAccount")}
         </Link>
 
         {/* Page title */}
-        <h1 className="mb-2 text-2xl font-black text-[#3f2d58]">Mes informations</h1>
-        <p className="mb-8 text-sm text-[#6e6280]">Gérez votre profil, votre email et votre mot de passe.</p>
+        <h1 className="mb-2 text-2xl font-black text-[#3f2d58]">{t("accountSettings.pageTitle")}</h1>
+        <p className="mb-8 text-sm text-[#6e6280]">{t("accountSettings.pageSubtitle")}</p>
 
         {profileLoading ? (
           <div className="flex items-center justify-center py-20 text-[#6e6280]">
@@ -202,14 +204,14 @@ export default function ParametresPage() {
 
             {/* ── SECTION 1 : Informations personnelles ─────────────────────── */}
             <form onSubmit={handleProfileSubmit} className="overflow-hidden rounded-2xl border border-[#e6e8ee] bg-white shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
-              <SectionHeader icon={User} title="Informations personnelles" accent="#7B4FA6" />
+              <SectionHeader icon={User} title={t("accountSettings.personalInfoTitle")} accent="#7B4FA6" />
 
               <div className="p-6 flex flex-col gap-5">
                 {/* Banners */}
                 {profileSuccess && (
                   <div className="flex items-center gap-2 rounded-xl border border-[#86efac] bg-[#f0fdf4] p-4 text-sm text-[#166534]">
                     <CheckCircle2 size={16} className="shrink-0" />
-                    Informations mises à jour avec succès.
+                    {t("accountSettings.profileSuccess")}
                   </div>
                 )}
                 {profileError && (
@@ -222,7 +224,7 @@ export default function ParametresPage() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="label">
-                      Prénom *
+                      {t("accountSettings.labelFirstName")}
                       {fieldErrors.firstName && (
                         <span className="ml-2 font-normal normal-case text-[#ef4444]">{fieldErrors.firstName}</span>
                       )}
@@ -237,7 +239,7 @@ export default function ParametresPage() {
                   </div>
                   <div>
                     <label className="label">
-                      Nom *
+                      {t("accountSettings.labelLastName")}
                       {fieldErrors.lastName && (
                         <span className="ml-2 font-normal normal-case text-[#ef4444]">{fieldErrors.lastName}</span>
                       )}
@@ -251,7 +253,7 @@ export default function ParametresPage() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="label">Téléphone</label>
+                    <label className="label">{t("accountSettings.labelPhone")}</label>
                     <input
                       type="tel"
                       className="input"
@@ -266,14 +268,14 @@ export default function ParametresPage() {
                 {/* Read-only fields */}
                 <div className="grid grid-cols-1 gap-4 border-t border-[#f0f2f7] pt-4 sm:grid-cols-2">
                   <div>
-                    <label className="label">Email actuel</label>
+                    <label className="label">{t("accountSettings.labelCurrentEmail")}</label>
                     <div className="input cursor-default select-all text-[#6e6280]">{user.email}</div>
-                    <p className="mt-1 text-[10px] text-[#a09bb0]">Modifiable dans la section ci-dessous.</p>
+                    <p className="mt-1 text-[10px] text-[#a09bb0]">{t("accountSettings.currentEmailHint")}</p>
                   </div>
                   <div>
-                    <label className="label">Type de compte</label>
+                    <label className="label">{t("accountSettings.labelAccountType")}</label>
                     <div className="input cursor-default text-[#6e6280]">
-                      {user.type === "entreprise" ? "🏢 Entreprise" : "👤 Particulier"}
+                      {user.type === "entreprise" ? t("accountSettings.accountTypeBusiness") : t("accountSettings.accountTypeIndividual")}
                     </div>
                   </div>
                 </div>
@@ -282,22 +284,22 @@ export default function ParametresPage() {
                 {isEntreprise && (
                   <div className="flex flex-col gap-4 border-t border-[#f0f2f7] pt-4">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-[#6e6280]">
-                      Informations entreprise
+                      {t("accountSettings.businessInfoTitle")}
                     </h3>
                     <div>
-                      <label className="label">Raison sociale</label>
+                      <label className="label">{t("accountSettings.labelCompany")}</label>
                       <input
                         type="text"
                         className="input"
                         value={form.company}
                         onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
-                        placeholder="Ma Société SARL"
+                        placeholder={t("accountSettings.placeholderCompany")}
                         autoComplete="organization"
                       />
                     </div>
                     <div>
                       <label className="label">
-                        SIRET
+                        {t("accountSettings.labelSiret")}
                         {fieldErrors.siret && (
                           <span className="ml-2 font-normal normal-case text-[#ef4444]">{fieldErrors.siret}</span>
                         )}
@@ -312,7 +314,7 @@ export default function ParametresPage() {
                       />
                     </div>
                     <div>
-                      <label className="label">N° TVA intracommunautaire</label>
+                      <label className="label">{t("accountSettings.labelVat")}</label>
                       <input
                         type="text"
                         className="input font-mono tracking-wider"
@@ -327,9 +329,9 @@ export default function ParametresPage() {
                 <div className="flex justify-end border-t border-[#f0f2f7] pt-4">
                   <button type="submit" disabled={profileSaving} className="btn-primary gap-2 min-w-[160px] justify-center">
                     {profileSaving ? (
-                      <><Loader2 size={14} className="animate-spin" />Enregistrement…</>
+                      <><Loader2 size={14} className="animate-spin" />{t("accountSettings.saving")}</>
                     ) : (
-                      <><CheckCircle2 size={14} />Enregistrer</>
+                      <><CheckCircle2 size={14} />{t("accountSettings.save")}</>
                     )}
                   </button>
                 </div>
@@ -338,13 +340,13 @@ export default function ParametresPage() {
 
             {/* ── SECTION 2 : Changer d'email ─────────────────────────────────── */}
             <form onSubmit={handleEmailSubmit} className="overflow-hidden rounded-2xl border border-[#e6e8ee] bg-white shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
-              <SectionHeader icon={Mail} title="Changer d'adresse email" accent="#5BC4D8" />
+              <SectionHeader icon={Mail} title={t("accountSettings.emailSectionTitle")} accent="#5BC4D8" />
 
               <div className="p-6 flex flex-col gap-4">
                 {emailSuccess && (
                   <div className="flex items-center gap-2 rounded-xl border border-[#86efac] bg-[#f0fdf4] p-4 text-sm text-[#166534]">
                     <CheckCircle2 size={16} className="shrink-0" />
-                    Un email de confirmation a été envoyé à votre nouvelle adresse. Cliquez sur le lien pour valider.
+                    {t("accountSettings.emailSuccess")}
                   </div>
                 )}
                 {emailError && (
@@ -355,27 +357,27 @@ export default function ParametresPage() {
                 )}
 
                 <div>
-                  <label className="label">Nouvel email</label>
+                  <label className="label">{t("accountSettings.labelNewEmail")}</label>
                   <input
                     type="email"
                     className="input"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="nouvel@email.fr"
+                    placeholder={t("accountSettings.placeholderNewEmail")}
                     autoComplete="email"
                     required
                   />
                   <p className="mt-1 text-[10px] text-[#a09bb0]">
-                    Un email de confirmation sera envoyé à la nouvelle adresse.
+                    {t("accountSettings.newEmailHint")}
                   </p>
                 </div>
 
                 <div className="flex justify-end">
                   <button type="submit" disabled={emailSaving || !newEmail} className="btn-primary gap-2 min-w-[160px] justify-center">
                     {emailSaving ? (
-                      <><Loader2 size={14} className="animate-spin" />Envoi…</>
+                      <><Loader2 size={14} className="animate-spin" />{t("accountSettings.sending")}</>
                     ) : (
-                      <><Mail size={14} />Changer l&rsquo;email</>
+                      <><Mail size={14} />{t("accountSettings.changeEmail")}</>
                     )}
                   </button>
                 </div>
@@ -384,13 +386,13 @@ export default function ParametresPage() {
 
             {/* ── SECTION 3 : Changer le mot de passe ────────────────────────── */}
             <form onSubmit={handlePasswordSubmit} className="overflow-hidden rounded-2xl border border-[#e6e8ee] bg-white shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
-              <SectionHeader icon={Lock} title="Modifier le mot de passe" accent="#C4387A" />
+              <SectionHeader icon={Lock} title={t("accountSettings.passwordSectionTitle")} accent="#C4387A" />
 
               <div className="p-6 flex flex-col gap-4">
                 {passwordSuccess && (
                   <div className="flex items-center gap-2 rounded-xl border border-[#86efac] bg-[#f0fdf4] p-4 text-sm text-[#166534]">
                     <CheckCircle2 size={16} className="shrink-0" />
-                    Mot de passe mis à jour avec succès.
+                    {t("accountSettings.passwordSuccess")}
                   </div>
                 )}
                 {passwordError && (
@@ -401,20 +403,20 @@ export default function ParametresPage() {
                 )}
 
                 <div>
-                  <label className="label">Nouveau mot de passe</label>
+                  <label className="label">{t("accountSettings.labelNewPassword")}</label>
                   <input
                     type="password"
                     className="input"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="8 caractères minimum"
+                    placeholder={t("accountSettings.placeholderPasswordMin")}
                     autoComplete="new-password"
                     minLength={8}
                     required
                   />
                 </div>
                 <div>
-                  <label className="label">Confirmer le mot de passe</label>
+                  <label className="label">{t("accountSettings.labelConfirmPassword")}</label>
                   <input
                     type="password"
                     className="input"
@@ -430,9 +432,9 @@ export default function ParametresPage() {
                 <div className="flex justify-end">
                   <button type="submit" disabled={passwordSaving || !newPassword || !confirmPassword} className="btn-primary gap-2 min-w-[160px] justify-center">
                     {passwordSaving ? (
-                      <><Loader2 size={14} className="animate-spin" />Mise à jour…</>
+                      <><Loader2 size={14} className="animate-spin" />{t("accountSettings.updating")}</>
                     ) : (
-                      <><Lock size={14} />Mettre à jour</>
+                      <><Lock size={14} />{t("accountSettings.update")}</>
                     )}
                   </button>
                 </div>
@@ -442,17 +444,17 @@ export default function ParametresPage() {
             {/* ── SECTION 4 : Zone de danger ─────────────────────────────────── */}
             <div className="overflow-hidden rounded-2xl border border-[#fecaca] bg-white shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
               <div className="flex items-center gap-3 border-b border-[#fecaca] bg-[#fef2f2] px-6 py-4">
-                <h2 className="text-sm font-bold text-[#b91c1c]">Zone de danger</h2>
+                <h2 className="text-sm font-bold text-[#b91c1c]">{t("accountSettings.dangerZoneTitle")}</h2>
               </div>
               <div className="p-6">
                 <p className="mb-4 text-sm text-[#6e6280]">
-                  La suppression de votre compte est définitive. Toutes vos données seront effacées et cette action est irréversible.
+                  {t("accountSettings.dangerZoneText")}
                 </p>
                 <Link
                   href="/contact?sujet=suppression-compte"
                   className="inline-flex items-center gap-2 rounded-xl border border-[#fecaca] bg-white px-4 py-2.5 text-xs font-semibold text-[#ef4444] transition-colors hover:bg-[#fef2f2]"
                 >
-                  Demander la suppression du compte
+                  {t("accountSettings.deleteAccountLink")}
                 </Link>
               </div>
             </div>

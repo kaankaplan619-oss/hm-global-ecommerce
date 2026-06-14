@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import BackLink from "@/components/ui/BackLink";
 import PrintConfigurator from "@/components/print/PrintConfigurator";
+import { getT } from "@/lib/i18n/server";
 import {
   getPrintProduct,
   isDirectOrder,
@@ -20,10 +21,11 @@ export async function generateMetadata(
   { params }: { params: Promise<Params> },
 ): Promise<Metadata> {
   const { slug } = await params;
+  const t = await getT();
   const found = getPrintProduct(slug);
-  if (!found) return { title: "Impression" };
+  if (!found) return { title: t("printDetail.metaFallbackTitle") };
   return {
-    title: `${found.product.name} — Personnalisation`,
+    title: `${found.product.name} — ${t("printDetail.metaTitleSuffix")}`,
     description: found.product.description,
   };
 }
@@ -32,6 +34,7 @@ export default async function PrintProductPage(
   { params }: { params: Promise<Params> },
 ) {
   const { slug } = await params;
+  const t = await getT();
   const found = getPrintProduct(slug);
   if (!found) notFound();
   // Les cartes natives 85×55 ont leur configurateur dédié (prix + commande).
@@ -42,10 +45,10 @@ export default async function PrintProductPage(
   return (
     <div className="bg-white pb-20 pt-24">
       <div className="container">
-        <BackLink href="/impression" label="Retour au print" />
+        <BackLink href="/impression" label={t("printDetail.backToPrint")} />
 
         <div className="mb-10">
-          <p className="section-tag">Personnalisation · {product.sizeLabel}</p>
+          <p className="section-tag">{t("printDetail.customization")} · {product.sizeLabel}</p>
           <h1 className="mb-3 text-3xl font-black text-[var(--hm-text)] md:text-4xl">
             {product.name}
           </h1>

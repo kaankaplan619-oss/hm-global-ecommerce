@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getProductBySlug } from "@/data/products";
+import { getT } from "@/lib/i18n/server";
 import StudioClient from "./_studio-client";
 import type { Metadata } from "next";
 
@@ -12,9 +13,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) return {};
+  const t = await getT();
   return {
     title: `Studio · ${product.name}`,
-    description: `Personnalisez votre ${product.shortName} avec vos logos, textes et designs.`,
+    description: `${t("studioPage.descPrefix")} ${product.shortName} ${t("studioPage.descSuffix")}`,
   };
 }
 

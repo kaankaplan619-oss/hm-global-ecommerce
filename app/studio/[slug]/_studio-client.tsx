@@ -10,6 +10,7 @@ import type { StudioObject } from "@/components/studio/StudioCanvas";
 import type { StudioCanvasHandle } from "@/components/studio/StudioCanvas";
 import StudioToolsPanel from "@/components/studio/StudioToolsPanel";
 import StudioSummaryPanel from "@/components/studio/StudioSummaryPanel";
+import { useT } from "@/components/i18n/I18nProvider";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getHMTextileFrontPath, getHMTextileBackPath } from "@/lib/hm-visual-utils";
 import { useCartStore } from "@/store/cart";
@@ -34,13 +35,18 @@ const Sweat3DViewer = dynamic(
   { ssr: false }
 );
 
-const VIEW_3D_LABELS = ["Face", "Dos", "Manche"];
+const VIEW_3D_LABEL_KEYS = [
+  "studioClient.view3d.front",
+  "studioClient.view3d.back",
+  "studioClient.view3d.sleeve",
+];
 
 interface Props {
   product: Product;
 }
 
 export default function StudioClient({ product }: Props) {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -103,7 +109,7 @@ export default function StudioClient({ product }: Props) {
       id: crypto.randomUUID(),
       type: "logo" as const,
       src: editItem.logoFile.url,
-      label: editItem.logoFile.name || "Votre logo",
+      label: editItem.logoFile.name || t("studioClient.defaultLogoLabel"),
       face: editItem.placement === "dos" ? ("back" as const) : ("front" as const),
     }];
   });
@@ -196,12 +202,12 @@ export default function StudioClient({ product }: Props) {
             className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
           >
             <ArrowLeft size={13} />
-            Retour
+            {t("studioClient.back")}
           </Link>
 
           {/* Titre */}
           <h1 className="flex-1 truncate text-sm font-bold text-[var(--hm-text)]">
-            Studio · <span className="text-[var(--hm-primary)]">{product.shortName}</span>
+            {t("studioClient.studioTitlePrefix")} <span className="text-[var(--hm-primary)]">{product.shortName}</span>
           </h1>
 
           {/* Quick badges (desktop) */}
@@ -214,7 +220,7 @@ export default function StudioClient({ product }: Props) {
             )}
             {selectedSize && <span className="rounded-lg border border-[var(--hm-line)] px-2 py-0.5 font-semibold">{selectedSize}</span>}
             <span className="rounded-lg border border-[var(--hm-line)] px-2 py-0.5">{technique.toUpperCase()}</span>
-            <span className="font-medium">{quantity} pcs</span>
+            <span className="font-medium">{quantity} {t("studioClient.pcs")}</span>
           </div>
 
           {/* Besoin d'aide ? — visible sur desktop + mobile */}
@@ -223,8 +229,8 @@ export default function StudioClient({ product }: Props) {
             className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
           >
             <Phone size={13} className="text-[var(--hm-primary)]" />
-            <span className="hidden sm:inline">Besoin d&apos;aide ?</span>
-            <span className="sm:hidden">Aide</span>
+            <span className="hidden sm:inline">{t("studioClient.needHelp")}</span>
+            <span className="sm:hidden">{t("studioClient.help")}</span>
           </a>
         </div>
       </header>
@@ -268,7 +274,7 @@ export default function StudioClient({ product }: Props) {
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* Couleur + Taille */}
               <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4 shadow-[var(--hm-shadow-xs)]">
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Couleur</p>
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">{t("studioClient.color")}</p>
                 <div className="flex flex-wrap gap-2">
                   {product.colors.filter((c) => c.available).map((c) => (
                     <button key={c.id} type="button" onClick={() => setSelectedColor(c)}
@@ -281,7 +287,7 @@ export default function StudioClient({ product }: Props) {
 
                 <div className="my-3 h-px bg-[var(--hm-line)]" />
 
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Taille</p>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">{t("studioClient.size")}</p>
                 <div className="grid grid-cols-4 gap-1">
                   {product.sizes.filter((s) => s.available).map((s) => (
                     <button key={s.label} type="button" disabled={s.soldOut}
@@ -300,21 +306,21 @@ export default function StudioClient({ product }: Props) {
 
               {/* Technique + Placement + Quantité */}
               <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4 shadow-[var(--hm-shadow-xs)]">
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Technique</p>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">{t("studioClient.technique")}</p>
                 <div className="flex gap-1.5">
-                  {product.techniques.map((t) => {
-                    const tMinQty = product.techniqueConstraints?.[t]?.minQty ?? 1;
+                  {product.techniques.map((tech) => {
+                    const tMinQty = product.techniqueConstraints?.[tech]?.minQty ?? 1;
                     return (
-                      <button key={t} type="button" onClick={() => setTechnique(t)}
+                      <button key={tech} type="button" onClick={() => setTechnique(tech)}
                         className={`flex-1 rounded-xl border py-1.5 text-xs font-semibold transition ${
-                          technique === t
+                          technique === tech
                             ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
                             : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
                         }`}
                       >
-                        {t === "dtf" ? "DTF" : t === "dtflex" ? "DTFlex" : t === "flex" ? "Flex" : t === "broderie_illimitee" ? "Broderie ∞" : "Broderie"}
+                        {tech === "dtf" ? "DTF" : tech === "dtflex" ? "DTFlex" : tech === "flex" ? "Flex" : tech === "broderie_illimitee" ? t("studioClient.technique.embroideryUnlimited") : t("studioClient.technique.embroidery")}
                         {tMinQty > 1 && (
-                          <span className="block text-[9px] font-normal opacity-70">dès {tMinQty} pcs</span>
+                          <span className="block text-[9px] font-normal opacity-70">{t("studioClient.fromQty")} {tMinQty} {t("studioClient.pcs")}</span>
                         )}
                       </button>
                     );
@@ -323,7 +329,7 @@ export default function StudioClient({ product }: Props) {
 
                 <div className="my-3 h-px bg-[var(--hm-line)]" />
 
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Placement</p>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">{t("studioClient.placement")}</p>
                 <div className="flex flex-col gap-1">
                   {product.placements
                     .filter((p) => !techConstraint?.placements || techConstraint.placements.includes(p))
@@ -335,14 +341,14 @@ export default function StudioClient({ product }: Props) {
                           : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
                       }`}
                     >
-                      {p === "coeur" ? "Cœur (poitrine)" : p === "dos" ? "Dos" : "Cœur + Dos"}
+                      {p === "coeur" ? t("studioClient.placement.heart") : p === "dos" ? t("studioClient.placement.back") : t("studioClient.placement.heartAndBack")}
                     </button>
                   ))}
                 </div>
 
                 <div className="my-3 h-px bg-[var(--hm-line)]" />
 
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Quantité</p>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">{t("studioClient.quantity")}</p>
                 <div className="flex items-center gap-3">
                   <button type="button" onClick={() => setQuantity((q) => Math.max(minQty, q - 1))}
                     className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--hm-line)] bg-white text-sm font-bold text-[var(--hm-text)] transition hover:border-[var(--hm-primary)]">
@@ -369,7 +375,7 @@ export default function StudioClient({ product }: Props) {
                   <div className="flex items-center gap-1.5">
                     <Layers3 size={13} className="text-[var(--hm-primary)]" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
-                      Aperçu 3D
+                      {t("studioClient.preview3d")}
                     </span>
                   </div>
                   {/* Navigation vue */}
@@ -382,7 +388,7 @@ export default function StudioClient({ product }: Props) {
                       <ChevronLeft size={12} />
                     </button>
                     <span className="min-w-[42px] text-center text-[10px] font-semibold text-[var(--hm-text-soft)]">
-                      {VIEW_3D_LABELS[view3DIndex]}
+                      {t(VIEW_3D_LABEL_KEYS[view3DIndex])}
                     </span>
                     <button
                       type="button"
@@ -403,9 +409,9 @@ export default function StudioClient({ product }: Props) {
 
                 {/* Dots */}
                 <div className="flex items-center justify-center gap-1.5 pb-2.5">
-                  {VIEW_3D_LABELS.map((label, i) => (
+                  {VIEW_3D_LABEL_KEYS.map((labelKey, i) => (
                     <button
-                      key={label}
+                      key={labelKey}
                       type="button"
                       onClick={() => setView3DIndex(i)}
                       className={`h-1.5 rounded-full transition-all ${
@@ -447,7 +453,7 @@ export default function StudioClient({ product }: Props) {
             {/* Commander sans personnalisation */}
             <button type="button" onClick={() => router.push(`/produits/${product.slug}`)}
               className="w-full rounded-xl border border-[var(--hm-line)] bg-white px-4 py-2.5 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)]/40 hover:text-[var(--hm-text)]">
-              Commander sans personnalisation
+              {t("studioClient.orderWithoutCustomization")}
             </button>
 
             {/* ── Besoin d'aide ? ──────────────────────────────────────────── */}
@@ -457,9 +463,9 @@ export default function StudioClient({ product }: Props) {
                   <Phone size={16} className="text-[var(--hm-primary)]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-[var(--hm-text)]">Besoin d&apos;aide ?</p>
+                  <p className="text-sm font-bold text-[var(--hm-text)]">{t("studioClient.needHelp")}</p>
                   <p className="text-[11px] text-[var(--hm-text-soft)] leading-snug">
-                    Notre équipe peut vous accompagner dans la création de votre personnalisation.
+                    {t("studioClient.helpDescription")}
                   </p>
                 </div>
               </div>
@@ -471,10 +477,10 @@ export default function StudioClient({ product }: Props) {
                 </a>
                 <Link href="/contact"
                   className="flex items-center justify-center gap-2 rounded-xl border border-[var(--hm-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hm-text-soft)] transition hover:border-[var(--hm-primary)]/40 hover:text-[var(--hm-text)]">
-                  Envoyer un message
+                  {t("studioClient.sendMessage")}
                 </Link>
               </div>
-              <p className="mt-2.5 text-center text-[10px] text-[var(--hm-text-muted)]">Lun – Ven · 9h – 18h</p>
+              <p className="mt-2.5 text-center text-[10px] text-[var(--hm-text-muted)]">{t("studioClient.openingHours")}</p>
             </div>
 
           </aside>

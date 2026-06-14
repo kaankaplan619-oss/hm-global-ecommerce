@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useT } from "@/components/i18n/I18nProvider";
 import {
   MessageCircle,
   X,
@@ -57,7 +58,7 @@ interface ResultCTA {
 
 // ─── Logique de résultat ──────────────────────────────────────────────────────
 
-function buildResult(answers: Answers): ResultCTA[] {
+function buildResult(answers: Answers, t: (key: string) => string): ResultCTA[] {
   const { projectType, logoStatus, quantity } = answers;
 
   // Petite série → contact en priorité
@@ -65,15 +66,15 @@ function buildResult(answers: Answers): ResultCTA[] {
     return [
       {
         icon:        <Phone size={16} />,
-        label:       "Nous contacter",
-        description: "Les petites séries (< 10 pièces) font l'objet d'un devis personnalisé.",
+        label:       t("quote.result.micro.contact.label"),
+        description: t("quote.result.micro.contact.description"),
         href:        "/contact",
         primary:     true,
       },
       {
         icon:        <Layers size={16} />,
-        label:       "Voir le catalogue",
-        description: "Repérez vos produits avant de nous envoyer votre demande.",
+        label:       t("quote.result.micro.catalogue.label"),
+        description: t("quote.result.micro.catalogue.description"),
         href:        "/catalogue",
       },
     ];
@@ -84,15 +85,15 @@ function buildResult(answers: Answers): ResultCTA[] {
     return [
       {
         icon:        <Phone size={16} />,
-        label:       "Demander un devis",
-        description: "Les objets publicitaires sont traités sur devis selon vos spécifications.",
+        label:       t("quote.result.objet.quote.label"),
+        description: t("quote.result.objet.quote.description"),
         href:        "/contact",
         primary:     true,
       },
       {
         icon:        <Layers size={16} />,
-        label:       "Voir le catalogue textile",
-        description: "Découvrez aussi nos vêtements personnalisables.",
+        label:       t("quote.result.objet.catalogue.label"),
+        description: t("quote.result.objet.catalogue.description"),
         href:        "/catalogue",
       },
     ];
@@ -103,15 +104,15 @@ function buildResult(answers: Answers): ResultCTA[] {
     return [
       {
         icon:        <Layers size={16} />,
-        label:       "Explorer le catalogue",
-        description: "T-shirts, hoodies, polos, softshells — trouvez votre produit.",
+        label:       t("quote.result.unknown.catalogue.label"),
+        description: t("quote.result.unknown.catalogue.description"),
         href:        "/catalogue",
         primary:     true,
       },
       {
         icon:        <Phone size={16} />,
-        label:       "Nous parler",
-        description: "Un conseiller répond à vos questions sans engagement.",
+        label:       t("quote.result.unknown.contact.label"),
+        description: t("quote.result.unknown.contact.description"),
         href:        "/contact",
       },
     ];
@@ -122,15 +123,15 @@ function buildResult(answers: Answers): ResultCTA[] {
     return [
       {
         icon:        <Building2 size={16} />,
-        label:       "Devis grand volume",
-        description: "Pour 200 pièces et plus, nous préparons une offre tarifaire dédiée.",
+        label:       t("quote.result.large.quote.label"),
+        description: t("quote.result.large.quote.description"),
         href:        "/contact",
         primary:     true,
       },
       {
         icon:        <Layers size={16} />,
-        label:       "Voir le catalogue",
-        description: "Repérez vos produits avant de nous envoyer votre devis.",
+        label:       t("quote.result.large.catalogue.label"),
+        description: t("quote.result.large.catalogue.description"),
         href:        "/catalogue",
       },
     ];
@@ -141,15 +142,15 @@ function buildResult(answers: Answers): ResultCTA[] {
     return [
       {
         icon:        <Layers size={16} />,
-        label:       "Configurer ma commande",
-        description: "Logo prêt, quantité suffisante — lancez votre commande en quelques clics.",
+        label:       t("quote.result.ready.configure.label"),
+        description: t("quote.result.ready.configure.description"),
         href:        "/catalogue",
         primary:     true,
       },
       {
         icon:        <Phone size={16} />,
-        label:       "Une question ?",
-        description: "Notre équipe reste disponible avant votre commande.",
+        label:       t("quote.result.ready.question.label"),
+        description: t("quote.result.ready.question.description"),
         href:        "/contact",
       },
     ];
@@ -160,15 +161,15 @@ function buildResult(answers: Answers): ResultCTA[] {
     return [
       {
         icon:        <Phone size={16} />,
-        label:       "Envoyer votre logo",
-        description: "Envoyez-nous votre fichier, nos équipes l'adaptent gratuitement.",
+        label:       t("quote.result.adapt.sendLogo.label"),
+        description: t("quote.result.adapt.sendLogo.description"),
         href:        "/contact",
         primary:     true,
       },
       {
         icon:        <Layers size={16} />,
-        label:       "Parcourir le catalogue",
-        description: "Repérez vos produits en attendant de préparer votre fichier.",
+        label:       t("quote.result.adapt.catalogue.label"),
+        description: t("quote.result.adapt.catalogue.description"),
         href:        "/catalogue",
       },
     ];
@@ -179,15 +180,15 @@ function buildResult(answers: Answers): ResultCTA[] {
     return [
       {
         icon:        <Phone size={16} />,
-        label:       "Nous contacter",
-        description: "Nous pouvons vous aider à préparer un logo pour la personnalisation.",
+        label:       t("quote.result.none.contact.label"),
+        description: t("quote.result.none.contact.description"),
         href:        "/contact",
         primary:     true,
       },
       {
         icon:        <Layers size={16} />,
-        label:       "Voir les produits",
-        description: "Repérez vos articles en attendant de finaliser votre visuel.",
+        label:       t("quote.result.none.catalogue.label"),
+        description: t("quote.result.none.catalogue.description"),
         href:        "/catalogue",
       },
     ];
@@ -197,15 +198,15 @@ function buildResult(answers: Answers): ResultCTA[] {
   return [
     {
       icon:        <Layers size={16} />,
-      label:       "Explorer le catalogue",
-      description: "Découvrez nos produits personnalisables.",
+      label:       t("quote.result.fallback.catalogue.label"),
+      description: t("quote.result.fallback.catalogue.description"),
       href:        "/catalogue",
       primary:     true,
     },
     {
       icon:        <Phone size={16} />,
-      label:       "Nous contacter",
-      description: "Un conseiller vous accompagne.",
+      label:       t("quote.result.fallback.contact.label"),
+      description: t("quote.result.fallback.contact.description"),
       href:        "/contact",
     },
   ];
@@ -230,6 +231,7 @@ export default function QuoteAssistant() {
 
 // Widget séparé pour éviter d'initialiser le state sur les pages masquées
 function QuoteAssistantWidget() {
+  const t = useT();
   const [open, setOpen]       = useState(false);
   const [step, setStep]       = useState<Step>("welcome");
   const [answers, setAnswers] = useState<Answers>({});
@@ -318,20 +320,20 @@ function QuoteAssistantWidget() {
             </div>
             <div>
               <p className="font-bold text-[#3f2d58] text-[15px]">
-                Besoin d&rsquo;aide pour votre projet ?
+                {t("quote.welcome.title")}
               </p>
               <p className="text-[13px] text-[#6e6280] mt-1 leading-relaxed">
-                3 questions rapides et je vous oriente vers la bonne solution.
+                {t("quote.welcome.subtitle")}
               </p>
             </div>
             <button
               onClick={() => setStep("project")}
               className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#b13f74] hover:bg-[#973761] text-white text-sm font-bold rounded-xl transition-colors"
             >
-              Démarrer <ArrowRight size={14} />
+              {t("quote.welcome.start")} <ArrowRight size={14} />
             </button>
             <p className="text-[11px] text-[#8a8198]">
-              Moins de 30 secondes · Aucun engagement
+              {t("quote.welcome.reassurance")}
             </p>
           </div>
         );
@@ -339,26 +341,26 @@ function QuoteAssistantWidget() {
       case "project":
         return (
           <div className="flex flex-col gap-2">
-            <StepLabel label="Étape 1 / 3" />
+            <StepLabel label={t("quote.project.step")} />
             <p className="text-sm font-bold text-[#3f2d58] mb-2">
-              Quel type de projet ?
+              {t("quote.project.question")}
             </p>
             <Option
               icon={<Shirt size={16} />}
-              label="Textile"
-              sub="T-shirts, hoodies, polos, vestes..."
+              label={t("quote.project.textile.label")}
+              sub={t("quote.project.textile.sub")}
               onClick={() => selectProject("textile")}
             />
             <Option
               icon={<Gift size={16} />}
-              label="Objet publicitaire / goodies"
-              sub="Mugs, stylos, sacs, accessoires..."
+              label={t("quote.project.objet.label")}
+              sub={t("quote.project.objet.sub")}
               onClick={() => selectProject("objet")}
             />
             <Option
               icon={<HelpCircle size={16} />}
-              label="Je ne sais pas encore"
-              sub="Montrez-moi ce qui existe"
+              label={t("quote.project.unknown.label")}
+              sub={t("quote.project.unknown.sub")}
               onClick={() => selectProject("unknown")}
             />
           </div>
@@ -367,26 +369,26 @@ function QuoteAssistantWidget() {
       case "logo":
         return (
           <div className="flex flex-col gap-2">
-            <StepLabel label="Étape 2 / 3" />
+            <StepLabel label={t("quote.logo.step")} />
             <p className="text-sm font-bold text-[#3f2d58] mb-2">
-              Vous avez déjà votre logo ?
+              {t("quote.logo.question")}
             </p>
             <Option
               icon={<CheckCircle size={16} />}
-              label="Oui, prêt en haute résolution"
-              sub="PDF, SVG, PNG HD ou fichier .AI"
+              label={t("quote.logo.ready.label")}
+              sub={t("quote.logo.ready.sub")}
               onClick={() => selectLogo("ready")}
             />
             <Option
               icon={<Pencil size={16} />}
-              label="Oui, mais à adapter"
-              sub="Basse résolution, mauvais format..."
+              label={t("quote.logo.adapt.label")}
+              sub={t("quote.logo.adapt.sub")}
               onClick={() => selectLogo("adapt")}
             />
             <Option
               icon={<ImageOff size={16} />}
-              label="Pas encore de logo"
-              sub="Je pars de zéro"
+              label={t("quote.logo.none.label")}
+              sub={t("quote.logo.none.sub")}
               onClick={() => selectLogo("none")}
             />
           </div>
@@ -396,40 +398,40 @@ function QuoteAssistantWidget() {
         return (
           <div className="flex flex-col gap-2">
             <StepLabel
-              label={answers.projectType === "textile" ? "Étape 3 / 3" : "Étape 2 / 2"}
+              label={answers.projectType === "textile" ? t("quote.quantity.step3of3") : t("quote.quantity.step2of2")}
             />
             <p className="text-sm font-bold text-[#3f2d58] mb-2">
-              Quantité approximative ?
+              {t("quote.quantity.question")}
             </p>
             <Option
               icon={<User size={16} />}
-              label="Moins de 10 pièces"
-              sub="Petite série ou test"
+              label={t("quote.quantity.micro.label")}
+              sub={t("quote.quantity.micro.sub")}
               onClick={() => selectQuantity("micro")}
             />
             <Option
               icon={<Users size={16} />}
-              label="10 à 50 pièces"
-              sub="Équipe, club, événement"
+              label={t("quote.quantity.small.label")}
+              sub={t("quote.quantity.small.sub")}
               onClick={() => selectQuantity("small")}
             />
             <Option
               icon={<Users size={16} />}
-              label="50 à 200 pièces"
-              sub="PME, association, franchise"
+              label={t("quote.quantity.medium.label")}
+              sub={t("quote.quantity.medium.sub")}
               onClick={() => selectQuantity("medium")}
             />
             <Option
               icon={<Building2 size={16} />}
-              label="200 pièces et plus"
-              sub="Grand volume, tarif dégressif"
+              label={t("quote.quantity.large.label")}
+              sub={t("quote.quantity.large.sub")}
               onClick={() => selectQuantity("large")}
             />
           </div>
         );
 
       case "result": {
-        const ctas = buildResult(answers);
+        const ctas = buildResult(answers, t);
         return (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 mb-1">
@@ -437,7 +439,7 @@ function QuoteAssistantWidget() {
                 <CheckCircle size={12} className="text-[#b13f74]" />
               </div>
               <p className="text-sm font-bold text-[#3f2d58]">
-                Voilà ce que je vous recommande
+                {t("quote.result.heading")}
               </p>
             </div>
 
@@ -482,7 +484,7 @@ function QuoteAssistantWidget() {
               onClick={reset}
               className="text-[11px] text-[#8a8198] hover:text-[#b13f74] transition-colors mt-1 text-center"
             >
-              ← Recommencer
+              {t("quote.result.restart")}
             </button>
           </div>
         );
@@ -504,7 +506,7 @@ function QuoteAssistantWidget() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Assistant de devis HM Global"
+        aria-label={t("quote.aria.dialog")}
         aria-hidden={!open}
         className={`
           fixed bottom-20 right-4 sm:bottom-[88px] sm:right-6
@@ -526,13 +528,13 @@ function QuoteAssistantWidget() {
                 <button
                   onClick={back}
                   className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[#e6e8ee] transition-colors text-[#6e6280]"
-                  aria-label="Étape précédente"
+                  aria-label={t("quote.aria.previousStep")}
                 >
                   <ChevronLeft size={14} />
                 </button>
               )}
               <span className="text-xs font-bold text-[#3f2d58] tracking-wide">
-                Assistant HM Global
+                {t("quote.header.title")}
               </span>
             </div>
 
@@ -555,7 +557,7 @@ function QuoteAssistantWidget() {
             <button
               onClick={close}
               className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[#e6e8ee] transition-colors text-[#6e6280]"
-              aria-label="Fermer l'assistant"
+              aria-label={t("quote.aria.close")}
             >
               <X size={14} />
             </button>
@@ -586,7 +588,7 @@ function QuoteAssistantWidget() {
             : "bg-[#b13f74] hover:bg-[#973761]"
           }
         `}
-        aria-label={open ? "Fermer l'assistant" : "Ouvrir l'assistant de devis"}
+        aria-label={open ? t("quote.aria.close") : t("quote.aria.open")}
         aria-expanded={open}
       >
         {open

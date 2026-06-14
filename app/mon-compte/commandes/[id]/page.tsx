@@ -10,20 +10,21 @@ import {
 import { useAuthStore } from "@/store/auth";
 import { validateLogoFile, formatFileSize, canCancelOrder, getRemainingCancelTime } from "@/lib/utils";
 import { getOrderItemImage } from "@/lib/order-image";
+import { useT } from "@/components/i18n/I18nProvider";
 import type { Order } from "@/types";
 
 // ── Gradient signature HM Global ──────────────────────────────────────────────
 const HM_GRADIENT = "linear-gradient(135deg, #5BC4D8, #7B4FA6, #C4387A)";
 
-const STATUS_CONFIG: Record<string, { label: string; description: string; color: string; bg: string; border: string }> = {
-  paiement_recu:      { label: "Paiement reçu",                    description: "Votre paiement a été validé. Votre commande est en cours de vérification.",                                color: "#5BC4D8", bg: "#edf9fc", border: "#5BC4D844" },
-  fichier_a_verifier: { label: "Fichier en cours de vérification",  description: "Notre équipe examine votre fichier logo.",                                                                  color: "#f59e0b", bg: "#fffbeb", border: "#f59e0b44" },
-  en_attente_client:  { label: "Action requise",                    description: "Votre fichier logo nécessite une correction. Veuillez en déposer un nouveau.",                              color: "#ef4444", bg: "#fef2f2", border: "#ef444444" },
-  validee:            { label: "Commande validée",                  description: "Votre commande est validée et en cours de production.",                                                     color: "#22c55e", bg: "#f0fdf4", border: "#22c55e44" },
-  en_traitement:      { label: "En production",                     description: "Votre commande est en cours de fabrication.",                                                               color: "#7B4FA6", bg: "#f3eefb", border: "#7B4FA644" },
-  expediee:           { label: "Expédiée",                          description: "Votre commande est en route vers vous !",                                                                   color: "#22c55e", bg: "#f0fdf4", border: "#22c55e44" },
-  terminee:           { label: "Terminée",                          description: "Commande livrée et clôturée.",                                                                              color: "#6e6280", bg: "#f8f9fb", border: "#e6e8ee"   },
-  annulee:            { label: "Annulée",                           description: "Cette commande a été annulée.",                                                                             color: "#ef4444", bg: "#fef2f2", border: "#ef444444" },
+const STATUS_CONFIG: Record<string, { color: string; bg: string; border: string }> = {
+  paiement_recu:      { color: "#5BC4D8", bg: "#edf9fc", border: "#5BC4D844" },
+  fichier_a_verifier: { color: "#f59e0b", bg: "#fffbeb", border: "#f59e0b44" },
+  en_attente_client:  { color: "#ef4444", bg: "#fef2f2", border: "#ef444444" },
+  validee:            { color: "#22c55e", bg: "#f0fdf4", border: "#22c55e44" },
+  en_traitement:      { color: "#7B4FA6", bg: "#f3eefb", border: "#7B4FA644" },
+  expediee:           { color: "#22c55e", bg: "#f0fdf4", border: "#22c55e44" },
+  terminee:           { color: "#6e6280", bg: "#f8f9fb", border: "#e6e8ee"   },
+  annulee:            { color: "#ef4444", bg: "#fef2f2", border: "#ef444444" },
 };
 
 function formatCurrency(amount: number) {
@@ -33,6 +34,7 @@ function formatCurrency(amount: number) {
 type Props = { params: Promise<{ id: string }> };
 
 export default function CommandeDetailPage({ params }: Props) {
+  const t = useT();
   const router = useRouter();
   const { isAuthenticated, _hasHydrated } = useAuthStore();
   const [orderId, setOrderId] = useState<string>("");
@@ -120,15 +122,18 @@ export default function CommandeDetailPage({ params }: Props) {
   if (!order) {
     return (
       <div className="min-h-screen bg-[#f8f9fb] pt-24 pb-20 text-center">
-        <p className="text-[#6e6280]">Commande introuvable</p>
+        <p className="text-[#6e6280]">{t("accountOrderDetail.notFound")}</p>
         <Link href="/mon-compte/commandes" className="btn-ghost mt-4">
-          Retour aux commandes
+          {t("accountOrderDetail.backToOrders")}
         </Link>
       </div>
     );
   }
 
-  const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.terminee;
+  const statusKey = STATUS_CONFIG[order.status] ? order.status : "terminee";
+  const cfg = STATUS_CONFIG[statusKey];
+  const statusLabel = t(`accountOrderDetail.status.${statusKey}.label`);
+  const statusDescription = t(`accountOrderDetail.status.${statusKey}.description`);
   const canCancel = canCancelOrder(order.createdAt) && order.status === "paiement_recu";
   const needsNewFile = order.status === "en_attente_client";
 
@@ -149,18 +154,18 @@ export default function CommandeDetailPage({ params }: Props) {
           className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
         >
           <ChevronLeft size={16} />
-          Retour aux commandes
+          {t("accountOrderDetail.backToOrders")}
         </Link>
 
         {/* Breadcrumb */}
         <nav className="mb-6 flex items-center gap-2 text-xs text-[#6e6280]">
           <Link href="/mon-compte" className="hover:text-[#7B4FA6] transition-colors">
-            Mon compte
+            {t("accountOrderDetail.breadcrumbAccount")}
           </Link>
           <span>/</span>
           <Link href="/mon-compte/commandes" className="hover:text-[#7B4FA6] transition-colors flex items-center gap-1">
             <ChevronLeft size={12} />
-            Commandes
+            {t("accountOrderDetail.breadcrumbOrders")}
           </Link>
           <span>/</span>
           <span className="font-semibold text-[#3f2d58]">#{order.orderNumber}</span>
@@ -169,13 +174,13 @@ export default function CommandeDetailPage({ params }: Props) {
         {/* Header */}
         <div className="mb-6 flex flex-wrap items-center gap-4">
           <h1 className="text-2xl font-black text-[#3f2d58]">
-            Commande #{order.orderNumber}
+            {t("accountOrderDetail.title")} #{order.orderNumber}
           </h1>
           <span
             className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
             style={{ backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}
           >
-            {cfg.label}
+            {statusLabel}
           </span>
         </div>
 
@@ -184,11 +189,11 @@ export default function CommandeDetailPage({ params }: Props) {
           className="mb-6 rounded-2xl border p-5"
           style={{ backgroundColor: cfg.bg, borderColor: cfg.border }}
         >
-          <p className="text-sm" style={{ color: cfg.color }}>{cfg.description}</p>
+          <p className="text-sm" style={{ color: cfg.color }}>{statusDescription}</p>
           {order.trackingNumber && (
             <div className="mt-3 flex items-center gap-2 rounded-xl bg-white/60 px-3 py-2 text-xs font-semibold" style={{ color: cfg.color }}>
               <Truck size={13} />
-              Numéro de suivi : <strong>{order.trackingNumber}</strong>
+              {t("accountOrderDetail.trackingNumber")} <strong>{order.trackingNumber}</strong>
             </div>
           )}
         </div>
@@ -199,18 +204,18 @@ export default function CommandeDetailPage({ params }: Props) {
             <div className="mb-2 flex items-center gap-2">
               <Clock size={14} className="text-[#f59e0b]" />
               <p className="text-sm font-semibold text-[#92400e]">
-                Annulation possible encore {formatMinsecs(remainingTime)}
+                {t("accountOrderDetail.cancelWindow").replace("{time}", formatMinsecs(remainingTime))}
               </p>
             </div>
             <p className="mb-4 text-xs text-[#78350f]">
-              Après ce délai, l&rsquo;annulation devra être demandée à notre équipe.
+              {t("accountOrderDetail.cancelWindowNote")}
             </p>
             <button
               onClick={handleCancel}
               disabled={cancelLoading}
               className="rounded-xl border border-[#fecaca] bg-white px-4 py-2 text-xs font-semibold text-[#ef4444] transition-colors hover:bg-[#fef2f2] disabled:opacity-50"
             >
-              {cancelLoading ? "Annulation..." : "Annuler cette commande"}
+              {cancelLoading ? t("accountOrderDetail.cancelling") : t("accountOrderDetail.cancelOrder")}
             </button>
           </div>
         )}
@@ -220,7 +225,7 @@ export default function CommandeDetailPage({ params }: Props) {
           <div className="mb-6 rounded-2xl border border-[#fecaca] bg-[#fef2f2] p-5">
             <div className="mb-3 flex items-center gap-2">
               <AlertCircle size={16} className="text-[#ef4444]" />
-              <p className="text-sm font-semibold text-[#ef4444]">Nouveau fichier logo requis</p>
+              <p className="text-sm font-semibold text-[#ef4444]">{t("accountOrderDetail.newLogoRequired")}</p>
             </div>
             {order.adminNote && (
               <p className="mb-4 rounded-xl border-l-4 border-[#ef4444] bg-white/70 px-4 py-3 text-xs text-[#7f1d1d]">
@@ -234,8 +239,8 @@ export default function CommandeDetailPage({ params }: Props) {
                 onClick={() => document.getElementById("new-logo-input")?.click()}
               >
                 <Upload size={18} className="mx-auto mb-2 text-[#ef4444]" />
-                <p className="text-xs font-semibold text-[#ef4444]">Déposer votre nouveau fichier ici</p>
-                <p className="mt-1 text-[10px] text-[#6e6280]">PDF, PNG, SVG, AI — max 50 Mo</p>
+                <p className="text-xs font-semibold text-[#ef4444]">{t("accountOrderDetail.dropNewFile")}</p>
+                <p className="mt-1 text-[10px] text-[#6e6280]">{t("accountOrderDetail.fileHint")}</p>
                 <input
                   id="new-logo-input"
                   type="file"
@@ -272,7 +277,7 @@ export default function CommandeDetailPage({ params }: Props) {
                 disabled={uploading}
                 className="btn-primary mt-4 text-xs"
               >
-                {uploading ? "Envoi en cours..." : "Envoyer le nouveau fichier"}
+                {uploading ? t("accountOrderDetail.uploading") : t("accountOrderDetail.sendNewFile")}
               </button>
             )}
           </div>
@@ -285,7 +290,7 @@ export default function CommandeDetailPage({ params }: Props) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f3eefb]">
               <Package size={15} className="text-[#7B4FA6]" />
             </div>
-            <h2 className="text-sm font-bold text-[#3f2d58]">Articles commandés</h2>
+            <h2 className="text-sm font-bold text-[#3f2d58]">{t("accountOrderDetail.itemsTitle")}</h2>
           </div>
 
           <div className="p-5">
@@ -303,7 +308,7 @@ export default function CommandeDetailPage({ params }: Props) {
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e6e8ee] bg-white">
                     {itemImg ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={itemImg} alt={item.product?.shortName ?? "Produit"} className="h-full w-full object-contain p-1" />
+                      <img src={itemImg} alt={item.product?.shortName ?? t("accountOrderDetail.productAlt")} className="h-full w-full object-contain p-1" />
                     ) : (
                       <Package size={20} className="text-[#c4c0cf]" />
                     )}
@@ -322,7 +327,7 @@ export default function CommandeDetailPage({ params }: Props) {
                     </p>
                     <div className="mt-1 flex flex-wrap gap-1.5">
                       {[
-                        `Taille ${item.size}`,
+                        `${t("accountOrderDetail.sizeLabel")} ${item.size}`,
                         item.color?.label,
                         item.technique?.toUpperCase(),
                         item.placement,
@@ -350,19 +355,19 @@ export default function CommandeDetailPage({ params }: Props) {
             {/* Totaux */}
             <div className="mt-5 border-t border-[#e6e8ee] pt-4 space-y-2">
               <div className="flex justify-between text-xs text-[#6e6280]">
-                <span>Sous-total HT</span>
+                <span>{t("accountOrderDetail.subtotalHT")}</span>
                 <span>{formatCurrency(order.subtotalHT)}</span>
               </div>
               <div className="flex justify-between text-xs text-[#6e6280]">
-                <span>TVA (20&nbsp;%)</span>
+                <span>{t("accountOrderDetail.vat")}</span>
                 <span>{formatCurrency(order.tva)}</span>
               </div>
               <div className="flex justify-between text-xs text-[#6e6280]">
-                <span>Livraison</span>
-                <span>{order.freeShipping ? "Offerte 🎁" : formatCurrency(order.shipping)}</span>
+                <span>{t("accountOrderDetail.shipping")}</span>
+                <span>{order.freeShipping ? t("accountOrderDetail.shippingFree") : formatCurrency(order.shipping)}</span>
               </div>
               <div className="flex justify-between border-t border-[#e6e8ee] pt-2 text-sm font-black text-[#3f2d58]">
-                <span>Total TTC</span>
+                <span>{t("accountOrderDetail.totalTTC")}</span>
                 <span
                   style={{
                     background: HM_GRADIENT,
@@ -382,9 +387,9 @@ export default function CommandeDetailPage({ params }: Props) {
         {order.invoiceUrl && (
           <div className="mb-6 flex items-center justify-between rounded-2xl border border-[#e6e8ee] bg-white p-5 shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
             <div>
-              <p className="text-sm font-bold text-[#3f2d58]">Facture disponible</p>
+              <p className="text-sm font-bold text-[#3f2d58]">{t("accountOrderDetail.invoiceAvailable")}</p>
               {order.invoiceNumber && (
-                <p className="text-xs text-[#6e6280]">N° {order.invoiceNumber}</p>
+                <p className="text-xs text-[#6e6280]">{t("accountOrderDetail.invoiceNumber")} {order.invoiceNumber}</p>
               )}
             </div>
             <a
@@ -393,15 +398,15 @@ export default function CommandeDetailPage({ params }: Props) {
               rel="noopener noreferrer"
               className="btn-primary text-xs"
             >
-              Télécharger
+              {t("accountOrderDetail.download")}
             </a>
           </div>
         )}
 
         <p className="mt-8 text-center text-[11px] text-[#a09bb0]">
-          Un problème avec cette commande ?{" "}
+          {t("accountOrderDetail.problemPrefix")}{" "}
           <Link href="/contact" className="font-semibold text-[#7B4FA6] hover:underline">
-            Contactez-nous
+            {t("accountOrderDetail.contactUs")}
           </Link>
         </p>
       </div>

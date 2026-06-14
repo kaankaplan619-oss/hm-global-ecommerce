@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { getInitials } from "@/lib/utils";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ── Gradient signature HM Global ─────────────────────────────────────────────
 const HM_GRADIENT = "linear-gradient(135deg, #5BC4D8, #7B4FA6, #C4387A)";
@@ -24,36 +25,36 @@ const ACCOUNT_LINKS = [
   {
     href: "/mon-compte/commandes",
     icon: Package,
-    title: "Mes commandes",
-    description: "Suivez l'état de vos commandes en cours et passées",
+    titleKey: "account.links.orders.title",
+    descriptionKey: "account.links.orders.description",
     accent: "#7B4FA6",
     accentSoft: "#f3eefb",
   },
   {
     href: "/mon-compte/factures",
     icon: FileText,
-    title: "Mes factures",
-    description: "Téléchargez vos factures et justificatifs",
+    titleKey: "account.links.invoices.title",
+    descriptionKey: "account.links.invoices.description",
     accent: "#5BC4D8",
     accentSoft: "#edf9fc",
   },
   {
     href: "/mon-compte/adresses",
     icon: MapPin,
-    title: "Mes adresses",
-    description: "Gérez vos adresses de facturation et livraison",
+    titleKey: "account.links.addresses.title",
+    descriptionKey: "account.links.addresses.description",
     accent: "#C4387A",
     accentSoft: "#fdeef5",
   },
   {
     href: "/mon-compte/parametres",
     icon: Settings,
-    title: "Paramètres",
-    description: "Modifiez vos informations personnelles",
+    titleKey: "account.links.settings.title",
+    descriptionKey: "account.links.settings.description",
     accent: "#7B4FA6",
     accentSoft: "#f3eefb",
   },
-];
+] as const;
 
 const IN_PROGRESS_STATUSES = new Set([
   "paiement_recu",
@@ -71,6 +72,7 @@ interface StatsData {
 }
 
 export default function MonComptePage() {
+  const t = useT();
   const router = useRouter();
   const { user, isAuthenticated, _hasHydrated, logout } = useAuthStore();
   const [stats, setStats] = useState<StatsData>({ total: 0, enCours: 0, terminees: 0 });
@@ -109,7 +111,7 @@ export default function MonComptePage() {
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
         >
           <ChevronLeft size={16} />
-          Retour à l&rsquo;accueil
+          {t("account.backToHome")}
         </Link>
 
         {/* ── En-tête profil ─────────────────────────────────────────────── */}
@@ -128,7 +130,7 @@ export default function MonComptePage() {
 
             <div className="min-w-0 flex-1">
               <h1 className="text-lg font-black text-[#3f2d58]">
-                Bonjour, {user.firstName}&nbsp;!
+                {t("account.greeting")}, {user.firstName}&nbsp;!
               </h1>
               <p className="text-sm text-[#6e6280]">{user.email}</p>
               {user.type === "entreprise" && user.company && (
@@ -141,7 +143,7 @@ export default function MonComptePage() {
               className="btn-primary hidden gap-2 text-xs sm:flex"
             >
               <ShoppingBag size={14} />
-              Commander
+              {t("account.orderCta")}
             </Link>
           </div>
         </div>
@@ -149,9 +151,9 @@ export default function MonComptePage() {
         {/* ── Stats ──────────────────────────────────────────────────────── */}
         <div className="mb-8 grid grid-cols-3 gap-4">
           {([
-            { label: "Commandes", value: stats.total },
-            { label: "En cours",  value: stats.enCours },
-            { label: "Terminées", value: stats.terminees },
+            { label: t("account.stats.total"), value: stats.total },
+            { label: t("account.stats.inProgress"), value: stats.enCours },
+            { label: t("account.stats.completed"), value: stats.terminees },
           ] as const).map(({ label, value }) => (
             <div
               key={label}
@@ -176,16 +178,16 @@ export default function MonComptePage() {
         </div>
         {!loadingStats && stats.total === 0 && (
           <p className="mb-6 text-center text-sm text-[#6e6280]">
-            Aucune commande pour le moment —{" "}
+            {t("account.empty.text")}{" "}
             <Link href="/catalogue" className="font-semibold text-[#b13f74] hover:underline">
-              découvrir le catalogue
+              {t("account.empty.link")}
             </Link>
           </p>
         )}
 
         {/* ── Navigation ─────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-3">
-          {ACCOUNT_LINKS.map(({ href, icon: Icon, title, description, accent, accentSoft }) => (
+          {ACCOUNT_LINKS.map(({ href, icon: Icon, titleKey, descriptionKey, accent, accentSoft }) => (
             <Link
               key={href}
               href={href}
@@ -207,9 +209,9 @@ export default function MonComptePage() {
 
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-[#3f2d58] group-hover:text-[#7B4FA6] transition-colors">
-                  {title}
+                  {t(titleKey)}
                 </p>
-                <p className="text-xs text-[#6e6280]">{description}</p>
+                <p className="text-xs text-[#6e6280]">{t(descriptionKey)}</p>
               </div>
 
               <ChevronRight
@@ -223,7 +225,7 @@ export default function MonComptePage() {
           {user?.role === "admin" && (
             <div className="mt-8">
               <p className="mb-4 text-xs font-bold uppercase tracking-widest text-[var(--hm-text-soft)]">
-                Administration
+                {t("account.admin.heading")}
               </p>
               <Link
                 href="/admin/commandes"
@@ -233,9 +235,9 @@ export default function MonComptePage() {
                   <ShieldCheck size={20} className="text-[var(--hm-primary)]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[var(--hm-text)]">Commandes admin</p>
+                  <p className="font-semibold text-[var(--hm-text)]">{t("account.admin.title")}</p>
                   <p className="mt-0.5 text-sm text-[var(--hm-text-soft)]">
-                    Gérer les commandes, fichiers clients, BAT et statuts de production.
+                    {t("account.admin.description")}
                   </p>
                 </div>
                 <ChevronRight size={18} className="mt-1 shrink-0 text-[var(--hm-text-soft)] group-hover:text-[var(--hm-primary)] transition-colors" />
@@ -253,7 +255,7 @@ export default function MonComptePage() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-[#6e6280] transition-colors group-hover:text-[#ef4444]">
-                Se déconnecter
+                {t("account.logout")}
               </p>
             </div>
           </button>
@@ -261,9 +263,9 @@ export default function MonComptePage() {
 
         {/* ── Pied de page discret ───────────────────────────────────────── */}
         <p className="mt-10 text-center text-[11px] text-[#a09bb0]">
-          Une question ?{" "}
+          {t("account.footer.question")}{" "}
           <Link href="/contact" className="font-semibold text-[#7B4FA6] hover:underline">
-            Contactez-nous
+            {t("account.footer.contact")}
           </Link>
         </p>
 

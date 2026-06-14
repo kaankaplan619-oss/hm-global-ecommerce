@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ClipboardList, ArrowRight } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * VolumeQuoteBlock — bloc discret "Besoin de 20 ou 30 pièces ?"
@@ -23,6 +26,7 @@ interface VolumeQuoteBlockProps {
 }
 
 export default function VolumeQuoteBlock({ productSlug }: VolumeQuoteBlockProps) {
+  const t = useT();
   const href = `/contact?sujet=devis-volume-textile&produit=${encodeURIComponent(productSlug)}`;
 
   return (
@@ -41,12 +45,10 @@ export default function VolumeQuoteBlock({ productSlug }: VolumeQuoteBlockProps)
 
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-semibold text-[var(--hm-text)]">
-          Besoin de 20 ou 30 pièces&nbsp;?
+          {t("volumeQuote.title")}
         </p>
         <p className="mt-1 text-[11.5px] leading-5 text-[var(--hm-text-soft)]">
-          La commande en ligne est idéale pour lancer rapidement une petite série.
-          Pour les entreprises, clubs et associations, HM Global peut aussi proposer
-          un devis volume avec une solution de production optimisée.
+          {t("volumeQuote.description")}
         </p>
       </div>
 
@@ -58,7 +60,7 @@ export default function VolumeQuoteBlock({ productSlug }: VolumeQuoteBlockProps)
           color: "var(--hm-purple)",
         }}
       >
-        Demander un devis volume
+        {t("volumeQuote.cta")}
         <ArrowRight size={11} />
       </Link>
     </div>

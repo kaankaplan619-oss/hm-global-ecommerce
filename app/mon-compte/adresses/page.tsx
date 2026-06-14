@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import AddressAutocomplete from "@/components/checkout/AddressAutocomplete";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ── Gradient signature HM Global ──────────────────────────────────────────────
 const HM_GRADIENT = "linear-gradient(135deg, #5BC4D8, #7B4FA6, #C4387A)";
@@ -40,7 +41,13 @@ function AddressCard({
   address: AddressForm | null;
   onEdit: () => void;
 }) {
-  const label = type === "facturation" ? "Facturation" : "Livraison";
+  const t = useT();
+  const cardTitle = type === "facturation"
+    ? t("accountAddresses.card.billingTitle")
+    : t("accountAddresses.card.shippingTitle");
+  const emptyText = type === "facturation"
+    ? t("accountAddresses.card.billingEmpty")
+    : t("accountAddresses.card.shippingEmpty");
   const accent = type === "facturation" ? "#7B4FA6" : "#5BC4D8";
   const bg     = type === "facturation" ? "#f3eefb" : "#edf9fc";
   const border = type === "facturation" ? "#7B4FA644" : "#5BC4D844";
@@ -56,14 +63,14 @@ function AddressCard({
           >
             <MapPin size={14} style={{ color: accent }} />
           </div>
-          <span className="text-sm font-bold text-[#3f2d58]">Adresse de {label.toLowerCase()}</span>
+          <span className="text-sm font-bold text-[#3f2d58]">{cardTitle}</span>
         </div>
         <button
           onClick={onEdit}
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold text-[#7B4FA6] transition-colors hover:bg-[#f3eefb]"
         >
           <Pencil size={11} />
-          {address ? "Modifier" : "Ajouter"}
+          {address ? t("accountAddresses.card.edit") : t("accountAddresses.card.add")}
         </button>
       </div>
 
@@ -81,7 +88,7 @@ function AddressCard({
           </address>
         ) : (
           <p className="py-2 text-sm text-[#a09bb0]">
-            Aucune adresse enregistrée pour la {label.toLowerCase()}.
+            {emptyText}
           </p>
         )}
       </div>
@@ -90,6 +97,7 @@ function AddressCard({
 }
 
 export default function AdressesPage() {
+  const t = useT();
   const router = useRouter();
   const { isAuthenticated, _hasHydrated } = useAuthStore();
 
@@ -169,7 +177,7 @@ export default function AdressesPage() {
       setSaveSuccess(true);
       setTimeout(() => { closeEdit(); setSaveSuccess(false); }, 900);
     } catch {
-      setSaveError("Une erreur est survenue.");
+      setSaveError(t("accountAddresses.modal.genericError"));
     } finally {
       setSaving(false);
     }
@@ -187,7 +195,7 @@ export default function AdressesPage() {
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
         >
           <ChevronLeft size={16} />
-          Retour sur mon compte
+          {t("accountAddresses.backToAccount")}
         </Link>
 
         {/* Header */}
@@ -201,9 +209,9 @@ export default function AdressesPage() {
               <MapPin size={20} style={{ color: "#7B4FA6" }} />
             </div>
             <div>
-              <h1 className="text-lg font-black text-[#3f2d58]">Mes adresses</h1>
+              <h1 className="text-lg font-black text-[#3f2d58]">{t("accountAddresses.title")}</h1>
               <p className="text-sm text-[#6e6280]">
-                Gérez vos adresses de facturation et de livraison.
+                {t("accountAddresses.subtitle")}
               </p>
             </div>
           </div>
@@ -219,7 +227,7 @@ export default function AdressesPage() {
             <AddressCard type="livraison"   address={shipping} onEdit={() => openEdit("livraison")} />
 
             <p className="text-center text-[11px] text-[#a09bb0]">
-              Les adresses sont automatiquement pré-remplies à partir de votre dernière commande.
+              {t("accountAddresses.prefillNote")}
             </p>
           </div>
         )}
@@ -236,7 +244,9 @@ export default function AdressesPage() {
             {/* Modal header */}
             <div className="flex items-center justify-between border-b border-[#e6e8ee] px-6 py-4">
               <h2 className="text-base font-black text-[#3f2d58]">
-                Adresse de {editType === "facturation" ? "facturation" : "livraison"}
+                {editType === "facturation"
+                  ? t("accountAddresses.card.billingTitle")
+                  : t("accountAddresses.card.shippingTitle")}
               </h2>
               <button onClick={closeEdit} className="text-[#6e6280] hover:text-[#3f2d58] transition-colors">
                 <X size={18} />
@@ -247,7 +257,7 @@ export default function AdressesPage() {
               {saveSuccess && (
                 <div className="flex items-center gap-2 rounded-xl border border-[#86efac] bg-[#f0fdf4] p-3 text-sm text-[#166534]">
                   <CheckCircle2 size={14} className="shrink-0" />
-                  Adresse enregistrée.
+                  {t("accountAddresses.modal.saved")}
                 </div>
               )}
               {saveError && (
@@ -259,7 +269,7 @@ export default function AdressesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Prénom *</label>
+                  <label className="label">{t("accountAddresses.form.firstName")}</label>
                   <input type="text" className="input" required
                     value={editForm.firstName}
                     onChange={(e) => setEditForm((f) => ({ ...f, firstName: e.target.value }))}
@@ -267,7 +277,7 @@ export default function AdressesPage() {
                   />
                 </div>
                 <div>
-                  <label className="label">Nom *</label>
+                  <label className="label">{t("accountAddresses.form.lastName")}</label>
                   <input type="text" className="input" required
                     value={editForm.lastName}
                     onChange={(e) => setEditForm((f) => ({ ...f, lastName: e.target.value }))}
@@ -277,7 +287,7 @@ export default function AdressesPage() {
               </div>
 
               <div>
-                <label className="label">Société (optionnel)</label>
+                <label className="label">{t("accountAddresses.form.company")}</label>
                 <input type="text" className="input"
                   value={editForm.company}
                   onChange={(e) => setEditForm((f) => ({ ...f, company: e.target.value }))}
@@ -286,30 +296,30 @@ export default function AdressesPage() {
               </div>
 
               <div>
-                <label className="label">Adresse *</label>
+                <label className="label">{t("accountAddresses.form.address")}</label>
                 <AddressAutocomplete
                   value={editForm.street}
                   onChange={(street) => setEditForm((f) => ({ ...f, street }))}
                   onSelect={({ street, postcode, city }) =>
                     setEditForm((f) => ({ ...f, street, postalCode: postcode, city }))
                   }
-                  placeholder="12 rue de la Paix"
+                  placeholder={t("accountAddresses.form.addressPlaceholder")}
                 />
               </div>
 
               <div>
-                <label className="label">Complément d&rsquo;adresse</label>
+                <label className="label">{t("accountAddresses.form.complement")}</label>
                 <input type="text" className="input"
                   value={editForm.complement}
                   onChange={(e) => setEditForm((f) => ({ ...f, complement: e.target.value }))}
-                  placeholder="Bât. A, Apt. 12…"
+                  placeholder={t("accountAddresses.form.complementPlaceholder")}
                   autoComplete="address-line2"
                 />
               </div>
 
               <div className="grid grid-cols-[1fr_2fr] gap-3">
                 <div>
-                  <label className="label">Code postal *</label>
+                  <label className="label">{t("accountAddresses.form.postalCode")}</label>
                   <input type="text" className="input font-mono" required
                     value={editForm.postalCode}
                     onChange={(e) => setEditForm((f) => ({ ...f, postalCode: e.target.value }))}
@@ -319,7 +329,7 @@ export default function AdressesPage() {
                   />
                 </div>
                 <div>
-                  <label className="label">Ville *</label>
+                  <label className="label">{t("accountAddresses.form.city")}</label>
                   <input type="text" className="input" required
                     value={editForm.city}
                     onChange={(e) => setEditForm((f) => ({ ...f, city: e.target.value }))}
@@ -330,7 +340,7 @@ export default function AdressesPage() {
               </div>
 
               <div>
-                <label className="label">Pays</label>
+                <label className="label">{t("accountAddresses.form.country")}</label>
                 <select
                   className="input"
                   value={editForm.country}
@@ -343,7 +353,7 @@ export default function AdressesPage() {
               </div>
 
               <div>
-                <label className="label">Téléphone</label>
+                <label className="label">{t("accountAddresses.form.phone")}</label>
                 <input type="tel" className="input"
                   value={editForm.phone}
                   onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
@@ -354,13 +364,13 @@ export default function AdressesPage() {
 
               <div className="flex justify-end gap-3 border-t border-[#e6e8ee] pt-4">
                 <button type="button" onClick={closeEdit} className="btn-ghost text-sm">
-                  Annuler
+                  {t("accountAddresses.modal.cancel")}
                 </button>
                 <button type="submit" disabled={saving} className="btn-primary gap-2 min-w-[130px] justify-center">
                   {saving ? (
-                    <><Loader2 size={13} className="animate-spin" />Enregistrement…</>
+                    <><Loader2 size={13} className="animate-spin" />{t("accountAddresses.modal.saving")}</>
                   ) : (
-                    <><CheckCircle2 size={13} />Enregistrer</>
+                    <><CheckCircle2 size={13} />{t("accountAddresses.modal.save")}</>
                   )}
                 </button>
               </div>

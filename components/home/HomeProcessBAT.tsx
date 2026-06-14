@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { ShieldCheck, Eye, Pencil, Sparkles } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * HomeProcessBAT — Section "Un BAT validé avant chaque production."
@@ -18,22 +19,23 @@ import { ShieldCheck, Eye, Pencil, Sparkles } from "lucide-react";
 const STEPS = [
   {
     icon: Eye,
-    label: "1. Vous visualisez le BAT",
-    desc:  "Rendu fidèle avant lancement.",
+    labelKey: "home.process.step1Label",
+    descKey:  "home.process.step1Desc",
   },
   {
     icon: Pencil,
-    label: "2. Ajustements si besoin",
-    desc:  "Fichier, dimensions, contrastes.",
+    labelKey: "home.process.step2Label",
+    descKey:  "home.process.step2Desc",
   },
   {
     icon: ShieldCheck,
-    label: "3. Production validée",
-    desc:  "Aucune erreur coûteuse possible.",
+    labelKey: "home.process.step3Label",
+    descKey:  "home.process.step3Desc",
   },
 ] as const;
 
 function BATImage() {
+  const t = useT();
   const [failed, setFailed] = useState(false);
 
   if (failed) {
@@ -67,7 +69,7 @@ function BATImage() {
   return (
     <Image
       src="/images/home/hm-bat-validation-v4.jpg"
-      alt="Le bon à tirer HM Global rempli à la main : t-shirt avec logo au cœur, projet, date et mention « Bon pour accord », posé sur l'établi de l'atelier."
+      alt={t("home.process.imageAlt")}
       fill
       sizes="(min-width: 1024px) 50vw, 100vw"
       className="object-cover"
@@ -77,6 +79,7 @@ function BATImage() {
 }
 
 export default function HomeProcessBAT() {
+  const t = useT();
   return (
     <section
       className="py-14 sm:py-20"
@@ -105,7 +108,7 @@ export default function HomeProcessBAT() {
                   }}
                 >
                   <Sparkles size={12} style={{ color: "var(--hm-cyan)" }} />
-                  BAT validé
+                  {t("home.process.badge")}
                 </span>
               </div>
             </div>
@@ -117,7 +120,7 @@ export default function HomeProcessBAT() {
               className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: "var(--hm-cyan)" }}
             >
-              Process · Validation
+              {t("home.process.eyebrow")}
             </p>
             <h2
               className="font-semibold leading-[1.08] tracking-[-0.02em]"
@@ -126,9 +129,9 @@ export default function HomeProcessBAT() {
                 color: "var(--hm-text-main)",
               }}
             >
-              Un BAT validé{" "}
+              {t("home.process.headingLead")}{" "}
               <span style={{ color: "var(--hm-violet)" }}>
-                avant chaque production
+                {t("home.process.headingHighlight")}
               </span>
               .
             </h2>
@@ -136,14 +139,13 @@ export default function HomeProcessBAT() {
               className="mt-4 text-[14px] leading-[1.65]"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Vous visualisez le rendu avant fabrication. Nous ajustons le
-              fichier si nécessaire pour éviter les erreurs coûteuses.
+              {t("home.process.intro")}
             </p>
 
             <ul className="mt-7 grid gap-3 sm:grid-cols-3">
-              {STEPS.map(({ icon: Icon, label, desc }) => (
+              {STEPS.map(({ icon: Icon, labelKey, descKey }) => (
                 <li
-                  key={label}
+                  key={labelKey}
                   className="rounded-[1rem] bg-white p-4"
                   style={{
                     border: "1px solid rgba(45,35,64,0.08)",
@@ -163,13 +165,13 @@ export default function HomeProcessBAT() {
                     className="text-[12.5px] font-semibold leading-tight"
                     style={{ color: "var(--hm-text-main)" }}
                   >
-                    {label}
+                    {t(labelKey)}
                   </p>
                   <p
                     className="mt-1 text-[11.5px] leading-[1.5]"
                     style={{ color: "var(--hm-text-muted-2)" }}
                   >
-                    {desc}
+                    {t(descKey)}
                   </p>
                 </li>
               ))}

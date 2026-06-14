@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ClipboardList, ArrowRight, MessageSquare, CheckCircle2 } from "lucide-react";
 import type { Product } from "@/types";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * QuoteOnlyBlock — remplace ProductConfigurator quand `product.quoteOnly === true`.
@@ -19,20 +22,19 @@ interface QuoteOnlyBlockProps {
   product: Product;
 }
 
-const BENEFITS = [
-  "Devis sous 24h ouvrées",
-  "BAT validé avant production",
-  "Tarif dégressif selon quantité",
-  "Conseil technique broderie ou print",
+const BENEFIT_KEYS = [
+  "quoteOnly.benefitQuote24h",
+  "quoteOnly.benefitProofBeforeProduction",
+  "quoteOnly.benefitVolumePricing",
+  "quoteOnly.benefitTechnicalAdvice",
 ] as const;
 
 export default function QuoteOnlyBlock({ product }: QuoteOnlyBlockProps) {
+  const t = useT();
   const subject = product.quoteOnlySubject ?? "devis-broderie";
   const href = `/contact?sujet=${encodeURIComponent(subject)}&produit=${encodeURIComponent(product.slug)}`;
 
-  const message =
-    product.quoteOnlyMessage ??
-    "Produit disponible uniquement sur devis. Demandez un tarif personnalisé adapté à votre volume et à votre marquage.";
+  const message = product.quoteOnlyMessage ?? t("quoteOnly.defaultMessage");
 
   return (
     <div className="flex flex-col gap-5 rounded-[20px] border border-[var(--hm-line)] bg-white p-6 shadow-[0_12px_28px_rgba(63,45,88,0.05)]">
@@ -49,10 +51,10 @@ export default function QuoteOnlyBlock({ product }: QuoteOnlyBlockProps) {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--hm-text-muted)]">
-            Produit sur devis
+            {t("quoteOnly.badge")}
           </p>
           <h3 className="mt-1 text-[1.05rem] font-semibold leading-snug tracking-[-0.01em] text-[var(--hm-text)]">
-            Tarif et délai personnalisés
+            {t("quoteOnly.title")}
           </h3>
         </div>
       </div>
@@ -64,9 +66,9 @@ export default function QuoteOnlyBlock({ product }: QuoteOnlyBlockProps) {
 
       {/* Bénéfices */}
       <ul className="space-y-2">
-        {BENEFITS.map((b) => (
+        {BENEFIT_KEYS.map((key) => (
           <li
-            key={b}
+            key={key}
             className="flex items-start gap-2.5 text-[12px] leading-5 text-[var(--hm-text-soft)]"
           >
             <CheckCircle2
@@ -74,7 +76,7 @@ export default function QuoteOnlyBlock({ product }: QuoteOnlyBlockProps) {
               className="mt-0.5 shrink-0"
               style={{ color: "var(--hm-purple)" }}
             />
-            {b}
+            {t(key)}
           </li>
         ))}
       </ul>
@@ -87,7 +89,7 @@ export default function QuoteOnlyBlock({ product }: QuoteOnlyBlockProps) {
           background: "var(--hm-purple)",
         }}
       >
-        Demander un devis broderie
+        {t("quoteOnly.ctaPrimary")}
         <ArrowRight size={14} />
       </Link>
 
@@ -97,12 +99,11 @@ export default function QuoteOnlyBlock({ product }: QuoteOnlyBlockProps) {
         className="inline-flex items-center justify-center gap-2 text-[11px] font-semibold text-[var(--hm-text-soft)] transition hover:text-[var(--hm-purple)]"
       >
         <MessageSquare size={12} />
-        Échanger avec un conseiller HM Global
+        {t("quoteOnly.ctaSecondary")}
       </Link>
 
       <p className="text-center text-[10px] leading-5 text-[var(--hm-text-muted)]">
-        Tarif volume possible selon quantité, textile et marquage. Aucun engagement
-        de votre part avant validation du BAT.
+        {t("quoteOnly.footnote")}
       </p>
     </div>
   );

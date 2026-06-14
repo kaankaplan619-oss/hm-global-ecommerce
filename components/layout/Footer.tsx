@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Clock3, Mail, MapPin, Phone, ShieldCheck, Timer, Truck } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /**
  * Footer HM Global Agence — version éditoriale premium (P2).
@@ -35,35 +38,36 @@ function IconFacebook() {
 }
 
 const NAV_COMMANDER = [
-  { label: "Textile personnalisé",      href: "/catalogue" },
-  { label: "Impression",                href: "/impression" },
-  { label: "Suivi de commande",         href: "/mon-compte/commandes" },
-  { label: "Demander un devis global",  href: "/contact?sujet=devis" },
+  { labelKey: "footer.nav.commander.textile",  href: "/catalogue" },
+  { labelKey: "footer.nav.commander.print",    href: "/impression" },
+  { labelKey: "footer.nav.commander.tracking", href: "/mon-compte/commandes" },
+  { labelKey: "footer.nav.commander.quote",    href: "/contact?sujet=devis" },
 ];
 
 const NAV_EXPERTISES = [
-  { label: "DTF / Flex",     href: "/techniques" },
-  { label: "Broderie",       href: "/techniques" },
-  { label: "Print",          href: "/impression" },
-  { label: "Signalétique",   href: "/contact?sujet=signaletique" },
+  { labelKey: "footer.nav.expertises.dtf",        href: "/techniques" },
+  { labelKey: "footer.nav.expertises.embroidery", href: "/techniques" },
+  { labelKey: "footer.nav.expertises.print",      href: "/impression" },
+  { labelKey: "footer.nav.expertises.signage",    href: "/contact?sujet=signaletique" },
 ];
 
 const NAV_AGENCE = [
-  { label: "À propos",      href: "/a-propos" },
-  { label: "Nos engagements", href: "/engagements" },
-  { label: "Réalisations",  href: "/realisations" },
-  { label: "Contact",       href: "/contact" },
+  { labelKey: "footer.nav.agence.about",       href: "/a-propos" },
+  { labelKey: "footer.nav.agence.commitments", href: "/engagements" },
+  { labelKey: "footer.nav.agence.work",        href: "/realisations" },
+  { labelKey: "footer.nav.agence.contact",     href: "/contact" },
 ];
 
 const TRUST_LINE = [
-  { icon: ShieldCheck, label: "BAT avant production" },
-  { icon: Timer,       label: "Devis sous 24h" },
-  { icon: Truck,       label: "Livraison France" },
+  { icon: ShieldCheck, labelKey: "footer.trust.proof" },
+  { icon: Timer,       labelKey: "footer.trust.quote" },
+  { icon: Truck,       labelKey: "footer.trust.delivery" },
 ] as const;
 
 const PAYMENT_METHODS = ["CB", "VISA", "Mastercard", "Stripe"];
 
 export default function Footer() {
+  const t = useT();
   return (
     <footer
       className="relative text-[var(--hm-text-main)]"
@@ -104,10 +108,9 @@ export default function Footer() {
               style={{ color: "var(--hm-text-muted-2)" }}
             >
               <strong style={{ color: "var(--hm-text-main)" }}>
-                Atelier de communication visuelle en Alsace.
+                {t("footer.manifesto.lead")}
               </strong>{" "}
-              Textile, print, signalétique et accompagnement graphique pour les
-              entreprises.
+              {t("footer.manifesto.body")}
             </p>
 
             <div className="mt-6 space-y-3">
@@ -160,7 +163,7 @@ export default function Footer() {
                   style={{ color: "var(--hm-cyan)" }}
                 />
                 <span style={{ color: "var(--hm-text-main)" }}>
-                  Nous écrire
+                  {t("footer.contact.writeUs")}
                 </span>
               </a>
 
@@ -173,7 +176,7 @@ export default function Footer() {
                   className="shrink-0"
                   style={{ color: "var(--hm-cyan)" }}
                 />
-                Lun–Ven, 9h–18h
+                {t("footer.contact.hours")}
               </div>
             </div>
 
@@ -213,9 +216,9 @@ export default function Footer() {
           {/* ── Colonnes nav — 2 colonnes sur mobile (plus compact),
                  puis intégrées à la grille 4-col en desktop (lg:contents) ── */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:contents">
-            <FooterColumn title="Commander" links={NAV_COMMANDER} highlightLast />
-            <FooterColumn title="Expertises" links={NAV_EXPERTISES} />
-            <FooterColumn title="Agence" links={NAV_AGENCE} />
+            <FooterColumn title={t("footer.column.commander")} links={NAV_COMMANDER} highlightLast />
+            <FooterColumn title={t("footer.column.expertises")} links={NAV_EXPERTISES} />
+            <FooterColumn title={t("footer.column.agence")} links={NAV_AGENCE} />
           </div>
         </div>
 
@@ -227,14 +230,14 @@ export default function Footer() {
             border: "1px solid rgba(45,35,64,0.06)",
           }}
         >
-          {TRUST_LINE.map(({ icon: Icon, label }) => (
+          {TRUST_LINE.map(({ icon: Icon, labelKey }) => (
             <span
-              key={label}
+              key={labelKey}
               className="inline-flex items-center gap-2 text-[12px] font-semibold"
               style={{ color: "var(--hm-text-main)" }}
             >
               <Icon size={14} style={{ color: "var(--hm-cyan)" }} />
-              {label}
+              {t(labelKey)}
             </span>
           ))}
         </div>
@@ -248,34 +251,34 @@ export default function Footer() {
             className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px]"
             style={{ color: "var(--hm-text-muted-2)" }}
           >
-            <span>© 2018 HM Global Agence</span>
+            <span>{t("footer.legal.copyright")}</span>
             <Link
               href="/sav"
               className="transition hover:opacity-80"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              SAV &amp; suivi
+              {t("footer.legal.sav")}
             </Link>
             <Link
               href="/cgv"
               className="transition hover:opacity-80"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              CGV
+              {t("footer.legal.cgv")}
             </Link>
             <Link
               href="/confidentialite"
               className="transition hover:opacity-80"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Confidentialité
+              {t("footer.legal.privacy")}
             </Link>
             <Link
               href="/mentions-legales"
               className="transition hover:opacity-80"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              Mentions légales
+              {t("footer.legal.legalNotice")}
             </Link>
           </div>
 
@@ -308,9 +311,10 @@ function FooterColumn({
   highlightLast = false,
 }: {
   title: string;
-  links: { label: string; href: string }[];
+  links: { labelKey: string; href: string }[];
   highlightLast?: boolean;
 }) {
+  const t = useT();
   return (
     <div>
       <h4
@@ -323,7 +327,7 @@ function FooterColumn({
         {links.map((link, idx) => {
           const isHighlight = highlightLast && idx === links.length - 1;
           return (
-            <li key={link.label}>
+            <li key={link.labelKey}>
               <Link
                 href={link.href}
                 className="text-[13px] transition hover:opacity-80"
@@ -334,7 +338,7 @@ function FooterColumn({
                   fontWeight: isHighlight ? 600 : 400,
                 }}
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             </li>
           );

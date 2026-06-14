@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Star, Send, CheckCircle } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 type Props = { params: Promise<{ orderId: string }> };
 
 export default function AvisPage({ params }: Props) {
+  const t = useT();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -39,12 +41,12 @@ export default function AvisPage({ params }: Props) {
           <div className="w-16 h-16 rounded-full bg-[#4ade8022] border border-[#4ade8044] flex items-center justify-center mx-auto mb-6">
             <CheckCircle size={32} className="text-[#4ade80]" />
           </div>
-          <h1 className="text-xl font-black text-[#f5f5f5] mb-3">Merci pour votre avis !</h1>
+          <h1 className="text-xl font-black text-[#f5f5f5] mb-3">{t("reviewPage.thanksTitle")}</h1>
           <p className="text-sm text-[#555555] mb-8">
-            Votre retour est précieux et sera publié après modération.
+            {t("reviewPage.thanksText")}
           </p>
           <Link href="/catalogue" className="btn-primary">
-            Retour au catalogue
+            {t("reviewPage.backToCatalogue")}
           </Link>
         </div>
       </div>
@@ -59,9 +61,9 @@ export default function AvisPage({ params }: Props) {
             <div className="text-[#f5f5f5] font-black text-xl tracking-wider uppercase">HM GLOBAL</div>
             <div className="text-[#c9a96e] font-light text-[10px] tracking-[0.25em] uppercase">Agence</div>
           </Link>
-          <h1 className="text-2xl font-black text-[#f5f5f5] mb-2">Votre avis compte</h1>
+          <h1 className="text-2xl font-black text-[#f5f5f5] mb-2">{t("reviewPage.title")}</h1>
           <p className="text-sm text-[#555555]">
-            Comment s&rsquo;est passée votre commande ? Partagez votre expérience.
+            {t("reviewPage.subtitle")}
           </p>
         </div>
 
@@ -71,7 +73,7 @@ export default function AvisPage({ params }: Props) {
         >
           {/* Star rating */}
           <div>
-            <label className="label">Note globale *</label>
+            <label className="label">{t("reviewPage.ratingLabel")}</label>
             <div className="flex gap-2 mt-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -95,17 +97,24 @@ export default function AvisPage({ params }: Props) {
             </div>
             {rating > 0 && (
               <p className="text-xs text-[#555555] mt-2">
-                {["", "Très insatisfait", "Insatisfait", "Correct", "Satisfait", "Très satisfait"][rating]}
+                {[
+                  "",
+                  t("reviewPage.rating1"),
+                  t("reviewPage.rating2"),
+                  t("reviewPage.rating3"),
+                  t("reviewPage.rating4"),
+                  t("reviewPage.rating5"),
+                ][rating]}
               </p>
             )}
           </div>
 
           {/* Comment */}
           <div>
-            <label className="label">Commentaire (optionnel)</label>
+            <label className="label">{t("reviewPage.commentLabel")}</label>
             <textarea
               className="input h-28 resize-none mt-1"
-              placeholder="Qualité des produits, délais, service client..."
+              placeholder={t("reviewPage.commentPlaceholder")}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               maxLength={500}
@@ -118,16 +127,16 @@ export default function AvisPage({ params }: Props) {
             disabled={rating === 0 || loading}
             className="btn-primary w-full gap-2"
           >
-            {loading ? "Envoi..." : (
+            {loading ? t("reviewPage.sending") : (
               <>
                 <Send size={14} />
-                Envoyer mon avis
+                {t("reviewPage.submit")}
               </>
             )}
           </button>
 
           <p className="text-[10px] text-[#555555] text-center">
-            Votre avis sera publié après modération par notre équipe.
+            {t("reviewPage.moderationNote")}
           </p>
         </form>
       </div>

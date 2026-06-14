@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BackLink from "@/components/ui/BackLink";
+import { getT } from "@/lib/i18n/server";
 import {
   ArrowRight,
   GraduationCap,
@@ -18,53 +19,58 @@ export const metadata: Metadata = {
     "HM Global Agence, une structure ancrée en Alsace et ouverte sur l'Europe : accueil d'échanges Erasmus, transmission, production locale et accompagnement humain.",
 };
 
-const STATS = [
-  { value: "410", label: "élèves accueillis", sub: "dans le cadre d'échanges avec la Turquie" },
-  { value: "Erasmus", label: "programme européen", sub: "mobilité, rencontre et transmission" },
-  { value: "Alsace", label: "atelier local", sub: "Souffelweyersheim, près de Strasbourg" },
-  { value: "Humain", label: "accompagnement direct", sub: "conseil, BAT et suivi de production" },
-];
+export default async function EngagementsPage() {
+  const t = await getT();
 
-const VALUES = [
-  {
-    icon: MapPin,
-    title: "Ancrage local",
-    text: "Une production réalisée dans notre atelier en Alsace, au plus près des entreprises, associations et structures que nous accompagnons.",
-  },
-  {
-    icon: Globe2,
-    title: "Ouverture européenne",
-    text: "Participer à des échanges Erasmus, c'est faire vivre des rencontres concrètes entre jeunes, cultures et savoir-faire au-delà des frontières.",
-  },
-  {
-    icon: HeartHandshake,
-    title: "Transmission",
-    text: "Accueillir, expliquer notre métier, montrer un atelier réel : la transmission fait partie de notre manière de travailler.",
-  },
-  {
-    icon: Leaf,
-    title: "Production responsable",
-    text: "Conseiller la bonne technique, préparer des fichiers propres et produire juste : moins de gaspillage, des supports qui durent.",
-  },
-];
+  const STATS = [
+    { value: "410", label: t("engagements.stats.students.label"), sub: t("engagements.stats.students.sub") },
+    { value: "Erasmus", label: t("engagements.stats.program.label"), sub: t("engagements.stats.program.sub") },
+    { value: "Alsace", label: t("engagements.stats.local.label"), sub: t("engagements.stats.local.sub") },
+    { value: t("engagements.stats.human.value"), label: t("engagements.stats.human.label"), sub: t("engagements.stats.human.sub") },
+  ];
 
-export default function EngagementsPage() {
+  const VALUES = [
+    {
+      icon: MapPin,
+      title: t("engagements.values.local.title"),
+      text: t("engagements.values.local.text"),
+    },
+    {
+      icon: Globe2,
+      title: t("engagements.values.europe.title"),
+      text: t("engagements.values.europe.text"),
+    },
+    {
+      icon: HeartHandshake,
+      title: t("engagements.values.transmission.title"),
+      text: t("engagements.values.transmission.text"),
+    },
+    {
+      icon: Leaf,
+      title: t("engagements.values.responsible.title"),
+      text: t("engagements.values.responsible.text"),
+    },
+  ];
+
+  const REASONS = [
+    t("engagements.reasons.item1"),
+    t("engagements.reasons.item2"),
+    t("engagements.reasons.item3"),
+    t("engagements.reasons.item4"),
+  ];
+
   return (
     <div className="pt-24 pb-20 bg-white">
       <div className="container">
-        <BackLink href="/a-propos" label="Retour à À propos" />
+        <BackLink href="/a-propos" label={t("engagements.back")} />
 
         <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[linear-gradient(180deg,rgba(248,249,251,0.95)_0%,rgba(255,255,255,1)_72%)] px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
-          <p className="section-tag">Nos engagements</p>
+          <p className="section-tag">{t("engagements.hero.tag")}</p>
           <h1 className="text-4xl md:text-5xl font-semibold text-[var(--hm-text)] leading-tight tracking-tight mb-5">
-            Une agence ancrée en Alsace, ouverte sur l&apos;Europe.
+            {t("engagements.hero.title")}
           </h1>
           <p className="text-base text-[var(--hm-text-soft)] max-w-3xl leading-8">
-            HM Global n&apos;est pas qu&apos;un atelier de production. Nous croyons à un
-            métier qui se transmet, à un territoire qui se construit avec ses entreprises,
-            et à des rencontres qui dépassent nos murs. Notre participation à des échanges
-            Erasmus et notre attachement à une production locale en sont l&apos;expression
-            concrète.
+            {t("engagements.hero.intro")}
           </p>
         </section>
 
@@ -90,20 +96,16 @@ export default function EngagementsPage() {
                 <GraduationCap size={20} />
               </span>
               <h2 className="text-2xl font-semibold text-[var(--hm-text)]">
-                Notre engagement Erasmus
+                {t("engagements.erasmus.title")}
               </h2>
             </div>
             <p className="text-sm text-[var(--hm-text-soft)] leading-7 mb-4">
-              Dans le cadre d&apos;échanges européens, nous avons accueilli{" "}
-              <strong className="text-[var(--hm-text)]">410 élèves venus de Turquie</strong>,
-              pour leur faire découvrir un métier, un atelier et une manière de travailler.
-              Ces moments dépassent largement la production : ils créent des liens, ouvrent
-              des perspectives et donnent du sens à ce que nous faisons.
+              {t("engagements.erasmus.p1a")}{" "}
+              <strong className="text-[var(--hm-text)]">{t("engagements.erasmus.p1strong")}</strong>
+              {t("engagements.erasmus.p1b")}
             </p>
             <p className="text-sm text-[var(--hm-text-soft)] leading-7">
-              Pour HM Global, participer à Erasmus, c&apos;est rendre concret un échange entre
-              jeunes, cultures et savoir-faire — et rappeler qu&apos;une entreprise locale peut
-              s&apos;inscrire dans une dynamique européenne.
+              {t("engagements.erasmus.p2")}
             </p>
           </div>
 
@@ -113,16 +115,11 @@ export default function EngagementsPage() {
                 <Users size={20} />
               </span>
               <h2 className="text-2xl font-semibold text-[var(--hm-text)]">
-                Pourquoi cela compte
+                {t("engagements.reasons.title")}
               </h2>
             </div>
             <ul className="space-y-4">
-              {[
-                "Transmettre un savoir-faire réel, dans un atelier qui produit chaque jour.",
-                "Faire vivre des rencontres entre jeunes de plusieurs pays.",
-                "Montrer qu'une PME ancrée localement peut s'ouvrir à l'Europe.",
-                "Donner du sens au métier au-delà de la simple commande.",
-              ].map((item) => (
+              {REASONS.map((item) => (
                 <li key={item} className="flex items-start gap-3">
                   <Sparkles size={16} className="text-[var(--hm-rose)] mt-0.5 shrink-0" />
                   <span className="text-sm text-[var(--hm-text-soft)] leading-relaxed">{item}</span>
@@ -134,9 +131,9 @@ export default function EngagementsPage() {
 
         <section className="mb-14">
           <div className="mb-6">
-            <p className="section-tag">Nos valeurs</p>
+            <p className="section-tag">{t("engagements.valuesSection.tag")}</p>
             <h2 className="text-2xl md:text-3xl font-semibold text-[var(--hm-text)]">
-              Ce qui guide notre travail
+              {t("engagements.valuesSection.title")}
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -160,20 +157,18 @@ export default function EngagementsPage() {
 
         <section className="rounded-3xl border border-[var(--hm-line)] bg-white shadow-[0_18px_48px_rgba(63,45,88,0.06)] p-8 text-center">
           <h2 className="text-2xl font-semibold text-[var(--hm-text)] mb-4">
-            Travaillons ensemble sur votre projet
+            {t("engagements.cta.title")}
           </h2>
           <p className="text-sm text-[var(--hm-text-soft)] leading-relaxed max-w-2xl mx-auto mb-6">
-            Que vous soyez une entreprise, une association ou une collectivité, HM Global vous
-            accompagne avec la même exigence : conseil, préparation de fichier et production
-            locale soignée.
+            {t("engagements.cta.text")}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Link href="/contact" className="btn-primary gap-2">
-              Nous contacter
+              {t("engagements.cta.contact")}
               <ArrowRight size={16} />
             </Link>
             <Link href="/a-propos" className="btn-outline">
-              En savoir plus sur l&apos;agence
+              {t("engagements.cta.more")}
             </Link>
           </div>
         </section>

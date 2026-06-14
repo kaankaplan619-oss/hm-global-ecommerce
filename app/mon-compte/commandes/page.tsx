@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Package, ChevronRight, ChevronLeft, ShoppingBag } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
+import { useT } from "@/components/i18n/I18nProvider";
 import { formatDate } from "@/lib/utils";
 import { formatPrice } from "@/data/pricing";
 import { getOrderItemImage } from "@/lib/order-image";
@@ -13,18 +14,19 @@ import type { Order } from "@/types";
 // ── Gradient signature HM Global ──────────────────────────────────────────────
 const HM_GRADIENT = "linear-gradient(135deg, #5BC4D8, #7B4FA6, #C4387A)";
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  paiement_recu:      { label: "Paiement reçu",           color: "#5BC4D8", bg: "#edf9fc", border: "#5BC4D844" },
-  fichier_a_verifier: { label: "Fichier à vérifier",       color: "#f59e0b", bg: "#fffbeb", border: "#f59e0b44" },
-  en_attente_client:  { label: "Action requise",            color: "#ef4444", bg: "#fef2f2", border: "#ef444444" },
-  validee:            { label: "Validée",                   color: "#22c55e", bg: "#f0fdf4", border: "#22c55e44" },
-  en_traitement:      { label: "En production",             color: "#7B4FA6", bg: "#f3eefb", border: "#7B4FA644" },
-  expediee:           { label: "Expédiée",                  color: "#22c55e", bg: "#f0fdf4", border: "#22c55e44" },
-  terminee:           { label: "Terminée",                  color: "#6e6280", bg: "#f8f9fb", border: "#e6e8ee"   },
-  annulee:            { label: "Annulée",                   color: "#ef4444", bg: "#fef2f2", border: "#ef444444" },
+const STATUS_CONFIG: Record<string, { labelKey: string; color: string; bg: string; border: string }> = {
+  paiement_recu:      { labelKey: "accountOrders.status.paiement_recu",      color: "#5BC4D8", bg: "#edf9fc", border: "#5BC4D844" },
+  fichier_a_verifier: { labelKey: "accountOrders.status.fichier_a_verifier", color: "#f59e0b", bg: "#fffbeb", border: "#f59e0b44" },
+  en_attente_client:  { labelKey: "accountOrders.status.en_attente_client",  color: "#ef4444", bg: "#fef2f2", border: "#ef444444" },
+  validee:            { labelKey: "accountOrders.status.validee",            color: "#22c55e", bg: "#f0fdf4", border: "#22c55e44" },
+  en_traitement:      { labelKey: "accountOrders.status.en_traitement",      color: "#7B4FA6", bg: "#f3eefb", border: "#7B4FA644" },
+  expediee:           { labelKey: "accountOrders.status.expediee",           color: "#22c55e", bg: "#f0fdf4", border: "#22c55e44" },
+  terminee:           { labelKey: "accountOrders.status.terminee",           color: "#6e6280", bg: "#f8f9fb", border: "#e6e8ee"   },
+  annulee:            { labelKey: "accountOrders.status.annulee",            color: "#ef4444", bg: "#fef2f2", border: "#ef444444" },
 };
 
 export default function CommandesPage() {
+  const t = useT();
   const router = useRouter();
   const { isAuthenticated, _hasHydrated, user } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -51,10 +53,10 @@ export default function CommandesPage() {
           className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
         >
           <ChevronLeft size={16} />
-          Retour sur mon compte
+          {t("accountOrders.backToAccount")}
         </Link>
 
-        <h1 className="mb-8 text-2xl font-black text-[#3f2d58]">Mes commandes</h1>
+        <h1 className="mb-8 text-2xl font-black text-[#3f2d58]">{t("accountOrders.title")}</h1>
 
         {loading ? (
           <div className="flex flex-col gap-3">
@@ -71,14 +73,14 @@ export default function CommandesPage() {
               <Package size={28} style={{ color: "#7B4FA6" }} />
             </div>
             <p className="mb-2 text-sm font-semibold text-[#3f2d58]">
-              Vous n&rsquo;avez pas encore de commande
+              {t("accountOrders.empty.title")}
             </p>
             <p className="mb-6 text-xs text-[#6e6280]">
-              Explorez notre catalogue et passez votre première commande.
+              {t("accountOrders.empty.subtitle")}
             </p>
             <Link href="/catalogue" className="btn-primary inline-flex gap-2">
               <ShoppingBag size={14} />
-              Voir le catalogue
+              {t("accountOrders.empty.cta")}
             </Link>
           </div>
         ) : (
@@ -105,7 +107,7 @@ export default function CommandesPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={itemImg}
-                        alt={firstItem?.product?.shortName ?? "Produit"}
+                        alt={firstItem?.product?.shortName ?? t("accountOrders.productAlt")}
                         className="h-full w-full object-contain p-1"
                       />
                     ) : (
@@ -122,19 +124,21 @@ export default function CommandesPage() {
                         className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
                         style={{ backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}
                       >
-                        {cfg.label}
+                        {t(cfg.labelKey)}
                       </span>
                     </div>
                     <p className="text-xs text-[#6e6280]">
                       {formatDate(order.createdAt)}
                       {" · "}
-                      {order.items?.length ?? 0} article{(order.items?.length ?? 0) > 1 ? "s" : ""}
+                      {(order.items?.length ?? 0) > 1
+                        ? t("accountOrders.itemCountPlural").replace("{count}", String(order.items?.length ?? 0))
+                        : t("accountOrders.itemCount").replace("{count}", String(order.items?.length ?? 0))}
                       {" · "}
-                      <span className="font-semibold">{formatPrice(order.totalTTC)} TTC</span>
+                      <span className="font-semibold">{formatPrice(order.totalTTC)} {t("accountOrders.taxIncluded")}</span>
                     </p>
                     {order.status === "en_attente_client" && (
                       <p className="mt-1 text-[10px] font-semibold text-[#ef4444]">
-                        ⚠ Action requise — déposez un nouveau fichier logo
+                        ⚠ {t("accountOrders.actionRequiredNotice")}
                       </p>
                     )}
                   </div>
@@ -150,9 +154,9 @@ export default function CommandesPage() {
         )}
 
         <p className="mt-10 text-center text-[11px] text-[#a09bb0]">
-          Une question sur une commande ?{" "}
+          {t("accountOrders.helpQuestion")}{" "}
           <Link href="/contact" className="font-semibold text-[#7B4FA6] hover:underline">
-            Contactez-nous
+            {t("accountOrders.helpContactLink")}
           </Link>
         </p>
       </div>

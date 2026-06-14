@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useT } from "@/components/i18n/I18nProvider";
 import type { LogoUploadResult } from "@/lib/uploadLogo";
 import type { LogoPlacementTransform } from "@/lib/bat-utils";
 import dynamic from "next/dynamic";
@@ -59,46 +60,55 @@ type Props = {
   product: Product;
 };
 
-const CATEGORY_USAGE: Record<string, string> = {
-  tshirts:    "Équipes, événements, associations",
-  hoodies:    "Marque, équipe, merch premium",
-  softshells: "Terrain, chantier, nettoyage",
-  polos:      "Entreprise, restaurant, accueil",
-  polaires:   "Extérieur, logistique, équipe terrain",
-  casquettes: "Événement, club, staff",
-  sacs:       "Goodies, boutique, événement",
-  goodies:    "Cadeaux clients, séminaires",
-  enfants:    "Écoles, clubs, sorties",
-};
+type TFn = (key: string) => string;
 
-const TECHNIQUE_LABELS_SHORT: Record<Technique, string> = {
-  dtf:                "DTF",
-  dtflex:             "DTFlex",
-  flex:               "Flex",
-  broderie:           "Broderie",
-  broderie_illimitee: "Broderie couleur illimitée",
-  print:              "Print",
-};
+function getCategoryUsage(t: TFn, category: string): string | undefined {
+  const usage: Record<string, string> = {
+    tshirts:    t("productDetail.usage.tshirts"),
+    hoodies:    t("productDetail.usage.hoodies"),
+    softshells: t("productDetail.usage.softshells"),
+    polos:      t("productDetail.usage.polos"),
+    polaires:   t("productDetail.usage.polaires"),
+    casquettes: t("productDetail.usage.casquettes"),
+    sacs:       t("productDetail.usage.sacs"),
+    goodies:    t("productDetail.usage.goodies"),
+    enfants:    t("productDetail.usage.enfants"),
+  };
+  return usage[category];
+}
 
-function getRecommendedTechnique(product: Product): string {
+function getTechniqueLabelShort(t: TFn, technique: Technique): string {
+  const labels: Record<Technique, string> = {
+    dtf:                "DTF",
+    dtflex:             "DTFlex",
+    flex:               "Flex",
+    broderie:           t("productDetail.technique.broderie"),
+    broderie_illimitee: t("productDetail.technique.broderieIllimitee"),
+    print:              "Print",
+  };
+  return labels[technique];
+}
+
+function getRecommendedTechnique(t: TFn, product: Product): string {
   const preferred = product.techniqueRecommandee ?? product.techniques[0];
-  return TECHNIQUE_LABELS_SHORT[preferred] ?? preferred.toUpperCase();
+  return getTechniqueLabelShort(t, preferred) ?? preferred.toUpperCase();
 }
 
-function getRecommendedMinimum(product: Product): string {
-  if (product.quoteOnly) return "Sur devis";
-  return `${product.minOrderQty ?? 10} pièces`;
+function getRecommendedMinimum(t: TFn, product: Product): string {
+  if (product.quoteOnly) return t("productDetail.minimum.quote");
+  return t("productDetail.minimum.pieces").replace("{count}", String(product.minOrderQty ?? 10));
 }
 
-function getIndicativeDelay(product: Product): string {
-  if (product.category === "goodies") return "3 à 7 jours ouvrés après BAT";
+function getIndicativeDelay(t: TFn, product: Product): string {
+  if (product.category === "goodies") return t("productDetail.delay.goodies");
   if (product.techniques.includes("broderie") || product.techniques.includes("broderie_illimitee")) {
-    return "7 à 12 jours ouvrés après BAT";
+    return t("productDetail.delay.broderie");
   }
-  return "5 à 10 jours ouvrés après BAT";
+  return t("productDetail.delay.standard");
 }
 
 export default function ProductDetailClient({ product }: Props) {
+  const t = useT();
   const searchParams = useSearchParams();
 
   // Couleurs affichées : pour les produits Printify V1, on filtre strictement
@@ -504,7 +514,7 @@ export default function ProductDetailClient({ product }: Props) {
               }`}
               role={isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) ? "button" : undefined}
               tabIndex={isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) ? 0 : undefined}
-              aria-label={isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) ? "Afficher la vue suivante" : undefined}
+              aria-label={isPrintful && !studioComposedUrl && (show3D || gallery.length > 1) ? t("productDetail.aria.nextView") : undefined}
               onClick={handlePreviewNext}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
@@ -562,9 +572,9 @@ export default function ProductDetailClient({ product }: Props) {
                     }`}
                 >
                   {show3D ? (
-                    <><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14"/><path d="M5 3v10"/></svg>Photos</>
+                    <><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14"/><path d="M5 3v10"/></svg>{t("productDetail.view.photos")}</>
                   ) : (
-                    <><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3"><path d="M8 2L2 5.5v5L8 14l6-3.5v-5L8 2z"/><path d="M2 5.5L8 9l6-3.5M8 9v5"/></svg>Vue 3D</>
+                    <><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3"><path d="M8 2L2 5.5v5L8 14l6-3.5v-5L8 2z"/><path d="M2 5.5L8 9l6-3.5M8 9v5"/></svg>{t("productDetail.view.3d")}</>
                   )}
                 </button>
               )}
@@ -573,15 +583,15 @@ export default function ProductDetailClient({ product }: Props) {
               {studioComposedUrl && (
                 <div className="absolute left-3 top-3 z-30 flex items-center gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full border border-[var(--hm-primary)]/40 bg-[var(--hm-primary)] px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-white shadow">
-                    🎨 Votre personnalisation
+                    🎨 {t("productDetail.composed.yourCustomization")}
                   </span>
                   <button
                     type="button"
                     onClick={() => { setStudioComposedFront(null); setStudioComposedBack(null); setStudioComposedIdx(0); }}
                     className="rounded-full border border-[var(--hm-line)] bg-white/90 px-2 py-1 text-[9px] font-semibold text-[var(--hm-text-soft)] shadow backdrop-blur-sm transition hover:text-[var(--hm-text)]"
-                    title="Voir l'image produit originale"
+                    title={t("productDetail.composed.resetTitle")}
                   >
-                    ✕ Réinitialiser
+                    ✕ {t("productDetail.composed.reset")}
                   </button>
                 </div>
               )}
@@ -589,7 +599,7 @@ export default function ProductDetailClient({ product }: Props) {
               {/* ── Dots face/dos si les deux faces sont composées ── */}
               {studioComposedImages.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
-                  {["Face", "Dos"].slice(0, studioComposedImages.length).map((label, idx) => (
+                  {[t("productDetail.side.front"), t("productDetail.side.back")].slice(0, studioComposedImages.length).map((label, idx) => (
                     <button
                       key={label}
                       type="button"
@@ -611,7 +621,7 @@ export default function ProductDetailClient({ product }: Props) {
                 <>
                   <button
                     type="button"
-                    aria-label="Vue précédente"
+                    aria-label={t("productDetail.aria.prevView")}
                     onClick={(event) => {
                       event.stopPropagation();
                       if (show3D) {
@@ -628,7 +638,7 @@ export default function ProductDetailClient({ product }: Props) {
                   </button>
                   <button
                     type="button"
-                    aria-label="Vue suivante"
+                    aria-label={t("productDetail.aria.nextView")}
                     onClick={(event) => {
                       event.stopPropagation();
                       handlePreviewNext();
@@ -657,7 +667,7 @@ export default function ProductDetailClient({ product }: Props) {
                           <button
                             key={idx}
                             type="button"
-                            aria-label={`Image ${idx + 1}`}
+                            aria-label={t("productDetail.aria.image").replace("{n}", String(idx + 1))}
                             onClick={(event) => {
                               event.stopPropagation();
                               setGalleryIndex(idx);
@@ -687,7 +697,7 @@ export default function ProductDetailClient({ product }: Props) {
 
               const THUMB_VIEWS = [
                 {
-                  label: "Face",
+                  label: t("productDetail.side.front"),
                   idx: 0,
                   // T-shirt vu de face
                   svg: (
@@ -698,7 +708,7 @@ export default function ProductDetailClient({ product }: Props) {
                   ),
                 },
                 {
-                  label: "Dos",
+                  label: t("productDetail.side.back"),
                   idx: 1,
                   // T-shirt vu de dos (col plat + couture centrale)
                   svg: (
@@ -710,7 +720,7 @@ export default function ProductDetailClient({ product }: Props) {
                   ),
                 },
                 {
-                  label: "Manche",
+                  label: t("productDetail.side.sleeve"),
                   idx: 2,
                   // T-shirt vu de profil (corps droit + manche gauche au premier plan)
                   svg: (
@@ -752,7 +762,7 @@ export default function ProductDetailClient({ product }: Props) {
                       <button
                         key={label}
                         type="button"
-                        aria-label={`Afficher la vue ${label.toLowerCase()}`}
+                        aria-label={t("productDetail.aria.showView").replace("{label}", label.toLowerCase())}
                         disabled={!show3D && !gallery[idx]}
                         onClick={() => {
                           if (show3D) {
@@ -812,7 +822,7 @@ export default function ProductDetailClient({ product }: Props) {
             <details className="group rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)]">
               <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--hm-text-soft)]">
-                  Photos fournisseur
+                  {t("productDetail.supplierPhotos")}
                 </span>
                 <svg
                   className="h-3 w-3 shrink-0 text-[var(--hm-text-muted)] transition-transform group-open:rotate-180"
@@ -843,28 +853,28 @@ export default function ProductDetailClient({ product }: Props) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                Référence
+                {t("productDetail.spec.reference")}
               </p>
               <p className="font-mono text-sm text-[var(--hm-text)]">{product.reference}</p>
             </div>
             <div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                Composition
+                {t("productDetail.spec.composition")}
               </p>
               <p className="text-sm text-[var(--hm-text-soft)]">{product.composition}</p>
             </div>
             <div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                Grammage
+                {t("productDetail.spec.weight")}
               </p>
               <p className="text-sm text-[var(--hm-text-soft)]">{product.weight}</p>
             </div>
             <div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
-                Prix dès
+                {t("productDetail.spec.priceFrom")}
               </p>
               <p className="text-sm font-semibold text-[var(--hm-primary)]">
-                {formatPrice(minPrice)} TTC
+                {formatPrice(minPrice)} {t("productDetail.taxIncl")}
               </p>
             </div>
           </div>
@@ -890,8 +900,8 @@ export default function ProductDetailClient({ product }: Props) {
             <Info size={14} className="mt-0.5 shrink-0 text-[var(--hm-purple)]" />
             <p className="text-xs text-[var(--hm-purple)]">
               {product.techniques.includes("dtf") || product.techniques.includes("flex")
-                ? "La broderie est recommandée pour ce type de vêtement premium. DTF et flex sont disponibles mais à utiliser avec prudence selon le visuel."
-                : "La broderie est la finition idéale sur ce type de vêtement : rendu net et durable, même sur tissu technique."}
+                ? t("productDetail.softshell.dtfFlex")
+                : t("productDetail.softshell.broderie")}
             </p>
           </div>
         )}
@@ -913,22 +923,22 @@ export default function ProductDetailClient({ product }: Props) {
           )}
           <div className="mb-5 grid gap-2 rounded-[1.25rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-4 sm:grid-cols-2">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">Usage conseillé</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">{t("productDetail.label.recommendedUsage")}</p>
               <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">
-                {product.ideaPour?.[0] ?? CATEGORY_USAGE[product.category] ?? "Projet textile professionnel"}
+                {product.ideaPour?.[0] ?? getCategoryUsage(t, product.category) ?? t("productDetail.usage.fallback")}
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">Technique recommandée</p>
-              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getRecommendedTechnique(product)}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">{t("productDetail.label.recommendedTechnique")}</p>
+              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getRecommendedTechnique(t, product)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">Minimum conseillé</p>
-              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getRecommendedMinimum(product)}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">{t("productDetail.label.recommendedMinimum")}</p>
+              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getRecommendedMinimum(t, product)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">Délai indicatif</p>
-              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getIndicativeDelay(product)}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-muted)]">{t("productDetail.label.indicativeDelay")}</p>
+              <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getIndicativeDelay(t, product)}</p>
             </div>
           </div>
           {/* CTA principal — comportement par catégorie (2026-06-10) :
@@ -954,8 +964,8 @@ export default function ProductDetailClient({ product }: Props) {
               className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
             >
               {product.id.includes("mug")
-                ? "Personnaliser mon mug"
-                : "Personnaliser mon article"}
+                ? t("productDetail.cta.customizeMug")
+                : t("productDetail.cta.customizeItem")}
               <ArrowRight size={16} />
             </button>
           ) : (
@@ -963,7 +973,7 @@ export default function ProductDetailClient({ product }: Props) {
               href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}
               className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
             >
-              🎨 Personnaliser mon article
+              🎨 {t("productDetail.cta.customizeItem")}
               <ArrowRight size={16} />
             </Link>
           )}
@@ -982,9 +992,9 @@ export default function ProductDetailClient({ product }: Props) {
                   <span className="text-2xl font-black text-[var(--hm-primary)] tabular-nums transition-all duration-200">
                     {formatPrice(currentPrice)}
                   </span>
-                  <span className="text-sm text-[var(--hm-text-soft)]">TTC / pièce</span>
+                  <span className="text-sm text-[var(--hm-text-soft)]">{t("productDetail.price.taxInclPerPiece")}</span>
                   <span className="text-xs text-[var(--hm-text-soft)]">
-                    ({formatPrice(Math.round((currentPrice / 1.2) * 100) / 100)} HT)
+                    ({formatPrice(Math.round((currentPrice / 1.2) * 100) / 100)} {t("productDetail.price.taxExcl")})
                   </span>
                 </div>
 
@@ -992,7 +1002,7 @@ export default function ProductDetailClient({ product }: Props) {
                 {activeTiers && activeTiers.length > 0 && (
                   <div>
                     <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
-                      Plus vous commandez, moins c&apos;est cher
+                      {t("productDetail.price.moreYouOrder")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {activeTiers.map((tier) => {
@@ -1007,7 +1017,7 @@ export default function ProductDetailClient({ product }: Props) {
                                 : "border-[var(--hm-line)] bg-[var(--hm-surface)] text-[var(--hm-text)]"
                             }`}
                           >
-                            {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs → {formatPrice(tier.unitPrice)}
+                            {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} {t("productDetail.price.pcs")} → {formatPrice(tier.unitPrice)}
                           </span>
                         );
                       })}
@@ -1021,13 +1031,13 @@ export default function ProductDetailClient({ product }: Props) {
           {/* Réassurance — arguments toujours vrais, sous le prix (benchmark Sticker Mule / 4imprint) */}
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--hm-text-soft)]">
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} className="text-[var(--hm-primary)]" /> BAT gratuit avant impression
+              <ShieldCheck size={13} className="text-[var(--hm-primary)]" /> {t("productDetail.reassurance.freeBat")}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Truck size={13} className="text-[var(--hm-primary)]" /> Port offert dès 3 articles
+              <Truck size={13} className="text-[var(--hm-primary)]" /> {t("productDetail.reassurance.freeShipping")}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <MapPin size={13} className="text-[var(--hm-primary)]" /> Atelier &amp; conseil en Alsace
+              <MapPin size={13} className="text-[var(--hm-primary)]" /> {t("productDetail.reassurance.alsace")}
             </span>
           </div>
         </div>

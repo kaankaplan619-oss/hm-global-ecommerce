@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, ZoomIn, ZoomOut, Crosshair, Shirt, RotateCcw, FileCheck } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 import type { Placement, Technique, ProductColor, Product } from "@/types";
 import { isColorDark, EFFECT_OPTIONS } from "@/lib/color-utils";
 import type { LogoEffect } from "@/lib/color-utils";
@@ -40,6 +41,7 @@ export default function BatPreviewStudio({
   onClose, onShowBAT, onLogoTransformChange,
   packshot, productCategory,
 }: Props) {
+  const t = useT();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -392,18 +394,18 @@ export default function BatPreviewStudio({
 
   if (!mounted) return null;
 
-  const logoFileName   = logoFile?.name ?? (logoUrl ? "Logo enregistré" : "—");
+  const logoFileName   = logoFile?.name ?? (logoUrl ? t("batStudio.savedLogo") : "—");
   const techniqueLabel = TECHNIQUE_LABELS[technique] ?? technique;
   const placementLabel = PLACEMENT_LABELS[placement] ?? placement;
   const showViewToggle = placement === "coeur-dos";
 
   const INFO_ROWS = [
-    { label: "Produit",   value: product.name },
-    { label: "Couleur",   value: selectedColor?.label ?? "—" },
-    { label: "Taille",    value: size || "Non sélectionnée" },
-    { label: "Quantité",  value: String(quantity) },
-    { label: "Technique", value: techniqueLabel },
-    { label: "Placement", value: placementLabel },
+    { label: t("batStudio.product"),   value: product.name },
+    { label: t("batStudio.color"),     value: selectedColor?.label ?? "—" },
+    { label: t("batStudio.size"),      value: size || t("batStudio.notSelected") },
+    { label: t("batStudio.quantity"),  value: String(quantity) },
+    { label: t("batStudio.technique"), value: techniqueLabel },
+    { label: t("batStudio.placement"), value: placementLabel },
   ];
 
   const content = (
@@ -425,7 +427,7 @@ export default function BatPreviewStudio({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Fermer le studio"
+          aria-label={t("batStudio.closeStudio")}
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 text-white/50 transition-colors hover:border-white/25 hover:text-white"
         >
           <X size={16} />
@@ -452,7 +454,7 @@ export default function BatPreviewStudio({
                       : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
                     }`}
                 >
-                  {v === "front" ? <><Shirt size={11} /> Face</> : <><RotateCcw size={11} /> Dos</>}
+                  {v === "front" ? <><Shirt size={11} /> {t("batStudio.front")}</> : <><RotateCcw size={11} /> {t("batStudio.back")}</>}
                 </button>
               ))}
             </div>
@@ -479,16 +481,16 @@ export default function BatPreviewStudio({
               className="block w-full"
             />
             <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/15 bg-black/50 px-3 py-1 text-[10px] font-semibold text-white/55 backdrop-blur-sm">
-              Prévisualisation indicative · validée par HM Global avant production
+              {t("batStudio.previewCaption")}
             </div>
           </div>
 
           {/* Zoom / recenter controls */}
           <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 sm:bottom-6">
             {[
-              { icon: ZoomOut, factor: 0.87, title: "Réduire le logo" },
-              { icon: Crosshair, factor: 0 as const, title: "Recentrer le logo" },
-              { icon: ZoomIn,  factor: 1.15, title: "Agrandir le logo" },
+              { icon: ZoomOut, factor: 0.87, title: t("batStudio.shrinkLogo") },
+              { icon: Crosshair, factor: 0 as const, title: t("batStudio.recenterLogo") },
+              { icon: ZoomIn,  factor: 1.15, title: t("batStudio.enlargeLogo") },
             ].map(({ icon: Icon, factor, title }) => (
               <button
                 key={title}
@@ -510,7 +512,7 @@ export default function BatPreviewStudio({
             {/* Configuration */}
             <div>
               <p className="mb-2.5 text-[10px] font-black uppercase tracking-widest text-[#b13f74]">
-                Configuration
+                {t("batStudio.configuration")}
               </p>
               <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                 {INFO_ROWS.map(({ label, value }) => (
@@ -525,7 +527,7 @@ export default function BatPreviewStudio({
             {/* Logo */}
             <div>
               <p className="mb-2.5 text-[10px] font-black uppercase tracking-widest text-[#b13f74]">
-                Logo
+                {t("batStudio.logo")}
               </p>
               <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                 <p className="break-all font-mono text-[11px] text-white/70">{logoFileName}</p>
@@ -535,7 +537,7 @@ export default function BatPreviewStudio({
             {/* Lisibilité */}
             <div>
               <p className="mb-2.5 text-[10px] font-black uppercase tracking-widest text-[#b13f74]">
-                Lisibilité
+                {t("batStudio.readability")}
               </p>
               <div className="grid grid-cols-3 gap-1.5">
                 {EFFECT_OPTIONS.map(({ value, label }) => (
@@ -557,13 +559,13 @@ export default function BatPreviewStudio({
 
             {/* Hints */}
             <p className="text-[10px] leading-relaxed text-white/30">
-              Cliquez sur le logo pour afficher les poignées · Glissez pour repositionner · Coins pour redimensionner
+              {t("batStudio.hints")}
             </p>
 
             {/* Disclaimer */}
             <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
               <p className="text-[10px] leading-relaxed text-amber-200/80">
-                Prévisualisation indicative avant validation par HM Global. La position exacte est confirmée sur le BAT officiel.
+                {t("batStudio.disclaimer")}
               </p>
             </div>
           </div>
@@ -576,14 +578,14 @@ export default function BatPreviewStudio({
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#b13f74] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(177,63,116,0.35)] transition-opacity hover:opacity-90 active:scale-[0.98]"
             >
               <FileCheck size={15} />
-              Voir le BAT complet
+              {t("batStudio.viewFullBat")}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="flex w-full items-center justify-center rounded-2xl border border-white/10 px-5 py-2.5 text-sm font-semibold text-white/60 transition-all hover:border-white/20 hover:text-white"
             >
-              ← Retour au configurateur
+              ← {t("batStudio.backToConfigurator")}
             </button>
           </div>
         </div>

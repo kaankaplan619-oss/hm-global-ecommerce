@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import BackLink from "@/components/ui/BackLink";
+import { getT } from "@/lib/i18n/server";
 import {
   ArrowRight,
   Clock3,
@@ -32,151 +33,151 @@ export const metadata: Metadata = {
  * listes de texte. Métiers en cartes photo, approche en 4 étapes courtes.
  */
 
-const METIERS = [
-  {
-    title: "Textile personnalisé",
-    chips: ["DTF", "Flex", "Broderie"],
-    image: "/images/realisations/prestige-tshirts.jpg",
-    alt: "T-shirts Prestige marqués en DTF à l'atelier",
-    href: "/catalogue",
-    icon: Shirt,
-  },
-  {
-    title: "Enseignes & signalétique",
-    chips: ["Fabrication", "Pose", "Rétroéclairage"],
-    image: "/images/realisations/miammi-fabrication.jpg",
-    alt: "Lettres rétroéclairées MiAMMi en cours d'assemblage à l'atelier",
-    href: "/realisations",
-    icon: Lamp,
-  },
-  {
-    title: "Habillage véhicule",
-    chips: ["Covering", "Découpe vinyle"],
-    image: "/images/realisations/vehicule-scorpion.jpg",
-    alt: "Utilitaire habillé d'un scorpion en vinyle découpé",
-    href: "/realisations",
-    icon: Car,
-  },
-  {
-    title: "Impression / print",
-    chips: ["Cartes", "Flyers", "Affiches"],
-    image: "/images/realisations/hm-global-print.jpg",
-    alt: "Flyers et cartes de visite imprimés",
-    href: "/impression",
-    icon: Printer,
-  },
-  {
-    title: "Vitrines & lettrage",
-    chips: ["Vinyle", "Pose sur site"],
-    image: "/images/realisations/selim-vitrine.jpg",
-    alt: "Vitrine habillée en lettrage vinyle chez Selim Coiffure",
-    href: "/realisations",
-    icon: Store,
-  },
-  {
-    title: "Design & PAO",
-    chips: ["Logo", "Fichiers prêts à imprimer"],
-    image: "/images/realisations/scorpion-creation.jpg",
-    alt: "Création graphique d'un scorpion avant découpe vinyle",
-    href: "/contact",
-    icon: PenTool,
-  },
-] as const;
+export default async function AboutPage() {
+  const t = await getT();
 
-const APPROACH = [
-  {
-    icon: MessageSquare,
-    title: "Comprendre",
-    text: "Votre besoin, votre support, votre délai.",
-  },
-  {
-    icon: Lightbulb,
-    title: "Conseiller",
-    text: "La technique et la finition les plus adaptées.",
-  },
-  {
-    icon: FileCheck2,
-    title: "Valider",
-    text: "Fichier préparé, BAT validé avant production.",
-  },
-  {
-    icon: Factory,
-    title: "Produire",
-    text: "À l'atelier de Souffelweyersheim, puis livré ou posé.",
-  },
-] as const;
+  const METIERS = [
+    {
+      title: t("about.metiers.textile.title"),
+      chips: [t("about.metiers.textile.chip1"), t("about.metiers.textile.chip2"), t("about.metiers.textile.chip3")],
+      image: "/images/realisations/prestige-tshirts.jpg",
+      alt: t("about.metiers.textile.alt"),
+      href: "/catalogue",
+      icon: Shirt,
+    },
+    {
+      title: t("about.metiers.enseignes.title"),
+      chips: [t("about.metiers.enseignes.chip1"), t("about.metiers.enseignes.chip2"), t("about.metiers.enseignes.chip3")],
+      image: "/images/realisations/miammi-fabrication.jpg",
+      alt: t("about.metiers.enseignes.alt"),
+      href: "/realisations",
+      icon: Lamp,
+    },
+    {
+      title: t("about.metiers.vehicule.title"),
+      chips: [t("about.metiers.vehicule.chip1"), t("about.metiers.vehicule.chip2")],
+      image: "/images/realisations/vehicule-scorpion.jpg",
+      alt: t("about.metiers.vehicule.alt"),
+      href: "/realisations",
+      icon: Car,
+    },
+    {
+      title: t("about.metiers.print.title"),
+      chips: [t("about.metiers.print.chip1"), t("about.metiers.print.chip2"), t("about.metiers.print.chip3")],
+      image: "/images/realisations/hm-global-print.jpg",
+      alt: t("about.metiers.print.alt"),
+      href: "/impression",
+      icon: Printer,
+    },
+    {
+      title: t("about.metiers.vitrines.title"),
+      chips: [t("about.metiers.vitrines.chip1"), t("about.metiers.vitrines.chip2")],
+      image: "/images/realisations/selim-vitrine.jpg",
+      alt: t("about.metiers.vitrines.alt"),
+      href: "/realisations",
+      icon: Store,
+    },
+    {
+      title: t("about.metiers.design.title"),
+      chips: [t("about.metiers.design.chip1"), t("about.metiers.design.chip2")],
+      image: "/images/realisations/scorpion-creation.jpg",
+      alt: t("about.metiers.design.alt"),
+      href: "/contact",
+      icon: PenTool,
+    },
+  ] as const;
 
-const FACTS = [
-  { value: "2018", label: "année de création, à Souffelweyersheim" },
-  { value: "100 %", label: "produit à l'atelier ou posé par nous" },
-  { value: "BAT", label: "validé avant chaque production" },
-  { value: "410", label: "élèves accueillis (Erasmus)" },
-] as const;
+  const APPROACH = [
+    {
+      icon: MessageSquare,
+      title: t("about.approach.step1.title"),
+      text: t("about.approach.step1.text"),
+    },
+    {
+      icon: Lightbulb,
+      title: t("about.approach.step2.title"),
+      text: t("about.approach.step2.text"),
+    },
+    {
+      icon: FileCheck2,
+      title: t("about.approach.step3.title"),
+      text: t("about.approach.step3.text"),
+    },
+    {
+      icon: Factory,
+      title: t("about.approach.step4.title"),
+      text: t("about.approach.step4.text"),
+    },
+  ] as const;
 
-const HISTOIRE = [
-  {
-    image: "/images/histoire/presse-yilmaz-2018.jpg",
-    year: "2018",
-    caption: "Déjà à la presse : t-shirts marqués pour Ets Yilmaz",
-    alt: "Presse à chaud et t-shirts Ets Yilmaz marqués en flex, en 2018",
-  },
-  {
-    image: "/images/histoire/vehicule-home-style-2018.jpg",
-    year: "2018",
-    caption: "Lettrage véhicule — Home Style Carrelage",
-    alt: "Voiture lettrée pour Home Style Carrelage en 2018",
-  },
-  {
-    image: "/images/histoire/bache-oeillets-2018.jpg",
-    year: "2018",
-    caption: "Bâche grand format, œillets posés à la main",
-    alt: "Pose d'œillets sur une bâche imprimée grand format en 2018",
-  },
-  {
-    image: "/images/histoire/camion-yilmaz-2018.jpg",
-    year: "2018",
-    caption: "Habillage utilitaire — Ets Yilmaz",
-    alt: "Camion Renault Master habillé pour Ets Yilmaz en 2018",
-  },
-  {
-    image: "/images/histoire/enseigne-bar-actifs.jpg",
-    year: "Enseigne",
-    caption: "Lettres rétroéclairées — Bar L'Actifs, Strasbourg",
-    alt: "Enseigne rétroéclairée du Bar L'Actifs à Strasbourg",
-  },
-] as const;
+  const FACTS = [
+    { value: "2018", label: t("about.facts.year") },
+    { value: "100 %", label: t("about.facts.production") },
+    { value: "BAT", label: t("about.facts.bat") },
+    { value: "410", label: t("about.facts.erasmus") },
+  ] as const;
 
-const CONTACT = [
-  { icon: MapPin, label: "Adresse", value: "20 Rue des Tuileries, 67460 Souffelweyersheim" },
-  { icon: Clock3, label: "Horaires", value: "Du lundi au vendredi, 9h – 18h" },
-  { icon: Phone, label: "Téléphone", value: "06 76 16 11 88" },
-] as const;
+  const HISTOIRE = [
+    {
+      image: "/images/histoire/presse-yilmaz-2018.jpg",
+      year: "2018",
+      caption: t("about.histoire.yilmaz.caption"),
+      alt: t("about.histoire.yilmaz.alt"),
+    },
+    {
+      image: "/images/histoire/vehicule-home-style-2018.jpg",
+      year: "2018",
+      caption: t("about.histoire.homestyle.caption"),
+      alt: t("about.histoire.homestyle.alt"),
+    },
+    {
+      image: "/images/histoire/bache-oeillets-2018.jpg",
+      year: "2018",
+      caption: t("about.histoire.bache.caption"),
+      alt: t("about.histoire.bache.alt"),
+    },
+    {
+      image: "/images/histoire/camion-yilmaz-2018.jpg",
+      year: "2018",
+      caption: t("about.histoire.camion.caption"),
+      alt: t("about.histoire.camion.alt"),
+    },
+    {
+      image: "/images/histoire/enseigne-bar-actifs.jpg",
+      year: t("about.histoire.actifs.year"),
+      caption: t("about.histoire.actifs.caption"),
+      alt: t("about.histoire.actifs.alt"),
+    },
+  ] as const;
 
-export default function AboutPage() {
+  const CONTACT = [
+    { icon: MapPin, label: t("about.contact.address.label"), value: "20 Rue des Tuileries, 67460 Souffelweyersheim" },
+    { icon: Clock3, label: t("about.contact.hours.label"), value: t("about.contact.hours.value") },
+    { icon: Phone, label: t("about.contact.phone.label"), value: "06 76 16 11 88" },
+  ] as const;
+
   return (
     <div className="pt-24 pb-20 bg-white">
       <div className="container">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t("about.back")} />
 
         {/* Héro : texte court + vraies photos */}
         <section className="mb-12 grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <p className="section-tag">À propos</p>
+            <p className="section-tag">{t("about.hero.tag")}</p>
             <h1 className="mb-5 text-4xl font-semibold leading-tight tracking-tight text-[var(--hm-text)] md:text-5xl">
-              Une agence créative, avec un vrai atelier de production.
+              {t("about.hero.title")}
             </h1>
             <p className="max-w-xl text-base leading-8 text-[var(--hm-text-soft)]">
-              Du logo au textile marqué, de l&apos;enseigne posée au print livré :
-              chez HM Global, le conseil, le fichier et la production se font au
-              même endroit — notre atelier de Souffelweyersheim.
+              {t("about.hero.text")}
             </p>
             <div className="mt-6 flex flex-wrap gap-3.5">
               <Link href="/realisations" className="btn-primary gap-2">
-                Voir nos réalisations
+                {t("about.hero.ctaRealisations")}
                 <ArrowRight size={16} />
               </Link>
               <Link href="/contact" className="btn-outline">
-                Nous contacter
+                {t("about.hero.ctaContact")}
               </Link>
             </div>
           </div>
@@ -185,7 +186,7 @@ export default function AboutPage() {
             <div className="relative aspect-[3/4] overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)]">
               <Image
                 src="/videos/realisations/presse-marquage-poster.jpg"
-                alt="Pressage à chaud d'un textile à l'atelier HM Global"
+                alt={t("about.hero.image1Alt")}
                 fill
                 sizes="(min-width:1024px) 24vw, 48vw"
                 className="object-cover"
@@ -196,7 +197,7 @@ export default function AboutPage() {
               <div className="relative aspect-[4/3] overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)]">
                 <Image
                   src="/images/realisations/miammi-fabrication.jpg"
-                  alt="Enseigne lumineuse en fabrication à l'atelier"
+                  alt={t("about.hero.image2Alt")}
                   fill
                   sizes="(min-width:1024px) 24vw, 48vw"
                   className="object-cover"
@@ -206,7 +207,7 @@ export default function AboutPage() {
               <div className="relative aspect-[4/3] overflow-hidden rounded-[1.6rem] border border-[var(--hm-line)]">
                 <Image
                   src="/images/realisations/naga-enseigne.jpg"
-                  alt="Enseigne Le Naga posée, éclairée de nuit"
+                  alt={t("about.hero.image3Alt")}
                   fill
                   sizes="(min-width:1024px) 24vw, 48vw"
                   className="object-cover"
@@ -232,9 +233,9 @@ export default function AboutPage() {
         {/* Métiers en cartes photo */}
         <section className="mb-14">
           <div className="mb-7 max-w-2xl">
-            <p className="section-tag">Ce que nous faisons</p>
+            <p className="section-tag">{t("about.metiers.tag")}</p>
             <h2 className="text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Six métiers, un seul atelier.
+              {t("about.metiers.title")}
             </h2>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -280,14 +281,12 @@ export default function AboutPage() {
         {/* Histoire depuis 2018 */}
         <section className="mb-14">
           <div className="mb-7 max-w-2xl">
-            <p className="section-tag">Notre histoire</p>
+            <p className="section-tag">{t("about.histoire.tag")}</p>
             <h2 className="mb-3 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Depuis 2018, le même métier : produire.
+              {t("about.histoire.title")}
             </h2>
             <p className="text-sm leading-7 text-[var(--hm-text-soft)]">
-              Véhicules lettrés, bâches, textile à la presse, enseignes : l&apos;atelier
-              tourne depuis 2018. La boutique en ligne d&apos;aujourd&apos;hui s&apos;appuie
-              sur ce savoir-faire.
+              {t("about.histoire.text")}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
@@ -319,9 +318,9 @@ export default function AboutPage() {
         {/* Approche en 4 étapes */}
         <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] p-7 sm:p-9">
           <div className="mb-7 max-w-2xl">
-            <p className="section-tag">Notre approche</p>
+            <p className="section-tag">{t("about.approach.tag")}</p>
             <h2 className="text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
-              Du besoin au produit, en 4 étapes.
+              {t("about.approach.title")}
             </h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -349,16 +348,15 @@ export default function AboutPage() {
               <GraduationCap size={20} />
             </span>
             <h2 className="mb-3 text-2xl font-semibold text-[var(--hm-text)]">
-              Une agence engagée, ancrée et ouverte
+              {t("about.erasmus.title")}
             </h2>
             <p className="mb-6 text-sm leading-7 text-[var(--hm-text-soft)]">
-              Nous croyons à la transmission du métier : dans le cadre d&apos;échanges
-              Erasmus, nous avons accueilli{" "}
-              <strong className="text-[var(--hm-text)]">410 élèves</strong> dans notre
-              atelier.
+              {t("about.erasmus.textBefore")}{" "}
+              <strong className="text-[var(--hm-text)]">{t("about.erasmus.highlight")}</strong>{" "}
+              {t("about.erasmus.textAfter")}
             </p>
             <Link href="/engagements" className="btn-outline mt-auto gap-2 self-start">
-              Découvrir nos engagements
+              {t("about.erasmus.cta")}
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -369,7 +367,7 @@ export default function AboutPage() {
           >
             <Image
               src="/images/realisations/miammi-pose.jpg"
-              alt="Enseignes MiAMMi posées en façade"
+              alt={t("about.realisations.imageAlt")}
               fill
               sizes="(min-width:1024px) 48vw, 100vw"
               className="object-cover transition duration-500 group-hover:scale-[1.03]"
@@ -377,14 +375,13 @@ export default function AboutPage() {
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10" />
             <div className="relative p-7 sm:p-8">
               <h2 className="mb-2 text-2xl font-semibold text-white drop-shadow">
-                Nos réalisations parlent pour nous
+                {t("about.realisations.title")}
               </h2>
               <p className="mb-4 max-w-md text-sm leading-6 text-white/90">
-                Textile, enseignes, véhicules, print : des projets concrets,
-                produits chez nous pour des entreprises d&apos;Alsace.
+                {t("about.realisations.text")}
               </p>
               <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[var(--hm-text)]">
-                Voir les réalisations
+                {t("about.realisations.cta")}
                 <ArrowRight size={15} />
               </span>
             </div>
@@ -394,7 +391,7 @@ export default function AboutPage() {
         {/* Coordonnées compactes */}
         <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[var(--hm-accent-soft-blue)] p-7 sm:p-8">
           <h2 className="mb-5 text-2xl font-semibold text-[var(--hm-text)]">
-            Basés à Souffelweyersheim, au service des entreprises
+            {t("about.contact.title")}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {CONTACT.map((c) => (
@@ -416,19 +413,18 @@ export default function AboutPage() {
         {/* CTA final */}
         <section className="rounded-[2rem] border border-[var(--hm-line)] bg-white p-8 text-center shadow-[0_18px_48px_rgba(63,45,88,0.06)]">
           <h2 className="mb-3 text-2xl font-semibold text-[var(--hm-text)]">
-            Un besoin précis ou un projet global ?
+            {t("about.cta.title")}
           </h2>
           <p className="mx-auto mb-6 max-w-2xl text-sm leading-relaxed text-[var(--hm-text-soft)]">
-            Commande textile, print en ligne ou projet complet de communication
-            visuelle : on conseille, on produit, on livre.
+            {t("about.cta.text")}
           </p>
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/contact" className="btn-primary gap-2">
-              Nous contacter
+              {t("about.cta.ctaContact")}
               <ArrowRight size={16} />
             </Link>
             <Link href="/catalogue" className="btn-outline">
-              Voir le catalogue
+              {t("about.cta.ctaCatalogue")}
             </Link>
           </div>
         </section>

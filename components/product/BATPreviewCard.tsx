@@ -7,6 +7,7 @@
  * sélecteur d'effet ni interaction. Conçu pour être rendu dans BATModal.
  */
 
+import { useT } from "@/components/i18n/I18nProvider";
 import type { Placement, ProductCategory } from "@/types";
 import type { LogoEffect } from "@/lib/color-utils";
 
@@ -77,6 +78,7 @@ export default function BATPreviewCard({
   productName,
   size = "normal",
 }: Props) {
+  const t = useT();
   const showCoeur = placement === "coeur" || placement === "coeur-dos";
   const showDos   = placement === "dos"   || placement === "coeur-dos";
 
@@ -113,7 +115,7 @@ export default function BATPreviewCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={logoUrl}
-              alt="Logo — zone cœur"
+              alt={t("batPreviewCard.logoAltCoeur")}
               className="relative z-10 block w-full object-contain"
               style={logoImgStyle}
             />
@@ -129,7 +131,7 @@ export default function BATPreviewCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={logoUrl}
-              alt="Logo — zone dos"
+              alt={t("batPreviewCard.logoAltDos")}
               className="relative z-10 block w-full object-contain"
               style={logoImgStyle}
             />
@@ -139,7 +141,7 @@ export default function BATPreviewCard({
 
       {/* Bandeau disclaimer (masqué à l'impression via .no-print) */}
       <div className="no-print pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-[var(--hm-line)] bg-white/90 px-3 py-0.5 text-[9px] font-semibold text-[var(--hm-text-muted)]">
-        Position indicative
+        {t("batPreviewCard.positionIndicative")}
       </div>
     </div>
   );

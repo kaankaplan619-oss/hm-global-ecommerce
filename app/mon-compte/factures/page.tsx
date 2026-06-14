@@ -7,6 +7,7 @@ import { FileText, ChevronLeft, Download, ExternalLink, Loader2, Receipt } from 
 import { useAuthStore } from "@/store/auth";
 import { formatDate } from "@/lib/utils";
 import { formatPrice } from "@/data/pricing";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ── Gradient signature HM Global ──────────────────────────────────────────────
 const HM_GRADIENT = "linear-gradient(135deg, #5BC4D8, #7B4FA6, #C4387A)";
@@ -22,6 +23,7 @@ interface InvoiceOrder {
 }
 
 export default function FacturesPage() {
+  const t = useT();
   const router = useRouter();
   const { isAuthenticated, _hasHydrated } = useAuthStore();
   const [orders, setOrders] = useState<InvoiceOrder[]>([]);
@@ -64,7 +66,7 @@ export default function FacturesPage() {
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e6e8ee] bg-white px-4 py-2 text-sm font-semibold text-[#3f2d58] shadow-[0_2px_8px_rgba(63,45,88,0.04)] transition-colors hover:border-[#c4c0cf] hover:text-[#7B4FA6]"
         >
           <ChevronLeft size={16} />
-          Retour sur mon compte
+          {t("accountInvoices.back")}
         </Link>
 
         {/* Header card */}
@@ -78,9 +80,9 @@ export default function FacturesPage() {
               <FileText size={20} style={{ color: "#5BC4D8" }} />
             </div>
             <div>
-              <h1 className="text-lg font-black text-[#3f2d58]">Mes factures</h1>
+              <h1 className="text-lg font-black text-[#3f2d58]">{t("accountInvoices.title")}</h1>
               <p className="text-sm text-[#6e6280]">
-                Téléchargez vos factures et justificatifs de commande.
+                {t("accountInvoices.subtitle")}
               </p>
             </div>
           </div>
@@ -101,19 +103,19 @@ export default function FacturesPage() {
               <Receipt size={28} style={{ color: "#5BC4D8" }} />
             </div>
             <p className="mb-2 text-sm font-semibold text-[#3f2d58]">
-              Aucune facture disponible
+              {t("accountInvoices.emptyTitle")}
             </p>
             <p className="mb-6 text-xs leading-6 text-[#6e6280]">
-              Les factures sont générées automatiquement une fois votre commande validée.
+              {t("accountInvoices.emptyLine1")}
               <br />
-              Elles apparaîtront ici dès qu&rsquo;elles seront disponibles.
+              {t("accountInvoices.emptyLine2")}
             </p>
             <Link
               href="/mon-compte/commandes"
               className="inline-flex items-center gap-2 rounded-xl border border-[#e6e8ee] bg-[#f8f9fb] px-4 py-2.5 text-xs font-semibold text-[#3f2d58] transition-colors hover:bg-white"
             >
               <FileText size={12} />
-              Voir mes commandes
+              {t("accountInvoices.viewOrders")}
             </Link>
           </div>
         ) : (
@@ -133,13 +135,15 @@ export default function FacturesPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="text-sm font-bold text-[#3f2d58]">
-                      {order.invoiceNumber ? `Facture ${order.invoiceNumber}` : `Commande #${order.orderNumber}`}
+                      {order.invoiceNumber
+                        ? `${t("accountInvoices.invoiceLabel")} ${order.invoiceNumber}`
+                        : `${t("accountInvoices.orderLabel")} #${order.orderNumber}`}
                     </span>
                   </div>
                   <p className="text-xs text-[#6e6280]">
                     {formatDate(order.createdAt)}
                     {" · "}
-                    <span className="font-semibold">{formatPrice(order.totalTTC)} TTC</span>
+                    <span className="font-semibold">{formatPrice(order.totalTTC)} {t("accountInvoices.taxIncluded")}</span>
                   </p>
                 </div>
 
@@ -150,19 +154,19 @@ export default function FacturesPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 rounded-xl border border-[#e6e8ee] px-3 py-2 text-[11px] font-semibold text-[#6e6280] transition-colors hover:border-[#5BC4D8] hover:text-[#5BC4D8]"
-                    title="Voir la facture"
+                    title={t("accountInvoices.viewInvoiceTitle")}
                   >
                     <ExternalLink size={12} />
-                    <span className="hidden sm:inline">Voir</span>
+                    <span className="hidden sm:inline">{t("accountInvoices.view")}</span>
                   </a>
                   <a
                     href={order.invoiceUrl}
                     download
                     className="flex items-center gap-1.5 rounded-xl border border-[#7B4FA6] bg-[#7B4FA6] px-3 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#6a3f95]"
-                    title="Télécharger la facture"
+                    title={t("accountInvoices.downloadInvoiceTitle")}
                   >
                     <Download size={12} />
-                    <span className="hidden sm:inline">Télécharger</span>
+                    <span className="hidden sm:inline">{t("accountInvoices.download")}</span>
                   </a>
                 </div>
               </div>
@@ -173,12 +177,12 @@ export default function FacturesPage() {
         {/* Info banner */}
         <div className="mt-8 rounded-2xl border border-[#e6e8ee] bg-white p-5">
           <p className="text-xs leading-6 text-[#6e6280]">
-            <span className="font-semibold text-[#3f2d58]">Besoin d&rsquo;une facture spécifique ?</span>
+            <span className="font-semibold text-[#3f2d58]">{t("accountInvoices.helpTitle")}</span>
             {" "}
-            Contactez notre équipe pour toute demande de document comptable ou justificatif.
+            {t("accountInvoices.helpBody")}
             {" "}
             <Link href="/contact" className="font-semibold text-[#7B4FA6] hover:underline">
-              Nous contacter →
+              {t("accountInvoices.contactUs")}
             </Link>
           </p>
         </div>

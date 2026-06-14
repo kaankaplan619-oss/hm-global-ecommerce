@@ -20,6 +20,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Cookie, X } from "lucide-react";
+import { useT } from "@/components/i18n/I18nProvider";
 
 const STORAGE_KEY = "hm_cookie_consent_v1";
 
@@ -42,6 +43,7 @@ export function getStoredConsent(): CookieConsentValue | null {
 }
 
 export default function CookieConsent() {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [details, setDetails] = useState(false);
   const [analytics, setAnalytics] = useState(false);
@@ -80,28 +82,26 @@ export default function CookieConsent() {
             <Cookie size={18} />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold text-[var(--hm-text)]">Votre vie privée</p>
+            <p className="text-sm font-bold text-[var(--hm-text)]">{t("cookieConsent.title")}</p>
             <p className="mt-1 text-[12px] leading-relaxed text-[var(--hm-text-soft)]">
-              Nous utilisons des cookies essentiels au fonctionnement du site (panier, session,
-              paiement sécurisé). Avec votre accord, nous pouvons aussi mesurer l&apos;audience pour
-              améliorer le site. Vous pouvez accepter, refuser ou personnaliser.{" "}
+              {t("cookieConsent.intro")}{" "}
               <Link href="/confidentialite" className="font-semibold text-[var(--hm-primary)] hover:underline">
-                En savoir plus
+                {t("cookieConsent.learnMore")}
               </Link>
             </p>
 
             {details && (
               <div className="mt-3 flex flex-col gap-2 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] p-3">
                 <label className="flex cursor-not-allowed items-center justify-between text-[12px] text-[var(--hm-text)]">
-                  <span><strong>Essentiels</strong> — toujours actifs (panier, paiement)</span>
+                  <span><strong>{t("cookieConsent.essentialLabel")}</strong> — {t("cookieConsent.essentialDesc")}</span>
                   <input type="checkbox" checked readOnly disabled className="h-4 w-4 accent-[var(--hm-primary)]" />
                 </label>
                 <label className="flex cursor-pointer items-center justify-between text-[12px] text-[var(--hm-text)]">
-                  <span><strong>Mesure d&apos;audience</strong> — statistiques anonymes de visite</span>
+                  <span><strong>{t("cookieConsent.analyticsLabel")}</strong> — {t("cookieConsent.analyticsDesc")}</span>
                   <input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)} className="h-4 w-4 accent-[var(--hm-primary)]" />
                 </label>
                 <label className="flex cursor-pointer items-center justify-between text-[12px] text-[var(--hm-text)]">
-                  <span><strong>Marketing</strong> — publicité personnalisée</span>
+                  <span><strong>{t("cookieConsent.marketingLabel")}</strong> — {t("cookieConsent.marketingDesc")}</span>
                   <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} className="h-4 w-4 accent-[var(--hm-primary)]" />
                 </label>
               </div>
@@ -113,14 +113,14 @@ export default function CookieConsent() {
                 onClick={() => save(true, true)}
                 className="btn-primary px-4 py-2 text-[13px]"
               >
-                Tout accepter
+                {t("cookieConsent.acceptAll")}
               </button>
               <button
                 type="button"
                 onClick={() => save(false, false)}
                 className="rounded-xl border border-[var(--hm-line)] px-4 py-2 text-[13px] font-semibold text-[var(--hm-text)] transition hover:border-[var(--hm-primary)]"
               >
-                Tout refuser
+                {t("cookieConsent.rejectAll")}
               </button>
               {details ? (
                 <button
@@ -128,7 +128,7 @@ export default function CookieConsent() {
                   onClick={() => save(analytics, marketing)}
                   className="rounded-xl border border-[var(--hm-line)] px-4 py-2 text-[13px] font-semibold text-[var(--hm-text)] transition hover:border-[var(--hm-primary)]"
                 >
-                  Enregistrer mes choix
+                  {t("cookieConsent.savePreferences")}
                 </button>
               ) : (
                 <button
@@ -136,7 +136,7 @@ export default function CookieConsent() {
                   onClick={() => setDetails(true)}
                   className="text-[12px] font-semibold text-[var(--hm-primary)] hover:underline"
                 >
-                  Personnaliser
+                  {t("cookieConsent.customize")}
                 </button>
               )}
             </div>
@@ -145,7 +145,7 @@ export default function CookieConsent() {
           <button
             type="button"
             onClick={() => save(false, false)}
-            aria-label="Refuser et fermer"
+            aria-label={t("cookieConsent.closeAria")}
             className="shrink-0 rounded-full p-1 text-[var(--hm-text-muted)] hover:bg-[var(--hm-surface)]"
           >
             <X size={16} />
