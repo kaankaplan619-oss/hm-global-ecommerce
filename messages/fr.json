@@ -1940,5 +1940,20 @@
   "studioTools.qr.tip3": "Choisissez un contraste fort pour une meilleure lisibilité",
   "volumeQuote.title": "Besoin de 20 ou 30 pièces ?",
   "volumeQuote.description": "La commande en ligne est idéale pour lancer rapidement une petite série. Pour les entreprises, clubs et associations, HM Global peut aussi proposer un devis volume avec une solution de production optimisée.",
-  "volumeQuote.cta": "Demander un devis volume"
+  "volumeQuote.cta": "Demander un devis volume",
+  "accountOrderDetail.help.title": "Besoin d'aide sur cette commande ?",
+  "accountOrderDetail.help.requestInvoice": "Demander ma facture",
+  "accountOrderDetail.help.requestRefund": "Demander un remboursement",
+  "accountOrderDetail.help.reasonPlaceholder": "Motif de votre demande (facultatif)",
+  "accountOrderDetail.help.send": "Envoyer la demande",
+  "accountOrderDetail.help.cancel": "Annuler",
+  "accountOrderDetail.help.sending": "Envoi…",
+  "accountOrderDetail.help.sent": "Demande envoyée — nous la traitons rapidement.",
+  "accountOrderDetail.help.typeFacture": "Facture",
+  "accountOrderDetail.help.typeRemboursement": "Remboursement",
+  "accountOrderDetail.help.error": "La demande n'a pas pu être envoyée.",
+  "accountOrderDetail.help.status.nouveau": "Nouvelle",
+  "accountOrderDetail.help.status.en_cours": "En cours",
+  "accountOrderDetail.help.status.traite": "Traitée",
+  "accountOrderDetail.help.status.refuse": "Refusée"
 }

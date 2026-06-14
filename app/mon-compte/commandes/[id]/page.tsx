@@ -33,6 +33,14 @@ function formatCurrency(amount: number) {
 
 type Props = { params: Promise<{ id: string }> };
 
+type OrderRequestRow = {
+  id: string;
+  type: "facture" | "remboursement";
+  status: string;
+  reason: string | null;
+  created_at: string;
+};
+
 export default function CommandeDetailPage({ params }: Props) {
   const t = useT();
   const router = useRouter();
@@ -45,12 +53,22 @@ export default function CommandeDetailPage({ params }: Props) {
   const [uploading, setUploading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
+  const [requests, setRequests] = useState<OrderRequestRow[]>([]);
+  const [openForm, setOpenForm] = useState<null | "facture" | "remboursement">(null);
+  const [reqReason, setReqReason] = useState("");
+  const [reqSubmitting, setReqSubmitting] = useState(false);
+  const [reqError, setReqError] = useState("");
+  const [reqSent, setReqSent] = useState(false);
 
   useEffect(() => {
     if (!_hasHydrated) return;
     if (!isAuthenticated) { router.push("/connexion"); return; }
     params.then(({ id }) => {
       setOrderId(id);
+      fetch(`/api/orders/${id}/request`)
+        .then((r) => r.json())
+        .then((d) => setRequests(d.requests ?? []))
+        .catch(() => {});
       fetch(`/api/orders/${id}`)
         .then((r) => r.json())
         .then((data) => {
@@ -102,6 +120,33 @@ export default function CommandeDetailPage({ params }: Props) {
       console.error(err);
     } finally {
       setCancelLoading(false);
+    }
+  };
+
+  const handleCreateRequest = async (type: "facture" | "remboursement") => {
+    if (!order) return;
+    setReqSubmitting(true);
+    setReqError("");
+    try {
+      const res = await fetch(`/api/orders/${order.id}/request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, reason: reqReason || undefined }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setReqError(d.error || t("accountOrderDetail.help.error"));
+        return;
+      }
+      setReqSent(true);
+      setOpenForm(null);
+      setReqReason("");
+      const list = await fetch(`/api/orders/${order.id}/request`).then((r) => r.json());
+      setRequests(list.requests ?? []);
+    } catch {
+      setReqError(t("accountOrderDetail.help.error"));
+    } finally {
+      setReqSubmitting(false);
     }
   };
 
@@ -402,6 +447,87 @@ export default function CommandeDetailPage({ params }: Props) {
             </a>
           </div>
         )}
+
+        {/* Dossiers : demander sa facture / un remboursement */}
+        <div className="mb-6 rounded-2xl border border-[#e6e8ee] bg-white p-5 shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+          <h2 className="text-sm font-bold text-[#3f2d58]">{t("accountOrderDetail.help.title")}</h2>
+
+          {requests.length > 0 && (
+            <ul className="mb-1 mt-3 space-y-2">
+              {requests.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-center justify-between rounded-xl bg-[#f8f9fb] px-3 py-2 text-xs"
+                >
+                  <span className="font-semibold text-[#3f2d58]">
+                    {r.type === "facture"
+                      ? t("accountOrderDetail.help.typeFacture")
+                      : t("accountOrderDetail.help.typeRemboursement")}
+                  </span>
+                  <span className="rounded-full bg-white px-2 py-0.5 font-semibold text-[#6e6280]">
+                    {t(`accountOrderDetail.help.status.${r.status}`)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {reqSent && (
+            <p className="mt-3 text-xs font-semibold text-[#22c55e]">
+              {t("accountOrderDetail.help.sent")}
+            </p>
+          )}
+
+          {openForm === null ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {!order.invoiceUrl && (
+                <button
+                  onClick={() => handleCreateRequest("facture")}
+                  disabled={reqSubmitting}
+                  className="rounded-xl border border-[#e6e8ee] bg-white px-4 py-2 text-xs font-semibold text-[#3f2d58] transition-colors hover:border-[#7B4FA6] hover:text-[#7B4FA6] disabled:opacity-50"
+                >
+                  {t("accountOrderDetail.help.requestInvoice")}
+                </button>
+              )}
+              <button
+                onClick={() => { setOpenForm("remboursement"); setReqSent(false); setReqError(""); }}
+                disabled={reqSubmitting}
+                className="rounded-xl border border-[#fecaca] bg-white px-4 py-2 text-xs font-semibold text-[#ef4444] transition-colors hover:bg-[#fef2f2] disabled:opacity-50"
+              >
+                {t("accountOrderDetail.help.requestRefund")}
+              </button>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <textarea
+                value={reqReason}
+                onChange={(e) => setReqReason(e.target.value)}
+                placeholder={t("accountOrderDetail.help.reasonPlaceholder")}
+                rows={3}
+                className="w-full rounded-xl border border-[#e6e8ee] px-3 py-2 text-xs text-[#3f2d58] outline-none focus:border-[#7B4FA6]"
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => handleCreateRequest(openForm)}
+                  disabled={reqSubmitting}
+                  className="btn-primary text-xs"
+                >
+                  {reqSubmitting
+                    ? t("accountOrderDetail.help.sending")
+                    : t("accountOrderDetail.help.send")}
+                </button>
+                <button
+                  onClick={() => { setOpenForm(null); setReqReason(""); setReqError(""); }}
+                  className="rounded-xl border border-[#e6e8ee] bg-white px-4 py-2 text-xs font-semibold text-[#6e6280]"
+                >
+                  {t("accountOrderDetail.help.cancel")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {reqError && <p className="mt-2 text-xs text-[#ef4444]">{reqError}</p>}
+        </div>
 
         <p className="mt-8 text-center text-[11px] text-[#a09bb0]">
           {t("accountOrderDetail.problemPrefix")}{" "}

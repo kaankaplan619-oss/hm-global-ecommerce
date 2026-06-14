@@ -1940,5 +1940,20 @@
   "studioTools.qr.tip3": "Choose strong contrast for better readability",
   "volumeQuote.title": "Need 20 or 30 pieces?",
   "volumeQuote.description": "Ordering online is ideal for quickly launching a small batch. For companies, clubs and associations, HM Global can also provide a volume quote with an optimised production solution.",
-  "volumeQuote.cta": "Request a volume quote"
+  "volumeQuote.cta": "Request a volume quote",
+  "accountOrderDetail.help.title": "Need help with this order?",
+  "accountOrderDetail.help.requestInvoice": "Request my invoice",
+  "accountOrderDetail.help.requestRefund": "Request a refund",
+  "accountOrderDetail.help.reasonPlaceholder": "Reason for your request (optional)",
+  "accountOrderDetail.help.send": "Send request",
+  "accountOrderDetail.help.cancel": "Cancel",
+  "accountOrderDetail.help.sending": "Sending…",
+  "accountOrderDetail.help.sent": "Request sent — we'll handle it shortly.",
+  "accountOrderDetail.help.typeFacture": "Invoice",
+  "accountOrderDetail.help.typeRemboursement": "Refund",
+  "accountOrderDetail.help.error": "The request could not be sent.",
+  "accountOrderDetail.help.status.nouveau": "New",
+  "accountOrderDetail.help.status.en_cours": "In progress",
+  "accountOrderDetail.help.status.traite": "Handled",
+  "accountOrderDetail.help.status.refuse": "Declined"
 }

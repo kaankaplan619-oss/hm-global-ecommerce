@@ -226,6 +226,14 @@ export default function AdminPage() {
       countLabel: "à traiter",
     },
     {
+      href: "/admin/demandes",
+      icon: FileText,
+      title: "Demandes facture / remboursement",
+      description: "Dossiers clients ouverts depuis leurs commandes",
+      count: "—",
+      countLabel: "à traiter",
+    },
+    {
       href: "/admin/clients",
       icon: Users,
       title: "Clients",

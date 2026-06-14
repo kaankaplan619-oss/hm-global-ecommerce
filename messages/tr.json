@@ -1940,5 +1940,20 @@
   "studioTools.qr.tip3": "Daha iyi okunabilirlik için güçlü kontrast seçin",
   "volumeQuote.title": "20 veya 30 adet mi lazım?",
   "volumeQuote.description": "Online sipariş, küçük bir seriyi hızlıca başlatmak için idealdir. Şirketler, kulüpler ve dernekler için HM Global, optimize edilmiş bir üretim çözümüyle toplu teklif de sunabilir.",
-  "volumeQuote.cta": "Toplu teklif iste"
+  "volumeQuote.cta": "Toplu teklif iste",
+  "accountOrderDetail.help.title": "Bu sipariş için yardım mı lazım?",
+  "accountOrderDetail.help.requestInvoice": "Faturamı iste",
+  "accountOrderDetail.help.requestRefund": "İade talep et",
+  "accountOrderDetail.help.reasonPlaceholder": "Talebinizin nedeni (isteğe bağlı)",
+  "accountOrderDetail.help.send": "Talebi gönder",
+  "accountOrderDetail.help.cancel": "Vazgeç",
+  "accountOrderDetail.help.sending": "Gönderiliyor…",
+  "accountOrderDetail.help.sent": "Talep gönderildi — en kısa sürede ilgileneceğiz.",
+  "accountOrderDetail.help.typeFacture": "Fatura",
+  "accountOrderDetail.help.typeRemboursement": "İade",
+  "accountOrderDetail.help.error": "Talep gönderilemedi.",
+  "accountOrderDetail.help.status.nouveau": "Yeni",
+  "accountOrderDetail.help.status.en_cours": "İşlemde",
+  "accountOrderDetail.help.status.traite": "Tamamlandı",
+  "accountOrderDetail.help.status.refuse": "Reddedildi"
 }
