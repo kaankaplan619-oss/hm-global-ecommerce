@@ -31,8 +31,8 @@ export default function MentionsLegalesPage() {
           <section>
             <h2 className="text-base font-bold text-[var(--hm-text)] mb-3">1. Éditeur du site</h2>
             <div className="rounded-lg border border-[var(--hm-line)] bg-white p-5 text-sm space-y-1">
-              <p><strong className="text-[var(--hm-text)]">HM GLOBAL AGENCE EURL</strong></p>
-              <p>Société à responsabilité limitée à associé unique (EURL)</p>
+              <p><strong className="text-[var(--hm-text)]">HM GLOBAL AGENCE</strong></p>
+              <p>Société à responsabilité limitée (SARL)</p>
               <p className="pt-2">Siège social : 20 Rue des Tuileries</p>
               <p>67460 Souffelweyersheim, Alsace, France</p>
               <p className="pt-2">SIREN : 841 268 659</p>
@@ -44,14 +44,14 @@ export default function MentionsLegalesPage() {
               <p className="pt-2">Horaires : Lundi – Vendredi, 9h – 18h</p>
             </div>
             <p className="mt-2 text-xs text-[var(--hm-text-soft)]">
-              « HM Global Agence » est la marque commerciale exploitée par la société HM GLOBAL AGENCE EURL.
+              « HM Global Agence » est la marque commerciale exploitée par la société HM GLOBAL AGENCE.
             </p>
           </section>
 
           <section>
             <h2 className="text-base font-bold text-[var(--hm-text)] mb-3">2. Directrice de la publication</h2>
             <p>
-              La directrice de la publication est <strong className="text-[var(--hm-text)]">Hediye Ozhan</strong>, gérante de HM GLOBAL AGENCE EURL.
+              La directrice de la publication est <strong className="text-[var(--hm-text)]">Hediye Ozhan</strong>, gérante de HM GLOBAL AGENCE.
             </p>
           </section>
 
