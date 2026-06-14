@@ -19,7 +19,16 @@ export async function GET(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
-    const { data: order, error } = await supabase
+    // Défense en profondeur : en plus de la RLS, on filtre explicitement par
+    // propriétaire pour un non-admin (l'admin doit pouvoir lire toute commande).
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const isAdmin = (profile as { role?: string } | null)?.role === "admin";
+
+    let query = supabase
       .from("orders")
       .select(`
         *,
@@ -28,8 +37,13 @@ export async function GET(req: NextRequest, { params }: Params) {
         ),
         order_items (*)
       `)
-      .eq("id", id)
-      .single();
+      .eq("id", id);
+
+    if (!isAdmin) {
+      query = query.eq("user_id", user.id);
+    }
+
+    const { data: order, error } = await query.single();
 
     if (error || !order) {
       return NextResponse.json({ order: null }, { status: 404 });

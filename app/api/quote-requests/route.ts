@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const BUCKET = "customer-logos";
 
+// SVG exclu (XSS stocké possible si servi depuis un bucket public). PDF conservé
+// (pièce jointe de devis légitime, non exécutée inline par le visualiseur).
 const ALLOWED_FILE_TYPES = [
   "image/png",
   "image/jpeg",
-  "image/svg+xml",
   "application/pdf",
 ];
 
@@ -34,6 +36,10 @@ function safeFileName(name: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Anti-spam : soumission anonyme avec upload (insert service_role + storage).
+  const limited = rateLimit(req, { key: "quote", limit: 5, windowMs: 10 * 60_000 });
+  if (limited) return limited;
+
   try {
     const formData = await req.formData();
 

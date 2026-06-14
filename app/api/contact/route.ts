@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 /**
  * POST /api/contact — message du formulaire de contact public.
@@ -35,6 +36,10 @@ function esc(s: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Anti email-bombing : envoi Resend déclenchable par un anonyme.
+  const limited = rateLimit(req, { key: "contact", limit: 5, windowMs: 10 * 60_000 });
+  if (limited) return limited;
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();

@@ -32,17 +32,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "file et orderId requis" }, { status: 400 });
     }
 
-    // PNG et SVG uniquement — qualité d'impression garantie
-    const ALLOWED_TYPES = [
-      "image/png",
-      "image/svg+xml",
-    ];
-    const ALLOWED_EXTENSIONS = [".png", ".svg"];
-    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    // PNG / JPG uniquement. SVG EXCLU : il peut embarquer du JavaScript et,
+    // servi depuis le bucket public en image/svg+xml, devient un vecteur de XSS
+    // stocké (déclenché quand l'admin ouvre le logo pour valider le BAT).
+    // On exige que LE TYPE MIME ET l'extension soient valides (AND, pas OR) :
+    // un fichier SVG renommé .png ne passe plus, et le contentType stocké reste
+    // non exécutable.
+    const ALLOWED_TYPES = ["image/png", "image/jpeg"];
+    const ALLOWED_EXTENSIONS = [".png", ".jpg", ".jpeg"];
+    const ext = "." + (file.name.split(".").pop()?.toLowerCase() ?? "");
 
-    if (!ALLOWED_EXTENSIONS.includes(ext) && !ALLOWED_TYPES.includes(file.type)) {
+    if (!ALLOWED_TYPES.includes(file.type) || !ALLOWED_EXTENSIONS.includes(ext)) {
       return NextResponse.json(
-        { error: "Format non supporté. Utilisez PNG ou SVG uniquement." },
+        { error: "Format non supporté. Utilisez PNG ou JPG uniquement." },
         { status: 400 }
       );
     }

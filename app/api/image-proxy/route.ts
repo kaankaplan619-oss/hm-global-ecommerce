@@ -54,14 +54,37 @@ export async function GET(req: NextRequest) {
         // En-têtes minimaux — pas de cookie ni de credential
         "User-Agent": "HMGlobal-ImageProxy/1.0",
       },
+      // Sécurité SSRF : NE PAS suivre les redirections. Un hôte whitelisté qui
+      // redirige (open redirect, contenu uploadé) pourrait sinon faire pointer
+      // le serveur vers le réseau interne / endpoints de metadata cloud.
+      redirect: "manual",
     });
+
+    // Une 3xx (redirection) est refusée explicitement.
+    if (upstream.status >= 300 && upstream.status < 400) {
+      return new NextResponse("Redirects are not allowed", { status: 502 });
+    }
 
     if (!upstream.ok) {
       return new NextResponse("Upstream error", { status: upstream.status });
     }
 
+    // On ne proxifie QUE des images (pas de HTML/JSON internes exfiltrés).
     const contentType = upstream.headers.get("content-type") ?? "image/jpeg";
+    if (!contentType.startsWith("image/")) {
+      return new NextResponse("Not an image", { status: 415 });
+    }
+
+    // Plafond de taille (15 Mo) pour éviter l'abus mémoire/bande passante.
+    const MAX_BYTES = 15 * 1024 * 1024;
+    const declared = Number(upstream.headers.get("content-length") ?? 0);
+    if (declared > MAX_BYTES) {
+      return new NextResponse("Image too large", { status: 413 });
+    }
     const body = await upstream.arrayBuffer();
+    if (body.byteLength > MAX_BYTES) {
+      return new NextResponse("Image too large", { status: 413 });
+    }
 
     return new NextResponse(body, {
       status: 200,

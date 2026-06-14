@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { withinRateLimit } from "@/lib/security/rate-limit";
 
 /**
  * POST /api/track — Collecte d'événements de mesure (first-party, RGPD).
@@ -17,6 +18,11 @@ const MAX_STR  = 512;
 const TYPE_RE  = /^[a-z0-9_]+$/;
 
 export async function POST(req: NextRequest) {
+  // Anti-spam : l'insert passe par le service_role (bypass RLS) et est
+  // déclenchable par un visiteur anonyme. On plafonne par IP, en silence (204).
+  if (!withinRateLimit(req, { key: "track", limit: 120, windowMs: 60_000 })) {
+    return new NextResponse(null, { status: 204 });
+  }
   try {
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== "object") return new NextResponse(null, { status: 204 });

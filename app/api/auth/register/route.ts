@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 /**
  * POST /api/auth/register
@@ -7,6 +8,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  * inserts the profile row using raw_user_meta_data.
  */
 export async function POST(req: NextRequest) {
+  // Anti-spam : création de comptes en masse.
+  const limited = rateLimit(req, { key: "register", limit: 5, windowMs: 15 * 60_000 });
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const { email, password, firstName, lastName, phone, type, company, siret, tvaIntracom } = body;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 import type { ProfileRow } from "@/types/supabase";
 import type { User } from "@/types";
 
@@ -9,6 +10,10 @@ import type { User } from "@/types";
  * Session cookies are set automatically by @supabase/ssr.
  */
 export async function POST(req: NextRequest) {
+  // Anti brute-force : plafonne les tentatives de connexion par IP.
+  const limited = rateLimit(req, { key: "login", limit: 10, windowMs: 5 * 60_000 });
+  if (limited) return limited;
+
   try {
     const { email, password } = await req.json();
 

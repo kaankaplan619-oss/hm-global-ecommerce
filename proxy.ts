@@ -7,6 +7,28 @@ const PROTECTED_ROUTES = ["/mon-compte"];
 const ADMIN_ROUTES = ["/admin"];
 
 /**
+ * Outils internes (diagnostic fournisseurs + audits) : JAMAIS exposés en
+ * production. Ils appellent des APIs fournisseur payantes, peuvent créer/supprimer
+ * des produits et fuient des données de configuration/pricing. Bloqués en prod
+ * de façon centralisée ici (couvre tous les handlers GET/POST/DELETE).
+ */
+const DEV_ONLY_API = [
+  "/api/cloudprinter/test",
+  "/api/cloudprinter/catalog-audit",
+  "/api/cloudprinter/options-audit",
+  "/api/cloudprinter/price-audit",
+  "/api/cloudprinter/quote-audit",
+  "/api/printify/test",
+  "/api/printify/catalog-audit",
+  "/api/printify/diagnose",
+  "/api/printify/variant-map-test",
+  "/api/printify/mockup-pilot",
+  "/api/gelato/test",
+  "/api/prodigi/test",
+  "/api/toptex/debug-product",
+];
+
+/**
  * Next.js 16 Proxy (formerly middleware).
  * Refreshes Supabase session on every request and protects routes.
  */
@@ -14,13 +36,30 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   let response = NextResponse.next({ request: req });
 
-  // Guard: if Supabase env vars are not configured, skip auth entirely
-  // (avoids "TypeError: Invalid URL" crashing every request in environments
-  //  where NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are not set)
+  // ── Outils internes : 404 / redirect en production ───────────────────────
+  if (process.env.NODE_ENV === "production") {
+    if (DEV_ONLY_API.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+      return new NextResponse(null, { status: 404 });
+    }
+    if (pathname.startsWith("/dev/")) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+  }
+
+  // Guard: if Supabase env vars are not configured.
+  // FAIL-CLOSED sur les zones protégées : sans Supabase on ne peut pas vérifier
+  // l'auth → on refuse l'accès à /admin et /mon-compte (au lieu de laisser passer).
+  // Les routes publiques continuent normalement (évite de tout casser si misconfig).
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   ) {
+    const needsAuth =
+      PROTECTED_ROUTES.some((r) => pathname.startsWith(r)) ||
+      ADMIN_ROUTES.some((r) => pathname.startsWith(r));
+    if (needsAuth) {
+      return NextResponse.redirect(new URL("/connexion", req.url));
+    }
     return response;
   }
 
