@@ -2462,7 +2462,9 @@ export const PRODUCT_GILDAN_64800: Product = {
   ],
   techniques: ["broderie"],
   techniqueRecommandee: "broderie",
-  placements: ["coeur", "dos", "coeur-dos"],
+  // 2026-06-13 — broderie CŒUR uniquement (Printful ne fait pas le dos sur ce
+  // polo) → fabricable en auto-fulfillment, comme le SOL'S Prescott.
+  placements: ["coeur"],
   pricing: {
     dtf:      0,
     dtflex:   0,
@@ -2472,10 +2474,10 @@ export const PRODUCT_GILDAN_64800: Product = {
     broDeriePlacementSurcharge: POLO_GILDAN_64800_PLACEMENT_SURCHARGES,
   },
   featured: false,
-  // Masqué (audit conformité 2026-06-12) : aucun circuit de production —
-  // absent du variant map Printful (seul le 64800L femme existe en POD, id 664)
-  // et l'atelier ne brode pas. Réactivable quand un circuit broderie existera.
-  visible: false,
+  // RÉACTIVÉ 2026-06-13 (demande Kaan) : circuit Printful branché (catalog 670,
+  // 20 variants vérifiés via l'API), broderie cœur uniquement. Packshots à plat
+  // propres (/mockups/polo-gildan-64800/). Pendant unisexe du polo femme.
+  visible: true,
   badge: "Broderie incluse",
   supplierName: "printful",
   ideaPour: ["Corporate", "Restauration", "Accueil & événements"],
@@ -3078,9 +3080,10 @@ export const PRODUCT_POLO_GILDAN_64800L: Product = {
     broDeriePlacementSurcharge: SINGLE_PLACEMENT_SURCHARGES,
   },
   featured: false,
-  // RETIRÉ 2026-06-12 (règle Kaan : pas de photo mannequin, et Printful
-  // n'a AUCUNE photo à plat pour ce produit — templates sur modèle uniquement).
-  // Réactiver si une photo à plat devient disponible.
+  // MASQUÉ — vérif 2026-06-13 : les fichiers /mockups/polos/gildan-64800l/*-flat.jpg
+  // sont en réalité des photos MANNEQUIN (modèle), pas des packshots à plat →
+  // viole la règle « pas de mannequin » + casse la cohérence flat-lay du catalogue.
+  // Réactiver UNIQUEMENT avec de vrais packshots à plat.
   visible: false,
   badge: "Broderie incluse",
   supplierName: "printful",

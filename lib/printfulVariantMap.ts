@@ -309,8 +309,7 @@ const GILDAN_64800_VARIANTS: Record<string, number> = {
   "blanc__XL":  16775,
   "blanc__2XL": 16776,
 };
-// Évite l'avertissement "unused" tout en gardant la table de référence.
-void GILDAN_64800_VARIANTS;
+// GILDAN_64800_VARIANTS est branché dans PRINTFUL_VARIANT_MAP (réactivé 2026-06-13).
 
 // ─── Casquette Flexfit 6277 (catalog 140) — vérifié EU in_stock 2026-06-11 ───
 // noir → Black · marine → Navy · gris → Dark Grey · kaki → Khaki ·
@@ -507,6 +506,7 @@ const PRODUCT_VARIANT_MAP: Record<string, Record<string, number>> = {
   "casquette-flexfit-6277": CASQUETTE_FLEXFIT_6277_VARIANTS,
   "casquette-yupoong-6006": CASQUETTE_YUPOONG_6006_VARIANTS,
   // Élargissement #85 (2026-06-12)
+  "gildan-64800":           GILDAN_64800_VARIANTS, // réactivé 2026-06-13 (broderie cœur)
   "polo-sols-prescott":     POLO_SOLS_PRESCOTT_VARIANTS,
   "polo-gildan-64800l":     POLO_GILDAN_64800L_VARIANTS,
   "coupe-vent-sols-32000":  COUPE_VENT_SOLS_32000_VARIANTS,
@@ -534,6 +534,7 @@ export const PRINTFUL_PRODUCT_IDS: Record<string, number> = {
   "casquette-flexfit-6277": 140,
   "casquette-yupoong-6006": 100,
   // Élargissement #85 (2026-06-12)
+  "gildan-64800":           670, // réactivé 2026-06-13
   "polo-sols-prescott":     810,
   "polo-gildan-64800l":     664,
   "coupe-vent-sols-32000":  661,
@@ -566,6 +567,7 @@ const PRODUCT_FILE_TYPES: Record<string, { broderie?: string; print?: string }> 
   "gildan-18000":        { broderie: "embroidery_chest_left", print: "front" },
   "gildan-18500":        { broderie: "embroidery_chest_left", print: "front" },
   // Polos & veste — broderie cœur = chest left
+  "gildan-64800":           { broderie: "embroidery_chest_left" },
   "polo-sols-prescott":     { broderie: "embroidery_chest_left" },
   "polo-gildan-64800l":     { broderie: "embroidery_chest_left" },
   "coupe-vent-sols-32000":  { broderie: "embroidery_chest_left" },

@@ -38,9 +38,11 @@ export default function HomeHeroPremium() {
             </p>
 
             <h1
-              className="font-semibold leading-[1.04] tracking-[-0.025em]"
+              className="font-bold [text-wrap:balance]"
               style={{
-                fontSize: "clamp(2rem, 3.8vw + 0.6rem, 3.4rem)",
+                fontSize: "clamp(2.1rem, 3.7vw + 0.65rem, 3.55rem)",
+                lineHeight: 1.07,
+                letterSpacing: "-0.03em",
                 color: "var(--hm-text-main)",
               }}
             >
