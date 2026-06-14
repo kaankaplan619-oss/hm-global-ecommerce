@@ -6,6 +6,7 @@ import CartDrawer from "@/components/layout/CartDrawer";
 import QuoteAssistant from "@/components/assistant/QuoteAssistant";
 import CookieConsent from "@/components/layout/CookieConsent";
 import LocalBusinessJsonLd from "@/components/seo/LocalBusinessJsonLd";
+import AuthSync from "@/components/auth/AuthSync";
 
 export const metadata: Metadata = {
   title: {
@@ -65,6 +66,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="bg-white text-[var(--hm-text)] antialiased">
+        <AuthSync />
         <LocalBusinessJsonLd />
         <Header />
         <CartDrawer />

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
+import GoogleAuthSection from "@/components/auth/GoogleAuthSection";
 
 export default function InscriptionPage() {
   const router = useRouter();
@@ -145,6 +146,8 @@ export default function InscriptionPage() {
               </div>
             </div>
           ) : (
+            <>
+            <GoogleAuthSection next="/mon-compte" />
             <form
               onSubmit={handleSubmit}
               className="flex flex-col gap-4 rounded-[1.75rem] border border-[var(--hm-line)] bg-white p-6 shadow-[0_18px_40px_rgba(63,45,88,0.06)]"
@@ -294,6 +297,7 @@ export default function InscriptionPage() {
               )}
             </button>
             </form>
+            </>
           )}
 
           <p className="mt-6 text-center text-sm text-[var(--hm-text-soft)]">

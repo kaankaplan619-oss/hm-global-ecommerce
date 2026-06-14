@@ -174,6 +174,16 @@ export default function Header() {
               </Link>
             )}
 
+            {/* Compte / connexion — icône visible dans la barre sur mobile
+                (le bouton texte ci-dessus est lg+ seulement). */}
+            <Link
+              href={isAuthenticated ? "/mon-compte" : "/connexion"}
+              aria-label={isAuthenticated ? "Mon compte" : "Connexion"}
+              className="btn-ghost rounded-full border border-[rgba(63,45,88,0.08)] bg-white/82 px-2.5 lg:hidden"
+            >
+              <User size={16} />
+            </Link>
+
             <button
               onClick={toggleCart}
               className="btn-ghost relative rounded-full border border-transparent px-2.5"

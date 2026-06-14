@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
+import GoogleAuthSection from "@/components/auth/GoogleAuthSection";
 
 function ConnexionForm() {
   const router = useRouter();
@@ -103,6 +104,7 @@ function ConnexionForm() {
           </p>
           </div>
 
+        <GoogleAuthSection next={redirect} />
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 rounded-[1.75rem] border border-[var(--hm-line)] bg-white p-6 shadow-[0_18px_40px_rgba(63,45,88,0.06)]"
