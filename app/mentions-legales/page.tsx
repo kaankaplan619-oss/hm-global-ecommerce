@@ -31,20 +31,27 @@ export default function MentionsLegalesPage() {
           <section>
             <h2 className="text-base font-bold text-[var(--hm-text)] mb-3">1. Éditeur du site</h2>
             <div className="rounded-lg border border-[var(--hm-line)] bg-white p-5 text-sm space-y-1">
-              <p><strong className="text-[var(--hm-text)]">HM Global Agence</strong></p>
-              <p>20 Rue des Tuileries</p>
-              <p>67460 Souffelweyersheim</p>
-              <p>Alsace, France</p>
+              <p><strong className="text-[var(--hm-text)]">HM GLOBAL AGENCE EURL</strong></p>
+              <p>Société à responsabilité limitée à associé unique (EURL)</p>
+              <p className="pt-2">Siège social : 20 Rue des Tuileries</p>
+              <p>67460 Souffelweyersheim, Alsace, France</p>
+              <p className="pt-2">SIREN : 841 268 659</p>
+              <p>SIRET (siège) : 841 268 659 00015</p>
+              <p>RCS Strasbourg</p>
+              <p>TVA intracommunautaire : FR43 841 268 659</p>
               <p className="pt-2">Téléphone : <a href="tel:+33676161188" className="text-[var(--hm-primary)] hover:underline">06 76 16 11 88</a></p>
               <p>Email : <a href="mailto:contact@hmga.fr" className="text-[var(--hm-primary)] hover:underline">contact@hmga.fr</a></p>
               <p className="pt-2">Horaires : Lundi – Vendredi, 9h – 18h</p>
             </div>
+            <p className="mt-2 text-xs text-[var(--hm-text-soft)]">
+              « HM Global Agence » est la marque commerciale exploitée par la société HM GLOBAL AGENCE EURL.
+            </p>
           </section>
 
           <section>
-            <h2 className="text-base font-bold text-[var(--hm-text)] mb-3">2. Directeur de la publication</h2>
+            <h2 className="text-base font-bold text-[var(--hm-text)] mb-3">2. Directrice de la publication</h2>
             <p>
-              Le directeur de la publication est le représentant légal de HM Global Agence.
+              La directrice de la publication est <strong className="text-[var(--hm-text)]">Hediye Ozhan</strong>, gérante de HM GLOBAL AGENCE EURL.
             </p>
           </section>
 

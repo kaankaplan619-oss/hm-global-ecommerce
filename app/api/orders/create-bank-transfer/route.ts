@@ -7,6 +7,9 @@ import { PRINT_PRODUCTS_LOOKUP, getBusinessCardLotPrice } from "@/data/print-pro
 import { getPrintDirectPrice } from "@/data/print-pricing";
 import { getPrintProduct } from "@/data/print-catalogue";
 import { checkPrintfulAvailability } from "@/lib/printful-stock";
+import { mapDbOrderToOrder } from "@/lib/mappers";
+import { sendInstructionsVirement } from "@/lib/email";
+import { notifyNewOrder } from "@/lib/notify";
 import type { Technique, Placement, PrintConfig } from "@/types";
 
 interface CartItemInput {
@@ -307,6 +310,40 @@ export async function POST(req: NextRequest) {
     if (itemsError) {
       console.error("[CreateBankTransfer] Items insert:", itemsError);
     }
+
+    // ── Email instructions de virement (non bloquant) ─────────────────────────
+    // Le client a besoin d'une trace écrite (IBAN + référence) pour payer.
+    try {
+      const beneficiary = process.env.HM_BANK_BENEFICIARY;
+      const iban        = process.env.HM_BANK_IBAN;
+      const bic         = process.env.HM_BANK_BIC;
+      if (beneficiary && iban && bic) {
+        const { data: full } = await supabase
+          .from("orders")
+          .select("*, profiles(*), order_items(*)")
+          .eq("id", orderRow.id)
+          .single();
+        if (full) {
+          const mapped = mapDbOrderToOrder(full);
+          if (mapped.user?.email) {
+            await sendInstructionsVirement(mapped, { beneficiary, iban, bic });
+          }
+        }
+      } else {
+        console.warn("[CreateBankTransfer] HM_BANK_* manquants — email virement non envoyé");
+      }
+    } catch (emailErr) {
+      console.error("[CreateBankTransfer] email virement:", emailErr);
+    }
+
+    // ── Notif admin (Discord, best-effort) ────────────────────────────────────
+    await notifyNewOrder({
+      orderNumber:   orderRow.order_number,
+      totalTTC:      totals.totalTTC,
+      paymentMethod: "bank_transfer",
+      email:         effectiveEmail || null,
+      itemCount:     computedItems.length,
+    });
 
     return NextResponse.json({
       orderId:     orderRow.id,

@@ -189,6 +189,55 @@ export async function sendConfirmationPaiement(order: Order) {
   });
 }
 
+// ─── 1 bis. Instructions de virement ─────────────────────────────────────────
+// Déclencheur : create-bank-transfer (commande awaiting_bank_transfer)
+
+export async function sendInstructionsVirement(
+  order: Order,
+  bank: { beneficiary: string; iban: string; bic: string },
+) {
+  const to = getRecipientEmail(order, "sendInstructionsVirement");
+  if (!to) return null;
+
+  const resend = await getResend();
+  const from = getFromEmail();
+
+  const row = (label: string, value: string, mono = false) =>
+    `<tr>
+       <td style="padding:11px 14px;background:${C.page};font-size:13px;color:${C.muted};width:42%;border-bottom:1px solid ${C.border}">${label}</td>
+       <td style="padding:11px 14px;font-size:14px;font-weight:700;color:${C.heading};border-bottom:1px solid ${C.border}${mono ? ";font-family:'Courier New',monospace;letter-spacing:0.5px" : ""}">${value}</td>
+     </tr>`;
+
+  const html = baseLayout(
+    `<h2 style="${H2}">Votre commande est enregistrée ✓</h2>
+     <p style="${P}">Bonjour ${order.user.firstName},</p>
+     <p style="${P}">Merci pour votre commande <strong>#${order.orderNumber}</strong>. Pour la lancer, il vous suffit d'effectuer un virement avec les coordonnées ci-dessous.</p>
+     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:18px 0;border:1px solid ${C.border};border-radius:8px;overflow:hidden">
+       ${row("Bénéficiaire", bank.beneficiary)}
+       ${row("IBAN", bank.iban, true)}
+       ${row("BIC", bank.bic, true)}
+       ${row("Montant", `${order.totalTTC.toFixed(2)} €`)}
+       <tr>
+         <td style="padding:11px 14px;background:${C.page};font-size:13px;color:${C.muted};width:42%">Référence à indiquer</td>
+         <td style="padding:11px 14px;font-size:14px;font-weight:700;color:${C.accent}">${order.orderNumber}</td>
+       </tr>
+     </table>
+     <p style="${SUB}">⚠️ Indiquez bien la référence <strong>${order.orderNumber}</strong> dans le motif du virement : c'est ce qui nous permet d'identifier votre paiement. Votre commande démarre dès réception.</p>
+     ${button(`${SITE_URL}/mon-compte/commandes/${order.id}`, "Voir ma commande")}
+     <p style="${SIGN}">À très vite,<br/>${SIGNATURE}</p>`,
+    "Instructions de virement — HM Global Agence",
+    `Réglez votre commande #${order.orderNumber} (${order.totalTTC.toFixed(2)} €) par virement.`,
+  );
+
+  return resend.emails.send({
+    from,
+    replyTo: REPLY_TO,
+    to,
+    subject: `Instructions de virement — Commande #${order.orderNumber}`,
+    html,
+  });
+}
+
 // ─── 2. Fichier non conforme ──────────────────────────────────────────────────
 // Déclencheur : admin reject-file (status → en_attente_client)
 

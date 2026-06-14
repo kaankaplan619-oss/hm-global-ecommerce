@@ -3,6 +3,7 @@ import { verifyWebhookSignature } from "@/lib/stripe";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { sendConfirmationPaiement, sendCommandeAnnulee } from "@/lib/email";
 import { mapDbOrderToOrder } from "@/lib/mappers";
+import { notifyNewOrder } from "@/lib/notify";
 import type Stripe from "stripe";
 
 /**
@@ -67,6 +68,20 @@ export async function POST(req: NextRequest) {
           // Non-blocking — email failure must not fail the webhook
           console.error("[Webhook] Confirmation email failed:", emailErr);
         }
+
+        // Notif admin (Discord, best-effort)
+        await notifyNewOrder({
+          orderNumber:   (updatedRow as { order_number: string }).order_number,
+          totalTTC:      Number((updatedRow as { total_ttc: number }).total_ttc),
+          paymentMethod: "stripe",
+          email:
+            (updatedRow as { guest_email?: string | null }).guest_email ??
+            (updatedRow as { profiles?: { email?: string } | null }).profiles?.email ??
+            null,
+          itemCount: Array.isArray((updatedRow as { order_items?: unknown[] }).order_items)
+            ? (updatedRow as { order_items: unknown[] }).order_items.length
+            : undefined,
+        });
 
         break;
       }
