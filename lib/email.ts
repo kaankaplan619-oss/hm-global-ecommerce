@@ -359,21 +359,22 @@ export async function sendDemandeAvis(order: Order) {
   const from = getFromEmail();
 
   const html = baseLayout(
-    `<h2 style="${H2}">Votre avis compte pour nous</h2>
+    `<h2 style="${H2}">Votre avis nous aiderait beaucoup</h2>
      <p style="${P}">Bonjour ${order.user.firstName},</p>
-     <p style="${P}">Nous espérons que votre commande vous a pleinement séduit ! En tant qu'atelier indépendant, votre retour est précieux : il nous aide à progresser et guide les futurs clients.</p>
-     ${button(`${SITE_URL}/avis/${order.id}`, "Laisser mon avis")}
-     <p style="margin:8px 0;font-size:13px;color:${C.faint}">Cela ne prend que 30 secondes — un grand merci d'avance.</p>
+     <p style="${P}">Merci d'avoir fait confiance à notre atelier alsacien pour votre commande <strong>#${order.orderNumber}</strong>. Nous espérons que le résultat est à la hauteur !</p>
+     <p style="${P}">Si vous avez 30 secondes, votre avis — <strong>bon comme moins bon</strong> — compte énormément pour nous, et il aide d'autres entreprises et associations de la région à nous trouver.</p>
+     ${button(`${SITE_URL}/avis`, "Laisser un avis Google")}
+     <p style="margin:8px 0;font-size:13px;color:${C.faint}">Un mot honnête sur la qualité, les délais ou le contact suffit largement. Un immense merci 🙏</p>
      <p style="${SIGN}">${SIGNATURE}</p>`,
-    "Votre avis — HM Global Agence",
-    `Comment s'est passée votre commande #${order.orderNumber} ?`
+    "Votre commande HM Global — un retour rapide ?",
+    `Votre avis sur la commande #${order.orderNumber} nous aiderait beaucoup (30 secondes).`
   );
 
   return resend.emails.send({
     from,
     replyTo: REPLY_TO,
     to,
-    subject: `Comment s'est passée votre commande ?`,
+    subject: `Votre commande HM Global — un retour rapide ?`,
     html,
   });
 }

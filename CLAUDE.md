@@ -8,7 +8,7 @@ Ce projet est géré depuis un iPad Pro M5 via Claude.ai (Safari).
 L'accès au code se fait par copier-coller entre Claude.ai et Claude Code.
 
 ## Stack
-- Next.js 14
+- Next.js 16.2.4
 - Vercel (déploiement automatique via GitHub)
 - Supabase (storage + auth)
 - Printful API (mockups + commandes)
@@ -27,8 +27,9 @@ L'accès au code se fait par copier-coller entre Claude.ai et Claude Code.
 - Supabase : actif
 
 ## Priorité en cours
-Générer des mockups flat fond blanc via Printful API
-pour : gildan-5000, gildan-18000, gildan-18500, bella-3001
+Consulter `docs/agent-memory/09_CURRENT_TASKS.md` et
+`docs/agent-memory/16_LAUNCH_CHECKLIST.md`. Ne pas se fier à une priorité
+historique inscrite uniquement dans ce fichier.
 
 ---
 
@@ -42,6 +43,10 @@ Avant de modifier le moindre fichier, lire dans cet ordre :
 2. `docs/agent-memory/00_START_HERE.md` uniquement
 
 Lire les autres fichiers mémoire (`01` → `09`) **seulement si la tâche le nécessite** — le mapping est dans `00_START_HERE.md`.
+
+Pour toute mission marketing, SEO, acquisition, sourcing ou roadmap, lire aussi :
+- `docs/agent-memory/17_MARKET_GROWTH_ROADMAP_V3_V6.md`
+- `docs/prompts/CLAUDE_CODE_V3_V6_MARKET_AUDIT.md`
 
 ## Résumé structuré obligatoire avant toute modification
 

@@ -8,7 +8,7 @@
 
 ## Projet en une phrase
 
-**HM Global Agence** — site e-commerce B2B de textile personnalisé (Next.js 15 / Tailwind / Supabase / Stripe / Fabric.js v6 / Vercel).
+**HM Global Agence** — site e-commerce B2B de textile personnalisé (Next.js 16.2.4 / Tailwind / Supabase / Stripe / Fabric.js v6 / Vercel).
 Premium, sobre, mobile-first. Jamais l'apparence d'un catalogue fournisseur générique.
 Couleur accent : `#b13f74`. Design tokens : `--hm-*`.
 
@@ -19,7 +19,7 @@ Couleur accent : `#b13f74`. Design tokens : `--hm-*`.
 - Ne jamais modifier un fichier applicatif sans demande explicite.
 - Ne pas toucher à `components/product/MockupViewer.tsx` (B3.2-A2 validé production).
 - Ne pas modifier les zones calibrées Fabric.js sans audit visuel complet.
-- Ne pas modifier `lib/uploadLogo.ts` sans diagnostic validé.
+- Ne pas modifier le contrat d’upload Studio/logo sans diagnostic et E2E validé.
 - Ne pas toucher aux variables Supabase Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).
 - Ne pas toucher au fix TopTex 502 (`app/api/toptex/enrichment/[sku]/route.ts`, commit `6261eaa`).
 - Ne pas remplacer les images principales HM (`images[]`, `hmHeroImage`, `hmMockupImages`) par des images fournisseur.
@@ -51,7 +51,7 @@ Détail complet et nuances → `08_DO_NOT_TOUCH.md`.
 
 ## Mapping fichiers — à lire selon la tâche
 
-### Cœur (11 fichiers — convention standard)
+### Cœur (12 fichiers — convention standard)
 
 | Fichier | Contenu | Lire quand |
 |---|---|---|
@@ -66,8 +66,9 @@ Détail complet et nuances → `08_DO_NOT_TOUCH.md`.
 | `08_DO_NOT_TOUCH.md` | Zones interdites détaillées (composants, infra, catalogue, design) | À relire au moindre doute avant modification |
 | `09_CURRENT_TASKS.md` | Tâche active + état du projet (commits validés, prochaines étapes) | **Toujours en début de session pour contexte** |
 | `10_DECISION_LOG.md` | Journal append-only des décisions historiques validées | Toute mission stratégique ou avant tout choix de fond |
+| `17_MARKET_GROWTH_ROADMAP_V3_V6.md` | Positionnement, acquisition, sourcing et roadmap V3 à V6 | Toute mission marketing, SEO, catalogue, sourcing ou roadmap |
 
-### Annexes spécialisées (5 fichiers — à lire ponctuellement)
+### Annexes spécialisées (6 fichiers — à lire ponctuellement)
 
 | Fichier | Contenu | Lire quand |
 |---|---|---|
@@ -77,6 +78,10 @@ Détail complet et nuances → `08_DO_NOT_TOUCH.md`.
 | `14_PRODUCT_VISION_HM_GLOBAL_PLATFORM.md` | Vision produit long terme — stratégie plateforme | Discussions roadmap V2-V5, refonte structurelle |
 | `15_STUDIO_SPEC.md` | Spécifications fonctionnelles complètes du studio personnalisation | Toute évolution du studio ou de l'expérience Canva-style |
 | `16_LAUNCH_CHECKLIST.md` | **Checklist de lancement numérotée** — source de vérité fait / pas fait, statuts à maintenir | **Début de chaque session** + après chaque tâche terminée |
+
+Pour préparer un audit stratégique Claude Code, utiliser aussi :
+- `docs/prompts/CLAUDE_CODE_V3_V6_MARKET_AUDIT.md`
+- `docs/COMPARATIF_FOURNISSEURS_TEXTILE_2026.md`
 
 ---
 
@@ -101,6 +106,6 @@ Si une mission demandée semble en conflit avec :
 - une règle absolue (ci-dessus ou dans `08_DO_NOT_TOUCH.md`)
 - une décision active (`10_DECISION_LOG.md`)
 - la direction artistique (`03_DESIGN_RULES.md`)
-- une zone validée production (MockupViewer, uploadLogo, etc.)
+- une zone validée production ou un contrat sensible (MockupViewer, upload Studio, etc.)
 
 **→ s'arrêter immédiatement et demander validation à Kaan avant toute modification.**

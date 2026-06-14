@@ -8,13 +8,20 @@ Site e-commerce B2B de textile personnalisé : catalogue, configurateur logo, BA
 
 > Cette règle s'applique à tout agent IA (Claude Code, ChatGPT, Cursor, etc.) intervenant sur ce projet.
 
-À la fin de **chaque tâche**, l'agent doit :
+Au début de chaque tâche, lire :
 
-1. **Lire `AGENT_CONTEXT.md`** — objectif du site, règles invariantes, fichiers critiques
-2. **Respecter `PROTECTED_FEATURES.md`** — ne jamais casser une fonctionnalité protégée
-3. **Exécuter `TEST_CHECKLIST.md`** autant que possible — au minimum `npm run type-check` et `npm run build`
-4. **Remplir `AGENT_REPORT.md`** — rapport structuré avec résultats de tests, risques, prochaine action
-5. **Ne jamais déclarer une tâche terminée sans preuve de test**
+1. `AGENTS.md`
+2. `CLAUDE.md`
+3. `docs/agent-memory/00_START_HERE.md`
+4. `docs/agent-memory/16_LAUNCH_CHECKLIST.md`
+
+Puis lire uniquement les mémoires indiquées par le mapping de
+`00_START_HERE.md`. Ne jamais déclarer une tâche terminée sans preuve de test.
+
+Pour l’audit marché et la roadmap V3 à V6 :
+
+- `docs/agent-memory/17_MARKET_GROWTH_ROADMAP_V3_V6.md`
+- `docs/prompts/CLAUDE_CODE_V3_V6_MARKET_AUDIT.md`
 
 ```bash
 npm run agent:report   # résumé git + rappel commandes de validation
@@ -23,8 +30,6 @@ npm run build          # Next.js build — obligatoire
 ```
 
 ---
-
-## Getting Started
 
 ## Getting Started
 

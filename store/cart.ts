@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem, Product, ProductColor, Technique, Placement, PrintConfig } from "@/types";
 import { computeUnitPriceWithVolume, computeCartTotals } from "@/data/pricing";
+import { track } from "@/lib/track";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -109,6 +110,9 @@ export const useCartStore = create<CartState>()(
         }
 
         const totalPrice = Math.round(unitPrice * effectiveQuantity * 100) / 100;
+
+        // Mesure : ajout au panier (gated par consentement dans track()).
+        track("add_to_cart", { productId: product.id, qty: effectiveQuantity, value: totalPrice });
 
         // ── Déduplication ────────────────────────────────────────────────────
         // Print : chaque ajout = nouvelle ligne (un lot est toujours distinct).

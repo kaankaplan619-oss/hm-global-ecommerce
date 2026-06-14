@@ -22,10 +22,13 @@ Ne jamais changer ces valeurs sans audit visuel sur toutes les couleurs et vues.
 
 ## Infrastructure — Ne pas toucher
 
-### `lib/uploadLogo.ts`
-- Logique d'upload Supabase validée
-- RLS configurée et testée
-- Modifier = risque de casser l'upload logo en production
+### Contrat d’upload Studio et logo
+- Fichiers : `lib/uploadLogo.ts`, `lib/uploadStudioAsset.ts`,
+  `app/api/studio/upload-asset/route.ts`
+- Le flux invité passe par une route serveur et produit une URL publique
+- Toute modification doit conserver validation MIME/taille/session, service role
+  côté serveur uniquement et compatibilité Studio → panier → checkout
+- Modification autorisée seulement dans une tâche explicite, avec E2E complet
 
 ### `app/api/toptex/enrichment/[sku]/route.ts`
 - Fix TopTex 502 validé (commit `6261eaa`, déployé)

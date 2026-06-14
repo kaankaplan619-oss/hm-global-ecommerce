@@ -24,7 +24,6 @@ import { isSimpleFlowProduct } from "@/data/products";
 import { TECHNIQUES, PLACEMENTS } from "@/data/techniques";
 import { validateLogoFile, formatFileSize, ALLOWED_FILE_EXTENSIONS } from "@/lib/utils";
 import { uploadLogoToSupabase, getUploadErrorMessage, type LogoUploadResult } from "@/lib/uploadLogo";
-import { useAuthStore } from "@/store/auth";
 import { colorHasImages, colorHasSpecificImage } from "@/components/product/ProductGallery";
 import {
   getDisplayedColors,
@@ -115,7 +114,6 @@ export default function ProductConfigurator({
   studioComposedBack,
 }: Props) {
   const { addItem } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
 
   // Couleurs affichées : filtrées Printify V1 si applicable, sinon liste complète
   const displayedColors = useMemo(
@@ -260,17 +258,10 @@ export default function ProductConfigurator({
     setLogoFile(file);
     onLogoChange?.(file);
 
-    // Flux invité : si non connecté selon le store HM, rester en local uniquement —
-    // preview mockup + BAT via blob URL, upload différé au checkout.
-    if (!isAuthenticated) {
-      setUploadNotice("Logo chargé pour la prévisualisation. Il sera enregistré au moment de la commande.");
-      return;
-    }
-
     // Marquer la génération courante pour ignorer les résultats périmés
     const generation = ++uploadGenerationRef.current;
 
-    // Tenter l'upload immédiatement (utilisateur authentifié uniquement)
+    // Tenter l'upload immédiatement. La route serveur accepte aussi les invités.
     setIsUploadingOnSelect(true);
     let data: import("@/lib/uploadLogo").LogoUploadResult | null = null;
     let error: import("@/lib/uploadLogo").LogoUploadError | null = null;
@@ -292,9 +283,6 @@ export default function ProductConfigurator({
     if (data) {
       setLogoUploadResult(data);
       onLogoUploadResult?.(data); // Remonter l'URL Supabase vers le parent (BAT, etc.)
-    } else if (error === "NOT_AUTHENTICATED") {
-      // Message informatif non-bloquant — le logo sera demandé à l'envoi de la commande
-      setUploadNotice(getUploadErrorMessage(error));
     } else if (error) {
       // Erreur technique non-bloquante — tentative de renvoi au clic "Ajouter au panier"
       setUploadNotice(getUploadErrorMessage(error));
@@ -333,11 +321,8 @@ export default function ProductConfigurator({
           url:  logoUploadResult.logoFileUrl,
           path: logoUploadResult.logoPath,
         };
-      } else if (!isAuthenticated) {
-        // Flux invité : pas d'upload — le logo sera finalisé à la demande de devis
-        logoCartFile = { name: logoFile.name, size: logoFile.size, type: logoFile.type };
       } else {
-        // Authentifié mais upload initial raté — on retente une fois avant d'ajouter au panier
+        // Upload initial raté — on retente une fois avant d'ajouter au panier.
         setIsUploading(true);
         let data: import("@/lib/uploadLogo").LogoUploadResult | null = null;
         let error: import("@/lib/uploadLogo").LogoUploadError | null = null;
@@ -1052,7 +1037,7 @@ export default function ProductConfigurator({
         </p>
       ) : (
         <p className="text-center text-[10px] text-[var(--hm-text-muted)]">
-          Vous pouvez configurer et ajouter au panier librement. La connexion sera demandée au moment du checkout.
+          Vous pouvez configurer, ajouter au panier et commander sans créer de compte.
         </p>
       )}
 

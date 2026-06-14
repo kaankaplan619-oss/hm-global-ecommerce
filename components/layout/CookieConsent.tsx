@@ -64,6 +64,8 @@ export default function CookieConsent() {
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+      // Notifie tracker / GA4 pour s'activer (ou se taire) immédiatement.
+      window.dispatchEvent(new Event("hm-consent-change"));
     } catch { /* localStorage indisponible — on ferme quand même */ }
     setOpen(false);
   };

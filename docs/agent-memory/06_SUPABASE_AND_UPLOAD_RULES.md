@@ -1,91 +1,81 @@
-# 05 — Règles Supabase Upload Logo
+# 06 — Règles Supabase et upload
 
-## Statut
+Dernière mise à jour : 2026-06-14.
 
-✅ **Validé en production le 2026-05-01** sur `hm-global.vercel.app`.
+## État actuel
 
-- Upload invité (non connecté) : logo conservé localement (File object), **pas d'upload Supabase** — normal, RLS bloque INSERT sans `auth.uid()`
-- Upload connecté depuis checkout : ✅ URL publique `customer-logos/cart/{sessionId}/{timestamp}-{filename}` confirmée
-- `logoFile.url` et `logoFile.path` présents dans le cart store après upload réussi
+L’ancien comportement « upload invité local uniquement » est remplacé dans le
+working tree par un upload serveur compatible avec la commande invitée.
 
-## Bucket
+Flux textile/Studio :
 
+1. le navigateur appelle `lib/uploadLogo.ts` ou `lib/uploadStudioAsset.ts` ;
+2. `POST /api/studio/upload-asset` valide origine, session, type et taille ;
+3. la route serveur utilise la service role sans l’exposer au navigateur ;
+4. le fichier est placé dans le bucket public `customer-logos` ;
+5. l’URL et le chemin sont stockés dans le panier puis la commande.
+
+Ce flux a été validé localement le 2026-06-14. La validation production reste
+obligatoire après déploiement.
+
+## Fichiers concernés
+
+- `lib/uploadLogo.ts`
+- `lib/uploadStudioAsset.ts`
+- `lib/uploadComposedPreview.ts`
+- `app/api/studio/upload-asset/route.ts`
+- `components/product/ProductConfigurator.tsx`
+- `components/studio/StudioSummaryPanel.tsx`
+- `app/checkout/page.tsx`
+
+Toute modification de ce contrat exige un E2E Studio → panier → checkout et une
+vérification que les URL publiques ne sont ni des `blob:` ni des data URLs.
+
+## Bucket textile et Studio
+
+```text
+Nom        : customer-logos
+Visibilité : public
+Taille max : 10 Mo côté route
+Types      : PNG, JPG, SVG côté route
+Chemin     : studio-exports/{sessionId}/{timestamp}-{kind}-{filename}
 ```
-Nom       : customer-logos
-Visibilité: public
-Taille max: 10 MB
-Types     : PNG, JPEG, WEBP, SVG, PDF
+
+`sessionId` doit être un UUID navigateur stable. Les valeurs de `kind`
+autorisées sont `logo`, `print`, `preview-face` et `preview-back`.
+
+`lib/uploadLogo.ts` limite actuellement le logo utilisateur à PNG et SVG. La
+route accepte aussi JPG pour les exports et aperçus.
+
+## Print
+
+Les fichiers d’impression utilisent le bucket séparé `print-files` via
+`POST /api/orders/upload-print-file`.
+
+```text
+Connecté : customers/{userId}/...
+Invité   : guests/{sessionId}/...
 ```
 
-## RLS (Row Level Security)
+Ne pas mélanger les fichiers print haute définition et les assets Studio sans
+une migration documentée.
 
-- INSERT : authentifié uniquement (`auth.uid() IS NOT NULL`)
-- SELECT : public (URL publique accessible sans auth)
+## Variables Vercel — ne pas modifier
 
-## Fichier concerné
-
-```
-lib/uploadLogo.ts
-```
-
-**Ne pas modifier sans raison explicite.**
-
-## Variables Vercel Production — NE PAS TOUCHER
-
-```
+```text
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 ```
 
-Ces variables ont été ajoutées manuellement dans Vercel Production. Le redeploy est READY. Toute modification doit être explicitement demandée.
+La service role reste exclusivement côté serveur. Ne jamais la logger, la
+retourner dans une réponse ou la préfixer en `NEXT_PUBLIC_`.
 
-## Chemin de stockage
+## Garde-fous
 
-```
-cart/{sessionId}/{timestamp}-{filename}
-```
-
-- `sessionId` = identifiant de session navigateur stable (pas l'orderId)
-- Les fichiers sont déplacés / re-référencés à la création de commande
-
-## Interface CartFile
-
-```typescript
-interface CartFile {
-  name: string;
-  size: number;
-  type: string;
-  url?: string;    // URL publique Supabase — défini après upload réussi
-  path?: string;   // Chemin storage Supabase — défini après upload réussi
-  uploadedAt?: string;
-}
-```
-
-`url` et `path` sont **optionnels** — ils ne sont définis qu'après un upload réussi. Si l'utilisateur n'est pas connecté, le logo est conservé localement (File object) et uploadé depuis l'espace commande.
-
-## Erreurs possibles
-
-| Code | Signification |
-|---|---|
-| `NOT_AUTHENTICATED` | Pas de session Supabase active — normal si non connecté |
-| `FILE_TOO_LARGE` | > 10 MB |
-| `FORMAT_NOT_ALLOWED` | MIME type non autorisé |
-| `SUPABASE_UPLOAD_ERROR` | Erreur bucket (vérifier RLS, variables) |
-| `PUBLIC_URL_ERROR` | Upload OK mais URL non récupérable |
-
-## Projet Supabase
-
-```
-ID : kbeeedbfkalovtusaden
-Région : eu-west-3 (Paris)
-Statut : ACTIVE_HEALTHY
-```
-
-## À ne jamais faire
-
-- Ne pas modifier `lib/uploadLogo.ts` sans demande explicite
-- Ne pas changer les variables Vercel Supabase sans accord
-- Ne pas modifier la structure du chemin `cart/{sessionId}/...`
-- Ne pas changer les types MIME autorisés sans mise à jour des settings bucket Supabase
-- Ne pas supprimer ou modifier le bucket `customer-logos`
+- Ne pas supprimer ou renommer les buckets sans migration.
+- Ne pas élargir taille ou MIME sans vérifier Supabase et les routes.
+- Ne pas remplacer les URL publiques par des data URLs dans une commande.
+- Ne pas contourner la route serveur par une policy d’écriture anonyme globale.
+- Auditer limitation de débit, nettoyage des fichiers orphelins et abus avant
+  une campagne publicitaire importante.

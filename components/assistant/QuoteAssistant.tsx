@@ -3,7 +3,7 @@
 /**
  * QuoteAssistant — Widget d'orientation flottant
  *
- * Masqué sur /checkout et /checkout/paiement.
+ * Masqué sur les écrans transactionnels pour ne pas couvrir les formulaires.
  * z-index volontairement à 40 pour passer sous le CartDrawer (z-50).
  * Aucun appel API, aucun état global, aucune dépendance backend.
  */
@@ -215,9 +215,13 @@ function buildResult(answers: Answers): ResultCTA[] {
 
 export default function QuoteAssistant() {
   const pathname = usePathname();
+  const isPrintConfigurator = pathname.startsWith("/impression/");
 
-  // Masqué sur le tunnel de commande
-  if (HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+  // Masqué sur les tunnels de commande et les configurateurs.
+  if (
+    isPrintConfigurator ||
+    HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
+  ) {
     return null;
   }
 

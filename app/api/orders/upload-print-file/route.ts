@@ -39,9 +39,8 @@ export async function POST(req: NextRequest) {
     //   - User invité   → path "guests/{sessionId}/..." (la session vient du
     //                     navigateur via FormData, voir BusinessCardConfigurator)
     // L'utilisateur peut configurer + uploader son fichier sans inscription
-    // préalable. Au moment du checkout Stripe, l'auth devient obligatoire et
-    // les fichiers "guests/{sessionId}" peuvent être réassociés au compte
-    // créé par migration côté webhook (V1.3 — pas dans ce périmètre).
+    // préalable. Le checkout accepte aussi les invités ; les fichiers restent
+    // rattachés à la session et à la commande créée.
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 

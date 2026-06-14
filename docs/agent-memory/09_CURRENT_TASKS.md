@@ -1,83 +1,48 @@
-# 07 — Tâche Active
+# 09 — Tâche active
 
-*Dernière mise à jour : 2026-05-01*
+Dernière mise à jour : 2026-06-14.
 
-## État actuel du projet
+## Mission actuelle
 
-| Étape | Statut | Notes |
+Préparer HM Global pour une évolution structurée V3 à V6 :
+
+- audit marché et concurrents ;
+- UX et conversion ;
+- SEO local, avis et mesure ;
+- rentabilité et routage fournisseurs ;
+- récurrence entreprise et passage à l’échelle.
+
+Références :
+
+- `17_MARKET_GROWTH_ROADMAP_V3_V6.md`
+- `docs/prompts/CLAUDE_CODE_V3_V6_MARKET_AUDIT.md`
+- `16_LAUNCH_CHECKLIST.md`
+
+## État utile
+
+| Sujet | État | Suite |
 |---|---|---|
-| B3.2-A2 MockupViewer | ✅ Validé production | Zones calibrées, sélection logo, contrôles |
-| Fix TopTex 502 | ✅ Déployé | Commit `6261eaa`, early return si TOPTEX_API_KEY absent |
-| Variables Supabase Vercel | ✅ Configurées | Redeploy READY en production |
-| Fix hydration Zustand (`_hasHydrated`) | ✅ Déployé | 10 pages protégées, commits `8f226c9` + `47fd8b2` |
-| Upload logo production | ✅ Validé | URL `customer-logos/cart/…` confirmée en production |
-| Auth register/login production | ✅ Validé | Domaine final : `hm-global.vercel.app` |
-| Checkout flux complet V1 | ✅ Validé | Voir détail ci-dessous |
-| Suppression `test-ci@hmga.fr` | ⏳ À faire | User Supabase ID: `2510b913` — depuis Dashboard Auth |
-| Mémoire projet `/docs/agent-memory/` | ✅ Créée | 10 fichiers (00→09) |
-| `CLAUDE.md` mis à jour | ✅ Fait | Section lecture obligatoire ajoutée |
-| **B4 / BAT Preview Studio** | ✅ Validé production | Commits `1afa1e9` + `a6574af` — studio + fix fallback |
+| MockupViewer et zones Fabric.js | Validés production, protégés | Ne pas modifier sans audit complet |
+| Studio Canva-style | Déployé historiquement | Revalider le parcours après le prochain déploiement |
+| Checkout invité | Implémenté et testé localement le 2026-06-14 | Déployer puis faire un E2E production sans débit réel |
+| Upload Studio/logo invité | Route serveur testée localement le 2026-06-14 | Revoir abus/rate limit puis valider production |
+| Pipeline Printful | Garde-fous et brouillons déjà audités | Ne jamais confirmer une commande fournisseur en QA |
+| Domaine `hm-global.fr` | Utilisé en production publique | Vérifier Vercel, TLS, canonical et redirections |
+| Mesure acquisition | Aucun socle GA4/GTM confirmé dans le code | Décision consentement + IDs avant publicité |
+| Google Business Profile | Fiche publique observée | Confirmer propriété, liens, catégories et UTM |
+| Roadmap marché V3-V6 | Documentée le 2026-06-14 | Faire l’audit Claude Code en lecture seule |
 
-## Détail validation flux V1 (2026-05-01)
+## Priorité immédiate
 
-Testé sur `https://hm-global.vercel.app` — 14 étapes validées :
+1. Exécuter le prompt d’audit sans modification de code.
+2. Valider le premier lot V3.
+3. Déployer et tester la commande invitée en production.
+4. Installer la mesure avant toute augmentation du budget publicitaire.
+5. Lancer les pages locales et cas clients avec preuves réelles.
 
-1. `/catalogue/tshirts` non connecté → 6 produits affichés ✅
-2. Fiche produit `/produits/tshirt-bc-exact-190-homme` ✅
-3. Taille L + DTF + placement Cœur sélectionnés ✅
-4. Upload logo PNG sans compte → local preview uniquement ✅
-5. Notice *"Logo chargé pour la prévisualisation. Il sera enregistré au moment de la commande."* + bouton non bloqué ✅
-6. Ajout au panier → cart Zustand persisté ✅
-7. `/checkout` → middleware 307 → `/connexion?redirect=%2Fcheckout` ✅
-8. Connexion compte test → API 200, cookies Supabase posés ✅
-9. Retour automatique sur `/checkout` ✅
-10. Panier conservé après login ✅
-11. Bloc *"Logo à enregistrer"* affiché, bouton Payer `disabled: true` ✅
-12. Re-sélection logo dans checkout ✅
-13. Upload Supabase Storage → `logoFile.url` + `logoFile.path` présents ✅
-14. Bouton *"Payer 28,80 €"* `disabled: false` après adresse + logo ✅
+## Garde-fous
 
-Aucune erreur console. Aucun bug bloquant.
-
-## B4 BAT Preview Studio — Validé en production 2026-05-01
-
-Commits : `1afa1e9` (studio) + `a6574af` (fix fallback hoodie).
-
-Testé sur `https://hm-global.vercel.app` — 5/5 ✅ :
-- T-shirt B&C : "Prévisualiser le BAT" → Studio interactif full-screen ✅
-- Studio : canvas Fabric.js, logo chargé, Face/Dos, zoom+/-, recentrer, info panel ✅
-- "Voir le BAT complet" → studio fermé, BATModal ouvert ✅
-- Hoodie (non-MockupViewer) : "Prévisualiser le BAT" → BATModal direct (fallback) ✅
-- Ajouter au panier après fermeture studio/BAT → cart mis à jour ✅
-- Zéro erreur console ✅
-
-### Architecture B4
-
-- `components/product/BatPreviewStudio.tsx` — nouveau composant portal full-screen
-- `components/product/ProductDetailClient.tsx` — `showMockup ? setShowStudio(true) : setShowBAT(true)`
-- `MockupViewer.tsx` — **non modifié**, zones calibrées intactes
-- `BATModal.tsx` — **non modifié**
-
-## B-Studio — Studio de personnalisation Canva-style — Déployé en production 2026-05-02
-
-Commits : `2827ce2` (studio) + `0b88a52` (fix Suspense + MockupViewer zones).
-
-Fonctionnalités :
-- Route `/studio/[slug]` — layout 3 colonnes : outils | canvas Fabric.js | résumé + config
-- Outils : logo (PNG/SVG), texte (police/taille/couleur), 12 designs SVG
-- Canvas : packshot dynamique par couleur, zones par catégorie, front/dos toggle, toolbar flottante
-- Résumé : liste objets, récap commande, export PNG → Supabase → sessionStorage → redirect fiche produit
-- Bouton "Personnaliser" conditionnel : actif uniquement si taille sélectionnée
-- MockupViewer + BatPreviewStudio : ZONES_BY_CATEGORY par catégorie (tshirts/hoodies/softshells)
-- showMockup étendu aux hoodies et softshells
-
-Zones calibrées (packshot TopTex) :
-- tshirts : coeur [0.38, 0.28, 0.18, 0.18], dos [0.25, 0.20, 0.50, 0.45]
-- hoodies : coeur [0.40, 0.32, 0.16, 0.16], dos [0.25, 0.22, 0.50, 0.42]
-- softshells : coeur [0.42, 0.30, 0.15, 0.15], dos [0.26, 0.22, 0.48, 0.40]
-- ZONES_STATIC fallback B&C Exact 190 : coeur [0.60, 0.25, 0.14, 0.14], dos [0.26, 0.13, 0.48, 0.29]
-
-## Prochaine action
-
-→ **Test commande réelle** — Kaan commande lui-même un vêtement HM Global pour valider le tunnel complet (studio → panier → checkout → Stripe → confirmation + email).
-→ Ensuite : **Agent Jean-Yves** (vérification stock TopTex + commande vierges + fiche production)
+- Le working tree contient plusieurs changements non commités : ne rien écraser.
+- Ne pas effectuer de paiement ou de commande fournisseur réelle en QA.
+- Ne pas inventer de cas client, avis, partenariat ou chiffre de performance.
+- Ne pas ouvrir massivement le catalogue avant d’avoir la marge et le circuit de production.

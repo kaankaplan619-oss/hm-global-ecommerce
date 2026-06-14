@@ -1,6 +1,6 @@
 "use client";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { uploadStudioAsset } from "@/lib/uploadStudioAsset";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,7 +14,6 @@ export interface LogoUploadResult {
 export type LogoUploadError =
   | "FILE_TOO_LARGE"
   | "FORMAT_NOT_ALLOWED"
-  | "NOT_AUTHENTICATED"
   | "SUPABASE_UPLOAD_ERROR"
   | "PUBLIC_URL_ERROR";
 
@@ -27,76 +26,51 @@ const ALLOWED_MIME_TYPES = [
   "image/svg+xml",
 ];
 
-const BUCKET = "customer-logos";
-
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
 /**
  * Uploads a logo file to Supabase Storage under:
- *   cart/{sessionId}/{timestamp}-{filename}
+ *   studio-exports/{sessionId}/{timestamp}-logo-{filename}
  *
  * The sessionId is a stable browser session identifier (not an orderId).
  * Files are later moved / re-referenced when an order is created.
  *
  * Returns the public URL and storage path on success.
- * Requires an authenticated Supabase session.
+ * Passe par une route serveur validée, donc fonctionne aussi en commande invité.
  */
 export async function uploadLogoToSupabase(
   file: File,
   sessionId: string,
 ): Promise<{ data: LogoUploadResult | null; error: LogoUploadError | null }> {
-  const supabase = getSupabaseBrowserClient();
-
-  // 1. Check auth
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { data: null, error: "NOT_AUTHENTICATED" };
-  }
-
-  // 2. Validate size
+  // 1. Validate size
   if (file.size > MAX_SIZE_BYTES) {
     return { data: null, error: "FILE_TOO_LARGE" };
   }
 
-  // 3. Validate MIME type
+  // 2. Validate MIME type
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return { data: null, error: "FORMAT_NOT_ALLOWED" };
   }
 
-  // 4. Build storage path
-  const timestamp = Date.now();
-  const safeName  = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-  const path      = `cart/${sessionId}/${timestamp}-${safeName}`;
-
-  // 5. Upload
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, file, {
-      contentType: file.type,
-      upsert:      false,
-    });
-
-  if (uploadError) {
-    console.error("[uploadLogo] Supabase upload error:", uploadError);
+  // 3. Upload via la route serveur (pas de policy Storage anonyme requise)
+  let uploaded;
+  try {
+    uploaded = await uploadStudioAsset(file, sessionId, "logo", file.name);
+  } catch (error) {
+    console.error("[uploadLogo] upload error:", error);
     return { data: null, error: "SUPABASE_UPLOAD_ERROR" };
   }
 
-  // 6. Get public URL (bucket is public)
-  const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-
-  if (!urlData?.publicUrl) {
+  if (!uploaded.url) {
     return { data: null, error: "PUBLIC_URL_ERROR" };
   }
 
   return {
     data: {
-      logoFileUrl:  urlData.publicUrl,
+      logoFileUrl:  uploaded.url,
       logoFileName: file.name,
       logoMimeType: file.type,
-      logoPath:     path,
+      logoPath:     uploaded.path,
     },
     error: null,
   };
@@ -110,8 +84,6 @@ export function getUploadErrorMessage(error: LogoUploadError): string {
       return "Fichier trop lourd. La taille maximale est 10 Mo.";
     case "FORMAT_NOT_ALLOWED":
       return "Format non autorisé. Formats acceptés : PNG, SVG.";
-    case "NOT_AUTHENTICATED":
-      return "Connectez-vous pour envoyer votre logo maintenant, ou ajoutez au panier — vous pourrez l'envoyer depuis votre espace commande.";
     case "SUPABASE_UPLOAD_ERROR":
       return "Erreur lors de l'envoi du fichier. Veuillez réessayer.";
     case "PUBLIC_URL_ERROR":

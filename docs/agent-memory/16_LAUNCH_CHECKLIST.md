@@ -6,7 +6,7 @@
 > - Fin de tâche : mettre à jour l'item concerné ET le signaler à Kaan (« n° X corrigé, n° Y pas corrigé »).
 > - Toute nouvelle découverte : **ajouter un item en fin de liste**, ne pas corriger d'office (cf. CLAUDE.md).
 
-Dernière mise à jour : 2026-06-12 (session audit impression/Printful).
+Dernière mise à jour : 2026-06-14 (roadmap V3-V6 et checkout invité local).
 
 ---
 
@@ -44,3 +44,27 @@ Dernière mise à jour : 2026-06-12 (session audit impression/Printful).
 16. ⏳ **Checklist prod** (mémoire 2026-06-11) : clés Stripe LIVE + webhooks Vercel + reset des commandes test avant ouverture.
 17. ⏳ **Limites V1 à documenter côté client** : cœur+dos = même visuel sur les 2 faces ; position exacte garantie sur les 5 textiles DTG uniquement (casquettes/totes/goodies = placement par défaut Printful).
 18. 🟡 **Revue externe (Tuncer, dev prestataire emails/OVH)** : lien de partage ENVOYÉ sur WhatsApp le 2026-06-12 14h48 (expire le 13/06 ~11h30 — regénérer sur demande). Branche poussée → preview Vercel `hm-global-git-codex-hermes-os-c-602d9b-sumup-agen-ia-s-projects.vercel.app` (protégée par Vercel Authentication = bien). Lien de partage temporaire généré (expire 24 h) — pour un lien durable : Dashboard Vercel → hm-global → Settings → Deployment Protection → **Shareable Links** sur la branche. Accès autorisés : URL preview + compte test auto-créé + GitHub lecture (le repo est PUBLIC — il peut déjà lire le code). JAMAIS : membre du team Vercel (variables d'env lisibles : Stripe LIVE, Supabase service role, Printful), admin du site (données clients), clés API, `.env`.
+
+## F. Conversion, croissance et roadmap V3 à V6 (ajout 2026-06-14)
+
+21. ⏳ **Checkout invité** : implémenté et validé localement le 2026-06-14 dans
+le working tree non commité. Déployer puis tester Studio → panier → checkout →
+Stripe test, sans débit réel ni commande fournisseur.
+22. ⏳ **Upload serveur Studio/logo invité** : route
+`/api/studio/upload-asset` validée localement le 2026-06-14. Avant publicité,
+faire validation production, revue sécurité, limitation de débit et stratégie
+de nettoyage des fichiers orphelins.
+23. ⏳ **Redirection ancien lien Google** : redirection permanente
+`/contactez-nous/` → `/contact` implémentée localement le 2026-06-14. Vérifier
+le `308` en production après déploiement, puis corriger le lien de la fiche.
+24. ⏳ **Mesure acquisition** : installer consentement, conversions, Search
+Console et conventions UTM avant toute hausse du budget Google/Meta.
+25. 🟡 **Google Business Profile** : confirmer la propriété dans le compte
+Google, corriger liens/catégories/services et créer le lien direct de demande
+d’avis. Ne pas acheter d’avis ni filtrer les clients.
+26. ⏳ **SEO local V3** : produire cinq pages services locales et cinq cas
+clients réels avec photos, preuves, CTA et mesure. Interdiction des pages villes
+dupliquées.
+27. ⏳ **Roadmap V3-V6** : lancer l’audit en lecture seule avec
+`docs/prompts/CLAUDE_CODE_V3_V6_MARKET_AUDIT.md`, puis faire valider le premier
+lot V3 avant développement.

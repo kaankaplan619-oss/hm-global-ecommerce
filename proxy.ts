@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ["/mon-compte", "/checkout"];
+const PROTECTED_ROUTES = ["/mon-compte"];
 // Routes that require admin role
 const ADMIN_ROUTES = ["/admin"];
 
@@ -47,7 +47,7 @@ export async function proxy(req: NextRequest) {
   // Always use getUser() to refresh the token — not getSession()
   const { data: { user } } = await supabase.auth.getUser();
 
-  // ── Protect /mon-compte/* and /checkout ──────────────────────────────────
+  // ── Protect /mon-compte/* ────────────────────────────────────────────────
   const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
   if (isProtected && !user) {
     const loginUrl = new URL("/connexion", req.url);

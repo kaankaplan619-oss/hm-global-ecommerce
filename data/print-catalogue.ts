@@ -55,19 +55,8 @@ export const PRINT_CATALOGUE: PrintFamilyBlock[] = [
         href: CONFIG_HREF,
         badge: "Commande directe",
       },
-      {
-        id: "bc-rounded",
-        name: "Carte coins arrondis",
-        sizeLabel: "85 × 55 mm",
-        description:
-          "Le standard avec coins arrondis pour une finition douce et moderne. Même papier 350 g/m², toutes finitions disponibles.",
-        priceLabel: "dès 39,90 €",
-        direct: true,
-        href: CONFIG_HREF,
-        badge: "Commande directe",
-      },
-      // Cartes carrée / pliée retirées (étaient "Sur devis") — on ne propose que
-      // la commande directe sur les cartes de visite (standard + coins arrondis).
+      // Les coins arrondis ne sont pas proposés par le fournisseur actuel.
+      // Ne pas les réafficher avant d'avoir une référence commandable.
     ],
   },
   {

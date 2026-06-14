@@ -19,8 +19,8 @@ Catalogue                 →  Fiche produit                  →  Configuration
 /catalogue/[category]        /produits/[slug]                  taille / technique / placement
 
 Studio (optionnel)         →  Ajout panier                  →  Checkout
-/studio/[slug]                cart Zustand persisté            /checkout (auth required)
-upload logo                                                    upload Supabase customer-logos
+/studio/[slug]                cart Zustand persisté            /checkout (invité accepté)
+upload logo                                                    upload serveur customer-logos
 12 designs SVG dispo                                           bouton "Payer X €" disabled tant
 texte personnalisable                                          que adresse + logo manquants
 
@@ -70,8 +70,9 @@ fallback   : coeur [0.60, 0.25, 0.14, 0.14]  dos [0.26, 0.13, 0.48, 0.29]   (B&C
 | `components/product/BatPreviewStudio.tsx` | Studio interactif full-screen | Validé production (commit `1afa1e9`) |
 | `components/product/BATModal.tsx` | Modal BAT fallback (hoodies / softshells sans MockupViewer) | Validé production |
 | `app/studio/[slug]/page.tsx` | Studio Canva-style (canvas Fabric.js) | Validé production (commits `2827ce2` + `0b88a52`) |
-| `app/checkout/page.tsx` | Checkout avec upload logo Supabase | Validé production |
-| `lib/uploadLogo.ts` | Upload Supabase bucket `customer-logos` | Validé production — ne pas modifier sans diagnostic |
+| `app/checkout/page.tsx` | Checkout invité ou connecté avec upload logo | Validé localement le 2026-06-14, production à revalider |
+| `lib/uploadLogo.ts` | Adaptateur logo vers la route serveur | Contrat sensible — E2E obligatoire |
+| `app/api/studio/upload-asset/route.ts` | Upload serveur invité/connecté vers `customer-logos` | Validé localement le 2026-06-14, sécurité et production à revalider |
 
 ---
 
@@ -85,7 +86,7 @@ fallback   : coeur [0.60, 0.25, 0.14, 0.14]  dos [0.26, 0.13, 0.48, 0.29]   (B&C
 ### Pendant le développement
 - ❌ Ne pas modifier `MockupViewer.tsx` sans demande explicite + audit visuel complet
 - ❌ Ne pas modifier les zones calibrées Fabric.js
-- ❌ Ne pas modifier `lib/uploadLogo.ts` sans diagnostic validé
+- ❌ Ne pas modifier le contrat d’upload Studio/logo sans diagnostic et E2E
 - ❌ Ne pas changer les variables Supabase Vercel (cf. `06_SUPABASE_AND_UPLOAD_RULES`)
 - ❌ Ne pas casser le flux Studio → cart → checkout en faisant un refactor de Zustand
 

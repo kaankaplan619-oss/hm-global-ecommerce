@@ -1,6 +1,11 @@
 # Vision Plateforme HM Global Agence
 **Créé le : mai 2026 — Document de référence inter-sessions**
 
+> Pour la feuille de route opérationnelle V3 à V6, le positionnement marché,
+> l’acquisition et le sourcing, la référence actuelle est
+> `17_MARKET_GROWTH_ROADMAP_V3_V6.md`. Ce document conserve la vision
+> produit historique.
+
 ---
 
 ## 1. Contexte et positionnement

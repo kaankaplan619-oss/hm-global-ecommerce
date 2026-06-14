@@ -15,11 +15,9 @@
  *   - Admin peut voir l'aperçu sans devoir regénérer le composite
  *
  * Bucket utilisé : "customer-logos" (déjà existant) sous le préfixe
- * "studio-exports/" — même préfixe que les fichiers logo/print du Studio,
- * couvert par la policy Storage "Anon upload studio-exports" (INSERT, role
- * anon). C'est ce qui rend l'upload possible aussi pour les commandes INVITÉ
- * (avant : préfixe "previews/" + barrière auth → upload bloqué pour les
- * invités → composed_preview_url null → admin sans aperçu composé).
+ * "studio-exports/". L'écriture passe par /api/studio/upload-asset avec la
+ * clé serveur, validation de type et de taille. Les invités peuvent donc
+ * commander sans ouvrir le bucket en écriture anonyme.
  *
  * Le bucket est public → URL accessible sans token (cohérent avec logos
  * actuels qui sont eux aussi en bucket public).
@@ -28,14 +26,11 @@
  * data:image/jpeg). PNG par défaut (Studio génère du PNG).
  */
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-
-const BUCKET = "customer-logos";
+import { uploadStudioAsset } from "@/lib/uploadStudioAsset";
 
 export type ComposedPreviewUploadError =
   | "INVALID_DATA_URL"
   | "FETCH_BLOB_ERROR"
-  | "NOT_AUTHENTICATED"
   | "SUPABASE_UPLOAD_ERROR"
   | "PUBLIC_URL_ERROR";
 
@@ -82,44 +77,28 @@ export async function uploadComposedPreviewToSupabase(
     return { data: null, error: "INVALID_DATA_URL" };
   }
 
-  // 2. Client storage — PAS de barrière auth : l'aperçu composé suit le même
-  // chemin que les fichiers logo/print du Studio (préfixe `studio-exports/`),
-  // couvert par la policy Storage "Anon upload studio-exports". Indispensable
-  // pour les commandes INVITÉ : sinon l'upload échouait (NOT_AUTHENTICATED),
-  // composed_preview_url restait null, et l'admin n'affichait que le packshot
-  // + le logo séparés au lieu de l'aperçu « logo posé sur le produit ».
-  const supabase = getSupabaseBrowserClient();
-
-  // 3. Build path stable — DOIT commencer par `studio-exports/` pour matcher la
-  // policy anon (foldername[1] = 'studio-exports'). L'extension suit le MIME.
+  // 2. La route serveur écrit dans Storage avec validation. Aucun accès
+  // anonyme direct au bucket n'est nécessaire pour les commandes invitées.
   const ext = blob.type === "image/jpeg" ? "jpg" : "png";
-  const timestamp = Date.now();
-  const path = `studio-exports/${sessionId}/${timestamp}-${side}.${ext}`;
-
-  // 4. Upload
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, blob, {
-      contentType: blob.type || "image/png",
-      upsert:      false,
-      // cacheControl 1 jour → l'admin va le revoir, le client peut revoir,
-      // mais l'image est unique par order donc pas besoin de cache long.
-      cacheControl: "86400",
-    });
-
-  if (uploadError) {
-    console.error("[uploadComposedPreview] Supabase upload error:", uploadError);
+  let uploaded;
+  try {
+    uploaded = await uploadStudioAsset(
+      blob,
+      sessionId,
+      side === "face" ? "preview-face" : "preview-back",
+      `preview-${side}.${ext}`,
+    );
+  } catch (error) {
+    console.error("[uploadComposedPreview] upload error:", error);
     return { data: null, error: "SUPABASE_UPLOAD_ERROR" };
   }
 
-  // 5. Public URL
-  const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  if (!urlData?.publicUrl) {
+  if (!uploaded.url) {
     return { data: null, error: "PUBLIC_URL_ERROR" };
   }
 
   return {
-    data: { url: urlData.publicUrl, path },
+    data: { url: uploaded.url, path: uploaded.path },
     error: null,
   };
 }

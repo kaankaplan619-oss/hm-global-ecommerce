@@ -10,7 +10,7 @@ const ITEMS = [
   {
     icon: MapPin,
     title: "Atelier à Souffelweyersheim",
-    text: "La seule agence tout-en-un d'Alsace : textile, print et enseignes.",
+    text: "Votre atelier tout-en-un en Alsace : textile, print et enseignes.",
   },
   {
     icon: ShieldCheck,
@@ -19,7 +19,7 @@ const ITEMS = [
   },
   {
     icon: Award,
-    title: "200+ projets depuis 2018",
+    title: "Depuis 2018 en Alsace",
     text: "Restaurants, BTP, associations, PME — des clients qui reviennent.",
   },
   {

@@ -7,14 +7,16 @@ import QuoteAssistant from "@/components/assistant/QuoteAssistant";
 import CookieConsent from "@/components/layout/CookieConsent";
 import LocalBusinessJsonLd from "@/components/seo/LocalBusinessJsonLd";
 import AuthSync from "@/components/auth/AuthSync";
+import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
 export const metadata: Metadata = {
   title: {
-    default: "HM Global Agence — Textile personnalisé professionnel",
+    default: "HM Global — Agence de communication visuelle à Strasbourg",
     template: "%s | HM Global Agence",
   },
   description:
-    "Commandez votre textile personnalisé en quelques clics. T-shirts, hoodies, softshells brodés ou imprimés. Livraison rapide depuis Alsace.",
+    "Textile personnalisé, impression, enseignes et signalétique pour les entreprises à Strasbourg et en Alsace. Atelier local et BAT avant production.",
   keywords: [
     "textile personnalisé",
     "t-shirt personnalisé",
@@ -22,6 +24,10 @@ export const metadata: Metadata = {
     "DTF",
     "impression textile",
     "vêtement entreprise",
+    "enseigne Strasbourg",
+    "signalétique Alsace",
+    "impression professionnelle",
+    "agence communication visuelle",
     "Alsace",
     "Souffelweyersheim",
   ],
@@ -37,23 +43,23 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     siteName: "HM Global Agence",
-    title: "HM Global Agence — Textile personnalisé professionnel",
+    title: "HM Global — Agence de communication visuelle à Strasbourg",
     description:
-      "Commandez votre textile personnalisé en quelques clics avec HM Global Agence.",
+      "Textile personnalisé, impression, enseignes et signalétique pour les entreprises en Alsace.",
     images: [
       {
-        url: "/logo/hm-global-logo.png",
+        url: "/images/home/hm-hero-atelier-v2.jpg",
         width: 1200,
         height: 630,
-        alt: "HM Global Agence",
+        alt: "Atelier HM Global à Souffelweyersheim",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HM Global Agence — Textile personnalisé professionnel",
-    description: "Commandez votre textile personnalisé en quelques clics avec HM Global Agence.",
-    images: ["/logo/hm-global-logo.png"],
+    title: "HM Global — Agence de communication visuelle à Strasbourg",
+    description: "Textile personnalisé, impression, enseignes et signalétique en Alsace.",
+    images: ["/images/home/hm-hero-atelier-v2.jpg"],
   },
   robots: { index: true, follow: true },
 };
@@ -74,6 +80,8 @@ export default function RootLayout({
         <Footer />
         <QuoteAssistant />
         <CookieConsent />
+        <AnalyticsTracker />
+        <GoogleAnalytics />
       </body>
     </html>
   );

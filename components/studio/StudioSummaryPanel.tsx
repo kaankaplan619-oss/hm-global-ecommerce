@@ -5,7 +5,8 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, X, ArrowLeft, ShoppingCart, RotateCcw, Shirt } from "lucide-react";
 import { formatPrice, PRICING_CONFIG, getVolumePricedRate } from "@/data/pricing";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { uploadLogoToSupabase } from "@/lib/uploadLogo";
+import { uploadStudioAsset } from "@/lib/uploadStudioAsset";
 import { useCartStore } from "@/store/cart";
 import type { StudioObject } from "./StudioCanvas";
 import type { Product, Placement, Technique, ProductColor, CartFile } from "@/types";
@@ -24,6 +25,15 @@ const PLACEMENT_LABELS: Record<Placement, string> = {
   dos:        "Dos",
   "coeur-dos": "Cœur + Dos",
 };
+
+function getStudioSessionId() {
+  if (typeof window === "undefined") return "ssr";
+  const stored = sessionStorage.getItem("hm_session_id");
+  if (stored) return stored;
+  const id = crypto.randomUUID();
+  sessionStorage.setItem("hm_session_id", id);
+  return id;
+}
 
 // ── State de prévisualisation avant confirmation ──────────────────────────────
 interface PreviewState {
@@ -149,30 +159,15 @@ export default function StudioSummaryPanel({
         logoFileSize = logoObj.file.size;
         storagePath  = `studio-exports/${timestamp}-${logoObj.file.name}`;
 
-        // Upload AVANT de continuer : le panier/DB/Printful exigent une URL
-        // publique — une data URL base64 fait échouer la commande POD (et
-        // pèse plusieurs Mo en DB). Fallback data URL uniquement si l'upload
-        // échoue (invité non authentifié, réseau) : l'aperçu reste possible
-        // et la route admin refusera l'envoi Printful avec un message clair.
-        try {
-          const supabase = getSupabaseBrowserClient();
-          const { error: upErr } = await supabase.storage
-            .from("customer-logos")
-            .upload(storagePath, logoObj.file, { contentType: logoFileType, upsert: true });
-          if (!upErr) {
-            const { data: pub } = supabase.storage.from("customer-logos").getPublicUrl(storagePath);
-            logoFileUrl = pub?.publicUrl ?? "";
-          }
-        } catch { /* fallback data URL ci-dessous */ }
-
-        if (!logoFileUrl) {
-          logoFileUrl = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload  = () => resolve(reader.result as string);
-            reader.onerror = () => reject(new Error("Impossible de lire le fichier logo."));
-            reader.readAsDataURL(logoObj.file!);
-          });
+        const sessionId = getStudioSessionId();
+        const { data, error } = await uploadLogoToSupabase(logoObj.file, sessionId);
+        if (!data || error) {
+          throw new Error(
+            "Votre logo n'a pas pu être enregistré. Vérifiez votre connexion puis réessayez.",
+          );
         }
+        logoFileUrl = data.logoFileUrl;
+        storagePath = data.logoPath;
 
       } else if (logoObj?.src) {
         if (logoObj.src.startsWith("data:")) {
@@ -181,18 +176,15 @@ export default function StudioSummaryPanel({
           logoFileType = "image/png";
           logoFileSize = Math.round(logoObj.src.length * 0.75);
           storagePath  = `studio-exports/${timestamp}-qr.png`;
-          try {
-            const blob = await (await fetch(logoObj.src)).blob();
-            const supabase = getSupabaseBrowserClient();
-            const { error: upErr } = await supabase.storage
-              .from("customer-logos")
-              .upload(storagePath, blob, { contentType: "image/png", upsert: true });
-            if (!upErr) {
-              const { data: pub } = supabase.storage.from("customer-logos").getPublicUrl(storagePath);
-              logoFileUrl = pub?.publicUrl ?? "";
-            }
-          } catch { /* fallback data URL */ }
-          if (!logoFileUrl) logoFileUrl = logoObj.src;
+          const blob = await (await fetch(logoObj.src)).blob();
+          const uploaded = await uploadStudioAsset(
+            blob,
+            getStudioSessionId(),
+            "logo",
+            logoFileName,
+          );
+          logoFileUrl = uploaded.url;
+          storagePath = uploaded.path;
         } else {
           // Designs de la bibliothèque : chemin relatif /designs/… → URL
           // absolue, sinon Printful ne peut pas télécharger le fichier.
@@ -222,18 +214,15 @@ export default function StudioSummaryPanel({
         logoFileSize = Math.round(dataURL.length * 0.75);
         storagePath  = `studio-exports/${timestamp}-print-${face}.png`;
 
-        try {
-          const blob = await (await fetch(dataURL)).blob();
-          const supabase = getSupabaseBrowserClient();
-          const { error: upErr } = await supabase.storage
-            .from("customer-logos")
-            .upload(storagePath, blob, { contentType: "image/png", upsert: true });
-          if (!upErr) {
-            const { data: pub } = supabase.storage.from("customer-logos").getPublicUrl(storagePath);
-            logoFileUrl = pub?.publicUrl ?? "";
-          }
-        } catch { /* fallback data URL ci-dessous */ }
-        if (!logoFileUrl) logoFileUrl = dataURL;
+        const blob = await (await fetch(dataURL)).blob();
+        const uploaded = await uploadStudioAsset(
+          blob,
+          getStudioSessionId(),
+          "print",
+          logoFileName,
+        );
+        logoFileUrl = uploaded.url;
+        storagePath = uploaded.path;
       }
 
       // ── Position de l'objet image unique ─────────────────────────────────
@@ -363,15 +352,7 @@ export default function StudioSummaryPanel({
       // Session ID stable côté browser (utilisée par uploadLogo aussi). On a la
       // garantie que c'est le même que dans le checkout, donc tous les uploads
       // d'un parcours client tombent sous le même dossier.
-      let sessionId = "ssr";
-      if (typeof window !== "undefined") {
-        sessionId = sessionStorage.getItem("hm_session_id")
-          ?? (() => {
-            const id = crypto.randomUUID();
-            sessionStorage.setItem("hm_session_id", id);
-            return id;
-          })();
-      }
+      const sessionId = getStudioSessionId();
       const { uploadBothComposedPreviews } = await import("@/lib/uploadComposedPreview");
       const { faceUrl, backUrl } = await uploadBothComposedPreviews(
         preview.composedFront || undefined,
@@ -381,9 +362,8 @@ export default function StudioSummaryPanel({
 
       // Ajouter au panier directement — pas de passage par la fiche produit.
       // On stocke EN PRIORITÉ les URLs uploadées (légères, persistables). Si
-      // l'upload a foiré (auth manquante, réseau), on tombe en fallback sur
-      // les data URL base64 — affichage en session sans persistance, le client
-      // peut quand même finaliser sa commande sans bloquer.
+      // Une URL publique est requise pour que le panier survive au refresh et
+      // que l'atelier comme le fournisseur puissent télécharger le BAT.
       // Mode édition (clic depuis le panier) : on remplace la ligne existante
       // au lieu d'en créer une nouvelle.
       const payload = {
@@ -396,8 +376,8 @@ export default function StudioSummaryPanel({
         logoFile,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         logoPlacementTransform: (sr.logoPlacementTransform as any) ?? undefined,
-        composedPreviewUrl:  faceUrl ?? preview.composedFront ?? undefined,
-        composedPreviewBack: backUrl ?? preview.composedBack  ?? undefined,
+        composedPreviewUrl:  faceUrl ?? undefined,
+        composedPreviewBack: backUrl ?? undefined,
       };
       if (editItemId) {
         replaceItem(editItemId, payload);

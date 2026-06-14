@@ -7,7 +7,7 @@ import type { LogoPlacementTransform } from "@/lib/bat-utils";
 import dynamic from "next/dynamic";
 import type { MockupViewerProps } from "@/components/product/MockupViewer";
 import Link from "next/link";
-import { ArrowRight, Info } from "lucide-react";
+import { ArrowRight, Info, ShieldCheck, Truck, MapPin } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
 import LightMockupPreview from "@/components/product/LightMockupPreview";
@@ -967,38 +967,69 @@ export default function ProductDetailClient({ product }: Props) {
               <ArrowRight size={16} />
             </Link>
           )}
-          {product.volumePricing ? (
-            <div>
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
-                Prix dégressifs dès {product.minOrderQty ?? 10} pièces
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {(product.volumePricingByTechnique?.[technique] ?? product.volumePricing).map((tier) => (
-                  <span
-                    key={tier.from}
-                    className="rounded-full border border-[var(--hm-border)] bg-[var(--hm-surface)] px-3 py-1 text-xs font-semibold text-[var(--hm-text)]"
-                  >
-                    {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs → {formatPrice(tier.unitPrice)}
+          {(() => {
+            // Paliers actifs : par technique en priorité, sinon grille globale.
+            // Avant : les chips n'apparaissaient que si `volumePricing` (global)
+            // existait → les produits à grille PAR TECHNIQUE (Bella, Gildan…)
+            // cachaient leur avantage volume. On affiche désormais le prix
+            // unitaire courant + les paliers dès qu'une grille existe.
+            const activeTiers =
+              product.volumePricingByTechnique?.[technique] ?? product.volumePricing ?? null;
+            return (
+              <div className="space-y-3">
+                {/* Prix unitaire courant — suit technique · placement · quantité */}
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="text-2xl font-black text-[var(--hm-primary)] tabular-nums transition-all duration-200">
+                    {formatPrice(currentPrice)}
                   </span>
-                ))}
+                  <span className="text-sm text-[var(--hm-text-soft)]">TTC / pièce</span>
+                  <span className="text-xs text-[var(--hm-text-soft)]">
+                    ({formatPrice(Math.round((currentPrice / 1.2) * 100) / 100)} HT)
+                  </span>
+                </div>
+
+                {/* Paliers dégressifs — surfacent l'avantage volume, palier courant mis en valeur */}
+                {activeTiers && activeTiers.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
+                      Plus vous commandez, moins c&apos;est cher
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {activeTiers.map((tier) => {
+                        const isActive =
+                          quantity >= tier.from && (tier.to == null || quantity <= tier.to);
+                        return (
+                          <span
+                            key={tier.from}
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold tabular-nums transition ${
+                              isActive
+                                ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                                : "border-[var(--hm-line)] bg-[var(--hm-surface)] text-[var(--hm-text)]"
+                            }`}
+                          >
+                            {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs → {formatPrice(tier.unitPrice)}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-              <span className="text-2xl font-black text-[var(--hm-primary)] tabular-nums transition-all duration-200">
-                {formatPrice(currentPrice)}
-              </span>
-              <span className="text-sm text-[var(--hm-text-soft)]">TTC</span>
-              <span className="text-xs text-[var(--hm-text-soft)]">
-                ({formatPrice(Math.round((currentPrice / 1.2) * 100) / 100)} HT)
-              </span>
-              {currentPrice !== minPrice && (
-                <span className="ml-1 text-[10px] text-[var(--hm-text-muted)]">
-                  · dès {formatPrice(minPrice)} en DTF
-                </span>
-              )}
-            </div>
-          )}
+            );
+          })()}
+
+          {/* Réassurance — arguments toujours vrais, sous le prix (benchmark Sticker Mule / 4imprint) */}
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--hm-text-soft)]">
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck size={13} className="text-[var(--hm-primary)]" /> BAT gratuit avant impression
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Truck size={13} className="text-[var(--hm-primary)]" /> Port offert dès 3 articles
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin size={13} className="text-[var(--hm-primary)]" /> Atelier &amp; conseil en Alsace
+            </span>
+          </div>
         </div>
 
         {/* Bascule devis-only : si product.quoteOnly = true, on remplace

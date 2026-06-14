@@ -8,7 +8,7 @@ export default function ReviewsBand() {
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-50 border border-amber-100">
-              <span className="text-xl font-bold text-amber-600">4.9</span>
+              <span className="text-xl font-bold text-amber-600">4,7</span>
             </div>
             <div>
               <div className="flex items-center gap-0.5">
@@ -17,7 +17,15 @@ export default function ReviewsBand() {
                 ))}
               </div>
               <p className="mt-1 text-[12px] text-[var(--hm-text-soft)]">
-                Note moyenne · <strong className="text-[var(--hm-text)]">1 200+ commandes livrées</strong>
+                Note moyenne ·{" "}
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=HM%20Global%20Agence%20Souffelweyersheim"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[var(--hm-text)] underline decoration-dotted underline-offset-2 transition hover:text-[var(--hm-primary)]"
+                >
+                  14 avis Google
+                </a>
               </p>
             </div>
           </div>

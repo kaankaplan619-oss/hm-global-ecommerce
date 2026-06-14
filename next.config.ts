@@ -87,12 +87,22 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  async redirects() {
+    return [
+      {
+        source: "/contactez-nous/:path*",
+        destination: "/contact",
+        permanent: true,
+      },
+    ];
+  },
+
   // Redirect admin to login if not authenticated (handled client-side for V1)
   // Can be replaced with middleware auth in V2
 
   // Environment variables to expose to client
   env: {
-    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmglobalagence.fr",
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.hm-global.fr",
   },
 };
 

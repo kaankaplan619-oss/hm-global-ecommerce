@@ -18,7 +18,7 @@ const PRINT_CATEGORIES = [
   {
     uid:         "business-cards",
     label:       "Cartes de visite",
-    description: "Papier 350 g/m², finition mate, brillante ou premium. Coins droits ou arrondis.",
+    description: "Papier 350 g/m², finition mate, brillante ou premium. Format 85 × 55 mm.",
     icon:        CreditCard,
     iconBg:      "bg-[var(--hm-accent-soft-blue)]",
     iconColor:   "text-[var(--hm-blue)]",

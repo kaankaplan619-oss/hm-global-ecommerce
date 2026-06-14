@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { track } from "@/lib/track";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -22,205 +23,11 @@ import { uploadLogoToSupabase } from "@/lib/uploadLogo";
 import AddressAutocomplete from "@/components/checkout/AddressAutocomplete";
 import CompanyAutocomplete from "@/components/checkout/CompanyAutocomplete";
 
-// ─── Auth gate ────────────────────────────────────────────────────────────────
-
-function CheckoutAuthGate({
-  onLoginSuccess,
-}: {
-  onLoginSuccess: () => void;
-}) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const { setUser } = useAuthStore();
-  const { getTotals, items } = useCartStore();
-  const totals = getTotals();
-  const [showItems, setShowItems] = useState(false);
-
-  const handleLogin = async () => {
-    if (!email || !password) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message ?? "Erreur de connexion");
-      setUser(data.user);
-      onLoginSuccess();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="pb-20 pt-24">
-      <div className="container max-w-5xl">
-        <h1 className="mb-8 text-2xl font-black text-[var(--hm-text)]">
-          Finaliser ma commande
-        </h1>
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-
-          {/* ── Connexion ──────────────────────────────────────── */}
-          <div className="flex flex-col gap-4 lg:col-span-2">
-            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-6">
-              <h2 className="mb-1 text-sm font-bold text-[var(--hm-text)]">
-                Connectez-vous pour finaliser
-              </h2>
-              <p className="mb-5 text-xs text-[var(--hm-text-soft)]">
-                Votre panier est conservé. La connexion est requise pour valider votre commande et enregistrer votre logo.
-              </p>
-
-              <div className="flex flex-col gap-4">
-                <div>
-                  <label className="label">Email *</label>
-                  <input
-                    type="email"
-                    className="input"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="vous@exemple.fr"
-                    autoComplete="email"
-                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                  />
-                </div>
-                <div>
-                  <label className="label">Mot de passe *</label>
-                  <input
-                    type="password"
-                    className="input"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                  />
-                </div>
-
-                {error && (
-                  <div className="flex items-center gap-2 rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-xs text-[#b91c1c]">
-                    <AlertCircle size={12} className="shrink-0" />
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  onClick={handleLogin}
-                  disabled={loading || !email || !password}
-                  className="btn-primary gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" />
-                      Connexion…
-                    </>
-                  ) : (
-                    "Se connecter et continuer"
-                  )}
-                </button>
-
-                <div className="flex flex-col gap-2 text-center">
-                  <p className="text-xs text-[var(--hm-text-muted)]">
-                    Pas encore de compte ?{" "}
-                    <Link
-                      href="/inscription?redirect=/checkout"
-                      className="font-semibold text-[var(--hm-primary)] hover:underline"
-                    >
-                      Créer un compte
-                    </Link>{" "}
-                    — revenez ensuite sur cette page.
-                  </p>
-                  <Link
-                    href="/mot-de-passe-oublie"
-                    className="text-xs text-[var(--hm-text-muted)] hover:text-[var(--hm-primary)]"
-                  >
-                    Mot de passe oublié ?
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Récap panier ───────────────────────────────────── */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 rounded-2xl border border-[var(--hm-line)] bg-white p-5">
-              <button
-                className="mb-4 flex w-full items-center justify-between"
-                onClick={() => setShowItems(!showItems)}
-              >
-                <span className="text-sm font-bold text-[var(--hm-text)]">
-                  Votre panier ({totals.totalItems} article{totals.totalItems > 1 ? "s" : ""})
-                </span>
-                {showItems
-                  ? <ChevronUp size={14} className="text-[var(--hm-text-muted)]" />
-                  : <ChevronDown size={14} className="text-[var(--hm-text-muted)]" />
-                }
-              </button>
-
-              {showItems && (
-                <div className="mb-4 flex flex-col gap-3">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex justify-between gap-2 text-xs">
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[var(--hm-text-soft)]">
-                          {item.product.shortName}
-                          {item.printConfig
-                            ? ` · ${item.printConfig.quantity} ex.`
-                            : ` × ${item.quantity}`}
-                        </p>
-                        <p className="text-[10px] text-[var(--hm-text-muted)]">
-                          {item.printConfig
-                            ? `Impression · ${item.printConfig.finish === "mat" ? "Mat" : item.printConfig.finish === "brillant" ? "Brillant" : "Premium"} · ${item.printConfig.faces === "recto" ? "Recto" : "Recto-verso"}`
-                            : `${TECHNIQUE_LABELS[item.technique]} · ${PLACEMENT_LABELS[item.placement]} · ${item.size}`}
-                        </p>
-                      </div>
-                      <span className="shrink-0 font-semibold text-[var(--hm-text)]">
-                        {formatPrice(item.totalPrice)}
-                      </span>
-                    </div>
-                  ))}
-                  <div className="divider-brand" />
-                </div>
-              )}
-
-              <div className="mb-4 flex flex-col gap-2">
-                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
-                  <span>Sous-total HT</span>
-                  <span>{formatPrice(totals.subtotalHT)}</span>
-                </div>
-                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
-                  <span>TVA (20%)</span>
-                  <span>{formatPrice(totals.tva)}</span>
-                </div>
-                <div className="flex justify-between text-xs text-[var(--hm-text-soft)]">
-                  <span>Livraison</span>
-                  <span className={totals.freeShipping ? "text-[#4ade80]" : ""}>
-                    {totals.freeShipping ? "Offerte" : formatPrice(totals.shipping)}
-                  </span>
-                </div>
-              </div>
-              <div className="divider-brand mb-4" />
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-[var(--hm-text)]">Total TTC</span>
-                <span className="text-xl font-black text-[var(--hm-primary)]">
-                  {formatPrice(totals.totalTTC)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Logo confirmation ────────────────────────────────────────────────────────
+
+function isPublicAssetUrl(url?: string) {
+  return !!url && /^https?:\/\//i.test(url);
+}
 
 function LogoConfirmationSection({
   sessionId,
@@ -232,7 +39,7 @@ function LogoConfirmationSection({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const itemsNeedingLogo = items.filter(
-    (item) => item.logoFile?.name && !item.logoFile?.url
+    (item) => item.logoFile?.name && !isPublicAssetUrl(item.logoFile?.url)
   );
 
   if (itemsNeedingLogo.length === 0) return null;
@@ -285,7 +92,7 @@ function LogoConfirmationSection({
         {items.map((item) => {
           if (!item.logoFile?.name) return null;
 
-          const done = !!item.logoFile?.url;
+          const done = isPublicAssetUrl(item.logoFile?.url);
           const isUploading = uploading[item.id];
 
           return (
@@ -362,14 +169,17 @@ export default function CheckoutPage() {
   const { isAuthenticated, user } = useAuthStore();
   const totals = getTotals();
 
+  // Mesure : début de checkout (une fois au montage)
+  useEffect(() => {
+    track("begin_checkout");
+  }, []);
+
   const [hydrated, setHydrated] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(false);
   // Erreur bloquante au moment de la commande (ex. rupture de stock Printful
   // détectée par le garde serveur) — affichée au-dessus du bouton de paiement.
   const [orderError, setOrderError] = useState<string | null>(null);
-  // Forces re-render after login to re-check logo states
-  const [loginDone, setLoginDone] = useState(false);
   // Méthode de paiement choisie : Stripe (CB/Link) ou virement bancaire V1 manuel.
   const [paymentMethod, setPaymentMethod] = useState<"stripe" | "bank_transfer">("stripe");
 
@@ -461,7 +271,7 @@ export default function CheckoutPage() {
         company:   user.company    || prev.company,
       }));
     }
-  }, [isAuthenticated, user, loginDone]);
+  }, [isAuthenticated, user]);
 
   // Pré-remplissage automatique depuis le COMPTE : si le client est connecté,
   // on récupère l'adresse de sa dernière commande (l'objet user ne porte pas
@@ -525,18 +335,9 @@ export default function CheckoutPage() {
 
   if (!hydrated || items.length === 0) return null;
 
-  // ── Auth gate ──────────────────────────────────────────────────────────────
-  if (!isAuthenticated) {
-    return (
-      <CheckoutAuthGate
-        onLoginSuccess={() => setLoginDone(true)}
-      />
-    );
-  }
-
   // ── Items needing logo confirmation ────────────────────────────────────────
   const itemsNeedingLogo = items.filter(
-    (item) => item.logoFile?.name && !item.logoFile?.url
+    (item) => item.logoFile?.name && !isPublicAssetUrl(item.logoFile?.url)
   );
   const allLogosReady = itemsNeedingLogo.length === 0;
 
@@ -582,11 +383,14 @@ export default function CheckoutPage() {
           logoEffect:              i.logoEffect              ?? null,
           logoPlacementTransform:  i.logoPlacementTransform  ?? null,
           batRef:                  i.batRef                  ?? null,
+          composedPreviewUrl:      i.composedPreviewUrl      ?? null,
+          composedPreviewBack:     i.composedPreviewBack     ?? null,
           // Print — transmis uniquement pour les commandes impression
           printConfig: i.printConfig ?? null,
         })),
         billingAddress,
         shippingAddress: sameShipping ? billingAddress : undefined,
+        guestEmail: isAuthenticated ? undefined : billingAddress.email,
         marketingConsent,
       };
 
@@ -658,6 +462,21 @@ export default function CheckoutPage() {
         <h1 className="mb-8 text-2xl font-black text-[var(--hm-text)]">
           Finaliser ma commande
         </h1>
+
+        {!isAuthenticated && (
+          <div className="mb-6 flex flex-col gap-2 rounded-2xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-5 py-4 text-xs text-[var(--hm-text-soft)] sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              <strong className="text-[var(--hm-text)]">Commande sans compte.</strong>{" "}
+              Renseignez simplement votre email pour recevoir le suivi.
+            </p>
+            <Link
+              href="/connexion?redirect=/checkout"
+              className="shrink-0 font-bold text-[var(--hm-primary)] hover:underline"
+            >
+              Déjà client ? Se connecter
+            </Link>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* ── Formulaire ───────────────────────────────────── */}

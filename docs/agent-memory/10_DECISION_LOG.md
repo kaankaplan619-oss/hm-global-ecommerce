@@ -113,3 +113,47 @@ Format :
 ## Décisions modifiées / annulées
 
 (aucune pour l'instant)
+
+---
+
+## Addendum — décisions du 2026-06-14
+
+### Checkout invité et upload serveur
+- **Date** : 2026-06-14
+- **Décision** : Le checkout doit accepter les invités. Les assets textile et
+  Studio sont envoyés par `POST /api/studio/upload-asset`, puis stockés sous
+  `studio-exports/{sessionId}/...`.
+- **Why** : La création de compte obligatoire ajoutait une friction importante
+  et empêchait la conservation fiable des fichiers invités.
+- **How to apply** : Garder `/mon-compte` protégé mais laisser `/checkout`
+  public. Conserver la service role côté serveur uniquement. Refaire un E2E
+  Studio → panier → checkout après toute modification.
+- **Statut** : Active dans le working tree, déploiement production à revalider.
+- **Remplace** : « Upload logo Supabase validé en production » et la partie
+  auth obligatoire de « Auth + Checkout V1 validés en production ».
+- **Décidé par** : Kaan, mise en œuvre Codex.
+
+### Positionnement et feuille de route V3 à V6
+- **Date** : 2026-06-14
+- **Décision** : Structurer l’offre en `Boutique Express`, `Projets locaux` et
+  `Programme Entreprises`, puis exécuter V3 à V6 selon
+  `17_MARKET_GROWTH_ROADMAP_V3_V6.md`.
+- **Why** : Une offre très large sans portes d’entrée distinctes augmente la
+  confusion. HM Global doit vendre la simplicité, la preuve locale, le BAT et
+  l’accompagnement, pas seulement la largeur du catalogue.
+- **How to apply** : Toute évolution stratégique doit définir cible, marge,
+  parcours, KPI, propriétaire opérationnel, tests et non-objectifs.
+- **Statut** : Active comme hypothèse à valider par l’audit.
+- **Décidé par** : Kaan, cadrage Codex.
+
+### Publicité conditionnée à la mesure
+- **Date** : 2026-06-14
+- **Décision** : Ne pas augmenter significativement Google Ads ou Meta avant
+  d’avoir consentement, conversions, UTM, pages d’atterrissage et marge.
+- **Why** : Sans mesure, le coût par lead et le retour sur marge ne sont pas
+  pilotables.
+- **How to apply** : Commencer par un test de 90 jours documenté, puis ajuster
+  les budgets sur les conversions qualifiées et la marge, jamais sur les clics
+  seuls.
+- **Statut** : Active.
+- **Décidé par** : Kaan, cadrage Codex.

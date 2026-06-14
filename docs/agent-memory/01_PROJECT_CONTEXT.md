@@ -14,12 +14,12 @@ Permettre au client de configurer son produit, uploader son logo, visualiser un 
 
 ## Stack technique
 
-- **Framework** : Next.js 15 (App Router)
+- **Framework** : Next.js 16.2.4 (App Router)
 - **UI** : Tailwind CSS avec design tokens CSS custom (`--hm-*`)
 - **Auth + Storage** : Supabase (bucket `customer-logos`, tables `orders`, `order_items`, `profiles`)
 - **Paiement** : Stripe
 - **Canvas mockup** : Fabric.js v6
-- **Déploiement** : Vercel (production : `hm-global.vercel.app`)
+- **Déploiement** : Vercel (site public : `www.hm-global.fr`, domaine Vercel de secours : `hm-global.vercel.app`)
 
 ## Produits principaux
 

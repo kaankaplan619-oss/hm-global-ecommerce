@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { track } from "@/lib/track";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, ArrowRight, Mail, Clock, Landmark, Copy, AlertCircle } from "lucide-react";
@@ -128,6 +129,12 @@ function ConfirmationContent() {
   const { isAuthenticated } = useAuthStore();
 
   const isBankTransfer = method === "bank_transfer";
+
+  // Mesure : achat confirmé (une fois)
+  useEffect(() => {
+    track("purchase", { orderNumber: orderNumber ?? undefined, method: method ?? undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Récupère le total depuis l'API pour les commandes virement (l'URL ne le
   // porte pas, contrairement au flux Stripe). Sécurisé : la route renvoie

@@ -85,8 +85,8 @@ export default function HomeHeroPremium() {
               <span className="inline-flex items-center gap-1.5">
                 <Star size={13} className="fill-current" style={{ color: "var(--hm-magenta)" }} />
                 <span>
-                  <strong style={{ color: "var(--hm-text-main)" }}>4,9/5</strong>{" "}
-                  · 200+ projets livrés
+                  <strong style={{ color: "var(--hm-text-main)" }}>4,7/5</strong>{" "}
+                  · 14 avis Google
                 </span>
               </span>
               <span
