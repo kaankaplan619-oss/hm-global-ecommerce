@@ -25,6 +25,9 @@ import {
   type PrintifyBlueprintVariantsResponse,
   type PrintifyPrintProvider,
   type PrintifyShop,
+  type PrintifyUploadResult,
+  type PrintifyCreateOrderPayload,
+  type PrintifyOrderResult,
 } from "./types";
 
 const PRINTIFY_BASE = "https://api.printify.com/v1";
@@ -135,4 +138,78 @@ export async function searchBlueprints(keywords: string[]): Promise<PrintifyBlue
 
     return lows.every((kw) => haystack.includes(kw));
   });
+}
+
+// ─── Boutique (shop_id) ──────────────────────────────────────────────────────
+
+let cachedShopId: number | null = null;
+
+/**
+ * ID de la boutique Printify à utiliser pour les commandes.
+ * Priorité : env PRINTIFY_SHOP_ID, sinon 1re boutique liée au compte (cachée).
+ */
+export async function getPrintifyShopId(): Promise<number> {
+  const envId = process.env.PRINTIFY_SHOP_ID;
+  if (envId && /^\d+$/.test(envId)) return Number(envId);
+  if (cachedShopId) return cachedShopId;
+  const shops = await listShops();
+  if (!shops.length) {
+    throw new PrintifyError(0, "/shops.json", "Aucune boutique Printify liée au compte");
+  }
+  cachedShopId = shops[0].id;
+  return cachedShopId;
+}
+
+// ─── Upload image (pour les zones d'impression) ──────────────────────────────
+
+/**
+ * Upload un visuel depuis une URL publique → renvoie l'image Printify (id).
+ * L'`id` retourné est ensuite référencé dans les `print_areas` de la commande.
+ */
+export async function uploadPrintifyImage(
+  fileName: string,
+  url: string,
+): Promise<PrintifyUploadResult> {
+  return pfFetch<PrintifyUploadResult>("/uploads/images.json", {
+    method: "POST",
+    body: JSON.stringify({ file_name: fileName, url }),
+  });
+}
+
+// ─── Commandes (orders) ──────────────────────────────────────────────────────
+
+/**
+ * Crée une commande Printify en mode BROUILLON : l'ordre est créé dans la
+ * boutique mais N'EST PAS envoyé en production (send_to_production non appelé).
+ * Symétrique de createPrintfulDraft. À confirmer via
+ * sendPrintifyOrderToProduction() après validation admin.
+ */
+export async function createPrintifyOrder(
+  payload: PrintifyCreateOrderPayload,
+): Promise<PrintifyOrderResult> {
+  const shopId = await getPrintifyShopId();
+  return pfFetch<PrintifyOrderResult>(`/shops/${shopId}/orders.json`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Envoie une commande Printify (brouillon) en PRODUCTION.
+ * ⚠️ IRRÉVERSIBLE et PAYANT — n'appeler qu'après validation admin explicite.
+ */
+export async function sendPrintifyOrderToProduction(
+  orderId: string,
+): Promise<PrintifyOrderResult> {
+  const shopId = await getPrintifyShopId();
+  return pfFetch<PrintifyOrderResult>(
+    `/shops/${shopId}/orders/${orderId}/send_to_production.json`,
+    { method: "POST" },
+  );
+}
+
+/** Récupère le statut live d'une commande Printify. */
+export async function getPrintifyShopOrder(orderId: string): Promise<PrintifyOrderResult> {
+  const shopId = await getPrintifyShopId();
+  return pfFetch<PrintifyOrderResult>(`/shops/${shopId}/orders/${orderId}.json`);
 }

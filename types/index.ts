@@ -523,6 +523,9 @@ export interface Order {
   // Gelato POD (print) — symétriques des champs Printful
   gelatoOrderId?: string;
   gelatoStatus?: string;
+  // Printify POD — symétriques des champs Printful
+  printifyOrderId?: string;
+  printifyStatus?: string;
 }
 
 // ─── Review Types ─────────────────────────────────────────────────────────────────

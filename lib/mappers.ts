@@ -99,6 +99,10 @@ export function mapDbOrderToOrder(row: any): Order {
     gelatoOrderId: row.gelato_order_id ?? undefined,
     gelatoStatus:  row.gelato_status   ?? undefined,
 
+    // Printify POD
+    printifyOrderId: row.printify_order_id ?? undefined,
+    printifyStatus:  row.printify_status   ?? undefined,
+
     createdAt: row.created_at,
     updatedAt: row.updated_at,
 

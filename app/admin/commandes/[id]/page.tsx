@@ -210,6 +210,9 @@ export default function AdminCommandeDetailPage({ params }: Props) {
   // Envoi production Printful (POD textile automatisé) — brouillon puis confirmation.
   const [printfulLoading, setPrintfulLoading] = useState(false);
   const [printfulError, setPrintfulError] = useState<string | null>(null);
+  // Envoi production Printify (POD automatisé) — brouillon puis confirmation.
+  const [printifyLoading, setPrintifyLoading] = useState(false);
+  const [printifyError, setPrintifyError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!_hasHydrated) return;
@@ -438,6 +441,64 @@ export default function AdminCommandeDetailPage({ params }: Props) {
       setPrintfulError("Erreur réseau. Réessayez.");
     } finally {
       setPrintfulLoading(false);
+    }
+  };
+
+  // ─── Printify (POD textile automatisé) ──────────────────────────────────────
+  // 1) Créer le brouillon : envoie taille + couleur + logo à Printify SANS lancer
+  //    la production (send_to_production non appelé). Réversible.
+  const handleCreatePrintifyDraft = async () => {
+    if (!order) return;
+    setPrintifyLoading(true);
+    setPrintifyError(null);
+    try {
+      const res = await fetch("/api/printify/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPrintifyError(body.error ?? "Échec de la création du brouillon Printify.");
+        return;
+      }
+      setOrder({
+        ...order,
+        printifyOrderId: String(body.printifyOrderId),
+        printifyStatus:  body.printifyStatus,
+        supplierProvider: "printify",
+        status: "commande_fournisseur_passee" as OrderStatus,
+      });
+      setNewStatus("commande_fournisseur_passee" as OrderStatus);
+    } catch {
+      setPrintifyError("Erreur réseau. Réessayez.");
+    } finally {
+      setPrintifyLoading(false);
+    }
+  };
+
+  // 2) Confirmer la production : ⚠️ IRRÉVERSIBLE ET FACTURÉ — double confirmation.
+  const handleConfirmPrintify = async () => {
+    if (!order?.printifyOrderId) return;
+    if (!window.confirm(
+      "⚠️ Confirmer la production Printify ?\n\nCette action est IRRÉVERSIBLE et FACTURÉE : Printify lance l'impression et l'expédition au client. Vérifiez le brouillon dans votre compte Printify avant de confirmer.",
+    )) return;
+    setPrintifyLoading(true);
+    setPrintifyError(null);
+    try {
+      const res = await fetch(`/api/printify/orders/${order.id}/confirm`, {
+        method: "POST",
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPrintifyError(body.error ?? "Échec de la confirmation Printify.");
+        return;
+      }
+      setOrder({ ...order, printifyStatus: body.printifyStatus });
+    } catch {
+      setPrintifyError("Erreur réseau. Réessayez.");
+    } finally {
+      setPrintifyLoading(false);
     }
   };
 
@@ -1550,6 +1611,92 @@ export default function AdminCommandeDetailPage({ params }: Props) {
 
                 {printfulError && (
                   <p className="mt-2 text-[10px] font-semibold text-red-500">{printfulError}</p>
+                )}
+              </div>
+            )}
+
+            {/* ── Circuit Printify (POD textile automatisé) ──────────────────
+                 Visible uniquement si la commande contient des articles Printify
+                 (Comfort Colors, Gildan 2400 LS, mug…). Le brouillon part avec
+                 taille + couleur + logo SANS lancer la production. La confirmation
+                 (facturée) est un 2ᵉ bouton manuel séparé. */}
+            {fulfillment.hasPrintify && (
+              <div className="p-5 bg-white border border-[var(--hm-line)] rounded-2xl shadow-[0_2px_8px_rgba(63,45,88,0.04)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <Package size={14} className="text-[var(--hm-primary)]" />
+                  <h2 className="text-xs font-bold text-[var(--hm-text-soft)] uppercase tracking-wider">
+                    Fournisseur Printify
+                  </h2>
+                  <span className="ml-auto rounded-full bg-[rgba(177,63,116,0.08)] px-2 py-0.5 text-[9px] font-bold text-[var(--hm-primary)]">
+                    🤖 Automatisé
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-[var(--hm-text-soft)] mb-3 leading-snug">
+                  {fulfillment.allPrintify
+                    ? "Printify imprime et expédie directement au client. Vous n'avez rien à produire à l'atelier."
+                    : `Commande mixte : ${fulfillment.printifyCount} article(s) Printify. L'envoi auto Printify ne gère que les articles Printify.`}
+                </p>
+
+                {fulfillment.printifyMissingVariants.length > 0 && (
+                  <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
+                    <p className="text-[10px] font-bold text-amber-700 mb-1">
+                      ⚠ Variant Printify manquant — envoi auto impossible
+                    </p>
+                    {fulfillment.printifyMissingVariants.map((m, i) => (
+                      <p key={i} className="text-[10px] text-amber-700">
+                        {m.product} · {m.color} · {m.size}
+                      </p>
+                    ))}
+                    <p className="text-[9px] text-amber-600 mt-1">
+                      Cette couleur/taille n&apos;a pas encore d&apos;ID Printify. À compléter, ou à produire à l&apos;atelier.
+                    </p>
+                  </div>
+                )}
+
+                {fulfillment.printifyMissingLogo && (
+                  <p className="mb-3 text-[10px] font-semibold text-amber-700">
+                    ⚠ Un article Printify n&apos;a pas de fichier logo validé.
+                  </p>
+                )}
+
+                {!order.printifyOrderId ? (
+                  <button
+                    onClick={handleCreatePrintifyDraft}
+                    disabled={printifyLoading || fulfillment.printifyMissingVariants.length > 0 || fulfillment.printifyMissingLogo}
+                    className="btn-primary w-full text-xs gap-2"
+                  >
+                    <Package size={12} />
+                    {printifyLoading ? "Création…" : "Créer le brouillon Printify"}
+                  </button>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="rounded-xl border border-[var(--hm-line)] bg-[var(--hm-bg)] px-3 py-2">
+                      <p className="text-[10px] text-[var(--hm-text-soft)]">Brouillon Printify</p>
+                      <p className="text-xs font-bold text-[var(--hm-text)]">
+                        #{order.printifyOrderId}
+                        <span className="ml-2 font-medium text-[var(--hm-text-soft)]">
+                          {order.printifyStatus ?? "draft"}
+                        </span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleConfirmPrintify}
+                      disabled={printifyLoading}
+                      className="btn-primary w-full text-xs gap-2"
+                      style={{ background: "#b91c1c" }}
+                    >
+                      <AlertTriangle size={12} />
+                      {printifyLoading ? "Confirmation…" : "⚠️ Confirmer la production (facturé)"}
+                    </button>
+                    <p className="text-[9px] text-[var(--hm-text-soft)] text-center leading-snug">
+                      Vérifiez d&apos;abord le brouillon dans votre compte Printify. La confirmation est irréversible.
+                    </p>
+                  </div>
+                )}
+
+                {printifyError && (
+                  <p className="mt-2 text-[10px] font-semibold text-red-500">{printifyError}</p>
                 )}
               </div>
             )}
