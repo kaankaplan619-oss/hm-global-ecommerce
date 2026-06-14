@@ -3,10 +3,10 @@ import type { PricingConfig, VolumePricingTier, Product, Technique, Placement } 
 // ─── Global Config ────────────────────────────────────────────────────────────
 export const PRICING_CONFIG: PricingConfig = {
   tvaRate: 0.20,
-  freeShippingThreshold: 10, // nb pièces
+  freeShippingThreshold: 3, // nb pièces — franco abaissé 10→3 (2026-06-14, demande Kaan)
   shippingCost: 8.90,
-  bulkThreshold: 10,
-  bulkLabel: "Livraison offerte dès 10 pièces",
+  bulkThreshold: 3,
+  bulkLabel: "Livraison offerte dès 3 pièces",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -996,4 +996,31 @@ export function getVolumePricedRate(
     if (quantity >= tier.from) active = tier;
   }
   return active.unitPrice;
+}
+
+/**
+ * Prix « à partir de » affiché sur les cartes (catalogue + accueil).
+ * = prix unitaire le plus bas À LA QUANTITÉ-SEUIL ATELIER (10 pièces), toutes
+ * techniques confondues — honnête (la quantité `qty` est affichée à côté :
+ * « dès 10 pièces ») et compétitif. `qty` = null si le produit n'a pas de
+ * grille dégressive (prix fixe → on montre le prix de base, sans seuil).
+ */
+export function getProductCardPrice(product: Product): { price: number; qty: number | null } {
+  const tierLists: VolumePricingTier[][] = [];
+  if (product.volumePricingByTechnique) {
+    for (const list of Object.values(product.volumePricingByTechnique)) {
+      if (list && list.length) tierLists.push(list);
+    }
+  }
+  if (product.volumePricing?.length) tierLists.push(product.volumePricing);
+
+  if (tierLists.length) {
+    const prices = tierLists
+      .map((t) => getVolumePricedRate(t, ATELIER_QTY_THRESHOLD))
+      .filter((p) => p > 0);
+    if (prices.length) return { price: Math.min(...prices), qty: ATELIER_QTY_THRESHOLD };
+  }
+
+  const base = [product.pricing.dtf, product.pricing.flex, product.pricing.broderie].filter((p) => p > 0);
+  return { price: base.length ? Math.min(...base) : 0, qty: null };
 }

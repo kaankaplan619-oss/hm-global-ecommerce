@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Layers3 } from "lucide-react";
-import { formatPrice } from "@/data/pricing";
+import { formatPrice, getProductCardPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getVisualMode } from "@/lib/hm-visual-utils";
 import { getDisplayedColors, isPrintifyV1Product } from "@/lib/suppliers/printify/printify-colors";
@@ -75,13 +75,9 @@ function indicativeDelay(product: Product): string {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  // Filtre les techniques à 0 (= non disponibles) avant de prendre le min
-  const prices = [
-    product.pricing.dtf,
-    product.pricing.flex,
-    product.pricing.broderie,
-  ].filter((p) => p > 0);
-  const basePrice = prices.length > 0 ? Math.min(...prices) : 0;
+  // Prix affiché = prix au seuil atelier (10 pièces), honnête + compétitif,
+  // avec la quantité indiquée (card.qty). Fallback : prix de base, sans seuil.
+  const card = getProductCardPrice(product);
 
   // Couleurs affichées : pour les produits Printify V1, on filtre strictement
   // sur les couleurs réellement disponibles (manifest + mapping variant_id).
@@ -271,17 +267,21 @@ export default function ProductCard({ product }: ProductCardProps) {
           </p>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-[10px] text-[var(--hm-text-soft)]">Dès </span>
-            <span className="text-base font-black text-[var(--hm-rose)]">
-              {formatPrice(basePrice)}
+        <div>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-base font-black text-[var(--hm-rose)]">
+                {formatPrice(card.price)}
+              </span>
+              <span className="text-[10px] text-[var(--hm-text-soft)]"> TTC</span>
+            </div>
+            <span className="text-[10px] text-[var(--hm-text-soft)]">
+              {formatPrice(card.price / 1.2)} HT
             </span>
-            <span className="text-[10px] text-[var(--hm-text-soft)]"> TTC</span>
           </div>
-          <span className="text-[10px] text-[var(--hm-text-soft)]">
-            {formatPrice(basePrice / 1.2)} HT
-          </span>
+          {card.qty ? (
+            <p className="mt-0.5 text-[10px] text-[var(--hm-text-soft)]">dès {card.qty} pièces</p>
+          ) : null}
         </div>
 
         <span className="mt-3 flex w-full items-center justify-center rounded-xl bg-[var(--hm-primary)] px-3 py-2 text-[11px] font-bold text-white transition group-hover:bg-[var(--hm-rose-dark)]">

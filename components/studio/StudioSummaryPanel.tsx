@@ -42,6 +42,7 @@ interface Props {
   technique: Technique;
   placement: Placement;
   quantity: number;
+  onQuantityChange?: (q: number) => void;
   slug: string;
   exportPNG: () => string;
   exportComposed?: () => Promise<{ front: string; back: string }>;
@@ -62,6 +63,7 @@ export default function StudioSummaryPanel({
   technique,
   placement,
   quantity,
+  onQuantityChange,
   slug,
   exportPNG,
   exportComposed,
@@ -794,6 +796,49 @@ export default function StudioSummaryPanel({
               <p className="text-[10px] text-[var(--hm-text-muted)]">
                 Livraison offerte dès {PRICING_CONFIG.freeShippingThreshold} pièces
               </p>
+            )}
+
+            {/* ── Prix dégressif : achetez plus, payez moins (cliquable) ──── */}
+            {activeTiers && activeTiers.length > 1 && (
+              <div className="mt-1 border-t border-[var(--hm-line)] pt-3">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                  Plus vous commandez, moins c&apos;est cher
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {activeTiers.map((tier, tierIdx) => {
+                    const tierActive = activeQty >= tier.from && (tier.to === undefined || activeQty <= tier.to);
+                    const saving = Math.round((activeTiers[0].unitPrice - tier.unitPrice) * 100) / 100;
+                    const isPopular = activeTiers.length >= 3 && tierIdx === 1;
+                    return (
+                      <button
+                        key={tier.from}
+                        type="button"
+                        onClick={() => onQuantityChange?.(Math.max(1, tier.from))}
+                        className={`relative flex flex-col rounded-xl border px-2.5 py-2 text-left transition-all ${
+                          tierActive
+                            ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]"
+                            : "border-[var(--hm-line)] bg-white hover:border-[var(--hm-primary)]/40"
+                        }`}
+                      >
+                        {isPopular && (
+                          <span className="absolute -top-2 right-1.5 rounded-full bg-[var(--hm-primary)] px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
+                            Le + choisi
+                          </span>
+                        )}
+                        <span className={`text-[10px] font-semibold ${tierActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text-soft)]"}`}>
+                          {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs
+                        </span>
+                        <span className={`text-sm font-black ${tierActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text)]"}`}>
+                          {formatPrice(tier.unitPrice)}
+                        </span>
+                        {saving > 0 && (
+                          <span className="text-[9px] font-bold text-[#166534]">−{formatPrice(saving)}/pce</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
         </div>

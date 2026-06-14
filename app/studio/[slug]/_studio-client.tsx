@@ -235,7 +235,7 @@ export default function StudioClient({ product }: Props) {
 
           {/* ── Col 1: Tools panel ──────────────────────────────────────────── */}
           <aside className="order-2 lg:order-1">
-            <div className="sticky top-[4.5rem] max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-2xl border border-[var(--hm-line)] bg-white p-4">
+            <div className="sticky top-[4.5rem] max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-2xl border border-[var(--hm-line)] bg-white p-4 shadow-[var(--hm-shadow-xs)]">
               <StudioToolsPanel
                 face={activeFace}
                 onAddObject={handleAddObject}
@@ -260,32 +260,99 @@ export default function StudioClient({ product }: Props) {
               onViewChange={setActiveFace}
             />
 
-            {/* Config rapide mobile — sous le canvas */}
-            <div className="mt-4 flex flex-col gap-3 lg:hidden">
+            {/* Config (couleur/taille/technique/placement/quantité) unifiée sous
+                l'aperçu pour tous les écrans — voir la grille responsive ci-dessous. */}
+
+            {/* ── Config desktop sous l'aperçu (déplacée du panneau droit pour
+                aérer la colonne de droite — demande Kaan 2026-06-13, tous produits) ── */}
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* Couleur + Taille */}
-              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">Couleur</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {product.colors.filter((c) => c.available).map((c) => (
-                        <button key={c.id} type="button" onClick={() => setSelectedColor(c)}
-                          className={`h-7 w-7 rounded-full border-2 transition ${selectedColor?.id === c.id ? "border-[var(--hm-primary)] scale-110" : "border-transparent"}`}
-                          style={{ backgroundColor: c.hex }} title={c.label}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-text-soft)]">Taille</p>
-                    <select value={selectedSize} onChange={(e) => setSelectedSize(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--hm-line)] bg-white px-2 py-1.5 text-xs text-[var(--hm-text)] focus:border-[var(--hm-primary)] focus:outline-none">
-                      <option value="">Choisir...</option>
-                      {product.sizes.filter((s) => s.available).map((s) => (
-                        <option key={s.label} value={s.label}>{s.label}</option>
-                      ))}
-                    </select>
-                  </div>
+              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4 shadow-[var(--hm-shadow-xs)]">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Couleur</p>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.filter((c) => c.available).map((c) => (
+                    <button key={c.id} type="button" onClick={() => setSelectedColor(c)}
+                      className={`h-7 w-7 rounded-full border-2 transition ${selectedColor?.id === c.id ? "border-[var(--hm-primary)] scale-110 shadow" : "border-[var(--hm-line)]"}`}
+                      style={{ backgroundColor: c.hex }} title={c.label}
+                    />
+                  ))}
+                </div>
+                {selectedColor && <p className="mt-2 text-xs font-semibold text-[var(--hm-text)]">{selectedColor.label}</p>}
+
+                <div className="my-3 h-px bg-[var(--hm-line)]" />
+
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Taille</p>
+                <div className="grid grid-cols-4 gap-1">
+                  {product.sizes.filter((s) => s.available).map((s) => (
+                    <button key={s.label} type="button" disabled={s.soldOut}
+                      onClick={() => setSelectedSize(s.label)}
+                      className={`rounded-xl border py-1.5 text-xs font-semibold transition ${
+                        selectedSize === s.label
+                          ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                          : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+                      } disabled:cursor-not-allowed disabled:opacity-40`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Technique + Placement + Quantité */}
+              <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4 shadow-[var(--hm-shadow-xs)]">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Technique</p>
+                <div className="flex gap-1.5">
+                  {product.techniques.map((t) => {
+                    const tMinQty = product.techniqueConstraints?.[t]?.minQty ?? 1;
+                    return (
+                      <button key={t} type="button" onClick={() => setTechnique(t)}
+                        className={`flex-1 rounded-xl border py-1.5 text-xs font-semibold transition ${
+                          technique === t
+                            ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                            : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+                        }`}
+                      >
+                        {t === "dtf" ? "DTF" : t === "dtflex" ? "DTFlex" : t === "flex" ? "Flex" : t === "broderie_illimitee" ? "Broderie ∞" : "Broderie"}
+                        {tMinQty > 1 && (
+                          <span className="block text-[9px] font-normal opacity-70">dès {tMinQty} pcs</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="my-3 h-px bg-[var(--hm-line)]" />
+
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Placement</p>
+                <div className="flex flex-col gap-1">
+                  {product.placements
+                    .filter((p) => !techConstraint?.placements || techConstraint.placements.includes(p))
+                    .map((p) => (
+                    <button key={p} type="button" onClick={() => setPlacement(p)}
+                      className={`rounded-xl border py-1.5 text-xs font-semibold transition ${
+                        placement === p
+                          ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
+                          : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
+                      }`}
+                    >
+                      {p === "coeur" ? "Cœur (poitrine)" : p === "dos" ? "Dos" : "Cœur + Dos"}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="my-3 h-px bg-[var(--hm-line)]" />
+
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">Quantité</p>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => setQuantity((q) => Math.max(minQty, q - 1))}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--hm-line)] bg-white text-sm font-bold text-[var(--hm-text)] transition hover:border-[var(--hm-primary)]">
+                    −
+                  </button>
+                  <span className="flex-1 text-center text-sm font-bold text-[var(--hm-text)]">{quantity}</span>
+                  <button type="button" onClick={() => setQuantity((q) => q + 1)}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--hm-line)] bg-white text-sm font-bold text-[var(--hm-text)] transition hover:border-[var(--hm-primary)]">
+                    +
+                  </button>
                 </div>
               </div>
             </div>
@@ -301,7 +368,7 @@ export default function StudioClient({ product }: Props) {
                 <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-[var(--hm-line)]">
                   <div className="flex items-center gap-1.5">
                     <Layers3 size={13} className="text-[var(--hm-primary)]" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
                       Aperçu 3D
                     </span>
                   </div>
@@ -352,98 +419,12 @@ export default function StudioClient({ product }: Props) {
               </div>
             )}
 
-            {/* ── Couleur + Taille (desktop) ───────────────────────────────── */}
-            <div className="hidden rounded-2xl border border-[var(--hm-line)] bg-white p-4 lg:block">
-              <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Couleur</p>
-              <div className="flex flex-wrap gap-2">
-                {product.colors.filter((c) => c.available).map((c) => (
-                  <button key={c.id} type="button" onClick={() => setSelectedColor(c)}
-                    className={`h-7 w-7 rounded-full border-2 transition ${selectedColor?.id === c.id ? "border-[var(--hm-primary)] scale-110 shadow" : "border-[var(--hm-line)]"}`}
-                    style={{ backgroundColor: c.hex }} title={c.label}
-                  />
-                ))}
-              </div>
-              {selectedColor && <p className="mt-2 text-xs font-semibold text-[var(--hm-text)]">{selectedColor.label}</p>}
-
-              <div className="my-3 h-px bg-[var(--hm-line)]" />
-
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Taille</p>
-              <div className="grid grid-cols-4 gap-1">
-                {product.sizes.filter((s) => s.available).map((s) => (
-                  <button key={s.label} type="button" disabled={s.soldOut}
-                    onClick={() => setSelectedSize(s.label)}
-                    className={`rounded-xl border py-1.5 text-xs font-semibold transition ${
-                      selectedSize === s.label
-                        ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
-                        : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
-                    } disabled:cursor-not-allowed disabled:opacity-40`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Technique + Placement + Quantité (desktop) ──────────────── */}
-            <div className="hidden rounded-2xl border border-[var(--hm-line)] bg-white p-4 lg:block">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Technique</p>
-              <div className="flex gap-1.5">
-                {product.techniques.map((t) => {
-                  const tMinQty = product.techniqueConstraints?.[t]?.minQty ?? 1;
-                  return (
-                    <button key={t} type="button" onClick={() => setTechnique(t)}
-                      className={`flex-1 rounded-xl border py-1.5 text-xs font-semibold transition ${
-                        technique === t
-                          ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
-                          : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
-                      }`}
-                    >
-                      {t === "dtf" ? "DTF" : t === "dtflex" ? "DTFlex" : t === "flex" ? "Flex" : t === "broderie_illimitee" ? "Broderie ∞" : "Broderie"}
-                      {tMinQty > 1 && (
-                        <span className="block text-[9px] font-normal opacity-70">dès {tMinQty} pcs</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="my-3 h-px bg-[var(--hm-line)]" />
-
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Placement</p>
-              <div className="flex flex-col gap-1">
-                {product.placements
-                  .filter((p) => !techConstraint?.placements || techConstraint.placements.includes(p))
-                  .map((p) => (
-                  <button key={p} type="button" onClick={() => setPlacement(p)}
-                    className={`rounded-xl border py-1.5 text-xs font-semibold transition ${
-                      placement === p
-                        ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)] text-[var(--hm-primary)]"
-                        : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
-                    }`}
-                  >
-                    {p === "coeur" ? "Cœur (poitrine)" : p === "dos" ? "Dos" : "Cœur + Dos"}
-                  </button>
-                ))}
-              </div>
-
-              <div className="my-3 h-px bg-[var(--hm-line)]" />
-
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--hm-text-soft)]">Quantité</p>
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setQuantity((q) => Math.max(minQty, q - 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--hm-line)] bg-white text-sm font-bold text-[var(--hm-text)] transition hover:border-[var(--hm-primary)]">
-                  −
-                </button>
-                <span className="flex-1 text-center text-sm font-bold text-[var(--hm-text)]">{quantity}</span>
-                <button type="button" onClick={() => setQuantity((q) => q + 1)}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--hm-line)] bg-white text-sm font-bold text-[var(--hm-text)] transition hover:border-[var(--hm-primary)]">
-                  +
-                </button>
-              </div>
-            </div>
+            {/* Config (couleur/taille/technique/placement/quantité) déplacée au
+                centre sous l'aperçu — voir <main>. Le panneau droit ne garde que
+                l'aperçu 3D + le récapitulatif + les CTA (moins de scroll). */}
 
             {/* ── Récapitulatif ────────────────────────────────────────────── */}
-            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4 shadow-sm">
+            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4 shadow-[var(--hm-shadow-xs)]">
               <StudioSummaryPanel
                 product={product}
                 objects={objects}
@@ -453,6 +434,7 @@ export default function StudioClient({ product }: Props) {
                 technique={technique}
                 placement={placement}
                 quantity={quantity}
+                onQuantityChange={setQuantity}
                 slug={product.slug}
                 exportPNG={exportPNG}
                 exportComposed={exportComposed}
@@ -469,7 +451,7 @@ export default function StudioClient({ product }: Props) {
             </button>
 
             {/* ── Besoin d'aide ? ──────────────────────────────────────────── */}
-            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4">
+            <div className="rounded-2xl border border-[var(--hm-line)] bg-white p-4 shadow-[var(--hm-shadow-xs)]">
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--hm-accent-soft-rose)]">
                   <Phone size={16} className="text-[var(--hm-primary)]" />

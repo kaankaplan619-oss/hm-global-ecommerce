@@ -691,11 +691,17 @@ export default function ProductConfigurator({
           {activeVolumeTiers && (
             <div className="mt-4 border-t border-[var(--hm-line)] pt-4">
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--hm-text-soft)]">
-                Prix par palier
+                Prix par palier · à partir de{" "}
+                <span className="text-[var(--hm-primary)]">
+                  {formatPrice(activeVolumeTiers[activeVolumeTiers.length - 1].unitPrice)}
+                </span>{" "}
+                /pièce
               </p>
               <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                {activeVolumeTiers.map((tier) => {
+                {activeVolumeTiers.map((tier, tierIdx) => {
                   const isActive = quantity >= tier.from && (tier.to === undefined || quantity <= tier.to);
+                  const saving = Math.round((activeVolumeTiers[0].unitPrice - tier.unitPrice) * 100) / 100;
+                  const isPopular = activeVolumeTiers.length >= 3 && tierIdx === 1;
                   return (
                     <button
                       key={tier.from}
@@ -705,18 +711,30 @@ export default function ProductConfigurator({
                         setInternalQuantity(nq);
                         onQuantityChange?.(nq);
                       }}
-                      className={`flex flex-col rounded-xl border px-3 py-2.5 text-left transition-all ${
+                      className={`relative flex flex-col rounded-xl border px-3 py-2.5 text-left transition-all ${
                         isActive
                           ? "border-[var(--hm-primary)] bg-[var(--hm-accent-soft-rose)]"
                           : "border-[var(--hm-line)] bg-white hover:border-[var(--hm-primary)]/40"
                       }`}
                     >
+                      {isPopular && (
+                        <span className="absolute -top-2 right-2 rounded-full bg-[var(--hm-primary)] px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
+                          Le + choisi
+                        </span>
+                      )}
                       <span className={`text-[11px] font-semibold ${isActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text-soft)]"}`}>
                         {tier.to ? `${tier.from}–${tier.to}` : `${tier.from}+`} pcs
                       </span>
                       <span className={`text-sm font-black ${isActive ? "text-[var(--hm-primary)]" : "text-[var(--hm-text)]"}`}>
                         {formatPrice(tier.unitPrice)}
                       </span>
+                      {saving > 0 ? (
+                        <span className="text-[9px] font-bold text-[#166534]">
+                          −{formatPrice(saving)}/pce
+                        </span>
+                      ) : (
+                        <span className="text-[9px] text-[var(--hm-text-muted)]">Prix de base</span>
+                      )}
                     </button>
                   );
                 })}

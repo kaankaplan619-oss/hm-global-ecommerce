@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { getFeaturedProducts } from "@/data/products";
-import { formatPrice } from "@/data/pricing";
+import { formatPrice, getProductCardPrice } from "@/data/pricing";
 import { getProductCatalogImage } from "@/lib/product-image-utils";
 import { getVisualMode } from "@/lib/hm-visual-utils";
 import { getDisplayedColors } from "@/lib/suppliers/printify/printify-colors";
@@ -105,8 +105,9 @@ export default function BestSellers() {
               displayedColors.find((c) => c.available) ?? displayedColors[0] ?? product.colors[0];
             const catalogImage = getProductCatalogImage(product, defaultColor?.id);
             const visualMode = isPrintful ? "supplier" : getVisualMode(product);
-            const prices = [product.pricing.dtf, product.pricing.flex, product.pricing.broderie].filter((p) => p > 0);
-            const basePrice = prices.length > 0 ? Math.min(...prices) : 0;
+            // « À partir de » = prix au seuil atelier (10 pièces) + quantité
+            // affichée (card.qty) — honnête + compétitif, cohérent avec ProductCard.
+            const card = getProductCardPrice(product);
 
             return (
               <Link
@@ -189,9 +190,11 @@ export default function BestSellers() {
                       <div className="mt-2 flex items-end justify-between gap-3">
                         <div>
                           <p className="text-[1.45rem] font-semibold tracking-[-0.04em] text-[var(--hm-primary)]">
-                            {formatPrice(basePrice)}
+                            {formatPrice(card.price)}
                           </p>
-                          <p className="text-[11px] text-[var(--hm-text-soft)]">TTC</p>
+                          <p className="text-[11px] text-[var(--hm-text-soft)]">
+                            TTC{card.qty ? ` · dès ${card.qty} pièces` : ""}
+                          </p>
                         </div>
                         <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--hm-text)] transition group-hover:text-[var(--hm-primary)]">
                           Voir
