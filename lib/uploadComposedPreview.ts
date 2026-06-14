@@ -15,7 +15,11 @@
  *   - Admin peut voir l'aperçu sans devoir regénérer le composite
  *
  * Bucket utilisé : "customer-logos" (déjà existant) sous le préfixe
- * "previews/" pour distinguer des vrais uploads logo client.
+ * "studio-exports/" — même préfixe que les fichiers logo/print du Studio,
+ * couvert par la policy Storage "Anon upload studio-exports" (INSERT, role
+ * anon). C'est ce qui rend l'upload possible aussi pour les commandes INVITÉ
+ * (avant : préfixe "previews/" + barrière auth → upload bloqué pour les
+ * invités → composed_preview_url null → admin sans aperçu composé).
  *
  * Le bucket est public → URL accessible sans token (cohérent avec logos
  * actuels qui sont eux aussi en bucket public).
@@ -78,19 +82,19 @@ export async function uploadComposedPreviewToSupabase(
     return { data: null, error: "INVALID_DATA_URL" };
   }
 
-  // 2. Vérifier l'auth (cohérent avec uploadLogo)
+  // 2. Client storage — PAS de barrière auth : l'aperçu composé suit le même
+  // chemin que les fichiers logo/print du Studio (préfixe `studio-exports/`),
+  // couvert par la policy Storage "Anon upload studio-exports". Indispensable
+  // pour les commandes INVITÉ : sinon l'upload échouait (NOT_AUTHENTICATED),
+  // composed_preview_url restait null, et l'admin n'affichait que le packshot
+  // + le logo séparés au lieu de l'aperçu « logo posé sur le produit ».
   const supabase = getSupabaseBrowserClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { data: null, error: "NOT_AUTHENTICATED" };
-  }
 
-  // 3. Build path stable
-  // Format : previews/{sessionId}/{timestamp}-{side}.{ext}
-  // L'extension dépend du MIME type du blob (jpeg ou png).
+  // 3. Build path stable — DOIT commencer par `studio-exports/` pour matcher la
+  // policy anon (foldername[1] = 'studio-exports'). L'extension suit le MIME.
   const ext = blob.type === "image/jpeg" ? "jpg" : "png";
   const timestamp = Date.now();
-  const path = `previews/${sessionId}/${timestamp}-${side}.${ext}`;
+  const path = `studio-exports/${sessionId}/${timestamp}-${side}.${ext}`;
 
   // 4. Upload
   const { error: uploadError } = await supabase.storage

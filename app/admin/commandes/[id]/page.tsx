@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ExternalLink, CheckCircle, XCircle, AlertTriangle,
   Truck, Package, Copy, FileText, Clock,
+  ArrowLeft, Home, LayoutDashboard,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { getSupplierInfo } from "@/lib/supplierMap";
@@ -567,14 +568,21 @@ export default function AdminCommandeDetailPage({ params }: Props) {
     <div className="min-h-screen bg-[var(--hm-bg)] pt-24 pb-20">
       <div className="container max-w-5xl">
 
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-[var(--hm-text-soft)] mb-6">
-          <Link href="/admin" className="hover:text-[var(--hm-text)]">Admin</Link>
-          <span>/</span>
-          <Link href="/admin/commandes" className="hover:text-[var(--hm-text)]">Commandes</Link>
-          <span>/</span>
-          <span className="text-[var(--hm-text)]">#{order.orderNumber}</span>
-        </nav>
+        {/* Navigation admin — retour rapide (demande Kaan 2026-06-14) */}
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          <Link href="/admin/commandes" className="btn-outline text-xs gap-1.5">
+            <ArrowLeft size={14} /> Retour aux commandes
+          </Link>
+          <Link href="/admin" className="btn-ghost text-xs gap-1.5">
+            <LayoutDashboard size={14} /> Tableau de bord
+          </Link>
+          <Link href="/" className="btn-ghost text-xs gap-1.5">
+            <Home size={14} /> Accueil du site
+          </Link>
+          <span className="ml-auto text-[11px] font-mono text-[var(--hm-text-muted)]">
+            #{order.orderNumber}
+          </span>
+        </div>
 
         {/* Title */}
         <div className="flex items-center justify-between mb-4">
