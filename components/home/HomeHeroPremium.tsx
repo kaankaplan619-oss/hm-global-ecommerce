@@ -60,19 +60,19 @@ export default function HomeHeroPremium() {
               {t("home.hero.subtitle")}
             </p>
 
-            {/* CTAs orientés achat (trafic Instagram → boutique directe).
-                Le devis rapide reste accessible via le menu, la section
-                signalétique et le CTA final. */}
+            {/* CTAs niveau entreprise (2026-06-18) : on présente d'abord les
+                pôles de l'agence (ancre #nos-poles), le catalogue reste à un
+                clic juste à côté pour ne pas casser la conversion. */}
             <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
               <Link
-                href="/catalogue"
+                href="#nos-poles"
                 className="btn-hm-magenta w-full justify-center sm:w-auto"
               >
                 {t("home.hero.ctaPrimary")}
                 <ArrowRight size={16} />
               </Link>
               <Link
-                href="/devis-rapide"
+                href="/catalogue"
                 className="btn-hm-violet-outline w-full justify-center sm:w-auto"
               >
                 {t("home.hero.ctaSecondary")}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import HomeHeroPremium from "../components/home/HomeHeroPremium";
+import HomePoles from "../components/home/HomePoles";
 import HomeReassurance from "../components/home/HomeReassurance";
 import HomeClients from "../components/home/HomeClients";
 import HomeNeedsPacks from "../components/home/HomeNeedsPacks";
@@ -46,23 +47,26 @@ export const metadata: Metadata = {
 };
 
 /**
- * Homepage HM Global — orientation boutique (2026-06-10, demande Kaan).
+ * Homepage HM Global — entreprise d'abord, puis boutique (2026-06-18, demande Kaan).
  *
- * Le trafic arrive surtout d'Instagram (reels) : le visiteur doit voir
- * IMMÉDIATEMENT les produits achetables et leurs prix, PUIS se reconnaître
- * par secteur (entrée « par besoin » remontée le 2026-06-15 — conversion).
- *   1. Hero (vraies photos atelier + CTA catalogue/impression)
- *   2. Réassurance + logos clients
- *   3. Best-sellers textile        (t-shirts, hoodies — prix affichés)
- *   4. Packs par besoin / secteur  (resto, asso, BTP… le visiteur se reconnaît)
- *   5. Réalisations + avis + process / BAT
- *   6. Textile premium / signalétique / atelier
- *   7. Pack 360 + confiance + CTA final
+ * Retour client : la home donnait trop l'impression d'un « magasin de vêtements ».
+ * On présente donc D'ABORD l'AGENCE et ses pôles (textile, impression, enseignes,
+ * covering, branding), PUIS les produits — sans casser la conversion (prix,
+ * best-sellers, packs secteur et CTA catalogue restent visibles juste en dessous).
+ *   1. Hero (message niveau entreprise + CTA « nos services » / catalogue)
+ *   2. Pôles (les 5 savoir-faire de l'agence)        ← nouveau
+ *   3. Réassurance + logos clients
+ *   4. Best-sellers textile        (t-shirts, hoodies — prix affichés)
+ *   5. Packs par besoin / secteur  (resto, asso, BTP… le visiteur se reconnaît)
+ *   6. Réalisations + avis + process / BAT
+ *   7. Textile premium / signalétique / atelier
+ *   8. Pack 360 + confiance + CTA final
  */
 export default function HomePage() {
   return (
     <>
       <HomeHeroPremium />
+      <HomePoles />
       <HomeReassurance />
       <HomeClients />
       <BestSellers />
