@@ -49,17 +49,15 @@ export const metadata: Metadata = {
  * Homepage HM Global — orientation boutique (2026-06-10, demande Kaan).
  *
  * Le trafic arrive surtout d'Instagram (reels) : le visiteur doit voir
- * IMMÉDIATEMENT les produits achetables et leurs prix. Ordre :
+ * IMMÉDIATEMENT les produits achetables et leurs prix, PUIS se reconnaître
+ * par secteur (entrée « par besoin » remontée le 2026-06-15 — conversion).
  *   1. Hero (vraies photos atelier + CTA catalogue/impression)
- *   2. Best-sellers textile        (t-shirts, hoodies — prix affichés)
- *   3. Section print               (cartes, flyers, affiches, canvas — prix)
- *   4. Réalisations                (preuve : vrais projets — remplace les
- *      « entrées rapides » aux images stock, retirées le 2026-06-10)
- *   5. Process / BAT validation
- *   6. Textile premium             (qualité matière)
- *   7. Signalétique / enseignes    (devis)
- *   8. Atelier / production
- *   9. Packs par besoin + Pack 360 + confiance + CTA final
+ *   2. Réassurance + logos clients
+ *   3. Best-sellers textile        (t-shirts, hoodies — prix affichés)
+ *   4. Packs par besoin / secteur  (resto, asso, BTP… le visiteur se reconnaît)
+ *   5. Réalisations + avis + process / BAT
+ *   6. Textile premium / signalétique / atelier
+ *   7. Pack 360 + confiance + CTA final
  */
 export default function HomePage() {
   return (
@@ -68,6 +66,7 @@ export default function HomePage() {
       <HomeReassurance />
       <HomeClients />
       <BestSellers />
+      <HomeNeedsPacks />
       <HomeVisualShowcase />
       <HomeRealisations />
       <GoogleReviews />
@@ -75,7 +74,6 @@ export default function HomePage() {
       <HomeTextilePremium />
       <HomeSignaletique />
       <HomeAtelier />
-      <HomeNeedsPacks />
       <HomePack360 />
       <HomeTrustStrip />
       <HomeFinalCTA />

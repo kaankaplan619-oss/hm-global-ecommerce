@@ -6,6 +6,7 @@ import { CheckCircle2, Home, LayoutGrid, Shirt, Tag } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
 import ProductDetailClient from "@/components/product/ProductDetailClient";
 import ProductFeaturesSection from "@/components/product/ProductFeaturesSection";
+import ProductJsonLd from "@/components/seo/ProductJsonLd";
 import { getProductBySlug, ALL_PRODUCTS } from "@/data/products";
 import { getT } from "@/lib/i18n/server";
 
@@ -99,6 +100,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="pt-24 pb-20 md:pt-28">
+      <ProductJsonLd product={product} />
       <div className="container">
         {/* ── Breadcrumb ──────────────────────────────────────────────────────── */}
         <nav aria-label={t("productPage.breadcrumb.aria")} className="mb-10 flex flex-wrap items-center gap-1.5">

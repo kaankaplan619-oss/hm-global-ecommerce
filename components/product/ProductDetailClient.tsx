@@ -8,7 +8,7 @@ import type { LogoPlacementTransform } from "@/lib/bat-utils";
 import dynamic from "next/dynamic";
 import type { MockupViewerProps } from "@/components/product/MockupViewer";
 import Link from "next/link";
-import { ArrowRight, Info, ShieldCheck, Truck, MapPin } from "lucide-react";
+import { ArrowRight, BadgeCheck, Info, ShieldCheck, Truck, MapPin } from "lucide-react";
 import ProductConfigurator from "@/components/product/ProductConfigurator";
 import ProductGallery from "@/components/product/ProductGallery";
 import LightMockupPreview from "@/components/product/LightMockupPreview";
@@ -1039,6 +1039,15 @@ export default function ProductDetailClient({ product }: Props) {
             <span className="inline-flex items-center gap-1.5">
               <MapPin size={13} className="text-[var(--hm-primary)]" /> {t("productDetail.reassurance.alsace")}
             </span>
+          </div>
+
+          {/* Garantie nommée — lève l'objection « et si c'est raté ? » au moment d'acheter (2026-06-15) */}
+          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-[var(--hm-line)] bg-[var(--hm-surface)] px-3.5 py-2.5">
+            <BadgeCheck size={16} className="mt-0.5 shrink-0 text-[var(--hm-primary)]" />
+            <p className="text-[12px] leading-5 text-[var(--hm-text)]">
+              <span className="font-semibold text-[var(--hm-text-main)]">{t("productDetail.guarantee.name")}</span>{" "}
+              {t("productDetail.guarantee.text")}
+            </p>
           </div>
         </div>
 

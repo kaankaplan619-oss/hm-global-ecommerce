@@ -2769,7 +2769,12 @@ export const PRODUCT_MUG_CERAMIQUE_EU: Product = {
     broDeriePlacementSurcharge: MUG_11OZ_PLACEMENT_SURCHARGES,
   },
   featured: false,
-  visible: true,
+  // 2026-06-15 Kaan : retiré du front — seul produit Printify visible, et Printify
+  // n'a pas de webhook de suivi auto (≠ Printful/Gelato). Décision : front = fulfillment
+  // 100 % automatisé avec suivi auto. Le mug NOIR (mug-noir-brillant, Printful) reste.
+  // Données conservées (admin + commandes existantes). Réactiver = repasser visible:true
+  // APRÈS avoir branché un webhook Printify.
+  visible: false,
   badge: "Mug personnalisé",
   supplierName: "printful", // V1 catalogue interne — vraie source = PRINTIFY_V1_MAP["mug-ceramique-eu"]
   ideaPour: ["Cadeaux d'entreprise", "Séminaires", "Associations"],

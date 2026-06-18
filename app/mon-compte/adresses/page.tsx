@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  MapPin, Plus, ChevronLeft, CheckCircle2, AlertCircle, Loader2, X, Pencil,
+  MapPin, ChevronLeft, CheckCircle2, AlertCircle, Loader2, X, Pencil,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import AddressAutocomplete from "@/components/checkout/AddressAutocomplete";
@@ -116,46 +116,61 @@ export default function AdressesPage() {
     if (!_hasHydrated) return;
     if (!isAuthenticated) { router.push("/connexion"); return; }
 
-    // Fetch most recent order to pre-fill addresses
-    fetch("/api/orders")
-      .then((r) => r.json())
-      .then((data) => {
-        const orders = data.orders ?? [];
-        if (orders.length > 0) {
-          const latest = orders[0];
-          // Raw billing/shipping from DB are plain objects
-          const rawBilling  = latest.billing_address  ?? latest.billingAddress;
-          const rawShipping = latest.shipping_address ?? latest.shippingAddress;
-          if (rawBilling) {
-            setBilling({
-              firstName:  rawBilling.firstName  ?? "",
-              lastName:   rawBilling.lastName   ?? "",
-              company:    rawBilling.company    ?? "",
-              street:     rawBilling.street     ?? rawBilling.address ?? "",
-              complement: rawBilling.complement ?? "",
-              postalCode: rawBilling.postalCode ?? rawBilling.zipCode ?? "",
-              city:       rawBilling.city       ?? "",
-              country:    rawBilling.country    ?? "France",
-              phone:      rawBilling.phone      ?? "",
-            });
-          }
-          if (rawShipping) {
-            setShipping({
-              firstName:  rawShipping.firstName  ?? "",
-              lastName:   rawShipping.lastName   ?? "",
-              company:    rawShipping.company    ?? "",
-              street:     rawShipping.street     ?? rawShipping.address ?? "",
-              complement: rawShipping.complement ?? "",
-              postalCode: rawShipping.postalCode ?? rawShipping.zipCode ?? "",
-              city:       rawShipping.city       ?? "",
-              country:    rawShipping.country    ?? "France",
-              phone:      rawShipping.phone      ?? "",
-            });
+    const rawToForm = (raw: Record<string, string | undefined>): AddressForm => ({
+      firstName:  raw.firstName  ?? "",
+      lastName:   raw.lastName   ?? "",
+      company:    raw.company    ?? "",
+      street:     raw.street     ?? raw.address ?? "",
+      complement: raw.complement ?? "",
+      postalCode: raw.postalCode ?? raw.zipCode ?? "",
+      city:       raw.city       ?? "",
+      country:    raw.country    ?? "France",
+      phone:      raw.phone      ?? "",
+    });
+
+    const load = async () => {
+      let nextBilling: AddressForm | null = null;
+      let nextShipping: AddressForm | null = null;
+
+      // 1) Adresses ENREGISTRÉES (source de vérité — carnet d'adresses)
+      try {
+        const res = await fetch("/api/addresses");
+        if (res.ok) {
+          const { addresses } = await res.json();
+          for (const a of (addresses ?? []) as Array<AddressForm & { type: AddressType }>) {
+            const { type, ...form } = a;
+            if (type === "facturation") nextBilling = form;
+            else if (type === "livraison") nextShipping = form;
           }
         }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      } catch { /* ignore */ }
+
+      // 2) Repli : pré-remplir depuis la dernière commande UNIQUEMENT les slots
+      //    encore vides (l'utilisateur n'a jamais enregistré ce type).
+      if (!nextBilling || !nextShipping) {
+        try {
+          const data = await fetch("/api/orders").then((r) => r.json());
+          const orders = data.orders ?? [];
+          if (orders.length > 0) {
+            const latest = orders[0];
+            if (!nextBilling) {
+              const rb = latest.billing_address ?? latest.billingAddress;
+              if (rb) nextBilling = rawToForm(rb);
+            }
+            if (!nextShipping) {
+              const rs = latest.shipping_address ?? latest.shippingAddress;
+              if (rs) nextShipping = rawToForm(rs);
+            }
+          }
+        } catch { /* ignore */ }
+      }
+
+      setBilling(nextBilling);
+      setShipping(nextShipping);
+      setLoading(false);
+    };
+
+    load();
   }, [_hasHydrated, isAuthenticated, router]);
 
   const openEdit = (type: AddressType) => {
@@ -169,9 +184,20 @@ export default function AdressesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editType) return;
     setSaveError(""); setSaveSuccess(false); setSaving(true);
     try {
-      // Persist locally (no dedicated API yet — addresses come from orders)
+      // Persistance en base (table addresses, RLS = l'utilisateur courant).
+      const res = await fetch("/api/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: editType, ...editForm }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setSaveError(d.error || t("accountAddresses.modal.genericError"));
+        return;
+      }
       if (editType === "facturation") setBilling(editForm);
       else setShipping(editForm);
       setSaveSuccess(true);

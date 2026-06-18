@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Upload, X, AlertCircle, Clock, CheckCircle2, Package,
-  ChevronLeft, Truck,
+  ChevronLeft, Truck, Repeat,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
+import { useCartStore } from "@/store/cart";
+import { getProductById } from "@/data/products";
 import { validateLogoFile, formatFileSize, canCancelOrder, getRemainingCancelTime } from "@/lib/utils";
 import { getOrderItemImage } from "@/lib/order-image";
 import { useT } from "@/components/i18n/I18nProvider";
@@ -45,6 +47,7 @@ export default function CommandeDetailPage({ params }: Props) {
   const t = useT();
   const router = useRouter();
   const { isAuthenticated, _hasHydrated } = useAuthStore();
+  const { addItem, openCart } = useCartStore();
   const [orderId, setOrderId] = useState<string>("");
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -148,6 +151,45 @@ export default function CommandeDetailPage({ params }: Props) {
     } finally {
       setReqSubmitting(false);
     }
+  };
+
+  // Réassort 1 clic — recharge chaque ligne de la commande dans le panier.
+  // Produit relu via getProductById → prix recalculés au tarif courant (volume).
+  // Logo Supabase, transform, aperçus composés et config print ré-attachés tels quels.
+  const handleReorder = () => {
+    if (!order) return;
+    let added = 0;
+    for (const item of order.items) {
+      const product = getProductById(item.product?.id) ?? item.product;
+      if (!product) continue;
+      const logoFile = item.logoFile
+        ? {
+            name: item.logoFile.name,
+            size: item.logoFile.size,
+            type: item.logoFile.type,
+            url: item.logoFile.url,
+            path: item.logoFile.path,
+            uploadedAt: item.logoFile.uploadedAt,
+          }
+        : undefined;
+      addItem({
+        product,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        technique: item.technique,
+        placement: item.placement,
+        logoFile,
+        logoEffect: item.logoEffect,
+        logoPlacementTransform: item.logoPlacementTransform,
+        batRef: item.batRef,
+        composedPreviewUrl: item.composedPreviewUrl,
+        composedPreviewBack: item.composedPreviewBack,
+        printConfig: item.printConfig,
+      });
+      added++;
+    }
+    if (added > 0) openCart();
   };
 
   if (!_hasHydrated || !isAuthenticated) return null;
@@ -426,6 +468,21 @@ export default function CommandeDetailPage({ params }: Props) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Réassort 1 clic — friction minimale pour les commandes récurrentes B2B */}
+        <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-[#7B4FA6]/25 bg-[#faf7fe] p-5 shadow-[0_2px_8px_rgba(63,45,88,0.04)] sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-[#3f2d58]">{t("accountOrderDetail.reorderTitle")}</p>
+            <p className="mt-0.5 text-xs text-[#6e6280]">{t("accountOrderDetail.reorderHint")}</p>
+          </div>
+          <button
+            onClick={handleReorder}
+            className="btn-primary inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap text-xs"
+          >
+            <Repeat size={15} />
+            {t("accountOrderDetail.reorder")}
+          </button>
         </div>
 
         {/* Facture */}
