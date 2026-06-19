@@ -9,6 +9,7 @@ import BestSellers from "../components/home/BestSellers";
 import HomeProcessBAT from "../components/home/HomeProcessBAT";
 import HomeRealisations from "../components/home/HomeRealisations";
 import GoogleReviews from "../components/home/GoogleReviews";
+import LocalTestimonials from "../components/home/LocalTestimonials";
 import HomeVisualShowcase from "../components/home/HomeVisualShowcase";
 import HomeSignaletique from "../components/home/HomeSignaletique";
 import HomeAtelier from "../components/home/HomeAtelier";
@@ -74,6 +75,7 @@ export default function HomePage() {
       <HomeVisualShowcase />
       <HomeRealisations />
       <GoogleReviews />
+      <LocalTestimonials />
       <HomeProcessBAT />
       <HomeTextilePremium />
       <HomeSignaletique />
