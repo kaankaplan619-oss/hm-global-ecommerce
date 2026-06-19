@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import BackLink from "@/components/ui/BackLink";
 import ProductCard from "@/components/product/ProductCard";
 import { ALL_PRODUCTS, SEASONAL_ORDER, CURRENT_SEASON } from "@/data/products";
@@ -100,6 +101,27 @@ export default async function CataloguePage() {
             </div>
           );
         })}
+
+        {/* CTA devis — la page finissait sur la grille produits (2026-06-19) */}
+        <section className="rounded-[2rem] border border-[var(--hm-line)] bg-[var(--hm-accent-soft-rose)] p-8 sm:p-10">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div>
+              <p className="section-tag">{t("cataloguePage.cta.tag")}</p>
+              <h2 className="mb-3 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
+                {t("cataloguePage.cta.title")}
+              </h2>
+              <p className="text-base leading-7 text-[var(--hm-text-soft)]">
+                {t("cataloguePage.cta.text")}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3.5 lg:justify-end">
+              <Link href="/devis-rapide" className="btn-primary min-h-12 gap-2">
+                {t("cataloguePage.cta.button")}
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
