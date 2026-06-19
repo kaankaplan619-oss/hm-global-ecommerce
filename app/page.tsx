@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import HomeHeroPremium from "../components/home/HomeHeroPremium";
 import HomePoles from "../components/home/HomePoles";
+import HomeHowItWorks from "../components/home/HomeHowItWorks";
 import HomeReassurance from "../components/home/HomeReassurance";
 import HomeClients from "../components/home/HomeClients";
 import HomeNeedsPacks from "../components/home/HomeNeedsPacks";
@@ -68,6 +69,7 @@ export default function HomePage() {
     <>
       <HomeHeroPremium />
       <HomePoles />
+      <HomeHowItWorks />
       <HomeReassurance />
       <HomeClients />
       <BestSellers />
