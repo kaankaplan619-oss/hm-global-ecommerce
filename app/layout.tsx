@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/layout/CartDrawer";
 import QuoteAssistant from "@/components/assistant/QuoteAssistant";
+import WhatsAppButton from "@/components/layout/WhatsAppButton";
 import CookieConsent from "@/components/layout/CookieConsent";
 import LocalBusinessJsonLd from "@/components/seo/LocalBusinessJsonLd";
 import AuthSync from "@/components/auth/AuthSync";
@@ -83,6 +84,7 @@ export default async function RootLayout({
           <main className="min-h-screen">{children}</main>
           <Footer />
           <QuoteAssistant />
+          <WhatsAppButton />
           <CookieConsent />
           <AnalyticsTracker />
           <GoogleAnalytics />
