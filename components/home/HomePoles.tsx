@@ -17,9 +17,9 @@ import { getT } from "@/lib/i18n/server";
 const POLES = [
   { key: "textile",    icon: Shirt,   href: "/catalogue",     accent: "var(--hm-primary)", accentSoft: "rgba(177,63,116,0.10)" },
   { key: "impression", icon: Printer, href: "/impression",    accent: "var(--hm-blue)",    accentSoft: "rgba(110,193,223,0.16)" },
-  { key: "enseignes",  icon: Store,   href: "/devis-rapide",  accent: "var(--hm-purple)",  accentSoft: "rgba(76,47,111,0.10)" },
-  { key: "covering",   icon: Truck,   href: "/devis-rapide",  accent: "var(--hm-rose)",    accentSoft: "rgba(177,63,116,0.10)" },
-  { key: "branding",   icon: Palette, href: "/devis-rapide",  accent: "var(--hm-primary)", accentSoft: "rgba(177,63,116,0.10)" },
+  { key: "enseignes",  icon: Store,   href: "/enseignes",     accent: "var(--hm-purple)",  accentSoft: "rgba(76,47,111,0.10)" },
+  { key: "covering",   icon: Truck,   href: "/covering",      accent: "var(--hm-rose)",    accentSoft: "rgba(177,63,116,0.10)" },
+  { key: "branding",   icon: Palette, href: "/branding",      accent: "var(--hm-primary)", accentSoft: "rgba(177,63,116,0.10)" },
 ] as const;
 
 export default async function HomePoles() {
