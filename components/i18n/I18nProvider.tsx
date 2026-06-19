@@ -16,6 +16,7 @@
  */
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import fr from "@/messages/fr.json";
 import en from "@/messages/en.json";
 import trMsgs from "@/messages/tr.json";
@@ -63,6 +64,7 @@ export function I18nProvider({
   initialLocale?: Locale;
 }) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  const router = useRouter();
 
   useEffect(() => {
     // Filet de sécurité : si le cookie a changé entre le rendu serveur et le
@@ -83,6 +85,10 @@ export function I18nProvider({
       document.documentElement.lang = l;
     } catch { /* noop */ }
     setLocaleState(l);
+    // Re-render des composants serveur (getT) avec le nouveau cookie de langue —
+    // sinon les heros / sections rendus côté serveur restent figés dans l'ancienne
+    // langue (seuls les composants client useT basculaient).
+    router.refresh();
   };
 
   const t = (key: string) => lookup(MESSAGES[locale], key);
