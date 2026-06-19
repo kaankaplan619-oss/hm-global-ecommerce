@@ -50,6 +50,27 @@ export default async function RealisationsPage() {
           <RealisationsGallery />
         </section>
 
+        {/* CTA « projet similaire » — juste après la preuve visuelle */}
+        <section className="mb-14 rounded-[2rem] border border-[var(--hm-line)] bg-[var(--hm-accent-soft-rose)] p-8 sm:p-10">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div>
+              <p className="section-tag">{t("realisationsPage.similar.tag")}</p>
+              <h2 className="mb-3 text-3xl font-semibold tracking-tight text-[var(--hm-text)]">
+                {t("realisationsPage.similar.title")}
+              </h2>
+              <p className="text-base leading-7 text-[var(--hm-text-soft)]">
+                {t("realisationsPage.similar.text")}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3.5 lg:justify-end">
+              <Link href="/devis-rapide" className="btn-primary min-h-12 gap-2">
+                {t("realisationsPage.similar.cta")}
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* Vidéos atelier / chantier */}
         <section className="mb-14">
           <div className="mb-8 max-w-2xl">
