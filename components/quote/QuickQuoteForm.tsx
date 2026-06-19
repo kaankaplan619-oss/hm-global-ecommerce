@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { ArrowRight, CheckCircle2, Loader2, UploadCloud } from "lucide-react";
+import TurnstileWidget, { isTurnstileEnabled } from "@/components/security/TurnstileWidget";
 
 const NEED_OPTIONS = [
   { value: "tenues-entreprise", label: "Tenues entreprise" },
@@ -46,6 +47,7 @@ export default function QuickQuoteForm({
 }) {
   const [state, setState] = useState<SubmitState>({ status: "idle", message: "" });
   const [fileName, setFileName] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const isLoading = state.status === "loading";
   const isSuccess = state.status === "success";
@@ -60,6 +62,13 @@ export default function QuickQuoteForm({
     const form = event.currentTarget;
     const formData = new FormData(form);
     formData.set("pagePath", pagePath);
+
+    // Anti-bot Turnstile — uniquement si activé (clé publique présente).
+    if (isTurnstileEnabled() && !captchaToken) {
+      setState({ status: "error", message: "Merci de valider le test anti-robot avant d'envoyer." });
+      return;
+    }
+    formData.set("turnstileToken", captchaToken ?? "");
 
     setState({ status: "loading", message: "" });
 
@@ -177,6 +186,9 @@ export default function QuickQuoteForm({
               {state.message}
             </p>
           )}
+
+          {/* Anti-bot Turnstile — invisible tant que la clé publique n'est pas posée */}
+          <TurnstileWidget onToken={setCaptchaToken} className="mt-5" />
 
           <button
             type="submit"

@@ -63,6 +63,7 @@
   "home.clients.heading": "They trusted HM Global with their brand",
   "home.clients.seeProjects": "See their projects",
   "home.clients.logoAlt": "Client logo",
+  "captcha.incomplete": "Please complete the anti-bot check before sending.",
   "whatsapp.aria": "Message us on WhatsApp",
   "whatsapp.label": "Message us",
   "whatsapp.prefill": "Hello HM Global, I have a question:",

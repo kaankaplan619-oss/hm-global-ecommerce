@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 /**
  * POST /api/contact — message du formulaire de contact public.
@@ -50,6 +51,18 @@ export async function POST(req: NextRequest) {
   // Honeypot — un bot remplit ce champ caché. On feint le succès.
   if (clean(body.website, 200)) {
     return NextResponse.json({ ok: true });
+  }
+
+  // Anti-bot Turnstile (no-op tant que TURNSTILE_SECRET_KEY n'est pas configurée).
+  const captcha = await verifyTurnstile(
+    typeof body.turnstileToken === "string" ? body.turnstileToken : undefined,
+    req,
+  );
+  if (!captcha.ok) {
+    return NextResponse.json(
+      { error: "Validation anti-robot échouée. Merci de réessayer." },
+      { status: 400 },
+    );
   }
 
   const name = clean(body.name, 120);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const BUCKET = "customer-logos";
@@ -42,6 +43,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
+
+    // Anti-bot Turnstile (no-op tant que TURNSTILE_SECRET_KEY n'est pas configurée).
+    const captcha = await verifyTurnstile(asString(formData.get("turnstileToken")), req);
+    if (!captcha.ok) {
+      return NextResponse.json(
+        { error: "Validation anti-robot échouée. Merci de réessayer." },
+        { status: 400 },
+      );
+    }
 
     const companyName = asString(formData.get("companyName"));
     const email = asString(formData.get("email")).toLowerCase();

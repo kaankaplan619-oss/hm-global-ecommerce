@@ -63,6 +63,7 @@
   "home.clients.heading": "Markalarını HM Global'e emanet ettiler",
   "home.clients.seeProjects": "Projelerini görün",
   "home.clients.logoAlt": "Müşteri logosu",
+  "captcha.incomplete": "Göndermeden önce lütfen robot olmadığınızı doğrulayın.",
   "whatsapp.aria": "WhatsApp'tan bize yazın",
   "whatsapp.label": "Bize yazın",
   "whatsapp.prefill": "Merhaba HM Global, bir sorum olacaktı:",

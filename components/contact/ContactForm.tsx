@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
+import TurnstileWidget, { isTurnstileEnabled } from "@/components/security/TurnstileWidget";
 
 /**
  * ContactForm — formulaire de contact public (demande Kaan 2026-06-13).
@@ -37,10 +38,19 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
   const t = useT();
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (status === "sending") return;
+
+    // Anti-bot Turnstile — uniquement si activé (clé publique présente).
+    if (isTurnstileEnabled() && !captchaToken) {
+      setErrorMsg(t("captcha.incomplete"));
+      setStatus("error");
+      return;
+    }
+
     setStatus("sending");
     setErrorMsg("");
 
@@ -54,6 +64,7 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
       message: data.get("message"),
       consent: data.get("consent") === "on",
       website: data.get("website"), // honeypot
+      turnstileToken: captchaToken,
     };
 
     try {
@@ -174,6 +185,9 @@ export default function ContactForm({ defaultSubject }: { defaultSubject?: strin
           {t("contactForm.consent.after")}
         </span>
       </label>
+
+      {/* Anti-bot Turnstile — invisible tant que la clé publique n'est pas posée */}
+      <TurnstileWidget onToken={setCaptchaToken} className="mt-5" />
 
       {status === "error" && (
         <p className="mt-4 rounded-xl bg-[var(--hm-accent-soft-rose)] px-4 py-3 text-sm text-[var(--hm-rose-dark)]" role="alert">
