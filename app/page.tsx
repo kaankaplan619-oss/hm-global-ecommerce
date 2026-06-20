@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import HomeHeroPremium from "../components/home/HomeHeroPremium";
 import HomePoles from "../components/home/HomePoles";
+import HomeAbout from "../components/home/HomeAbout";
 import HomeHowItWorks from "../components/home/HomeHowItWorks";
 import HomeReassurance from "../components/home/HomeReassurance";
 import HomeClients from "../components/home/HomeClients";
@@ -49,36 +50,33 @@ export const metadata: Metadata = {
 };
 
 /**
- * Homepage HM Global — entreprise d'abord, puis boutique (2026-06-18, demande Kaan).
+ * Homepage HM Global — l'agence d'abord, les produits en proposition (2026-06-19).
  *
- * Retour client : la home donnait trop l'impression d'un « magasin de vêtements ».
- * On présente donc D'ABORD l'AGENCE et ses pôles (textile, impression, enseignes,
- * covering, branding), PUIS les produits — sans casser la conversion (prix,
- * best-sellers, packs secteur et CTA catalogue restent visibles juste en dessous).
- *   1. Hero (message niveau entreprise + CTA « nos services » / catalogue)
- *   2. Pôles (les 5 savoir-faire de l'agence)        ← nouveau
- *   3. Réassurance + logos clients
- *   4. Best-sellers textile        (t-shirts, hoodies — prix affichés)
- *   5. Packs par besoin / secteur  (resto, asso, BTP… le visiteur se reconnaît)
- *   6. Réalisations + avis + process / BAT
- *   7. Textile premium / signalétique / atelier
- *   8. Pack 360 + confiance + CTA final
+ * Retour client (maman de Kaan) : les vêtements étaient trop mis en avant par
+ * rapport à QUI on est. On renforce donc l'identité agence en haut (pôles +
+ * « qui sommes-nous » + comment ça marche + preuve), et les produits/best-sellers
+ * descendent plus bas, comme une PROPOSITION (la vente directe reste accessible).
+ *   1. Hero (niveau entreprise) → Pôles → Qui sommes-nous → Comment ça marche
+ *   2. Réassurance + logos clients + réalisations + avis + process / BAT
+ *   3. Produits (best-sellers, packs secteur, textile premium) — en proposition
+ *   4. Signalétique / atelier / pack 360 / confiance / CTA final
  */
 export default function HomePage() {
   return (
     <>
       <HomeHeroPremium />
       <HomePoles />
+      <HomeAbout />
       <HomeHowItWorks />
       <HomeReassurance />
       <HomeClients />
-      <BestSellers />
-      <HomeNeedsPacks />
       <HomeVisualShowcase />
       <HomeRealisations />
       <GoogleReviews />
       <LocalTestimonials />
       <HomeProcessBAT />
+      <BestSellers />
+      <HomeNeedsPacks />
       <HomeTextilePremium />
       <HomeSignaletique />
       <HomeAtelier />
