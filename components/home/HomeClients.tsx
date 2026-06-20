@@ -21,7 +21,6 @@ const CLIENT_LOGOS = [
   { src: "/images/clients/las-burger.jpg", alt: "Las Burger" },
   { src: "/images/clients/man-auto.jpg",   alt: "Man Auto" },
   { src: "/images/clients/r3m.jpg",        alt: "R3M" },
-  { src: "/images/clients/serol.jpg",      alt: "Serol" },
 ] as const;
 
 export default function HomeClients() {
@@ -43,7 +42,7 @@ export default function HomeClients() {
             {t("home.clients.seeProjects")} <ArrowRight size={13} />
           </Link>
         </div>
-        <div className="grid grid-cols-3 items-center gap-x-6 gap-y-4 sm:grid-cols-5 lg:grid-cols-9">
+        <div className="grid grid-cols-3 items-center gap-x-6 gap-y-4 sm:grid-cols-4 lg:grid-cols-8">
           {CLIENT_LOGOS.map(({ src, alt }) => (
             <div
               key={src}
