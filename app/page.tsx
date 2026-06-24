@@ -1,23 +1,16 @@
 import type { Metadata } from "next";
-import HomeHeroPremium from "../components/home/HomeHeroPremium";
-import HomePoles from "../components/home/HomePoles";
-import HomeAbout from "../components/home/HomeAbout";
-import HomeHowItWorks from "../components/home/HomeHowItWorks";
-import HomeReassurance from "../components/home/HomeReassurance";
 import HomeClients from "../components/home/HomeClients";
-import HomeNeedsPacks from "../components/home/HomeNeedsPacks";
-import HomeTextilePremium from "../components/home/HomeTextilePremium";
-import BestSellers from "../components/home/BestSellers";
-import HomeProcessBAT from "../components/home/HomeProcessBAT";
-import HomeRealisations from "../components/home/HomeRealisations";
 import GoogleReviews from "../components/home/GoogleReviews";
-import LocalTestimonials from "../components/home/LocalTestimonials";
-import HomeVisualShowcase from "../components/home/HomeVisualShowcase";
-import HomeSignaletique from "../components/home/HomeSignaletique";
-import HomeAtelier from "../components/home/HomeAtelier";
-import HomePack360 from "../components/home/HomePack360";
-import HomeTrustStrip from "../components/home/HomeTrustStrip";
-import HomeFinalCTA from "../components/home/HomeFinalCTA";
+import HomeV3Hero from "../components/home/v3/HomeV3Hero";
+import HomeV3Journeys from "../components/home/v3/HomeV3Journeys";
+import HomeV3Proof from "../components/home/v3/HomeV3Proof";
+import HomeV3Featured from "../components/home/v3/HomeV3Featured";
+import HomeV3Reels from "../components/home/v3/HomeV3Reels";
+import HomeV3Process from "../components/home/v3/HomeV3Process";
+import HomeV3Shop from "../components/home/v3/HomeV3Shop";
+import HomeV3Agence from "../components/home/v3/HomeV3Agence";
+import HomeV3Erasmus from "../components/home/v3/HomeV3Erasmus";
+import HomeV3FinalCTA from "../components/home/v3/HomeV3FinalCTA";
 
 export const metadata: Metadata = {
   title: "Agence de communication visuelle à Strasbourg",
@@ -50,39 +43,25 @@ export const metadata: Metadata = {
 };
 
 /**
- * Homepage HM Global — l'agence d'abord, les produits en proposition (2026-06-19).
- *
- * Retour client (maman de Kaan) : les vêtements étaient trop mis en avant par
- * rapport à QUI on est. On renforce donc l'identité agence en haut (pôles +
- * « qui sommes-nous » + comment ça marche + preuve), et les produits/best-sellers
- * descendent plus bas, comme une PROPOSITION (la vente directe reste accessible).
- *   1. Hero (niveau entreprise) → Pôles → Qui sommes-nous → Comment ça marche
- *   2. Réassurance + logos clients + réalisations + avis + process / BAT
- *   3. Produits (best-sellers, packs secteur, textile premium) — en proposition
- *   4. Signalétique / atelier / pack 360 / confiance / CTA final
+ * Homepage V3 — agence locale d'abord, commande directe ensuite.
+ * Trois parcours distincts : projet complet, boutique express et entreprises.
+ * Les preuves réelles précèdent les produits pour installer la confiance.
  */
 export default function HomePage() {
   return (
     <>
-      <HomeHeroPremium />
-      <HomePoles />
-      <HomeAbout />
-      <HomeHowItWorks />
-      <HomeReassurance />
+      <HomeV3Hero />
+      <HomeV3Journeys />
+      <HomeV3Proof />
+      <HomeV3Reels />
+      <HomeV3Process />
       <HomeClients />
-      <HomeVisualShowcase />
-      <HomeRealisations />
       <GoogleReviews />
-      <LocalTestimonials />
-      <HomeProcessBAT />
-      <BestSellers />
-      <HomeNeedsPacks />
-      <HomeTextilePremium />
-      <HomeSignaletique />
-      <HomeAtelier />
-      <HomePack360 />
-      <HomeTrustStrip />
-      <HomeFinalCTA />
+      <HomeV3Shop />
+      <HomeV3Agence />
+      <HomeV3Erasmus />
+      <HomeV3FinalCTA />
+      <HomeV3Featured />
     </>
   );
 }
