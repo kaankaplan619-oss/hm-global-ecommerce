@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { syncBrevoContact } from "@/lib/brevo";
 
 /**
  * POST /api/auth/register
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, password, firstName, lastName, phone, type, company, siret, tvaIntracom } = body;
+    const { email, password, firstName, lastName, phone, type, company, siret, tvaIntracom, marketingConsent } = body;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || req.nextUrl.origin;
 
     // ── Validation ────────────────────────────────────────────────────────────
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
           company:      company ?? null,
           siret:        siret ? siret.replace(/[\s.]/g, "") : null,
           tva_intracom: tvaIntracom ?? null,
+          marketing_consent: Boolean(marketingConsent),
         },
       },
     });
@@ -84,6 +86,23 @@ export async function POST(req: NextRequest) {
     // - If email confirmation is enabled in Supabase Auth, signup should NOT
     //   auto-confirm the user and should NOT create an authenticated session.
     // - The user must confirm their email first via the Supabase email link.
+
+    // ── Opt-in prospection (#88, RGPD/CNIL) ───────────────────────────────────
+    // Si la case a été cochée : on persiste le consentement (preuve CNIL) et on
+    // pousse le contact dans Brevo. Non bloquant — un échec ici ne doit jamais
+    // empêcher la création du compte.
+    if (marketingConsent && authData.user) {
+      try {
+        const admin = await createSupabaseServiceClient();
+        await admin
+          .from("profiles")
+          .update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() })
+          .eq("id", authData.user.id);
+      } catch (e) {
+        console.error("[Auth Register] consent persist:", e);
+      }
+      await syncBrevoContact({ email, firstName, lastName, source: "inscription" });
+    }
 
     return NextResponse.json(
       {

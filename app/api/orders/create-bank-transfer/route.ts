@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
+import { syncBrevoContact } from "@/lib/brevo";
 import { generateOrderNumber } from "@/lib/utils";
 import { computeUnitPriceWithVolume, computeCartTotals, ttcToHt } from "@/data/pricing";
 import { ALL_PRODUCTS as PRODUCTS } from "@/data/products";
@@ -70,6 +71,16 @@ export async function POST(req: NextRequest) {
         .from("profiles")
         .update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() })
         .eq("id", user.id);
+    }
+
+    // Sync Brevo (opt-in commande, invité ou connecté) — non bloquant
+    if (marketingConsent) {
+      await syncBrevoContact({
+        email:     user?.email ?? guestEmail ?? "",
+        firstName: billingAddress?.firstName ?? null,
+        lastName:  billingAddress?.lastName ?? null,
+        source:    "commande",
+      });
     }
 
     // ── Garde stock Printful — même protection que le paiement CB ─────────────

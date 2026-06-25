@@ -32,9 +32,13 @@ export default async function HomeV3Featured() {
           </div>
           <Link
             href="/catalogue"
-            className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--hm-primary)]"
+            className="group inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-[var(--hm-line)] bg-white px-5 py-3 text-sm font-semibold text-[var(--hm-primary)] shadow-[0_8px_24px_rgba(63,45,88,0.06)] transition-colors hover:border-[var(--hm-primary)] hover:bg-[var(--hm-primary)] hover:text-white sm:self-auto"
           >
-            {t("home.featured.ctaAll")} <ArrowUpRight size={15} />
+            {t("home.featured.ctaAll")}
+            <ArrowUpRight
+              size={16}
+              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+            />
           </Link>
         </div>
 

@@ -28,6 +28,7 @@ export default function InscriptionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   const update = (field: string, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
@@ -42,7 +43,7 @@ export default function InscriptionPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, type }),
+        body: JSON.stringify({ ...form, type, marketingConsent }),
       });
 
       if (!res.ok) {
@@ -282,6 +283,26 @@ export default function InscriptionPage() {
               <p className="mt-1 text-[10px] text-[var(--hm-text-muted)]">
                 {t("signup.field.confirmHint")}
               </p>
+            </div>
+
+            {/* ── Consentement prospection (#88 — RGPD/CNIL), opt-in non pré-coché ── */}
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="marketing-consent"
+                checked={marketingConsent}
+                onChange={(e) => setMarketingConsent(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-[var(--hm-primary)]"
+              />
+              <label
+                htmlFor="marketing-consent"
+                className="cursor-pointer text-[12.5px] leading-snug text-[var(--hm-text-soft)]"
+              >
+                {t("checkout.marketing_consent_before")}{" "}
+                <Link href="/confidentialite" className="text-[var(--hm-primary)] hover:underline">
+                  {t("checkout.privacy_policy_link")}
+                </Link>{t("checkout.marketing_consent_after")}
+              </label>
             </div>
 
             <button

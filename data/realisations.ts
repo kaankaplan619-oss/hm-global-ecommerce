@@ -7,8 +7,8 @@
  * Techniques validées par Kaan (2026-06-10) : majoritairement DTF.
  *
  * `category` = catégorie de filtre sur /realisations (assignée d'après le projet
- * RÉEL, jamais inventée). Pas de réalisation « goodies » à ce jour → ce filtre
- * n'apparaît pas (dérivé des données présentes).
+ * RÉEL, jamais inventée). Les filtres affichés sont dérivés des données présentes
+ * (un filtre n'apparaît que s'il a au moins une réalisation).
  */
 
 export type RealisationCategory =
@@ -254,6 +254,80 @@ export const REALISATIONS: Realisation[] = [
     tags: ["Flyers", "Cartes de visite"],
     image: "/images/realisations/hm-global-print.jpg",
     alt: "Flyers et cartes de visite HM Global imprimés",
+  },
+
+  // — Pack 2026-06 (vraies réalisations clients, vérifiées image par image) —
+  {
+    id: "yasart-covering",
+    title: "Lettrage véhicule — YASART Isolation",
+    sector: "Bâtiment",
+    category: "vehicules",
+    tags: ["Lettrage", "Vinyle"],
+    image: "/images/realisations/yasart-covering.jpg",
+    alt: "Renault Clio lettrée aux couleurs de YASART Isolation (Strasbourg), trois angles",
+  },
+  {
+    id: "ce-bat-fiat-doblo",
+    title: "Marquage utilitaire — CE-BAT (Fiat Doblo)",
+    sector: "Bâtiment",
+    category: "vehicules",
+    tags: ["Lettrage", "Utilitaire"],
+    image: "/images/realisations/ce-bat-fiat-doblo.jpg",
+    alt: "Fiat Doblo blanc floqué CE-BAT (étanchéité, zinguerie, pliage), trois angles",
+  },
+  {
+    id: "ce-bat-benne",
+    title: "Lettrage camion benne — CE-BAT",
+    sector: "Bâtiment",
+    category: "vehicules",
+    tags: ["Lettrage", "Camion benne"],
+    image: "/images/realisations/ce-bat-benne.jpg",
+    alt: "Renault Master benne CE-BAT marqué logo et lettrage sur les ridelles, quatre angles",
+  },
+  {
+    id: "ce-bat-polos",
+    title: "Polos marqués — CE-BAT",
+    sector: "Bâtiment",
+    category: "textile",
+    tags: ["Polo", "Poitrine + dos"],
+    image: "/images/realisations/ce-bat-polos.jpg",
+    alt: "Polos gris et noir marqués CE-BAT, logo poitrine et grand marquage dos",
+  },
+  {
+    id: "o2-cartes",
+    title: "Cartes de visite — O2 Concept",
+    sector: "Bâtiment",
+    category: "print",
+    tags: ["Cartes de visite", "Identité"],
+    image: "/images/realisations/o2-cartes.jpg",
+    alt: "Carte de visite O2 Concept (Entreprise Générale, Strasbourg) — recto logo et QR code",
+  },
+  {
+    id: "activ-renovation-panneau",
+    title: "Panneau de chantier — Activ-Rénovation",
+    sector: "Bâtiment",
+    category: "print",
+    tags: ["Panneau de chantier", "Grand format"],
+    image: "/images/realisations/activ-renovation-panneau.jpg",
+    alt: "Panneau de chantier Activ-Rénovation (Eschau) — travaux de rénovation et neuf",
+  },
+  {
+    id: "hm-stylos",
+    title: "Stylos personnalisés — HM Global",
+    sector: "Goodies",
+    category: "goodies",
+    tags: ["Stylos", "Objet publicitaire"],
+    image: "/images/realisations/hm-stylos.jpg",
+    alt: "Stylos blancs personnalisés au logo et aux coordonnées de HM Global Agence",
+  },
+  {
+    id: "boulangerie-tote-bag",
+    title: "Tote bag coton — Boulangerie du Quartier",
+    sector: "Goodies",
+    category: "goodies",
+    tags: ["Tote bag", "Coton"],
+    image: "/images/realisations/boulangerie-tote-bag.jpg",
+    alt: "Tote bag en coton personnalisé Boulangerie du Quartier (Haguenau), impression recto",
   },
 ];
 
