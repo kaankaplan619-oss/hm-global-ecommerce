@@ -104,6 +104,20 @@ export async function POST(req: NextRequest) {
       await syncBrevoContact({ email, firstName, lastName, source: "inscription" });
     }
 
+    // Si la confirmation email est DÉSACTIVÉE dans Supabase, signUp renvoie une
+    // session → le compte est actif immédiatement, on connecte l'utilisateur
+    // directement (aucun email requis). Sinon, on demande la confirmation.
+    if (authData.session) {
+      return NextResponse.json(
+        {
+          user: authData.user,
+          requiresEmailConfirmation: false,
+          message: "Votre compte a été créé.",
+        },
+        { status: 201 }
+      );
+    }
+
     return NextResponse.json(
       {
         user: null,
