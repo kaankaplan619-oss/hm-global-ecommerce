@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
+import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+
+// Police display de marque (titres) — chargée et auto-hébergée par next/font.
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  variable: "--font-bricolage",
+  display: "swap",
+});
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/layout/CartDrawer";
@@ -74,7 +83,7 @@ export default async function RootLayout({
 }) {
   const locale = await getLocale();
   return (
-    <html lang={locale}>
+    <html lang={locale} className={bricolage.variable}>
       <body className="bg-white text-[var(--hm-text)] antialiased">
         <I18nProvider initialLocale={locale}>
           <AuthSync />

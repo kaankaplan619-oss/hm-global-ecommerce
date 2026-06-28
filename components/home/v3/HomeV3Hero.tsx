@@ -17,7 +17,7 @@ export default async function HomeV3Hero() {
       <div className="container pb-12 pt-7 sm:pb-16 sm:pt-10 lg:pb-20 lg:pt-12">
         <div className="grid items-center gap-9 lg:grid-cols-[0.88fr_1.12fr] lg:gap-14">
           <div className="max-w-[39rem]">
-            <h1 className="text-[2rem] font-bold leading-[1.05] tracking-[-0.045em] text-[var(--hm-text)] sm:text-[3.2rem] lg:text-[3.75rem]">
+            <h1 className="[font-family:var(--font-bricolage)] text-[2rem] font-bold leading-[1.04] tracking-[-0.045em] text-[var(--hm-text)] sm:text-[3.2rem] lg:text-[3.75rem]">
               {t("about.hero.title")}
             </h1>
             <p className="mt-5 max-w-[36rem] text-[15px] leading-7 text-[var(--hm-text-soft)] sm:text-base">

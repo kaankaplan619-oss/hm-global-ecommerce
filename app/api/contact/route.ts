@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { sendEmail } from "@/lib/email";
 
 /**
  * POST /api/contact — message du formulaire de contact public.
@@ -99,16 +100,18 @@ export async function POST(req: NextRequest) {
 
   const subjectLabel = SUBJECTS.includes(subject) ? subject : "Contact";
 
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.error("[Contact] RESEND_API_KEY manquante");
+  const hasSmtp = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD);
+  const hasResend = !!process.env.RESEND_API_KEY;
+  if (!hasSmtp && !hasResend) {
+    console.error("[Contact] Aucun transport email configuré (SMTP_* / RESEND_API_KEY)");
     return NextResponse.json(
       { error: "Le service de messagerie est momentanément indisponible. Appelez-nous au 06 76 16 11 88." },
       { status: 503 }
     );
   }
 
-  const fromAddr = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
+  const fromAddr =
+    process.env.EMAIL_FROM ?? process.env.SMTP_USER ?? process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
   const toAddr = process.env.CONTACT_TO_EMAIL ?? "contact@hmga.fr";
 
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;color:#2D2340;font-size:15px;line-height:1.7">
@@ -124,10 +127,8 @@ export async function POST(req: NextRequest) {
   </div>`;
 
   try {
-    const { Resend } = await import("resend");
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
-      from: `HM Global Agence <${fromAddr}>`,
+    const { error } = await sendEmail({
+      from: fromAddr.includes("<") ? fromAddr : `HM Global Agence <${fromAddr}>`,
       to: toAddr,
       replyTo: email,
       subject: `Contact — ${subjectLabel} — ${name}`,

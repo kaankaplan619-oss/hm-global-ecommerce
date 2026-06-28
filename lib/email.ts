@@ -62,22 +62,83 @@ const C = {
 
 // ─── Resend client (lazy — évite l'import au build) ──────────────────────────
 
-async function getResend() {
-  const { Resend } = await import("resend");
+type MailArgs = {
+  from: string;
+  to: string | string[];
+  subject: string;
+  html: string;
+  replyTo?: string;
+};
+
+/**
+ * Transport email partagé.
+ * - Si SMTP_HOST + SMTP_USER + SMTP_PASSWORD sont définis → envoi via SMTP
+ *   (ex. Titan / contact@hm-global.fr). Chemin recommandé en prod.
+ * - Sinon → repli sur Resend (RESEND_API_KEY).
+ * Renvoie `{ error }` — compatible avec l'interface `resend.emails.send()`.
+ */
+export async function sendEmail(args: MailArgs): Promise<{ error: { message: string } | null }> {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASSWORD;
+
+  if (host && user && pass) {
+    try {
+      const { createTransport } = await import("nodemailer");
+      const port = Number(process.env.SMTP_PORT ?? "465");
+      const transporter = createTransport({
+        host,
+        port,
+        secure: port === 465, // 465 = SSL implicite · 587 = STARTTLS
+        auth: { user, pass },
+      });
+      await transporter.sendMail({
+        from: args.from,
+        to: args.to,
+        subject: args.subject,
+        html: args.html,
+        replyTo: args.replyTo,
+      });
+      return { error: null };
+    } catch (err) {
+      console.error("[email] SMTP send failed:", err);
+      return { error: { message: err instanceof Error ? err.message : String(err) } };
+    }
+  }
+
+  // ── Repli Resend ──────────────────────────────────────────────────────────
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) throw new Error("RESEND_API_KEY is not set");
-  return new Resend(apiKey);
+  if (!apiKey) {
+    return { error: { message: "Aucun transport email configuré (SMTP_* ou RESEND_API_KEY)" } };
+  }
+  const { Resend } = await import("resend");
+  const { error } = await new Resend(apiKey).emails.send({
+    from: args.from,
+    to: args.to,
+    subject: args.subject,
+    html: args.html,
+    replyTo: args.replyTo,
+  });
+  return { error: error ? { message: error.message } : null };
+}
+
+/** Conserve l'interface `resend.emails.send()` utilisée par les fonctions ci-dessous. */
+async function getResend() {
+  return { emails: { send: sendEmail } };
 }
 
 // ─── Guard ────────────────────────────────────────────────────────────────────
 
 function getFromEmail(): string {
-  const fromAddr = process.env.RESEND_FROM_EMAIL;
+  // Priorité au compte SMTP Titan (EMAIL_FROM ou l'adresse du compte),
+  // repli sur RESEND_FROM_EMAIL.
+  const fromAddr =
+    process.env.EMAIL_FROM ?? process.env.SMTP_USER ?? process.env.RESEND_FROM_EMAIL;
   if (!fromAddr) {
-    throw new Error("RESEND_FROM_EMAIL is not set");
+    throw new Error("EMAIL_FROM / SMTP_USER / RESEND_FROM_EMAIL non configuré");
   }
-
-  return `${FROM_NAME} <${fromAddr}>`;
+  // Si l'adresse contient déjà « Nom <...> », on la garde telle quelle.
+  return fromAddr.includes("<") ? fromAddr : `${FROM_NAME} <${fromAddr}>`;
 }
 
 function getRecipientEmail(order: Order, fn: string): string | null {
