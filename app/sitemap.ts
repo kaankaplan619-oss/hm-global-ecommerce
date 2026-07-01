@@ -27,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: url("/engagements"),       changeFrequency: "monthly", priority: 0.5 },
     { url: url("/techniques"),        changeFrequency: "monthly", priority: 0.6 },
     { url: url("/devis-rapide"),      changeFrequency: "monthly", priority: 0.6 },
+    { url: url("/faq"),               changeFrequency: "monthly", priority: 0.5 },
     { url: url("/contact"),           changeFrequency: "yearly",  priority: 0.4 },
     { url: url("/cgv"),               changeFrequency: "yearly",  priority: 0.2 },
     { url: url("/confidentialite"),   changeFrequency: "yearly",  priority: 0.2 },
