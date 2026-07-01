@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { ALL_PRODUCTS } from "@/data/products";
 import { ALL_PRINT_PRODUCTS, printConfigHref } from "@/data/print-catalogue";
+import { LOCAL_SERVICE_PAGES } from "@/data/local-seo";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.hm-global.fr";
 
@@ -26,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: url("/engagements"),       changeFrequency: "monthly", priority: 0.5 },
     { url: url("/techniques"),        changeFrequency: "monthly", priority: 0.6 },
     { url: url("/devis-rapide"),      changeFrequency: "monthly", priority: 0.6 },
+    { url: url("/faq"),               changeFrequency: "monthly", priority: 0.5 },
     { url: url("/contact"),           changeFrequency: "yearly",  priority: 0.4 },
     { url: url("/cgv"),               changeFrequency: "yearly",  priority: 0.2 },
     { url: url("/confidentialite"),   changeFrequency: "yearly",  priority: 0.2 },
@@ -36,6 +38,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: url(`/catalogue/${c}`),
     changeFrequency: "weekly",
     priority: 0.7,
+  }));
+
+  // Pages SEO locales (« <service> Strasbourg ») — cf. data/local-seo.ts.
+  const localPages: MetadataRoute.Sitemap = LOCAL_SERVICE_PAGES.map((p) => ({
+    url: url(`/${p.slug}`),
+    changeFrequency: "monthly",
+    priority: 0.8,
   }));
 
   // Fiches produit visibles (exclut produits masqués + catégories non proposées).
@@ -56,5 +65,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [...staticPages, ...categoryPages, ...printPages, ...productPages];
+  return [...staticPages, ...localPages, ...categoryPages, ...printPages, ...productPages];
 }

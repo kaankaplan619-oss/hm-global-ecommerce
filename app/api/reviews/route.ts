@@ -3,25 +3,30 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/reviews
- * Returns approved reviews from DB.
- * Returns empty array until reviews table is created and populated.
+ * Renvoie les avis approuvés (affichage public). Dégrade en liste vide si la
+ * table `reviews` n'existe pas encore (migration 022 non appliquée).
  *
  * POST /api/reviews
- * Submit a review — requires authenticated session + completed order ownership.
+ * Soumission d'un avis — nécessite une session authentifiée + une commande
+ * livrée appartenant à l'utilisateur. L'avis est créé en statut 'pending'
+ * (modération avant affichage public).
  */
 
-export async function GET(_req: NextRequest) {
-  // TODO: once `reviews` table exists in Supabase, replace with:
-  // const supabase = await createSupabaseServerClient();
-  // const { data } = await supabase
-  //   .from("reviews")
-  //   .select("id, user_name, company, rating, comment, created_at")
-  //   .eq("status", "approved")
-  //   .order("created_at", { ascending: false })
-  //   .limit(20);
-  // return NextResponse.json({ reviews: data ?? [] });
+export async function GET() {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("id, user_name, company, rating, comment, created_at")
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .limit(20);
 
-  return NextResponse.json({ reviews: [] });
+    if (error) return NextResponse.json({ reviews: [] });
+    return NextResponse.json({ reviews: data ?? [] });
+  } catch {
+    return NextResponse.json({ reviews: [] });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -69,24 +74,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // TODO: once `reviews` table exists, uncomment:
-    // const { error: dupError } = await supabase
-    //   .from("reviews")
-    //   .select("id")
-    //   .eq("order_id", orderId)
-    //   .single();
-    // if (!dupError) {
-    //   return NextResponse.json({ error: "Avis déjà soumis pour cette commande." }, { status: 409 });
-    // }
-    // await supabase.from("reviews").insert({
-    //   order_id: orderId,
-    //   user_id: user.id,
-    //   rating,
-    //   comment: comment?.trim() ?? "",
-    //   status: "pending",
-    // });
+    // ── Anti-doublon (un avis par commande) ──────────────────────────
+    const { data: existing } = await supabase
+      .from("reviews")
+      .select("id")
+      .eq("order_id", orderId)
+      .maybeSingle();
 
-    console.log(`[Review] user=${user.id} order=${orderId} rating=${rating}`);
+    if (existing) {
+      return NextResponse.json(
+        { error: "Un avis a déjà été soumis pour cette commande." },
+        { status: 409 }
+      );
+    }
+
+    // ── Enregistrement (statut 'pending' → modération) ───────────────
+    const { error: insertError } = await supabase.from("reviews").insert({
+      order_id: orderId,
+      user_id: user.id,
+      rating,
+      comment: typeof comment === "string" ? comment.trim().slice(0, 500) : "",
+      status: "pending",
+    });
+
+    if (insertError) {
+      console.error("[Reviews POST] insert", insertError);
+      return NextResponse.json(
+        { error: "Erreur lors de l'enregistrement de l'avis." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
