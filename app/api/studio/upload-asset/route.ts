@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { sniffImageKind, kindFromMime, sanitizeSvg } from "@/lib/security/fileValidation";
+
+// Runtime Node requis (sanitisation SVG via DOMPurify / jsdom).
+export const runtime = "nodejs";
 
 const BUCKET = "customer-logos";
 const MAX_SIZE_BYTES = 10 * 1024 * 1024;
-// SVG volontairement EXCLU : un SVG peut embarquer du JavaScript et, servi
-// depuis un bucket public en image/svg+xml, devient un vecteur de XSS stocké.
-// On n'accepte que des images matricielles (non exécutables).
+// SVG accepté mais SANITISÉ avant stockage (cf. lib/security/fileValidation) :
+// un SVG peut embarquer du JavaScript et, servi depuis un bucket public en
+// image/svg+xml, deviendrait un vecteur de XSS stocké. On neutralise donc
+// scripts / handlers / liens javascript: avant l'upload. Le type réel de tout
+// fichier est vérifié par magic bytes (indépendamment du type déclaré).
 const ALLOWED_TYPES = new Set([
   "image/png",
   "image/jpeg",
   "image/jpg",
+  "image/svg+xml",
 ]);
 const ALLOWED_KINDS = new Set(["logo", "print", "preview-face", "preview-back"]);
 
@@ -54,9 +61,36 @@ export async function POST(req: NextRequest) {
 
     if (!ALLOWED_TYPES.has(file.type)) {
       return NextResponse.json(
-        { error: "Format non accepté. Utilisez PNG ou JPG." },
+        { error: "Format non accepté. Utilisez PNG, JPG ou SVG." },
         { status: 415 },
       );
+    }
+
+    // Validation du CONTENU réel (magic bytes) — indépendante du type déclaré.
+    const declaredKind = kindFromMime(file.type);
+    const rawBytes = new Uint8Array(await file.arrayBuffer());
+    const actualKind = sniffImageKind(rawBytes);
+
+    if (!actualKind || actualKind !== declaredKind) {
+      return NextResponse.json(
+        { error: "Le contenu du fichier ne correspond pas à une image PNG, JPG ou SVG valide." },
+        { status: 415 },
+      );
+    }
+
+    // SVG : sanitisation obligatoire avant stockage public (anti-XSS stocké).
+    let uploadBytes: Uint8Array = rawBytes;
+    let uploadContentType = file.type;
+    if (actualKind === "svg") {
+      const clean = sanitizeSvg(rawBytes);
+      if (!clean) {
+        return NextResponse.json(
+          { error: "Le SVG n'a pas pu être sécurisé." },
+          { status: 422 },
+        );
+      }
+      uploadBytes = new TextEncoder().encode(clean);
+      uploadContentType = "image/svg+xml";
     }
 
     const safeName = file.name
@@ -64,9 +98,8 @@ export async function POST(req: NextRequest) {
       .slice(0, 80);
     const path = `studio-exports/${sessionId}/${Date.now()}-${kind}-${safeName}`;
     const supabase = await createSupabaseServiceClient();
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const { error } = await supabase.storage.from(BUCKET).upload(path, bytes, {
-      contentType: file.type,
+    const { error } = await supabase.storage.from(BUCKET).upload(path, uploadBytes, {
+      contentType: uploadContentType,
       upsert: false,
       cacheControl: "86400",
     });
