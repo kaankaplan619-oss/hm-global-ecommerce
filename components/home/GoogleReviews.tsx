@@ -5,18 +5,15 @@ import { getT } from "@/lib/i18n/server";
 /**
  * GoogleReviews — Bandeau d'avis Google (server component async).
  *
- * - Branché (GOOGLE_PLACES_API_KEY posée) : note + nb d'avis réels + cartes
+ * - Branché (GOOGLE_PLACES_API_KEY posée) : note + nb d'avis RÉELS + cartes
  *   d'avis (auteur, photo, texte) tirées de la Places API.
- * - Non branché : fallback honnête (note 4,7 · 14 avis Google + lien),
- *   valeurs RÉELLES de la fiche Google HM Global au 2026-06-14.
+ * - Non branché : bandeau honnête « Consultez les avis à jour sur Google » +
+ *   lien vers la fiche, SANS note ni compteur codés en dur (aucune métrique
+ *   affichée qui ne provienne de l'API en direct).
  *
- * Aucune donnée inventée : si l'API renvoie autre chose, on affiche l'API ;
- * sinon le fallback reflète la fiche réelle (à mettre à jour si elle évolue).
+ * Aucune donnée inventée : la note et le nombre d'avis ne s'affichent QUE
+ * lorsqu'ils viennent réellement de l'API Google.
  */
-
-// Fallback = chiffres RÉELS de la fiche Google (à actualiser si besoin).
-const FALLBACK_RATING = 4.7;
-const FALLBACK_TOTAL  = 14;
 
 function fmtRating(n: number): string {
   return n.toFixed(1).replace(".", ",");
@@ -25,16 +22,42 @@ function fmtRating(n: number): string {
 export default async function GoogleReviews() {
   const data = await getGoogleReviews();
   const t = await getT();
-  const rating  = data?.rating  ?? FALLBACK_RATING;
-  const total   = data?.total   ?? FALLBACK_TOTAL;
-  const mapsUri = data?.mapsUri ?? FALLBACK_MAPS_URI;
-  const reviews = data?.reviews ?? [];
+
+  // ── Fallback honnête (API non branchée) : aucun chiffre inventé ──────────
+  if (!data) {
+    return (
+      <section className="py-12 sm:py-16">
+        <div className="container">
+          <div className="flex flex-col items-start gap-4 rounded-2xl border border-[var(--hm-line)] bg-white p-6 shadow-[0_2px_8px_rgba(63,45,88,0.04)] sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-100 bg-amber-50">
+                <Star size={20} className="text-amber-400" fill="currentColor" />
+              </div>
+              <p className="text-sm font-semibold text-[var(--hm-text)]">
+                {t("home.reviews.liveOnGoogle")}
+              </p>
+            </div>
+            <a
+              href={FALLBACK_MAPS_URI}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hm-line)] bg-white px-4 py-2 text-[12px] font-semibold text-[var(--hm-text)] shadow-sm transition hover:border-[var(--hm-primary)] hover:text-[var(--hm-primary)]"
+            >
+              {t("home.reviews.readOnGoogle")}
+            </a>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const { rating, total, mapsUri, reviews } = data;
   const rounded = Math.round(rating);
 
   return (
     <section className="py-12 sm:py-16">
       <div className="container">
-        {/* En-tête note moyenne */}
+        {/* En-tête note moyenne (RÉELLE, issue de l'API) */}
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-amber-100 bg-amber-50">
