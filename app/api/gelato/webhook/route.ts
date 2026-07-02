@@ -1,12 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 /**
  * POST /api/gelato/webhook
  * Reçoit les événements Gelato (mise à jour statut commande, tracking, etc.)
  * À configurer sur dashboard.gelato.com/webhooks
+ *
+ * Auth : si GELATO_WEBHOOK_SECRET est défini (Vercel env + secret dans l'URL
+ * du webhook côté Gelato : ?secret=… ou header x-webhook-secret), on l'EXIGE →
+ * bloque la falsification anonyme du statut des commandes. Tant qu'il n'est pas
+ * configuré, on laisse passer pour ne pas casser le webhook existant.
  */
 export async function POST(req: NextRequest) {
+  // Rate-limit best-effort (les bursts webhook légitimes sont faibles).
+  const limited = rateLimit(req, { key: "gelato-webhook", limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
+  const expectedSecret = process.env.GELATO_WEBHOOK_SECRET;
+  if (expectedSecret) {
+    const provided =
+      req.nextUrl.searchParams.get("secret") ?? req.headers.get("x-webhook-secret");
+    if (provided !== expectedSecret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   try {
     const event = await req.json();
     console.log("[Gelato Webhook] Event reçu:", JSON.stringify(event, null, 2));

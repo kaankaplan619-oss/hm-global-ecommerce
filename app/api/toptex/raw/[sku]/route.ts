@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthHeaders } from "@/lib/toptex";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 /**
  * GET /api/toptex/raw/{sku}
+ * (Bloqué en production par proxy.ts — diagnostic uniquement.)
  *
  * Retourne la réponse brute de l'API TopTex pour un produit donné.
  * Endpoint de diagnostic — permet de voir la structure JSON exacte
@@ -14,9 +16,12 @@ import { getAuthHeaders } from "@/lib/toptex";
  *   /api/toptex/raw/IB320    → T-shirt iDeal
  */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ sku: string }> }
 ) {
+  const limited = rateLimit(req, { key: "toptex-raw", limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const { sku } = await params;
 

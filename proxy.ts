@@ -26,6 +26,8 @@ const DEV_ONLY_API = [
   "/api/gelato/test",
   "/api/prodigi/test",
   "/api/toptex/debug-product",
+  // Endpoint de diagnostic (réponse brute TopTex) — non utilisé par le front.
+  "/api/toptex/raw",
 ];
 
 /**

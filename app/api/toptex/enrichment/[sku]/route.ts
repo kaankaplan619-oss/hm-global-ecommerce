@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthHeaders } from "@/lib/toptex";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const TOPTEX_BASE = "https://api.toptex.io";
 
@@ -22,6 +23,11 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ sku: string }> }
 ) {
+  // Rate-limit (l'endpoint relaie l'API TopTex — généreux car appelé par les
+  // fiches produit, mais cap l'aspiration du catalogue fournisseur).
+  const limited = rateLimit(req, { key: "toptex-enrichment", limit: 120, windowMs: 60_000 });
+  if (limited) return limited;
+
   const { sku } = await params;
 
   if (!sku || sku.length < 2) {

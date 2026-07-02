@@ -58,14 +58,71 @@ export interface BatRenderResult {
 
 // ── Chargement logo ────────────────────────────────────────────────────────────
 
+// Plafond mémoire pour le logo (anti-amplification / anti-abus).
+const MAX_LOGO_BYTES = 15 * 1024 * 1024;
+
+/**
+ * Hôtes autorisés pour un logoUrl distant. Le logo client vient TOUJOURS du
+ * Storage Supabase du projet (buckets customer-logos / studio-exports). On
+ * refuse toute autre origine pour fermer le SSRF (metadata cloud 169.254.x,
+ * réseau interne, open-fetch). Les data: URLs (studio) restent gérées en amont.
+ */
+function isAllowedLogoHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  if (h.endsWith(".supabase.co") || h.endsWith(".supabase.in")) return true;
+  try {
+    const envHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").hostname.toLowerCase();
+    if (envHost && h === envHost) return true;
+  } catch {
+    /* env absente/invalide → on s'en tient au suffixe supabase */
+  }
+  return false;
+}
+
 async function fetchLogoBuffer(logoUrl: string): Promise<Buffer> {
+  // data: URL (studio) — décodage local, aucune requête réseau.
   if (logoUrl.startsWith("data:")) {
     const [, b64] = logoUrl.split(",");
-    return Buffer.from(b64, "base64");
+    const buf = Buffer.from(b64 ?? "", "base64");
+    if (buf.byteLength > MAX_LOGO_BYTES) throw new Error("Logo trop volumineux");
+    return buf;
   }
-  const res = await fetch(logoUrl, { cache: "no-store" });
+
+  // ── Garde anti-SSRF (même politique que app/api/image-proxy) ───────────────
+  let target: URL;
+  try {
+    target = new URL(logoUrl);
+  } catch {
+    throw new Error("logoUrl invalide");
+  }
+  if (target.protocol !== "https:") {
+    throw new Error("logoUrl : HTTPS uniquement");
+  }
+  if (!isAllowedLogoHost(target.hostname)) {
+    throw new Error(`logoUrl : hôte non autorisé (${target.hostname})`);
+  }
+
+  const res = await fetch(target.toString(), {
+    cache: "no-store",
+    // Refuser les redirections : un fichier qui redirige pourrait sinon faire
+    // pointer le serveur vers le réseau interne / les endpoints de metadata.
+    redirect: "manual",
+  });
+  if (res.status >= 300 && res.status < 400) {
+    throw new Error("logoUrl : redirection refusée");
+  }
   if (!res.ok) throw new Error(`Logo fetch failed: ${res.status} ${logoUrl}`);
-  return Buffer.from(await res.arrayBuffer());
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType && !contentType.startsWith("image/")) {
+    throw new Error(`logoUrl : type non-image (${contentType})`);
+  }
+  const declared = Number(res.headers.get("content-length") ?? 0);
+  if (declared > MAX_LOGO_BYTES) throw new Error("Logo trop volumineux");
+
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.byteLength > MAX_LOGO_BYTES) throw new Error("Logo trop volumineux");
+  return buf;
 }
 
 // ── Calcul de position ─────────────────────────────────────────────────────────

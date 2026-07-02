@@ -37,11 +37,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { renderBat, validateGarmentPath, type LogoTransform } from "@/lib/bat-renderer";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const BAT_BUCKET = "bat-renders";
 
+// Cap dur de la durée d'exécution (anti-DoS applicatif : empêche un appel
+// abusif de mobiliser une fonction serverless indéfiniment).
+export const maxDuration = 30;
+
 export async function POST(req: NextRequest) {
   try {
+    // ── 0. Rate-limit (anti-abus CPU/RAM Sharp) ──────────────────────────────
+    const limited = rateLimit(req, { key: "render-bat", limit: 12, windowMs: 60_000 });
+    if (limited) return limited;
+
     // ── 1. Parse body ────────────────────────────────────────────────────────
     let body: Record<string, unknown>;
     try {
@@ -101,8 +110,10 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    if (outputSize !== undefined && (typeof outputSize !== "number" || outputSize < 100 || outputSize > 4000)) {
-      return NextResponse.json({ error: "outputSize invalide — entier entre 100 et 4000" }, { status: 400 });
+    // Cap à 2500 px (et non 4000) : limite l'amplification CPU/RAM de Sharp.
+    // Le rendu BAT par défaut est 2000 px → la marge reste suffisante.
+    if (outputSize !== undefined && (typeof outputSize !== "number" || outputSize < 100 || outputSize > 2500)) {
+      return NextResponse.json({ error: "outputSize invalide — entier entre 100 et 2500" }, { status: 400 });
     }
 
     // ── 3. Validation chemin garment (anti path-traversal) ───────────────────

@@ -9,6 +9,7 @@ import { PRINT_PRODUCTS_LOOKUP, getBusinessCardLotPrice } from "@/data/print-pro
 import { getPrintDirectPrice } from "@/data/print-pricing";
 import { getPrintProduct } from "@/data/print-catalogue";
 import { checkPrintfulAvailability } from "@/lib/printful-stock";
+import { rateLimit } from "@/lib/security/rate-limit";
 import type { Technique, Placement, PrintConfig } from "@/types";
 
 interface CartItemInput {
@@ -56,6 +57,10 @@ interface CartItemInput {
  */
 export async function POST(req: NextRequest) {
   try {
+    // ── Rate-limit (anti commandes-fantômes / coût Stripe·Printful) ───────────
+    const limited = rateLimit(req, { key: "checkout-pi", limit: 12, windowMs: 60_000 });
+    if (limited) return limited;
+
     // ── Session (optional — guests have no session) ───────────────────────────
     const supabaseAuth = await createSupabaseServerClient();
     const { data: { user } } = await supabaseAuth.auth.getUser();

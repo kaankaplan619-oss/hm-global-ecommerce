@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 /**
  * GET /api/payment/bank-info
@@ -15,7 +16,12 @@ import { NextResponse } from "next/server";
  * En cas de variable manquante, on renvoie 500 — un faux IBAN partiel
  * n'aiderait personne et risquerait de pousser un client à virer ailleurs.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Rate-limit (l'endpoint expose l'IBAN — accessible aux invités pour le
+  // virement, mais sans raison d'être martelé/aspiré).
+  const limited = rateLimit(req, { key: "bank-info", limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   const beneficiary = process.env.HM_BANK_BENEFICIARY;
   const iban        = process.env.HM_BANK_IBAN;
   const bic         = process.env.HM_BANK_BIC;
@@ -27,5 +33,9 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ beneficiary, iban, bic });
+  // Jamais mis en cache CDN ni indexé.
+  return NextResponse.json(
+    { beneficiary, iban, bic },
+    { headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } }
+  );
 }

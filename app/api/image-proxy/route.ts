@@ -16,6 +16,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 // Seuls ces hostnames peuvent être proxifiés — liste fermée
 const ALLOWED_HOSTNAMES = new Set([
@@ -25,6 +26,11 @@ const ALLOWED_HOSTNAMES = new Set([
 ]);
 
 export async function GET(req: NextRequest) {
+  // Rate-limit (anti-abus egress) — généreux car une galerie charge plusieurs
+  // images par page ; cap l'abus sans gêner la navigation normale.
+  const limited = rateLimit(req, { key: "image-proxy", limit: 300, windowMs: 60_000 });
+  if (limited) return limited;
+
   const urlParam = req.nextUrl.searchParams.get("url");
 
   if (!urlParam) {

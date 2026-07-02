@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 import type { PrintfulWebhookEvent } from "@/lib/printful";
 
 const PRINTFUL_STORE_ID = 18115629;
@@ -8,11 +9,29 @@ const PRINTFUL_STORE_ID = 18115629;
  * POST /api/printful/webhook
  * Webhook Printful — exclu du proxy auth (cf. proxy.ts matcher).
  *
+ * Auth : en plus du contrôle store-id, si PRINTFUL_WEBHOOK_SECRET est défini
+ * (Vercel env + secret dans l'URL du webhook : ?secret=… ou header
+ * x-webhook-secret), on l'EXIGE → bloque la falsification anonyme du statut.
+ * Tant qu'il n'est pas configuré, on laisse passer (store-id reste le garde).
+ *
  * Événements gérés :
  *   - package_shipped  → status='expediee', tracking_number, shipped_at
  *   - order_updated    → si statut fulfilled → status='terminee', delivered_at
  */
 export async function POST(req: NextRequest) {
+  // Rate-limit best-effort.
+  const limited = rateLimit(req, { key: "printful-webhook", limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
+  const expectedSecret = process.env.PRINTFUL_WEBHOOK_SECRET;
+  if (expectedSecret) {
+    const provided =
+      req.nextUrl.searchParams.get("secret") ?? req.headers.get("x-webhook-secret");
+    if (provided !== expectedSecret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   let event: PrintfulWebhookEvent;
 
   try {

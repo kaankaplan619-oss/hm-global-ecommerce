@@ -11,6 +11,7 @@ import { checkPrintfulAvailability } from "@/lib/printful-stock";
 import { mapDbOrderToOrder } from "@/lib/mappers";
 import { sendInstructionsVirement } from "@/lib/email";
 import { notifyNewOrder } from "@/lib/notify";
+import { rateLimit } from "@/lib/security/rate-limit";
 import type { Technique, Placement, PrintConfig } from "@/types";
 
 interface CartItemInput {
@@ -47,6 +48,10 @@ interface CartItemInput {
  */
 export async function POST(req: NextRequest) {
   try {
+    // ── Rate-limit (anti commandes-fantômes) ─────────────────────────────────
+    const limited = rateLimit(req, { key: "checkout-bt", limit: 12, windowMs: 60_000 });
+    if (limited) return limited;
+
     const supabaseAuth = await createSupabaseServerClient();
     const { data: { user } } = await supabaseAuth.auth.getUser();
     const supabase = await createSupabaseServiceClient();
