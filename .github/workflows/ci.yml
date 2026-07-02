@@ -1,0 +1,67 @@
+name: CI
+
+# Garde-fou automatique : type-check + lint sur chaque push vers main et chaque PR.
+# Le build est lancé à titre informatif (peut nécessiter des vars d'env réelles).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Annule un run précédent encore en cours sur la même réf
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: Type-check (garde-fou strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Type-check (tsc --noEmit)
+        run: npm run type-check
+
+  lint:
+    name: Lint (informatif)
+    runs-on: ubuntu-latest
+    # Informatif tant que la dette de lint préexistante (77 erreurs dans des
+    # scripts one-off) n'est pas nettoyée. À repasser en strict après nettoyage.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Lint (eslint)
+        run: npm run lint
+
+  build:
+    name: Build (informatif)
+    runs-on: ubuntu-latest
+    # N'échoue pas le pipeline : le build peut demander des secrets réels.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build (next build)
+        run: npm run build
+        env:
+          # Placeholders pour permettre au build de tourner sans secrets réels.
+          NEXT_PUBLIC_SITE_URL: https://hm-global.fr
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role
+          STRIPE_SECRET_KEY: sk_test_placeholder

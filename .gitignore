@@ -51,3 +51,4 @@ next-env.d.ts
 *.tif
 *.tiff
 backups/
+.aider*
