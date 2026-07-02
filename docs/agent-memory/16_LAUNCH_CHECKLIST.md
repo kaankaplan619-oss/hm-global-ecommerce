@@ -68,3 +68,31 @@ dupliquées.
 27. ⏳ **Roadmap V3-V6** : lancer l’audit en lecture seule avec
 `docs/prompts/CLAUDE_CODE_V3_V6_MARKET_AUDIT.md`, puis faire valider le premier
 lot V3 avant développement.
+
+---
+
+## Déploiement du 2026-07-02 (GO Kaan) — commit 5255f7e
+
+**Déployé en prod** (5 commits, `main` 0652204 → 5255f7e) :
+- Sécurité API : rate-limit (checkout, virement, render-bat, image-proxy, bank-info,
+  gelato, toptex), garde SSRF BAT, secrets optionnels webhooks Gelato/Printful,
+  `/api/toptex/raw` en DEV_ONLY, Next 16.2.9.
+- Catalogue : polo femme gildan-64800l VISIBLE (packshots à plat Printful), fix wg004,
+  atelier aperçu mug sur fiche (zone mesurée au pixel), CTA goodies calibrés → Studio.
+- Studio Mug : zone d'impression calibrée (`ZONE_OVERRIDES_BY_PRODUCT_ID`), libellés
+  « Face du produit » (fr/en/tr), texte baké au fichier d'impression + composite.
+  Non-régression textile vérifiée avant push.
+- Accueil : section Instagram 12 réels cliquables, DA premium Journeys/FinalCTA,
+  polish hero/about/trust/reviews.
+- Chore : CI GitHub (type-check strict), scripts outillage, doc déploiement.
+
+**Volontairement NON déployé** (untracked) : /studio/flyer, /devis-textile,
+illustrations non importées, maquettes (_curation, _maquettes-emails,
+maquette-accueil-v3.html), photo erasmus non référencée.
+
+**Restes bloquants connus (item 16 & co)** :
+- Webhook Stripe LIVE : à confirmer dans le dashboard Stripe (mode Live) — sans lui,
+  commande payée reste « pending » (démontré le 2026-07-02 en local, HM-2026-2298).
+- `HM_BANK_*` absentes de Vercel → `/api/payment/bank-info` = 500 en prod (circuit
+  virement cassé à l'étape IBAN).
+- Commande TEST HM-2026-2298 (fantôme, non payée) dans la vraie DB → à supprimer.
