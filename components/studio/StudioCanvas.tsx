@@ -141,6 +141,15 @@ const ZONE_OVERRIDES_BY_PRODUCT_ID: Record<string, {
   "sacoche-bagbase-qs309": {
     coeur: [0.42, 0.58, 0.16, 0.13],
   },
+  // Mug noir (goodie → Studio, 2026-07-02) : canvas carré + packshot 700×1000
+  // en contain → l'image occupe x 0.15–0.85 du canvas. Corps du mug mesuré au
+  // pixel sur noir-front.jpg (anse exclue) : x image 0.331–0.860, y 0.236–0.740
+  // → en canvas x 0.382–0.752. Zone = 62 % de la largeur du corps, centre
+  // optique (0.567, 0.48). Aligné avec l'atelier fiche (GOODIES_MOCKUP_ZONES,
+  // lib/textile-zones.ts) qui, lui, est en fractions de l'IMAGE (pas du canvas).
+  "mug-noir-brillant": {
+    coeur: [0.45, 0.35, 0.23, 0.26],
+  },
   wg004: {
     // Iter 8 (2026-05-26) : taille réduite à 0.12 × 0.12 pour matcher visuellement
     // un logo 10 cm réel. Le calcul `pxPerCm` (lib/textile-zones.ts SHIRT_BODY_FILL
@@ -232,6 +241,14 @@ const GUIDE_META: Record<string, {
   sacs: {
     coeur: { defaultCm: 10, label: "Face · max 10×10 cm" },
     dos:   { defaultCm: 10, label: "Dos" },
+  },
+  // Goodies (mug…) : impression pleine couleur sur la face de l'objet.
+  // defaultCm est en « cm canvas » calibrés textile (SHIRT_BODY_CM) : 16 cm
+  // canvas ≈ 8 cm réels sur la face d'un mug 11 oz → le snap remplit ~80 % de
+  // la zone. Pas de cm dans le label (le mapping cm ne vaut que pour le textile).
+  goodies: {
+    coeur: { defaultCm: 16, label: "Face · impression" },
+    dos:   { defaultCm: 16, label: "Face · impression" },
   },
 };
 const GUIDE_META_DEFAULT = {

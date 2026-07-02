@@ -110,6 +110,11 @@ export default function StudioSummaryPanel({
   const totalTTC  = Math.round(unitPrice * activeQty * 100) / 100;
   const freeShip  = activeQty >= PRICING_CONFIG.freeShippingThreshold;
   const shipping  = freeShip ? 0 : PRICING_CONFIG.shippingCost;
+  // Goodies (mug…) : le marquage se fait sur la face de l'objet, pas sur une
+  // poitrine — libellé dédié au lieu de « Cœur (poitrine) ».
+  const placementLabel = product.category === "goodies"
+    ? t("studioSummary.placement.face")
+    : t(PLACEMENT_LABEL_KEYS[placement]);
 
   // ── Étape 1 : exporter + afficher aperçu ─────────────────────────────────
   const handleValidate = async () => {
@@ -554,7 +559,7 @@ export default function StudioSummaryPanel({
                     {/* Placement */}
                     <div className="flex items-center justify-between">
                       <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.placement")}</span>
-                      <span className="font-semibold text-[var(--hm-text)]">{t(PLACEMENT_LABEL_KEYS[placement])}</span>
+                      <span className="font-semibold text-[var(--hm-text)]">{placementLabel}</span>
                     </div>
 
                     {/* Quantité — sélecteur +/- interactif */}
@@ -743,7 +748,7 @@ export default function StudioSummaryPanel({
 
             <div className="flex items-center justify-between">
               <span className="text-[var(--hm-text-soft)]">{t("studioSummary.recap.placement")}</span>
-              <span className="font-semibold text-[var(--hm-text)]">{t(PLACEMENT_LABEL_KEYS[placement])}</span>
+              <span className="font-semibold text-[var(--hm-text)]">{placementLabel}</span>
             </div>
 
             <div className="flex items-center justify-between">

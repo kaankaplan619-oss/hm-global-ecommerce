@@ -341,7 +341,9 @@ export default function StudioClient({ product }: Props) {
                           : "border-[var(--hm-line)] bg-white text-[var(--hm-text-soft)] hover:border-[var(--hm-primary)]/40"
                       }`}
                     >
-                      {p === "coeur" ? t("studioClient.placement.heart") : p === "dos" ? t("studioClient.placement.back") : t("studioClient.placement.heartAndBack")}
+                      {product.category === "goodies"
+                        ? t("studioClient.placement.face")
+                        : p === "coeur" ? t("studioClient.placement.heart") : p === "dos" ? t("studioClient.placement.back") : t("studioClient.placement.heartAndBack")}
                     </button>
                   ))}
                 </div>
