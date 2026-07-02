@@ -30,6 +30,7 @@ import { getV1PrintifyImage, getV1PrintifyGallery } from "@/lib/suppliers/printi
 import HMProductVisual from "@/components/product/HMProductVisual";
 import { formatPrice, getVolumePricedRate } from "@/data/pricing";
 import { isSimpleFlowProduct } from "@/data/products";
+import { getGoodiesZone } from "@/lib/textile-zones";
 import type { Product, ProductColor, Placement, Technique } from "@/types";
 import type { LogoEffect } from "@/lib/color-utils";
 
@@ -811,6 +812,28 @@ export default function ProductDetailClient({ product }: Props) {
               />
             )}
 
+            {/* ── Atelier goodies (mug…) : aperçu du logo sur l'OBJET ──
+                 LightMockupPreview en mode atelier : zone de marquage calibrée
+                 par produit (getGoodiesZone). Rendu uniquement pour les goodies
+                 dont la zone est définie (mug pour l'instant). N'utilise PAS le
+                 MockupViewer Fabric (calibré textile).
+                 ⚠️ Pas de champ texte ici (2026-07-02) : le texte saisi sur la
+                 fiche n'était PAS transmis à la commande (aperçu seul). Le texte
+                 se fait dans le Studio (/studio/<slug>, CTA principal), où il est
+                 baké dans le fichier d'impression + le composite. */}
+            {getGoodiesZone(product.id) && (
+              <LightMockupPreview
+                imageUrl={currentImageUrl}
+                logoFile={logoFile}
+                placement="coeur"
+                colorId={selectedColor?.id ?? ""}
+                productName={product.name}
+                category={product.category}
+                zoneOverride={getGoodiesZone(product.id)}
+                onLogoEffectChange={setLogoEffect}
+              />
+            )}
+
             {/* ── Galerie fournisseur (TopTex) — section secondaire ──
                  Masqué pour WG004 stock agence : product.images est rempli avec
                  5 URLs CDN TopTex qui sont en réalité la même photo dupliquée
@@ -941,8 +964,11 @@ export default function ProductDetailClient({ product }: Props) {
               <p className="mt-1 text-[13px] font-semibold text-[var(--hm-text)]">{getIndicativeDelay(t, product)}</p>
             </div>
           </div>
-          {/* CTA principal — comportement par catégorie (2026-06-10) :
-               - Goodies (mug) + casquettes + polos : la personnalisation =
+          {/* CTA principal — comportement par catégorie (2026-06-10, goodies→Studio 2026-07-02) :
+               - Goodies CALIBRÉS (zone dans GOODIES_MOCKUP_ZONES, ex. mug noir) :
+                 navigation vers /studio/<slug> — même expérience que le textile
+                 (logo, texte, designs, QR code) avec la zone mug calibrée.
+               - Autres flux simples (casquettes, polos, goodies non calibrés) :
                  upload dans le ProductConfigurator → le bouton scroll vers
                  l'ancre id="mug-commander". Wording « Personnaliser » (jamais
                  « Commander » : le produit est toujours personnalisé d'abord).
@@ -951,7 +977,7 @@ export default function ProductDetailClient({ product }: Props) {
                  La taille peut être vide : le Studio a son propre sélecteur.
                  C'est le SEUL CTA Personnaliser de la fiche (l'ancien doublon
                  en bas du configurateur a été retiré — demande Kaan). */}
-          {isSimpleFlowProduct(product) ? (
+          {isSimpleFlowProduct(product) && !getGoodiesZone(product.id) ? (
             <button
               type="button"
               onClick={(e) => {
@@ -973,7 +999,7 @@ export default function ProductDetailClient({ product }: Props) {
               href={`/studio/${product.slug}?couleur=${selectedColor?.id ?? ""}&taille=${size}&technique=${technique}&quantite=${quantity}&placement=${placement}`}
               className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--hm-primary)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(177,63,116,0.28)] transition hover:bg-[var(--hm-rose-dark)]"
             >
-              🎨 {t("productDetail.cta.customizeItem")}
+              🎨 {product.id.includes("mug") ? t("productDetail.cta.customizeMug") : t("productDetail.cta.customizeItem")}
               <ArrowRight size={16} />
             </Link>
           )}
@@ -1088,7 +1114,11 @@ export default function ProductDetailClient({ product }: Props) {
              Fix 2026-06-12 : les polos étaient exclus → upload introuvable →
              « Ajouter au panier » définitivement désactivé (polo invendable). */
           hideLogoUpload={!isSimpleFlowProduct(product)}
-          requirePersonalization={product.supplierName === "printful"}
+          /* Logo obligatoire avant panier. Avant : gate sur Printful seul →
+             wg004 (seul textile visible non-Printful) passait à travers et
+             s'ajoutait VIERGE. On exige la perso pour tout produit non-goodies
+             (les goodies Printful restent couverts par la 1re condition). */
+          requirePersonalization={product.supplierName === "printful" || !isSimpleFlowProduct(product)}
           studioComposedFront={studioComposedFront}
           studioComposedBack={studioComposedBack}
           /* studioCTA volontairement absent (2026-06-10) : le CTA Personnaliser

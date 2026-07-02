@@ -3085,11 +3085,11 @@ export const PRODUCT_POLO_GILDAN_64800L: Product = {
     broDeriePlacementSurcharge: SINGLE_PLACEMENT_SURCHARGES,
   },
   featured: false,
-  // MASQUÉ — vérif 2026-06-13 : les fichiers /mockups/polos/gildan-64800l/*-flat.jpg
-  // sont en réalité des photos MANNEQUIN (modèle), pas des packshots à plat →
-  // viole la règle « pas de mannequin » + casse la cohérence flat-lay du catalogue.
-  // Réactiver UNIQUEMENT avec de vrais packshots à plat.
-  visible: false,
+  // 2026-07-01 : RÉACTIVÉ — vrais packshots à PLAT (rendu Printful « Flat/Front »
+  // style 5078, fond blanc, sans mannequin) générés pour noir/marine/gris/blanc.
+  // Respecte la règle « pas de mannequin » + cohérent flat-lay. Livrable (variant
+  // Printful catalog 664 mappé). Remplace les anciennes photos mannequin.
+  visible: true,
   badge: "Broderie incluse",
   supplierName: "printful",
   ideaPour: ["Corporate", "Accueil & événements", "Uniformes mixtes"],

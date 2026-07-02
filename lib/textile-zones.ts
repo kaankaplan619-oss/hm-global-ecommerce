@@ -118,6 +118,26 @@ export function getZoneRect(
   return zones[placement];
 }
 
+// ── Zones de marquage GOODIES (par id produit) ───────────────────────────────
+// Les goodies (mug, gourde…) ne sont PAS des textiles : le logo/texte se pose sur
+// l'OBJET (corps du mug), pas à la position « poitrine » du fallback textile.
+// Rectangle [left, top, width, height] en fraction de l'image produit — calibré
+// à l'œil sur le packshot, aperçu CSS indicatif (LightMockupPreview), BAT confirmé
+// avant production. Ajouter une entrée ici active l'atelier d'aperçu pour ce goodie.
+export const GOODIES_MOCKUP_ZONES: Record<string, [number, number, number, number]> = {
+  // Mug : anse à gauche → face imprimable = corps centre-droite du mug.
+  // noir-front.jpg (700×1000) mesuré au pixel : corps x 0.331–0.860, y 0.236–0.740
+  // → zone centrée sur le corps (62 % de sa largeur, centre optique à y 0.48).
+  "mug-noir-brillant": [0.43, 0.35, 0.33, 0.26],
+  "mug-ceramique-eu":  [0.40, 0.46, 0.32, 0.26],
+  "mug-11oz":          [0.40, 0.46, 0.32, 0.26],
+};
+
+/** Zone d'aperçu pour un goodie donné, ou null si non calibré (pas d'atelier). */
+export function getGoodiesZone(productId: string): [number, number, number, number] | null {
+  return GOODIES_MOCKUP_ZONES[productId] ?? null;
+}
+
 /**
  * Retourne le centre (cx, cy) du rectangle en fractions du canvas.
  * Utile pour les composants qui positionnent depuis le centre.
