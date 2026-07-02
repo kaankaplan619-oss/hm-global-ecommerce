@@ -84,13 +84,17 @@ export default function HomeHeroPremium() {
               className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px]"
               style={{ color: "var(--hm-text-muted-2)" }}
             >
-              <span className="inline-flex items-center gap-1.5">
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=HM%20Global%20Agence%20Souffelweyersheim"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 transition hover:text-[var(--hm-primary)]"
+              >
                 <Star size={13} className="fill-current" style={{ color: "var(--hm-magenta)" }} />
-                <span>
-                  <strong style={{ color: "var(--hm-text-main)" }}>4,7/5</strong>{" "}
-                  · {t("home.hero.reviews")}
+                <span className="font-semibold" style={{ color: "var(--hm-text-main)" }}>
+                  {t("home.hero.reviews")}
                 </span>
-              </span>
+              </a>
               <span
                 aria-hidden
                 className="hidden h-3 w-px sm:inline-block"

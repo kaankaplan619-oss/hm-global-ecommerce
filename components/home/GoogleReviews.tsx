@@ -7,16 +7,12 @@ import { getT } from "@/lib/i18n/server";
  *
  * - Branché (GOOGLE_PLACES_API_KEY posée) : note + nb d'avis réels + cartes
  *   d'avis (auteur, photo, texte) tirées de la Places API.
- * - Non branché : fallback honnête (note 4,7 · 14 avis Google + lien),
- *   valeurs RÉELLES de la fiche Google HM Global au 2026-06-14.
+ * - Non branché : lien neutre vers la fiche Google, sans afficher de note
+ *   ou nombre d'avis non vérifiable à l'instant T.
  *
- * Aucune donnée inventée : si l'API renvoie autre chose, on affiche l'API ;
- * sinon le fallback reflète la fiche réelle (à mettre à jour si elle évolue).
+ * Aucune donnée inventée : les chiffres ne sont affichés que lorsque l'API
+ * Google les renvoie.
  */
-
-// Fallback = chiffres RÉELS de la fiche Google (à actualiser si besoin).
-const FALLBACK_RATING = 4.7;
-const FALLBACK_TOTAL  = 14;
 
 function fmtRating(n: number): string {
   return n.toFixed(1).replace(".", ",");
@@ -25,11 +21,11 @@ function fmtRating(n: number): string {
 export default async function GoogleReviews() {
   const data = await getGoogleReviews();
   const t = await getT();
-  const rating  = data?.rating  ?? FALLBACK_RATING;
-  const total   = data?.total   ?? FALLBACK_TOTAL;
   const mapsUri = data?.mapsUri ?? FALLBACK_MAPS_URI;
+  const rating = data?.rating;
+  const total = data?.total;
   const reviews = data?.reviews ?? [];
-  const rounded = Math.round(rating);
+  const rounded = rating ? Math.round(rating) : 0;
 
   return (
     <section className="py-12 sm:py-16">
@@ -37,31 +33,41 @@ export default async function GoogleReviews() {
         {/* En-tête note moyenne */}
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-amber-100 bg-amber-50">
-              <span className="text-xl font-bold text-amber-600">{fmtRating(rating)}</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-0.5" aria-label={`${t("home.reviews.rating")} ${fmtRating(rating)}/5`}>
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={14}
-                    className={i < rounded ? "text-amber-400" : "text-amber-200"}
-                    fill="currentColor"
-                  />
-                ))}
+            {rating !== undefined && total !== undefined && (
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-amber-100 bg-amber-50">
+                <span className="text-xl font-bold text-amber-600">{fmtRating(rating)}</span>
               </div>
-              <p className="mt-1 text-[12px] text-[var(--hm-text-soft)]">
-                {t("home.reviews.averageRating")} ·{" "}
-                <a
-                  href={mapsUri}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-[var(--hm-text)] underline decoration-dotted underline-offset-2 transition hover:text-[var(--hm-primary)]"
-                >
-                  {total} {t("home.reviews.googleReviews")}
-                </a>
-              </p>
+            )}
+            <div>
+              {rating !== undefined && total !== undefined ? (
+                <>
+                  <div className="flex items-center gap-0.5" aria-label={`${t("home.reviews.rating")} ${fmtRating(rating)}/5`}>
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={14}
+                        className={i < rounded ? "text-amber-400" : "text-amber-200"}
+                        fill="currentColor"
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-1 text-[12px] text-[var(--hm-text-soft)]">
+                    {t("home.reviews.averageRating")} ·{" "}
+                    <a
+                      href={mapsUri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-[var(--hm-text)] underline decoration-dotted underline-offset-2 transition hover:text-[var(--hm-primary)]"
+                    >
+                      {t("home.reviews.reviewsCount").replace("{total}", String(total))}
+                    </a>
+                  </p>
+                </>
+              ) : (
+                <p className="text-[13px] font-semibold text-[var(--hm-text)]">
+                  {t("home.reviews.liveOnGoogle")}
+                </p>
+              )}
             </div>
           </div>
           <a
@@ -84,12 +90,12 @@ export default async function GoogleReviews() {
               >
                 <div className="flex items-center gap-0.5">
                   {[...Array(5)].map((_, s) => (
-                    <Star
-                      key={s}
-                      size={12}
-                      className={s < r.rating ? "text-amber-400" : "text-amber-200"}
-                      fill="currentColor"
-                    />
+                      <Star
+                        key={s}
+                        size={12}
+                        className={s < r.rating ? "text-amber-400" : "text-amber-200"}
+                        fill="currentColor"
+                      />
                   ))}
                 </div>
                 <blockquote className="text-[13px] leading-relaxed text-[var(--hm-text-soft)] line-clamp-5">

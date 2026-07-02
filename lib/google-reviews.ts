@@ -11,8 +11,8 @@
  *   GOOGLE_PLACES_PLACE_ID  → si absent, résolu automatiquement via Text Search
  *   GOOGLE_PLACES_QUERY     → requête de résolution (défaut ci-dessous)
  *
- * Sans clé → retourne null → le composant affiche un fallback honnête
- * (note 4,7 · 14 avis Google + lien vers la fiche), sans rien casser.
+ * Sans clé → retourne null → le composant conserve uniquement un lien vers la
+ * fiche Google, sans afficher de note ou nombre d'avis non vérifié.
  *
  * Cache : revalidate 24 h (évite de payer un appel API à chaque rendu).
  */
@@ -107,9 +107,13 @@ export async function getGoogleReviews(): Promise<GoogleReviewsData | null> {
         relativeTime: r.relativePublishTimeDescription ?? "",
       }));
 
+    if (typeof p.rating !== "number" || typeof p.userRatingCount !== "number") {
+      return null;
+    }
+
     return {
-      rating:  p.rating ?? 4.7,
-      total:   p.userRatingCount ?? reviews.length,
+      rating: p.rating,
+      total: p.userRatingCount,
       mapsUri: p.googleMapsUri ?? FALLBACK_MAPS_URI,
       reviews,
     };

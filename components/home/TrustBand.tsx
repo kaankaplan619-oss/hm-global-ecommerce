@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PRICING_CONFIG } from "@/data/pricing";
 import {
   Briefcase,
   HardHat,
@@ -73,7 +74,7 @@ const COMMITMENTS = [
     detail: "Une fois le fichier validé, vous savez exactement quand livrer.",
   },
   {
-    value: "10",
+    value: String(PRICING_CONFIG.freeShippingThreshold),
     unit: "pièces",
     label: "Livraison offerte dès",
     detail: "Pas de minimum de commande prohibitif pour démarrer.",

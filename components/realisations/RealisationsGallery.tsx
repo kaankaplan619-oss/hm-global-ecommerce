@@ -8,8 +8,37 @@ import {
   REALISATIONS,
   realisationCategoriesPresent,
   type RealisationCategory,
+  type Realisation,
 } from "@/data/realisations";
 import { useT } from "@/components/i18n/I18nProvider";
+
+// Mappe une réalisation textile vers sa catégorie catalogue (d'après ses tags)
+// pour proposer « Personnaliser ce produit » → configurateur de la catégorie.
+const TAG_TO_CATEGORY: Record<string, string> = {
+  polo: "polos",
+  polos: "polos",
+  "t-shirt": "tshirts",
+  tshirt: "tshirts",
+  tee: "tshirts",
+  softshell: "softshells",
+  veste: "softshells",
+  sweat: "hoodies",
+  "sweat-shirt": "hoodies",
+  hoodie: "hoodies",
+  casquette: "casquettes",
+  tote: "sacs",
+  "tote bag": "sacs",
+  sac: "sacs",
+};
+
+function customizeCategory(r: Realisation): string | null {
+  if (r.category !== "textile") return null;
+  for (const tag of r.tags) {
+    const cat = TAG_TO_CATEGORY[tag.trim().toLowerCase()];
+    if (cat) return cat;
+  }
+  return null;
+}
 
 /**
  * Galerie des vraies réalisations HM Global (photos clients).
@@ -59,7 +88,11 @@ export default function RealisationsGallery() {
 
       {/* Grille */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((r, i) => (
+        {items.map((r, i) => {
+          const cat = customizeCategory(r);
+          const ctaHref = cat ? `/catalogue/${cat}` : "/devis-rapide";
+          const ctaLabel = cat ? "realisationsGallery.customizeCta" : "realisationsGallery.similarCta";
+          return (
           <figure
             key={r.id}
             className="group flex flex-col overflow-hidden rounded-[1.5rem] border border-[var(--hm-line)] bg-[var(--hm-surface)] shadow-[0_12px_30px_rgba(63,45,88,0.06)]"
@@ -91,14 +124,15 @@ export default function RealisationsGallery() {
 
             {/* CTA par réalisation */}
             <Link
-              href="/devis-rapide"
+              href={ctaHref}
               className="flex min-h-12 items-center justify-between gap-2 px-4 text-[13px] font-semibold text-[var(--hm-primary)] transition-colors hover:bg-[var(--hm-accent-soft-rose)]"
             >
-              {t("realisationsGallery.similarCta")}
+              {t(ctaLabel)}
               <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
           </figure>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

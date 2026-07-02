@@ -62,7 +62,7 @@ export default async function HomeAbout() {
           {/* Photo atelier réelle */}
           <div className="relative aspect-[4/3] overflow-hidden rounded-[1.8rem] border border-[var(--hm-line)] shadow-[0_16px_40px_rgba(45,35,64,0.08)]">
             <Image
-              src="/images/home/hm-hero-atelier-v2.jpg"
+              src="/images/home/hm-about-atelier-enseigne.jpg"
               alt={t("home.about.imageAlt")}
               fill
               sizes="(min-width:1024px) 45vw, 100vw"
